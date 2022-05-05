@@ -24,8 +24,7 @@ int main(const int argc, const char* argv[])
 {
 	try
 	{
-		Util::Win32::EnableConsoleFormatting();
-		Util::Win32::InitializeCOM();
+		Util::Win32::InitializeWin32Components();
 
 		Brawler::AppParams appParams{ ParseCommandLine(std::span<const char*>{argv, static_cast<std::size_t>(argc)}) };
 
