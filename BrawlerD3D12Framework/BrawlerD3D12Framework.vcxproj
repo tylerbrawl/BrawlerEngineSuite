@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release with Debugging|Win32">
+      <Configuration>Release with Debugging</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release with Debugging|x64">
+      <Configuration>Release with Debugging</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{946e57e2-22c5-438b-a589-f64012d33873}</ProjectGuid>
+    <RootNamespace>BrawlerD3D12Framework</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
+    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <TreatWarningAsError>true</TreatWarningAsError>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>D3D12.lib;DXGI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <TreatWarningAsError>true</TreatWarningAsError>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>D3D12.lib;DXGI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;__RELEASE_WITH_DEBUGGING__;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <TreatWarningAsError>true</TreatWarningAsError>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>D3D12.lib;DXGI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\AliasedGPUMemoryManager.cpp" />
+    <ClCompile Include="src\AliasedGPUMemoryManager.ixx" />
+    <ClCompile Include="src\AsyncGPUResourceBuilder.ixx" />
+    <ClCompile Include="src\BindlessSRVSentinel.cpp" />
+    <ClCompile Include="src\BindlessSRVSentinel.ixx" />
+    <ClCompile Include="src\ConstantBufferView.ixx" />
+    <ClCompile Include="src\D3D12UtilFormats.ixx" />
+    <ClCompile Include="src\D3D12UtilGeneral.ixx" />
+    <ClCompile Include="src\GPUResourceBindlessSRVManager.cpp" />
+    <ClCompile Include="src\GPUResourceBindlessSRVManager.ixx" />
+    <ClCompile Include="src\GPUResourceViews.ixx" />
+    <ClCompile Include="src\I_BufferSubAllocation.cpp" />
+    <ClCompile Include="src\BaseGPUResourceStateTrackerState.cpp" />
+    <ClCompile Include="src\BaseGPUResourceStateTrackerState.ixx" />
+    <ClCompile Include="src\BaseResourceStateZoneOptimizerState.ixx" />
+    <ClCompile Include="src\BaseResourceStateZoneOptimizerState.cpp" />
+    <ClCompile Include="src\BufferResource.cpp" />
+    <ClCompile Include="src\BufferResource.ixx" />
+    <ClCompile Include="src\BufferResourceInitializationInfo.ixx" />
+    <ClCompile Include="src\BufferSubAllocationReservation.cpp" />
+    <ClCompile Include="src\BufferSubAllocationReservation.ixx" />
+    <ClCompile Include="src\HLSLUtil.ixx" />
+    <ClCompile Include="src\I_BufferSubAllocation.ixx" />
+    <ClCompile Include="src\BufferSubAllocationManager.cpp" />
+    <ClCompile Include="src\BufferSubAllocationManager.ixx" />
+    <ClCompile Include="src\CommittedD3D12ResourceContainer.cpp" />
+    <ClCompile Include="src\CommittedD3D12ResourceContainer.ixx" />
+    <ClCompile Include="src\ConstantBufferSubAllocation.ixx" />
+    <ClCompile Include="src\D3D12ResourceContainer.cpp" />
+    <ClCompile Include="src\D3D12ResourceContainer.ixx" />
+    <ClCompile Include="src\DeletePageableGPUObjectState.cpp" />
+    <ClCompile Include="src\DeletePageableGPUObjectState.ixx" />
+    <ClCompile Include="src\EvictPageableGPUObjectState.cpp" />
+    <ClCompile Include="src\EvictPageableGPUObjectState.ixx" />
+    <ClCompile Include="src\FrameGraphBuilding.ixx" />
+    <ClCompile Include="src\FrameGraphFenceCollection.cpp" />
+    <ClCompile Include="src\FrameGraphFenceCollection.ixx" />
+    <ClCompile Include="src\FreeGPUResidencyInfo.ixx" />
+    <ClCompile Include="src\FreeGPUResidencyStateID.ixx" />
+    <ClCompile Include="src\FreeGPUResidencyStateTraits.ixx" />
+    <ClCompile Include="src\GPUCommandContextGroup.cpp" />
+    <ClCompile Include="src\GPUCommandContextGroup.ixx" />
+    <ClCompile Include="src\GPUCommandContexts.ixx" />
+    <ClCompile Include="src\GPUCommandContextSink.cpp" />
+    <ClCompile Include="src\GPUCommandContextSink.ixx" />
+    <ClCompile Include="src\GPUCommandContextSubmissionPoint.cpp" />
+    <ClCompile Include="src\GPUCommandContextSubmissionPoint.ixx" />
+    <ClCompile Include="src\GPUCommandListRecorder.ixx" />
+    <ClCompile Include="src\GPUCommandQueue.ixx" />
+    <ClCompile Include="src\GPUCommandQueueContextType.ixx" />
+    <ClCompile Include="src\GPUExecutionModuleRecordContext.ixx" />
+    <ClCompile Include="src\GPUFence.cpp" />
+    <ClCompile Include="src\GPUFence.ixx" />
+    <ClCompile Include="src\GPUResidencyManager.cpp" />
+    <ClCompile Include="src\GPUResidencyManager.ixx" />
+    <ClCompile Include="src\GPUResourceAccessManager.cpp" />
+    <ClCompile Include="src\GPUResourceAccessManager.ixx" />
+    <ClCompile Include="src\GPUResourceAllocation.cpp" />
+    <ClCompile Include="src\GPUResourceAllocation.ixx" />
+    <ClCompile Include="src\GPUResourceAllocationHandle.cpp" />
+    <ClCompile Include="src\GPUResourceAllocationHandle.ixx" />
+    <ClCompile Include="src\GPUResourceBarrierTypeSelectorState.ixx" />
+    <ClCompile Include="src\GPUResourceCreationType.ixx" />
+    <ClCompile Include="src\RootDescriptors.ixx" />
+    <ClCompile Include="src\ShaderResourceView.ixx" />
+    <ClCompile Include="src\StructuredBufferSubAllocation.ixx" />
+    <ClCompile Include="src\Texture2D.cpp" />
+    <ClCompile Include="src\Texture2D.ixx" />
+    <ClCompile Include="src\Texture2DBuilders.ixx" />
+    <ClCompile Include="src\TextureCopyBufferSubAllocation.cpp" />
+    <ClCompile Include="src\TextureCopyBufferSubAllocation.ixx" />
+    <ClCompile Include="src\TextureSubResource.cpp" />
+    <ClCompile Include="src\TextureSubResource.ixx" />
+    <ClCompile Include="src\TLSFAllocator.cpp" />
+    <ClCompile Include="src\TLSFAllocator.ixx" />
+    <ClCompile Include="src\TLSFAllocationRequestInfo.ixx" />
+    <ClCompile Include="src\TLSFMemoryBlock.cpp" />
+    <ClCompile Include="src\TLSFMemoryBlock.ixx" />
+    <ClCompile Include="src\GPUResourceSpecialInitializationMethod.ixx" />
+    <ClCompile Include="src\BindlessSRVAllocation.cpp" />
+    <ClCompile Include="src\BindlessSRVAllocation.ixx" />
+    <ClCompile Include="src\BindlessSRVDescriptorTable.cpp" />
+    <ClCompile Include="src\BindlessSRVDescriptorTable.ixx" />
+    <ClCompile Include="src\CompositeEnum.ixx" />
+    <ClCompile Include="src\ComputeContext.cpp" />
+    <ClCompile Include="src\ComputeContext.ixx" />
+    <ClCompile Include="src\CopyContext.cpp" />
+    <ClCompile Include="src\CopyContext.ixx" />
+    <ClCompile Include="src\CoroutineUtil.cpp" />
+    <ClCompile Include="src\CoroutineUtil.ixx" />
+    <ClCompile Include="src\D3D12Util.ixx" />
+    <ClCompile Include="src\DescriptorHandleInfo.ixx" />
+    <ClCompile Include="src\DescriptorTableBuilder.cpp" />
+    <ClCompile Include="src\DescriptorTableBuilder.ixx" />
+    <ClCompile Include="src\DirectContext.cpp" />
+    <ClCompile Include="src\DirectContext.ixx" />
+    <ClCompile Include="src\EngineUtil.cpp" />
+    <ClCompile Include="src\EngineUtil.ixx" />
+    <ClCompile Include="src\FrameGraph.cpp" />
+    <ClCompile Include="src\FrameGraph.ixx" />
+    <ClCompile Include="src\FrameGraphBlackboard.cpp" />
+    <ClCompile Include="src\FrameGraphBlackboard.ixx" />
+    <ClCompile Include="src\FrameGraphBlackboardComponent.ixx" />
+    <ClCompile Include="src\FrameGraphBlackboardComponentMap.ixx" />
+    <ClCompile Include="src\FrameGraphBuilder.cpp" />
+    <ClCompile Include="src\FrameGraphBuilder.ixx" />
+    <ClCompile Include="src\FrameGraphCompilation.ixx" />
+    <ClCompile Include="src\FrameGraphExecutionContext.cpp" />
+    <ClCompile Include="src\FrameGraphExecutionContext.ixx" />
+    <ClCompile Include="src\FrameGraphInjection.ixx" />
+    <ClCompile Include="src\FrameGraphResourceDependency.ixx" />
+    <ClCompile Include="src\Functional.ixx" />
+    <ClCompile Include="src\GPUCapabilities.ixx" />
+    <ClCompile Include="src\GPUCommandContext.ixx" />
+    <ClCompile Include="src\GPUCommandContextVault.ixx" />
+    <ClCompile Include="src\GPUCommandManager.cpp" />
+    <ClCompile Include="src\GPUCommandManager.ixx" />
+    <ClCompile Include="src\GPUCommandQueueType.ixx" />
+    <ClCompile Include="src\GPUDevice.cpp" />
+    <ClCompile Include="src\GPUDevice.ixx" />
+    <ClCompile Include="src\GeneralUtil.cpp" />
+    <ClCompile Include="src\GeneralUtil.ixx" />
+    <ClCompile Include="src\GPUExecutionModule.cpp" />
+    <ClCompile Include="src\GPUExecutionModule.ixx" />
+    <ClCompile Include="src\GPUMemoryBudgetInfo.ixx" />
+    <ClCompile Include="src\GPUResourceAccessMode.ixx" />
+    <ClCompile Include="src\GPUResourceAllocationInfo.ixx" />
+    <ClCompile Include="src\GPUResourceBinder.ixx" />
+    <ClCompile Include="src\GPUResourceDescriptorHeap.cpp" />
+    <ClCompile Include="src\GPUResourceDescriptorHeap.ixx" />
+    <ClCompile Include="src\GPUResourceEvent.ixx" />
+    <ClCompile Include="src\GPUResourceEventManager.ixx" />
+    <ClCompile Include="src\GPUResourceHeap.ixx" />
+    <ClCompile Include="src\GPUResourceHeapPool.ixx" />
+    <ClCompile Include="src\GPUResourceInitializationInfo.ixx" />
+    <ClCompile Include="src\GPUResourceLifetimeType.ixx" />
+    <ClCompile Include="src\GPUResourceSpecialInitializationState.ixx" />
+    <ClCompile Include="src\GPUResourceStateManagement.ixx" />
+    <ClCompile Include="src\GPUResourceStateTracker.cpp" />
+    <ClCompile Include="src\GPUResourceStateTracker.ixx" />
+    <ClCompile Include="src\GPUResourceStateTrackerStateID.ixx" />
+    <ClCompile Include="src\GPUResourceStateTrackerStateTraits.ixx" />
+    <ClCompile Include="src\GPUResourceUsageAnalyzer.cpp" />
+    <ClCompile Include="src\GPUResourceUsageAnalyzer.ixx" />
+    <ClCompile Include="src\GPUResourceUsageTracker.cpp" />
+    <ClCompile Include="src\GPUResourceUsageTracker.ixx" />
+    <ClCompile Include="src\GPUVendor.ixx" />
+    <ClCompile Include="src\IgnoreResourceStateZoneOptimizerState.cpp" />
+    <ClCompile Include="src\IgnoreResourceStateZoneOptimizerState.ixx" />
+    <ClCompile Include="src\ImmediateGPUResourceBarrierState.ixx" />
+    <ClCompile Include="src\I_DescriptorTable.cpp" />
+    <ClCompile Include="src\I_DescriptorTable.ixx" />
+    <ClCompile Include="src\I_FreeGPUResidencyState.ixx" />
+    <ClCompile Include="src\I_GPUResourceHeapManager.ixx" />
+    <ClCompile Include="src\I_GPUResourceStateTrackerState.ixx" />
+    <ClCompile Include="src\I_PageableGPUObject.cpp" />
+    <ClCompile Include="src\I_PageableGPUObject.ixx" />
+    <ClCompile Include="src\I_RenderModule.cpp" />
+    <ClCompile Include="src\I_RenderModule.ixx" />
+    <ClCompile Include="src\I_GPUResource.cpp" />
+    <ClCompile Include="src\I_GPUResource.ixx" />
+    <ClCompile Include="src\I_RenderPass.ixx" />
+    <ClCompile Include="src\I_ResourceStateZoneOptimizerState.ixx" />
+    <ClCompile Include="src\Job.cpp" />
+    <ClCompile Include="src\Job.ixx" />
+    <ClCompile Include="src\JobCounter.cpp" />
+    <ClCompile Include="src\JobCounter.ixx" />
+    <ClCompile Include="src\JobGroup.cpp" />
+    <ClCompile Include="src\JobGroup.ixx" />
+    <ClCompile Include="src\JobPriority.ixx" />
+    <ClCompile Include="src\JobRunner.cpp" />
+    <ClCompile Include="src\JobRunner.ixx" />
+    <ClCompile Include="src\JobSystem.ixx" />
+    <ClCompile Include="src\Like_T.ixx" />
+    <ClCompile Include="src\MathUtil.ixx" />
+    <ClCompile Include="src\OptionalRef.ixx" />
+    <ClCompile Include="src\PerFrameDescriptorTable.cpp" />
+    <ClCompile Include="src\PerFrameDescriptorTable.ixx" />
+    <ClCompile Include="src\PersistentGPUResourceManager.cpp" />
+    <ClCompile Include="src\PersistentGPUResourceManager.ixx" />
+    <ClCompile Include="src\PlacedD3D12ResourceContainer.cpp" />
+    <ClCompile Include="src\PlacedD3D12ResourceContainer.ixx" />
+    <ClCompile Include="src\PolymorphicAdapter.ixx" />
+    <ClCompile Include="src\PolymorphismInfo.ixx" />
+    <ClCompile Include="src\PSODatabase.cpp" />
+    <ClCompile Include="src\PSODatabase.ixx" />
+    <ClCompile Include="src\ReadResourceStateZoneOptimizerState.cpp" />
+    <ClCompile Include="src\ReadResourceStateZoneOptimizerState.ixx" />
+    <ClCompile Include="src\ReflectionUtil.ixx" />
+    <ClCompile Include="src\Renderer.cpp" />
+    <ClCompile Include="src\Renderer.ixx" />
+    <ClCompile Include="src\RenderPass.ixx" />
+    <ClCompile Include="src\RenderPassBundle.cpp" />
+    <ClCompile Include="src\RenderPassBundle.ixx" />
+    <ClCompile Include="src\ResourceStateTrackingTest.cpp" />
+    <ClCompile Include="src\ResourceStateTrackingTest.ixx" />
+    <ClCompile Include="src\ResourceStateTrackingTestModule.cpp" />
+    <ClCompile Include="src\ResourceStateTrackingTestModule.ixx" />
+    <ClCompile Include="src\ResourceStateZone.ixx" />
+    <ClCompile Include="src\ResourceStateZoneMap.cpp" />
+    <ClCompile Include="src\ResourceStateZoneMap.ixx" />
+    <ClCompile Include="src\ResourceStateZoneOptimizer.cpp" />
+    <ClCompile Include="src\ResourceStateZoneOptimizer.ixx" />
+    <ClCompile Include="src\ResourceStateZoneOptimizerStateID.ixx" />
+    <ClCompile Include="src\ResourceStateZoneOptimizerStateTraits.ixx" />
+    <ClCompile Include="src\RootSignatureDatabase.cpp" />
+    <ClCompile Include="src\RootSignatureDatabase.ixx" />
+    <ClCompile Include="src\RootSignatureTest.cpp" />
+    <ClCompile Include="src\RootSignatureTest.ixx" />
+    <ClCompile Include="src\RTVDSVHandle.ixx" />
+    <ClCompile Include="src\SafeHandle.ixx" />
+    <ClCompile Include="src\ScopedGPUResourceMapping.ixx" />
+    <ClCompile Include="src\ScopedSharedLock.ixx" />
+    <ClCompile Include="src\SortedVector.ixx" />
+    <ClCompile Include="src\SplitGPUResourceBarrierState.ixx" />
+    <ClCompile Include="src\ThreadingUtil.cpp" />
+    <ClCompile Include="src\ThreadingUtil.ixx" />
+    <ClCompile Include="src\ThreadLocalResources.ixx" />
+    <ClCompile Include="src\ThreadSafeMap.ixx" />
+    <ClCompile Include="src\ThreadSafeQueue.ixx" />
+    <ClCompile Include="src\ThreadSafeVector.ixx" />
+    <ClCompile Include="src\Tier1GPUResourceHeapManager.ixx" />
+    <ClCompile Include="src\Tier2GPUResourceHeapManager.ixx" />
+    <ClCompile Include="src\Timer.cpp" />
+    <ClCompile Include="src\Timer.ixx" />
+    <ClCompile Include="src\TransientGPUResourceAliasTracker.cpp" />
+    <ClCompile Include="src\TransientGPUResourceAliasTracker.ixx" />
+    <ClCompile Include="src\TransientGPUResourceManager.cpp" />
+    <ClCompile Include="src\TransientGPUResourceManager.ixx" />
+    <ClCompile Include="src\TypeTraits.ixx" />
+    <ClCompile Include="src\UAVCounterSubAllocation.cpp" />
+    <ClCompile Include="src\UAVCounterSubAllocation.ixx" />
+    <ClCompile Include="src\UnorderedAccessView.ixx" />
+    <ClCompile Include="src\Win32Util.cpp" />
+    <ClCompile Include="src\Win32Util.ixx" />
+    <ClCompile Include="src\WorkerThread.cpp" />
+    <ClCompile Include="src\WorkerThread.ixx" />
+    <ClCompile Include="src\WorkerThreadPool.cpp" />
+    <ClCompile Include="src\WorkerThreadPool.ixx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\DxDef.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

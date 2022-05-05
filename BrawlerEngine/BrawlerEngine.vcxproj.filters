@@ -1,0 +1,724 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Threading">
+      <UniqueIdentifier>{e269ee11-098d-43d5-9a56-84ea86240c9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Unit Tests">
+      <UniqueIdentifier>{ddca32ba-a97c-4b10-9d9e-9184d968d47b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Profiling">
+      <UniqueIdentifier>{34164316-3456-4423-bf82-5c51eaf9652b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Rendering">
+      <UniqueIdentifier>{6ab83be8-0663-40f8-b5ec-2715ea88c78c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files">
+      <UniqueIdentifier>{21253bf4-0626-49c6-86f9-92a09383e79c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Profiling">
+      <UniqueIdentifier>{c92ab322-f75b-4809-bb0d-f36b92f47963}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Rendering">
+      <UniqueIdentifier>{0102cfd4-99e5-4760-b2b1-efc917262e34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Win32">
+      <UniqueIdentifier>{236dafd2-5ca5-4c57-ae72-87500f9a1871}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Threading">
+      <UniqueIdentifier>{b9db0cc6-6925-40c3-81cd-8f5480d988b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Unit Tests">
+      <UniqueIdentifier>{f39a400c-5292-4806-9f3e-60a94534d3ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Components">
+      <UniqueIdentifier>{4727d02e-55f3-4af9-bdad-d3e2321cfb82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components">
+      <UniqueIdentifier>{8dde66e7-7e7e-43d9-b22b-a4468217dcf4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Concepts">
+      <UniqueIdentifier>{4435be71-15ba-4bf7-8a77-07db48df99c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Resources">
+      <UniqueIdentifier>{8068af00-c795-4f23-9e24-deed0ef36d3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Resources">
+      <UniqueIdentifier>{fb11a08d-0120-448e-93c7-20b3c52275b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Utilities">
+      <UniqueIdentifier>{7e5bd64d-c197-4550-8619-10b347a4e4c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utilities">
+      <UniqueIdentifier>{a4e1d588-bd72-4f44-b339-2c248df8a140}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Settings">
+      <UniqueIdentifier>{ee788058-70fe-47c7-b24d-a394caf181a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Settings">
+      <UniqueIdentifier>{3e6e113d-854d-4e7e-8601-26bdd37dcfa2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Rendering\Render Jobs">
+      <UniqueIdentifier>{83ea4b3d-25cb-4b0a-a1e1-efc7a06c1629}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Rendering\Render Jobs">
+      <UniqueIdentifier>{75775007-6128-47c9-8653-a8927b3eb3b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Pipeline State Management">
+      <UniqueIdentifier>{f6327853-7525-4ed3-8e5a-ac1ebd9fb9f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Pipeline State Management">
+      <UniqueIdentifier>{b6a4e3f9-ea39-4a01-bbda-5020a96c63a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Asset Management">
+      <UniqueIdentifier>{f2daa10b-7810-4a90-9ee3-e16d050a1ca7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Asset Management">
+      <UniqueIdentifier>{917e0cbd-deaa-4b60-b6af-5ba929301b67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\File I/O">
+      <UniqueIdentifier>{b31535be-4850-44d3-a77a-614d2132ffd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File I/O">
+      <UniqueIdentifier>{c58ac795-7d99-4400-8b9b-d8bcde26dda1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Scene Graph">
+      <UniqueIdentifier>{0d6b1606-22dd-484f-b125-53e9b281fc85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scene Graph">
+      <UniqueIdentifier>{df97a35b-0815-4534-8526-b78ef4b68313}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Application State">
+      <UniqueIdentifier>{27b4e838-8350-4059-a66b-6ef758bc21f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Application State">
+      <UniqueIdentifier>{d73feadb-f51f-4d93-a877-4aae68469670}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Application State\States">
+      <UniqueIdentifier>{8e377aa4-4b03-4486-8766-4ccf66f10b4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Application State\States">
+      <UniqueIdentifier>{83fabb6f-993e-4657-bf5d-09eb25a3fff4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files">
+      <UniqueIdentifier>{74a0ae76-59d8-432a-97e6-a7d315ed4c58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\Compression">
+      <UniqueIdentifier>{077c2b8d-53aa-47c0-851e-4db98dea383c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThread.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadingUtil.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThreadPool.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ExceptionReporter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobCounter.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Job.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobGroup.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobRunner.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobSystemTest.cpp">
+      <Filter>Source Files\Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Timer.cpp">
+      <Filter>Source Files\Profiling</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AppWindow.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DisplayAdapter.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Manifest.ixx">
+      <Filter>Module Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ExceptionReporter.ixx">
+      <Filter>Module Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Timer.ixx">
+      <Filter>Module Files\Profiling</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AppWindow.ixx">
+      <Filter>Module Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WindowMessage.ixx">
+      <Filter>Module Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Application.ixx">
+      <Filter>Module Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThreadPool.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThread.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadSafeQueue.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadLocalResources.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadingUtil.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobRunner.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobPriority.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobGroup.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobCounter.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Job.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DisplayAdapter.ixx">
+      <Filter>Module Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer.ixx">
+      <Filter>Module Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobSystemTest.ixx">
+      <Filter>Module Files\Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ConvenienceTypes.ixx">
+      <Filter>Module Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_Component.ixx">
+      <Filter>Module Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_Component.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ComponentID.ixx">
+      <Filter>Module Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ComponentCollection.ixx">
+      <Filter>Module Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FunctionConcepts.ixx">
+      <Filter>Module Files\Concepts</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ComponentCollection.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceDescriptorHeap.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3DHeapManager.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3DHeapManager.cpp">
+      <Filter>Source Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3DHeap.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GeneralUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GeneralUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MathUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3DHeap.cpp">
+      <Filter>Source Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceCreationInfo.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3DHeapPool.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3DHeapPool.cpp">
+      <Filter>Source Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3DHeapBuddyAllocator.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CriticalSection.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3DHeapBuddyAllocator.cpp">
+      <Filter>Source Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3DHeapAllocationHandle.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3DHeapBuddyAllocatorNode.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3DHeapBuddyAllocatorNode.cpp">
+      <Filter>Source Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_GPUResource.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_GPUResource.cpp">
+      <Filter>Source Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EngineUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EngineUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3D12ResourcesTest.ixx">
+      <Filter>Module Files\Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3D12ResourcesTest.cpp">
+      <Filter>Source Files\Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3DVideoBudgetInfo.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SettingID.ixx">
+      <Filter>Module Files\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SettingsDef.ixx">
+      <Filter>Module Files\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SettingsManager.ixx">
+      <Filter>Module Files\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadSafeVector.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SettingsManager.cpp">
+      <Filter>Source Files\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FolderPath.ixx">
+      <Filter>Module Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32Util.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32Util.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\INIManager.ixx">
+      <Filter>Module Files\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="src\INIManager.cpp">
+      <Filter>Source Files\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SwapChain.ixx">
+      <Filter>Module Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SwapChain.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandListType.ixx">
+      <Filter>Module Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandQueue.ixx">
+      <Filter>Module Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandQueue.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceHandle.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceHandle.cpp">
+      <Filter>Source Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_RenderContext.ixx">
+      <Filter>Module Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderJobBundle.ixx">
+      <Filter>Module Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderJobs.ixx">
+      <Filter>Module Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_RenderJob.ixx">
+      <Filter>Module Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GraphicsContext.ixx">
+      <Filter>Module Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_RenderContext.cpp">
+      <Filter>Source Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_RenderJob.cpp">
+      <Filter>Source Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderJobBundle.cpp">
+      <Filter>Source Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GraphicsContext.cpp">
+      <Filter>Source Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderJobManager.ixx">
+      <Filter>Module Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderJobManager.cpp">
+      <Filter>Source Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CoroutineUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CoroutineUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ComputeContext.ixx">
+      <Filter>Module Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ComputeContext.cpp">
+      <Filter>Source Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CopyContext.ixx">
+      <Filter>Module Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CopyContext.cpp">
+      <Filter>Source Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceAccessMode.ixx">
+      <Filter>Module Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceTransitionToken.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceTransitionRequestManager.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceTransitionRequestManager.cpp">
+      <Filter>Source Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceTransitionToken.cpp">
+      <Filter>Source Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderEventHandle.ixx">
+      <Filter>Module Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderEventHandle.cpp">
+      <Filter>Source Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderJobSystemTest.ixx">
+      <Filter>Module Files\Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderJobSystemTest.cpp">
+      <Filter>Source Files\Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderJobSystem.ixx">
+      <Filter>Module Files\Rendering\Render Jobs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceDescriptorHeap.cpp">
+      <Filter>Source Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceDescriptorHeapAllocation.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceDescriptorHeapAllocation.cpp">
+      <Filter>Source Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DescriptorHandleInfo.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CompositeEnum.ixx">
+      <Filter>Module Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceCPUVisibleDescriptorManager.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceCPUVisibleDescriptorManager.cpp">
+      <Filter>Source Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PipelineEnums.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootSignatureDef.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSODef.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PersistentAssetDependencyGroup.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetDataContexts.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetDataRequests.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetDependencyGroup.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetDependencyManager.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetDependencyTracker.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetHandle.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetManager.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetSystem.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetTypeID.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetTypeMap.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BPKArchiveReader.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_Asset.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_PersistentAsset.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PersistentAssetDependencyGroup.cpp">
+      <Filter>Source Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetDependencyGroup.cpp">
+      <Filter>Source Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetDependencyManager.cpp">
+      <Filter>Source Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetDependencyTracker.cpp">
+      <Filter>Source Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetManager.cpp">
+      <Filter>Source Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BPKArchiveReader.cpp">
+      <Filter>Source Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_Asset.cpp">
+      <Filter>Source Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_PersistentAsset.cpp">
+      <Filter>Source Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MappedFileView.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BPKZSTDContext.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileAccessMode.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileMapper.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FilePathHash.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_ZSTDContext.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MappedFileView.cpp">
+      <Filter>Source Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BPKZSTDContext.cpp">
+      <Filter>Source Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileMapper.cpp">
+      <Filter>Source Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_ZSTDContext.cpp">
+      <Filter>Source Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobSystem.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BPKUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BPKUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootParamDef.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GraphicsRootParameterBinder.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootParameterEnums.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ComputeRootParameterBinder.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceDescriptorTable.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceDescriptorType.ixx">
+      <Filter>Module Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceDescriptorTable.cpp">
+      <Filter>Source Files\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSOManager.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSOManager.cpp">
+      <Filter>Source Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BPSDef.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BPSReader.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSOData.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BPSWriter.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MSVCConcepts.ixx">
+      <Filter>Module Files\Concepts</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneNode.ixx">
+      <Filter>Module Files\Scene Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneGraph.ixx">
+      <Filter>Module Files\Scene Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneNodeID.ixx">
+      <Filter>Module Files\Scene Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneGraphEdge.ixx">
+      <Filter>Module Files\Scene Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneGraphEdge.cpp">
+      <Filter>Source Files\Scene Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneNode.cpp">
+      <Filter>Source Files\Scene Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneGraph.cpp">
+      <Filter>Source Files\Scene Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ApplicationStateStack.ixx">
+      <Filter>Module Files\Application State</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_ApplicationState.ixx">
+      <Filter>Module Files\Application State</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_ApplicationState.cpp">
+      <Filter>Source Files\Application State</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ApplicationStateID.ixx">
+      <Filter>Module Files\Application State</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ApplicationStateMap.ixx">
+      <Filter>Module Files\Application State</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ApplicationStateStackRequestBundle.ixx">
+      <Filter>Module Files\Application State</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ApplicationStateStackRequest.ixx">
+      <Filter>Module Files\Application State</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ApplicationStateStackRequestBundle.cpp">
+      <Filter>Source Files\Application State</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ApplicationStateStack.cpp">
+      <Filter>Source Files\Application State</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GameState.ixx">
+      <Filter>Module Files\Application State\States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ApplicationStates.ixx">
+      <Filter>Module Files\Application State\States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GameState.cpp">
+      <Filter>Source Files\Application State\States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\World.ixx">
+      <Filter>Module Files\Scene Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\World.cpp">
+      <Filter>Source Files\Scene Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_ViewComponent.ixx">
+      <Filter>Module Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Components.ixx">
+      <Filter>Module Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ComponentMap.ixx">
+      <Filter>Module Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_ViewComponent.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\DxDef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="BrawlerEngine.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\TangentFramePacking.hlsli">
+      <Filter>Shader Files\Compression</Filter>
+    </None>
+    <None Include="src\NormalPacking.hlsli">
+      <Filter>Shader Files\Compression</Filter>
+    </None>
+  </ItemGroup>
+</Project>

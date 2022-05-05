@@ -1,0 +1,924 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Module Files">
+      <UniqueIdentifier>{9d8da6a5-1a99-4dce-8e68-43424a09ad68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Utilities">
+      <UniqueIdentifier>{6d6194a5-df56-403f-924b-ef9fba9fe485}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utilities">
+      <UniqueIdentifier>{df1ac62d-b71c-4faf-b394-13d484f68896}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\D3D12">
+      <UniqueIdentifier>{bf2ccad2-0613-4f66-85bb-108f3598a09e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\D3D12">
+      <UniqueIdentifier>{dbc3334e-c032-4b8c-a5c2-2c7c555cdafd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Work Submission">
+      <UniqueIdentifier>{2bcc0dd7-e772-492e-9e7f-ab998869a6aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Work Submission\Command Contexts">
+      <UniqueIdentifier>{550ac72c-49a1-4f1d-a7b5-5571c8b02b0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Threading">
+      <UniqueIdentifier>{998fdb4f-2b1d-4c27-8aed-d5e807961ceb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Threading">
+      <UniqueIdentifier>{280c6b73-a420-4624-a978-8be6ff5164a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Work Submission">
+      <UniqueIdentifier>{25cdc881-0f9c-43db-9217-8daeac020973}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Work Submission\Command Contexts">
+      <UniqueIdentifier>{b8e2a3cc-ac58-448f-9e69-393bdf34ef4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Unit Tests">
+      <UniqueIdentifier>{98e89100-2c38-48e1-98de-9392ac01a831}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Unit Tests">
+      <UniqueIdentifier>{dd07eb44-35b4-429d-a155-1b8703975394}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library Source Files">
+      <UniqueIdentifier>{3c0b0bd8-c890-443f-8941-93c496c9938d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Resources">
+      <UniqueIdentifier>{1eddf06e-ff56-44da-8aba-c3a0d3b72ec9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Resources">
+      <UniqueIdentifier>{1defa429-8217-484d-8e84-24ed383b4aa9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Pipeline State Management">
+      <UniqueIdentifier>{a1fefc27-7836-4cba-b923-db48c0db9bce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Work Submission\GPU Resource Binding">
+      <UniqueIdentifier>{907e2300-8a8e-49ba-8e01-931bbf21ec21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Pipeline State Management">
+      <UniqueIdentifier>{2be8ca80-3314-4bf2-b5fa-a03c88ee51f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Convenience Types">
+      <UniqueIdentifier>{ed8a4383-2d6b-4441-9eb5-2f21b4492a95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Resources\GPU Resource Descriptors">
+      <UniqueIdentifier>{48b3d655-9429-40c6-b95c-2db2c35b4f51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Resources\GPU Resource Descriptors">
+      <UniqueIdentifier>{8f7577a0-c940-4505-a6a4-1362bd31c171}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Work Submission\Frame Graph">
+      <UniqueIdentifier>{92f40f8b-f7a7-4a4d-ab3b-d97d90d89eba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Work Submission\Frame Graph">
+      <UniqueIdentifier>{246ec2eb-20ca-4107-9208-00c8fb11a5af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Work Submission\Frame Graph\Blackboard">
+      <UniqueIdentifier>{fe911240-91fc-421a-b153-8c358e1b6394}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Work Submission\Frame Graph\Blackboard">
+      <UniqueIdentifier>{4c06d846-8c83-499c-813c-120647f31f66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Work Submission\Frame Graph\Compilation">
+      <UniqueIdentifier>{1666afcc-8217-4ea6-a1f8-c59bb0c7aad9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Work Submission\Frame Graph\Compilation">
+      <UniqueIdentifier>{893b8135-931a-4226-b3d5-88074d1cfe4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management">
+      <UniqueIdentifier>{78625811-2a0f-450f-b112-a3c02e84dfe7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management">
+      <UniqueIdentifier>{245bbd2f-176a-4788-b242-f229bda560e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization">
+      <UniqueIdentifier>{51064746-0420-4fd0-9f26-6482539d8290}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization">
+      <UniqueIdentifier>{5e676e5b-eb66-4f91-a828-003f66655fb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker">
+      <UniqueIdentifier>{e27690c9-9feb-412b-be7f-a10c0dde1dfa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker">
+      <UniqueIdentifier>{73c497d8-9988-4117-983c-f532cf45fc01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Work Submission\Frame Graph\Execution">
+      <UniqueIdentifier>{e84139cc-0f9c-467c-a397-a5cb88094583}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Work Submission\Frame Graph\Execution">
+      <UniqueIdentifier>{e78f6402-e422-4681-8100-4df41153bd12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Win32">
+      <UniqueIdentifier>{bd1776d3-f9a1-48c2-b77c-631751265ec5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Unit Tests\Resource State Tracking">
+      <UniqueIdentifier>{b75d8088-821f-4796-ad83-5c618053dfe1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Unit Tests\Resource State Tracking">
+      <UniqueIdentifier>{7cc63d24-bbbb-4f7e-a9e8-160ace06a3d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Resources\GPU Resource Memory Allocation">
+      <UniqueIdentifier>{b25caf3c-bdb9-4bed-9707-960a2516a80a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Resources\GPU Resource Memory Allocation">
+      <UniqueIdentifier>{dda543e9-7ed7-4f1f-8be0-93fe3e1fe2bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Resources\D3D12 Resource Containers">
+      <UniqueIdentifier>{775cb9c5-a30b-42c7-b7a9-4190b58de410}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Resources\D3D12 Resource Containers">
+      <UniqueIdentifier>{f3055e2c-53b3-4645-9ed7-25c5095f2660}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\D3D12\Residency Management">
+      <UniqueIdentifier>{7153580f-a020-4e4f-b365-6078d4119762}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\D3D12\Residency Management">
+      <UniqueIdentifier>{e8f35346-58d8-4d6d-83dc-446efd959421}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Polymorphism Traits">
+      <UniqueIdentifier>{6eb989b3-10a6-4528-9e03-2c5fc337fa0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Profiling">
+      <UniqueIdentifier>{16fe4343-5490-422e-81fc-91c9c74fb36f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Profiling">
+      <UniqueIdentifier>{5634ecec-d704-4622-a6f3-0f364271268a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Memory Allocation">
+      <UniqueIdentifier>{f012de16-98d3-4676-8cf8-afb00075fbeb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Memory Allocation">
+      <UniqueIdentifier>{54bb507b-8820-4b22-a40c-2c1700e1015c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Resources\Buffer Resource Types">
+      <UniqueIdentifier>{fbd5bfca-6ab6-4025-b1cd-111fd41e732c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Resources\Buffer Resource Types">
+      <UniqueIdentifier>{4abc0286-8e73-4caa-b767-679d9497220a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Resources\Buffer Resource Types\Buffer Sub-Allocation Types">
+      <UniqueIdentifier>{d771b987-64f9-47d8-887f-99342499b7f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Resources\Buffer Resource Types\Buffer Sub-Allocation Types">
+      <UniqueIdentifier>{4c0f276d-f7c4-407e-a80b-10278ab3c215}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Resources\Texture Resource Types">
+      <UniqueIdentifier>{8469c20b-1feb-4787-b358-b1f9266e888c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Resources\Texture Resource Types\2D Texture Resource Types">
+      <UniqueIdentifier>{00ee8c6a-2bc3-4b78-8963-fedfbf549e9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Utilities\D3D12">
+      <UniqueIdentifier>{dbfb47c6-b45c-4219-bb56-2bae14afd149}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Resources\Texture Resource Types">
+      <UniqueIdentifier>{8664c5be-2112-42bd-a382-8b7c6d9a481f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Resources\Texture Resource Types\2D Texture Resource Types">
+      <UniqueIdentifier>{c9db52eb-47d8-4dbe-8e1b-422a776cbec7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Resources\Texture Resource Types\General Texture Resource Types">
+      <UniqueIdentifier>{63e0028c-4574-43e0-aa7c-5a36c6819b8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Resources\Texture Resource Types\General Texture Resource Types">
+      <UniqueIdentifier>{08e80aa5-b01c-4cd7-be8b-50523d9f35b2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\GeneralUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GeneralUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUDevice.ixx">
+      <Filter>Module Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUDevice.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCommandManager.ixx">
+      <Filter>Module Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EngineUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCommandManager.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCommandContextVault.ixx">
+      <Filter>Module Files\GPU Work Submission</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DirectContext.ixx">
+      <Filter>Module Files\GPU Work Submission\Command Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCommandContext.ixx">
+      <Filter>Module Files\GPU Work Submission\Command Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ComputeContext.ixx">
+      <Filter>Module Files\GPU Work Submission\Command Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CopyContext.ixx">
+      <Filter>Module Files\GPU Work Submission\Command Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Job.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobCounter.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobGroup.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobPriority.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobRunner.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobSystem.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadLocalResources.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadSafeQueue.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThread.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThreadPool.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CoroutineUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Job.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobCounter.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobGroup.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobRunner.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThread.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThreadPool.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CoroutineUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadingUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadingUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CopyContext.cpp">
+      <Filter>Source Files\GPU Work Submission\Command Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DirectContext.cpp">
+      <Filter>Source Files\GPU Work Submission\Command Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ComputeContext.cpp">
+      <Filter>Source Files\GPU Work Submission\Command Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer.ixx">
+      <Filter>Module Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EngineUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32Util.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32Util.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootSignatureTest.ixx">
+      <Filter>Module Files\Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootSignatureTest.cpp">
+      <Filter>Source Files\Unit Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_GPUResource.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_GPUResource.cpp">
+      <Filter>Source Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceInitializationInfo.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceAccessMode.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootSignatureDatabase.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootSignatureDatabase.cpp">
+      <Filter>Source Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceBinder.ixx">
+      <Filter>Module Files\GPU Work Submission\GPU Resource Binding</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ReflectionUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Functional.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceDescriptorHeap.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceDescriptorHeap.cpp">
+      <Filter>Source Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BindlessSRVAllocation.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DescriptorTableBuilder.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DescriptorTableBuilder.cpp">
+      <Filter>Source Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PerFrameDescriptorTable.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PerFrameDescriptorTable.cpp">
+      <Filter>Source Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DescriptorHandleInfo.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BindlessSRVAllocation.cpp">
+      <Filter>Source Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_DescriptorTable.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_DescriptorTable.cpp">
+      <Filter>Source Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BindlessSRVDescriptorTable.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BindlessSRVDescriptorTable.cpp">
+      <Filter>Source Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSODatabase.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSODatabase.cpp">
+      <Filter>Source Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ScopedGPUResourceMapping.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCommandQueueType.ixx">
+      <Filter>Module Files\GPU Work Submission</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadSafeMap.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_RenderModule.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraph.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraph.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphBuilder.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderPass.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_RenderPass.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_RenderModule.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ScopedSharedLock.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_GPUResourceHeapManager.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceHeapPool.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceHeap.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MathUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceAllocationInfo.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Tier1GPUResourceHeapManager.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Tier2GPUResourceHeapManager.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUMemoryBudgetInfo.ixx">
+      <Filter>Module Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphResourceDependency.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderPassBundle.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphBuilder.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphBlackboard.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Blackboard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphBlackboardComponent.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Blackboard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphBlackboardComponentMap.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Blackboard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphBlackboard.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\Blackboard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphExecutionContext.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SortedVector.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderPassBundle.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TransientGPUResourceManager.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TransientGPUResourceManager.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCapabilities.ixx">
+      <Filter>Module Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceLifetimeType.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphExecutionContext.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceSpecialInitializationMethod.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OptionalRef.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTVDSVHandle.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUExecutionModule.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Compilation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUExecutionModule.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\Compilation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphCompilation.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Compilation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphInjection.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Compilation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AliasedGPUMemoryManager.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Compilation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AliasedGPUMemoryManager.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\Compilation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CompositeEnum.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TransientGPUResourceAliasTracker.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TransientGPUResourceAliasTracker.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceStateManagement.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceUsageAnalyzer.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceStateZone.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceStateZoneMap.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceUsageAnalyzer.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceEvent.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceEventManager.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceStateZoneOptimizer.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_ResourceStateZoneOptimizerState.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceStateZoneOptimizer.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ReadResourceStateZoneOptimizerState.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceStateZoneOptimizerStateID.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ReadResourceStateZoneOptimizerState.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IgnoreResourceStateZoneOptimizerState.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IgnoreResourceStateZoneOptimizerState.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceStateTracker.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceStateTracker.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceSpecialInitializationState.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BaseGPUResourceStateTrackerState.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceStateTrackerStateID.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceBarrierTypeSelectorState.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ImmediateGPUResourceBarrierState.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SplitGPUResourceBarrierState.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BaseGPUResourceStateTrackerState.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCommandListRecorder.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TypeTraits.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUExecutionModuleRecordContext.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCommandContexts.ixx">
+      <Filter>Module Files\GPU Work Submission\Command Contexts</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceAccessManager.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceAccessManager.cpp">
+      <Filter>Source Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCommandContextSink.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCommandContextGroup.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCommandContextGroup.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCommandContextSubmissionPoint.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCommandContextSubmissionPoint.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCommandContextSink.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCommandQueue.ixx">
+      <Filter>Module Files\GPU Work Submission</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUFence.ixx">
+      <Filter>Module Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUFence.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SafeHandle.ixx">
+      <Filter>Module Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUCommandQueueContextType.ixx">
+      <Filter>Module Files\GPU Work Submission</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceStateTrackingTest.ixx">
+      <Filter>Module Files\Unit Tests\Resource State Tracking</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceStateTrackingTest.cpp">
+      <Filter>Source Files\Unit Tests\Resource State Tracking</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceStateTrackingTestModule.ixx">
+      <Filter>Module Files\Unit Tests\Resource State Tracking</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceStateTrackingTestModule.cpp">
+      <Filter>Source Files\Unit Tests\Resource State Tracking</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphBuilding.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphFenceCollection.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphFenceCollection.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceAllocation.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Memory Allocation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceAllocation.cpp">
+      <Filter>Source Files\GPU Resources\GPU Resource Memory Allocation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceAllocationHandle.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Memory Allocation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceAllocationHandle.cpp">
+      <Filter>Source Files\GPU Resources\GPU Resource Memory Allocation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadSafeVector.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceUsageTracker.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceUsageTracker.cpp">
+      <Filter>Source Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PersistentGPUResourceManager.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PersistentGPUResourceManager.cpp">
+      <Filter>Source Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AsyncGPUResourceBuilder.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Like_T.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3D12ResourceContainer.ixx">
+      <Filter>Module Files\GPU Resources\D3D12 Resource Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommittedD3D12ResourceContainer.ixx">
+      <Filter>Module Files\GPU Resources\D3D12 Resource Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PlacedD3D12ResourceContainer.ixx">
+      <Filter>Module Files\GPU Resources\D3D12 Resource Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3D12ResourceContainer.cpp">
+      <Filter>Source Files\GPU Resources\D3D12 Resource Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PlacedD3D12ResourceContainer.cpp">
+      <Filter>Source Files\GPU Resources\D3D12 Resource Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommittedD3D12ResourceContainer.cpp">
+      <Filter>Source Files\GPU Resources\D3D12 Resource Containers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_PageableGPUObject.ixx">
+      <Filter>Module Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_PageableGPUObject.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResidencyManager.ixx">
+      <Filter>Module Files\D3D12\Residency Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResidencyManager.cpp">
+      <Filter>Source Files\D3D12\Residency Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_FreeGPUResidencyState.ixx">
+      <Filter>Module Files\D3D12\Residency Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FreeGPUResidencyInfo.ixx">
+      <Filter>Module Files\D3D12\Residency Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EvictPageableGPUObjectState.ixx">
+      <Filter>Module Files\D3D12\Residency Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EvictPageableGPUObjectState.cpp">
+      <Filter>Source Files\D3D12\Residency Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DeletePageableGPUObjectState.ixx">
+      <Filter>Module Files\D3D12\Residency Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DeletePageableGPUObjectState.cpp">
+      <Filter>Source Files\D3D12\Residency Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PolymorphismInfo.ixx">
+      <Filter>Module Files\Polymorphism Traits</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PolymorphicAdapter.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FreeGPUResidencyStateTraits.ixx">
+      <Filter>Module Files\Polymorphism Traits</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FreeGPUResidencyStateID.ixx">
+      <Filter>Module Files\D3D12\Residency Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceCreationType.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Timer.ixx">
+      <Filter>Module Files\Profiling</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Timer.cpp">
+      <Filter>Source Files\Profiling</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceStateZoneOptimizerStateTraits.ixx">
+      <Filter>Module Files\Polymorphism Traits</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BaseResourceStateZoneOptimizerState.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BaseResourceStateZoneOptimizerState.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceStateTrackerStateTraits.ixx">
+      <Filter>Module Files\Polymorphism Traits</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_GPUResourceStateTrackerState.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceStateZoneMap.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUVendor.ixx">
+      <Filter>Module Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TLSFAllocator.ixx">
+      <Filter>Module Files\Memory Allocation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TLSFMemoryBlock.ixx">
+      <Filter>Module Files\Memory Allocation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TLSFAllocator.cpp">
+      <Filter>Source Files\Memory Allocation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TLSFMemoryBlock.cpp">
+      <Filter>Source Files\Memory Allocation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TLSFAllocationRequestInfo.ixx">
+      <Filter>Module Files\Memory Allocation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BufferResource.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BufferResourceInitializationInfo.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BufferSubAllocationManager.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_BufferSubAllocation.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_BufferSubAllocation.cpp">
+      <Filter>Source Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BufferSubAllocationManager.cpp">
+      <Filter>Source Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BufferResource.cpp">
+      <Filter>Source Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ConstantBufferSubAllocation.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types\Buffer Sub-Allocation Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootDescriptors.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HLSLUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StructuredBufferSubAllocation.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types\Buffer Sub-Allocation Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UAVCounterSubAllocation.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types\Buffer Sub-Allocation Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UAVCounterSubAllocation.cpp">
+      <Filter>Source Files\GPU Resources\Buffer Resource Types\Buffer Sub-Allocation Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BufferSubAllocationReservation.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BufferSubAllocationReservation.cpp">
+      <Filter>Source Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture2D.ixx">
+      <Filter>Module Files\GPU Resources\Texture Resource Types\2D Texture Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture2DBuilders.ixx">
+      <Filter>Module Files\GPU Resources\Texture Resource Types\2D Texture Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture2D.cpp">
+      <Filter>Source Files\GPU Resources\Texture Resource Types\2D Texture Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceViews.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderResourceView.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3D12Util.ixx">
+      <Filter>Module Files\Utilities\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3D12UtilGeneral.ixx">
+      <Filter>Module Files\Utilities\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3D12UtilFormats.ixx">
+      <Filter>Module Files\Utilities\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UnorderedAccessView.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ConstantBufferView.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceBindlessSRVManager.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BindlessSRVSentinel.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BindlessSRVSentinel.cpp">
+      <Filter>Source Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceBindlessSRVManager.cpp">
+      <Filter>Source Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TextureCopyBufferSubAllocation.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types\Buffer Sub-Allocation Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TextureSubResource.ixx">
+      <Filter>Module Files\GPU Resources\Texture Resource Types\General Texture Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TextureSubResource.cpp">
+      <Filter>Source Files\GPU Resources\Texture Resource Types\General Texture Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TextureCopyBufferSubAllocation.cpp">
+      <Filter>Source Files\GPU Resources\Buffer Resource Types\Buffer Sub-Allocation Types</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\DxDef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,213 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Module Files">
+      <UniqueIdentifier>{2b234974-803f-4c07-a3e9-e199b43bd21d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Utilities">
+      <UniqueIdentifier>{bc3afadd-8eb7-477f-8ac3-b376d9305e99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utilities">
+      <UniqueIdentifier>{3373b908-0e3d-4504-9daf-9e3735fa12b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Threading">
+      <UniqueIdentifier>{d555b49a-f3c0-48eb-a3de-036303127061}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Threading">
+      <UniqueIdentifier>{9f5dff90-1516-4e92-b4e0-266def2c9471}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\File I/O">
+      <UniqueIdentifier>{6a8225c1-b8f1-4e04-9f02-f23ca83fc39a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File I/O">
+      <UniqueIdentifier>{92a70bea-afc6-4889-bedd-9886d2deb1f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Asset Pipeline">
+      <UniqueIdentifier>{2bd12369-a946-4b11-aa37-59582c85f623}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Asset Pipeline">
+      <UniqueIdentifier>{e1e9dfb3-0472-44cb-ac6c-2cc03e7407da}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GeneralUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GeneralUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Application.ixx">
+      <Filter>Module Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ExceptionReporter.ixx">
+      <Filter>Module Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ExceptionReporter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StringHasher.ixx">
+      <Filter>Module Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PackerSettings.ixx">
+      <Filter>Module Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThread.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThreadPool.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThread.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThreadPool.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Job.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobCounter.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobGroup.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobRunner.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Job.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobCounter.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobGroup.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobPriority.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobRunner.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadLocalResources.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadSafeQueue.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadingUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadingUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CoroutineUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CoroutineUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HashProvider.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HashProvider.cpp">
+      <Filter>Source Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32Util.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32Util.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512Hasher.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512Hasher.cpp">
+      <Filter>Source Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EngineUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EngineUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512Hash.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512Hash.cpp">
+      <Filter>Source Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobSystem.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetCompiler.ixx">
+      <Filter>Module Files\Asset Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AppParams.ixx">
+      <Filter>Module Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetCompiler.cpp">
+      <Filter>Source Files\Asset Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetCompilerContext.ixx">
+      <Filter>Module Files\Asset Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAArchive.ixx">
+      <Filter>Module Files\Asset Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAMetadata.ixx">
+      <Filter>Module Files\Asset Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAArchive.cpp">
+      <Filter>Source Files\Asset Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDFrame.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDContext.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDContext.cpp">
+      <Filter>Source Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDFrame.cpp">
+      <Filter>Source Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCALinker.ixx">
+      <Filter>Module Files\Asset Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCALinker.cpp">
+      <Filter>Source Files\Asset Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BPKFactory.ixx">
+      <Filter>Module Files\Asset Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BPKFactory.cpp">
+      <Filter>Source Files\Asset Pipeline</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Win32Def.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
