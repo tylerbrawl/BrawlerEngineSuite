@@ -5,6 +5,7 @@ module;
 
 module Brawler.Application;
 import Brawler.AppParams;
+import Brawler.D3D12.PipelineEnums;
 
 import Brawler.Skeleton;
 
@@ -31,7 +32,7 @@ namespace Brawler
 	{
 		mThreadPool.SetInitialized();
 
-		mRenderer.Initialize();
+		mRenderer.Initialize<Brawler::RootSignatures::RootSignatureID, Brawler::PSOs::PSOID>();
 	}
 
 	void Application::Run(AppParams&& appParams)

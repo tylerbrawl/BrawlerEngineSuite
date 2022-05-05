@@ -5,9 +5,6 @@ module;
 
 export module Brawler.D3D12.Texture2DBuilders;
 
-
-
-
 namespace Brawler
 {
 	namespace D3D12

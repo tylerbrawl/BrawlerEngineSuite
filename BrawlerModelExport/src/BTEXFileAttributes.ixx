@@ -29,8 +29,8 @@ export namespace Brawler
 			aforementioned VersionedBTEXHeaderV1 header as the DDSFileSize member.
 			*/
 
-			static constexpr std::string_view MAGIC = "BTEX";
-			static constexpr std::uint32_t CURRENT_VERSION = 1;
+			constexpr std::string_view MAGIC = "BTEX";
+			constexpr std::uint32_t CURRENT_VERSION = 1;
 
 			struct CommonBTEXHeader
 			{
