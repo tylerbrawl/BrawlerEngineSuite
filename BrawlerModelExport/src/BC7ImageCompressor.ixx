@@ -97,6 +97,7 @@ export namespace Brawler
 		void InitializeSourceTextureResource(D3D12::FrameGraphBuilder& frameGraphBuilder);
 
 		D3D12::RenderPassBundle CreateSourceTextureInitializationRenderPassBundle() const;
+		D3D12::RenderPassBundle CreateCompressionRenderPassBundle() const;
 
 	private:
 		InitInfo mInitInfo;

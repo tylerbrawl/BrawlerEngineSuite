@@ -368,6 +368,23 @@ namespace Brawler
 		return textureCopyPassBundle;
 	}
 
+	D3D12::RenderPassBundle BC7ImageCompressor::CreateCompressionRenderPassBundle() const
+	{
+		static constexpr std::uint32_t MAX_BLOCKS_IN_BATCH = 64;
+		
+		const std::size_t numXBlocks = std::max<std::size_t>(1, (mInitInfo.SrcImage.Width + 3) >> 2);
+		const std::size_t numYBlocks = std::max<std::size_t>(1, (mInitInfo.SrcImage.Height + 3) >> 2);
+		const std::size_t numTotalBlocks = (numXBlocks * numYBlocks);
+
+		std::uint32_t numBlocksRemaining = static_cast<std::uint32_t>(numTotalBlocks);
+		std::uint32_t startBlockID = 0;
+
+		while (numBlocksRemaining > 0)
+		{
+			const std::uint32_t numBlocksInCurrBatch = std::min<std::uint32_t>(numBlocksRemaining, MAX_BLOCKS_IN_BATCH);
+		}
+	}
+
 	/*
 	void BC7ImageCompressor::CompressImage(DirectX::Image& destImage)
 	{
