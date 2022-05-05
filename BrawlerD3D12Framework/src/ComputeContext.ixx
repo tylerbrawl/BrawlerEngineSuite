@@ -5,12 +5,23 @@ module;
 export module Brawler.D3D12.ComputeContext;
 import Brawler.D3D12.GPUCommandContext;
 import Brawler.D3D12.GPUResourceBinder;
-import Brawler.PSOs.PSODefinition;
-import Brawler.PSOs.PSOID;
 import Util.Engine;
 import Brawler.D3D12.PSODatabase;
 import Brawler.D3D12.RootSignatureDatabase;
 import Brawler.D3D12.GPUCommandQueueType;
+import Brawler.D3D12.PipelineType;
+
+namespace Brawler
+{
+	namespace PSOs
+	{
+		template <auto PSOIdentifier>
+		extern consteval auto GetPipelineType();
+
+		template <auto PSOIdentifier>
+		extern consteval auto GetRootSignature();
+	}
+}
 
 export namespace Brawler
 {
@@ -29,7 +40,7 @@ export namespace Brawler
 
 			void RecordCommandListIMPL(const std::function<void(ComputeContext&)>& recordJob) override;
 
-			template <Brawler::PSOs::PSOID PSOIdentifier>
+			template <auto PSOIdentifier>
 				requires (Brawler::PSOs::GetPipelineType<PSOIdentifier>() == Brawler::PSOs::PipelineType::COMPUTE)
 			GPUResourceBinder<PSOIdentifier> SetPipelineState();
 
@@ -44,11 +55,11 @@ namespace Brawler
 {
 	namespace D3D12
 	{
-		template <Brawler::PSOs::PSOID PSOIdentifier>
+		template <auto PSOIdentifier>
 			requires (Brawler::PSOs::GetPipelineType<PSOIdentifier>() == Brawler::PSOs::PipelineType::COMPUTE)
 		GPUResourceBinder<PSOIdentifier> ComputeContext::SetPipelineState()
 		{
-			GetCommandList().SetPipelineState(&(Util::Engine::GetPSODatabase().GetPipelineState<PSOIdentifier>()));
+			GetCommandList().SetPipelineState(&(PSODatabase<decltype(PSOIdentifier)>::GetInstance().GetPipelineState<PSOIdentifier>()));
 
 			// Make sure that the root signature is properly set. The D3D12 API states that
 			// changing the pipeline state does *NOT* set the root signature; we must do that
@@ -58,7 +69,8 @@ namespace Brawler
 			// signature, don't be. The D3D12 API guarantees that doing this does *NOT*
 			// invalidate any currently set root signature bindings, which is where the bulk of
 			// the resource binding cost comes from.
-			GetCommandList().SetComputeRootSignature(&(Util::Engine::GetRootSignatureDatabase().GetRootSignature<Brawler::PSOs::GetRootSignature<PSOIdentifier>()>()));
+			constexpr auto ROOT_SIGNATURE_ID = Brawler::PSOs::GetRootSignature<PSOIdentifier>();
+			GetCommandList().SetComputeRootSignature(&(RootSignatureDatabase<decltype(ROOT_SIGNATURE_ID)>::GetInstance().GetRootSignature<ROOT_SIGNATURE_ID>()));
 
 			return GPUResourceBinder<PSOIdentifier>{ GetCommandList() };
 		}

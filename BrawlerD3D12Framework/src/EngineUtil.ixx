@@ -8,8 +8,6 @@ export namespace Brawler
 {
 	namespace D3D12
 	{
-		class RootSignatureDatabase;
-		class PSODatabase;
 		class GPUResourceDescriptorHeap;
 		struct GPUCapabilities;
 		class GPUCommandManager;
@@ -23,9 +21,6 @@ export namespace Util
 	namespace Engine
 	{
 		constexpr std::size_t MAX_FRAMES_IN_FLIGHT = 2;
-		
-		Brawler::D3D12::RootSignatureDatabase& GetRootSignatureDatabase();
-		Brawler::D3D12::PSODatabase& GetPSODatabase();
 
 		Brawler::D3D12::GPUCommandManager& GetGPUCommandManager();
 

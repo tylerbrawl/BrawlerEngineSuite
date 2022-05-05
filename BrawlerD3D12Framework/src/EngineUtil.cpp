@@ -31,20 +31,6 @@ namespace Util
 {
 	namespace Engine
 	{
-		Brawler::D3D12::RootSignatureDatabase& GetRootSignatureDatabase()
-		{
-			thread_local Brawler::D3D12::RootSignatureDatabase& rsDatabase{ GetRenderer().GetRootSignatureDatabase() };
-
-			return rsDatabase;
-		}
-
-		Brawler::D3D12::PSODatabase& GetPSODatabase()
-		{
-			thread_local Brawler::D3D12::PSODatabase& psoDatabase{ GetRenderer().GetPSODatabase() };
-
-			return psoDatabase;
-		}
-
 		Brawler::D3D12::GPUCommandManager& GetGPUCommandManager()
 		{
 			thread_local Brawler::D3D12::GPUCommandManager& cmdManager{ GetRenderer().GetGPUCommandManager() };

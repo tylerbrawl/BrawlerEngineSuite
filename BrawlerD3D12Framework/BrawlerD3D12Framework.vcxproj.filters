@@ -67,9 +67,6 @@
     <Filter Include="Module Files\GPU Work Submission\GPU Resource Binding">
       <UniqueIdentifier>{907e2300-8a8e-49ba-8e01-931bbf21ec21}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Pipeline State Management">
-      <UniqueIdentifier>{2be8ca80-3314-4bf2-b5fa-a03c88ee51f8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Module Files\Convenience Types">
       <UniqueIdentifier>{ed8a4383-2d6b-4441-9eb5-2f21b4492a95}</UniqueIdentifier>
     </Filter>
@@ -306,9 +303,6 @@
     <ClCompile Include="src\Renderer.ixx">
       <Filter>Module Files\D3D12</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer.cpp">
-      <Filter>Source Files\D3D12</Filter>
-    </ClCompile>
     <ClCompile Include="src\EngineUtil.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -338,9 +332,6 @@
     </ClCompile>
     <ClCompile Include="src\RootSignatureDatabase.ixx">
       <Filter>Module Files\Pipeline State Management</Filter>
-    </ClCompile>
-    <ClCompile Include="src\RootSignatureDatabase.cpp">
-      <Filter>Source Files\Pipeline State Management</Filter>
     </ClCompile>
     <ClCompile Include="src\GPUResourceBinder.ixx">
       <Filter>Module Files\GPU Work Submission\GPU Resource Binding</Filter>
@@ -392,9 +383,6 @@
     </ClCompile>
     <ClCompile Include="src\PSODatabase.ixx">
       <Filter>Module Files\Pipeline State Management</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PSODatabase.cpp">
-      <Filter>Source Files\Pipeline State Management</Filter>
     </ClCompile>
     <ClCompile Include="src\ScopedGPUResourceMapping.ixx">
       <Filter>Module Files\GPU Resources</Filter>
@@ -914,6 +902,15 @@
     </ClCompile>
     <ClCompile Include="src\TextureCopyBufferSubAllocation.cpp">
       <Filter>Source Files\GPU Resources\Buffer Resource Types\Buffer Sub-Allocation Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer.cpp">
+      <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootParameterType.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PipelineType.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
