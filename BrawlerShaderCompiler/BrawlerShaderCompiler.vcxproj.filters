@@ -1,0 +1,270 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Module Files">
+      <UniqueIdentifier>{495f8fb3-04f1-4393-9d23-39a5c72d1cb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Threading">
+      <UniqueIdentifier>{491f970a-7f81-4b7c-ac94-1d4dd34aaa05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Threading">
+      <UniqueIdentifier>{4ffecee8-a225-4f60-9dde-5b94e69ded34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Utilities">
+      <UniqueIdentifier>{bc162faa-1b27-4767-9e6f-051047a39ffb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utilities">
+      <UniqueIdentifier>{5059c5ed-d9a8-4588-a158-93b3bf93476a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Pipeline State Object Management">
+      <UniqueIdentifier>{db0eab49-bf6c-417d-a32f-d31cb11c087d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Pipeline State Object Management\PSO Field Resolution">
+      <UniqueIdentifier>{31c891d3-de84-4818-a88e-b064f35d46e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\File Writing">
+      <UniqueIdentifier>{44d67ca6-ab40-4a26-baf0-6b7ca6c0274e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File Writing">
+      <UniqueIdentifier>{1af57505-3d21-465f-a8ae-802f9d38125c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Shader Management">
+      <UniqueIdentifier>{549e1147-8fa9-41e7-852b-2a3610a57c3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Root Signature Management">
+      <UniqueIdentifier>{3a9459ac-0db7-494d-8ba7-166c8e505868}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Shader Profiles">
+      <UniqueIdentifier>{abf0eb01-b559-460f-919b-c9ce9c351fa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\File Writing\Source File Writers">
+      <UniqueIdentifier>{c038e14e-b63d-4b8e-bfdc-4f9c7e61c950}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Convenience Types">
+      <UniqueIdentifier>{a52eaacf-045a-4e5a-87e9-ccd18af3d1d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Pipeline State Object Management">
+      <UniqueIdentifier>{a3dd81d6-cd84-46cd-a345-ee9fbafa4ffc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Pipeline State Object Management\PSO Field Resolution">
+      <UniqueIdentifier>{abd6c465-9261-43e7-a50e-1ebeb7b8f8fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File Writing\Source File Writers">
+      <UniqueIdentifier>{e2917433-2562-4780-ae79-6eea1a307685}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Win32">
+      <UniqueIdentifier>{529f3051-ff83-4100-8aa8-759202a9b39b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Win32">
+      <UniqueIdentifier>{a3ff9619-181f-4f27-a9a9-2292767ece9f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Application.ixx">
+      <Filter>Module Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Job.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobCounter.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobGroup.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobPriority.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobRunner.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobSystem.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadLocalResources.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadSafeQueue.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThread.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThreadPool.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Job.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobCounter.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobGroup.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobRunner.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThread.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WorkerThreadPool.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CoroutineUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GeneralUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadingUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CoroutineUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GeneralUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadingUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32Util.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32Util.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSOID.ixx">
+      <Filter>Module Files\Pipeline State Object Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSOBuilder.ixx">
+      <Filter>Module Files\Pipeline State Object Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSODefinition.ixx">
+      <Filter>Module Files\Pipeline State Object Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSOField.ixx">
+      <Filter>Module Files\Pipeline State Object Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_PSOFieldResolver.ixx">
+      <Filter>Module Files\Pipeline State Object Management\PSO Field Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileWriterNode.ixx">
+      <Filter>Module Files\File Writing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileWriterNode.cpp">
+      <Filter>Source Files\File Writing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSOShaderFieldResolver.ixx">
+      <Filter>Module Files\Pipeline State Object Management\PSO Field Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilationParams.ixx">
+      <Filter>Module Files\Shader Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileWriteUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileWriteUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileStrings.ixx">
+      <Filter>Module Files\File Writing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootSignatureID.ixx">
+      <Filter>Module Files\Root Signature Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootSignatureDefinition.ixx">
+      <Filter>Module Files\Root Signature Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootParameters.ixx">
+      <Filter>Module Files\Root Signature Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootSignatureBuilder.ixx">
+      <Filter>Module Files\Root Signature Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderProfileID.ixx">
+      <Filter>Module Files\Shader Profiles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderProfileDefinition.ixx">
+      <Filter>Module Files\Shader Profiles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootSignatureDefinitionsFileWriter.ixx">
+      <Filter>Module Files\File Writing\Source File Writers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootSignatureBuilderCreators.ixx">
+      <Filter>Module Files\Root Signature Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootParameterDefinition.ixx">
+      <Filter>Module Files\Root Signature Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_SourceFileWriter.ixx">
+      <Filter>Module Files\File Writing\Source File Writers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootSignatureIDsFileWriter.ixx">
+      <Filter>Module Files\File Writing\Source File Writers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSOIDsFileWriter.ixx">
+      <Filter>Module Files\File Writing\Source File Writers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSODefinitionsFileWriter.ixx">
+      <Filter>Module Files\File Writing\Source File Writers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSOBuilderCreators.ixx">
+      <Filter>Module Files\Pipeline State Object Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ReflectionUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ConvenienceTypes.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Functional.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\InputLayoutFieldResolver.ixx">
+      <Filter>Module Files\Pipeline State Object Management\PSO Field Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\InputLayoutFieldResolver.cpp">
+      <Filter>Source Files\Pipeline State Object Management\PSO Field Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AppParams.ixx">
+      <Filter>Module Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_SourceFileWriter.cpp">
+      <Filter>Source Files\File Writing\Source File Writers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DLLManager.ixx">
+      <Filter>Module Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DLLManager.cpp">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootParameterEnumsFileWriter.ixx">
+      <Filter>Module Files\File Writing\Source File Writers</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\DxDef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

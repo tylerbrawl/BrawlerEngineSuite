@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{8cf7ee95-ab9a-400a-aae6-60ce9f93efe1}</ProjectGuid>
+    <RootNamespace>BrawlerResourceStreaming</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\BrawlerFilePacker\src\Win32Util.cpp" />
+    <ClCompile Include="..\BrawlerFilePacker\src\Win32Util.ixx" />
+    <ClCompile Include="src\Application.cpp" />
+    <ClCompile Include="src\Application.ixx" />
+    <ClCompile Include="src\AssetDataContexts.ixx" />
+    <ClCompile Include="src\AssetDataRequests.ixx" />
+    <ClCompile Include="src\AssetDependencyGroup.cpp" />
+    <ClCompile Include="src\AssetDependencyGroup.ixx" />
+    <ClCompile Include="src\AssetDependencyManager.cpp" />
+    <ClCompile Include="src\AssetDependencyManager.ixx" />
+    <ClCompile Include="src\AssetDependencyTracker.cpp" />
+    <ClCompile Include="src\AssetDependencyTracker.ixx" />
+    <ClCompile Include="src\AssetHandle.ixx" />
+    <ClCompile Include="src\AssetManager.cpp" />
+    <ClCompile Include="src\AssetManager.ixx" />
+    <ClCompile Include="src\AssetSystem.ixx" />
+    <ClCompile Include="src\AssetTypeID.ixx" />
+    <ClCompile Include="src\AssetTypeMap.ixx" />
+    <ClCompile Include="src\AudioManager.cpp" />
+    <ClCompile Include="src\AudioManager.ixx" />
+    <ClCompile Include="src\AudioStreamingContext.cpp" />
+    <ClCompile Include="src\AudioStreamingContext.ixx" />
+    <ClCompile Include="src\BPKArchiveReader.cpp" />
+    <ClCompile Include="src\BPKArchiveReader.ixx" />
+    <ClCompile Include="src\BPKUtil.cpp" />
+    <ClCompile Include="src\BPKUtil.ixx" />
+    <ClCompile Include="src\BPKZSTDContext.cpp" />
+    <ClCompile Include="src\BPKZSTDContext.ixx" />
+    <ClCompile Include="src\CoroutineUtil.cpp" />
+    <ClCompile Include="src\CoroutineUtil.ixx" />
+    <ClCompile Include="src\EngineUtil.cpp" />
+    <ClCompile Include="src\EngineUtil.ixx" />
+    <ClCompile Include="src\ExceptionReporter.cpp" />
+    <ClCompile Include="src\ExceptionReporter.ixx" />
+    <ClCompile Include="src\FileAccessMode.ixx" />
+    <ClCompile Include="src\FileMapper.cpp" />
+    <ClCompile Include="src\FileMapper.ixx" />
+    <ClCompile Include="src\FilePathHash.ixx" />
+    <ClCompile Include="src\GeneralUtil.cpp" />
+    <ClCompile Include="src\GeneralUtil.ixx" />
+    <ClCompile Include="src\I_Asset.cpp" />
+    <ClCompile Include="src\I_Asset.ixx" />
+    <ClCompile Include="src\I_PersistentAsset.cpp" />
+    <ClCompile Include="src\I_PersistentAsset.ixx" />
+    <ClCompile Include="src\Job.cpp" />
+    <ClCompile Include="src\Job.ixx" />
+    <ClCompile Include="src\JobCounter.cpp" />
+    <ClCompile Include="src\JobCounter.ixx" />
+    <ClCompile Include="src\JobGroup.cpp" />
+    <ClCompile Include="src\JobGroup.ixx" />
+    <ClCompile Include="src\JobPriority.ixx" />
+    <ClCompile Include="src\JobRunner.cpp" />
+    <ClCompile Include="src\JobRunner.ixx" />
+    <ClCompile Include="src\JobSystem.ixx" />
+    <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\MappedFileView.cpp" />
+    <ClCompile Include="src\MappedFileView.ixx" />
+    <ClCompile Include="src\MathUtil.ixx" />
+    <ClCompile Include="src\PersistentAssetDependencyGroup.cpp" />
+    <ClCompile Include="src\PersistentAssetDependencyGroup.ixx" />
+    <ClCompile Include="src\StreamedAudio.cpp" />
+    <ClCompile Include="src\StreamedAudio.ixx" />
+    <ClCompile Include="src\StreamedAudioVoice.cpp" />
+    <ClCompile Include="src\StreamedAudioVoice.ixx" />
+    <ClCompile Include="src\ThreadingUtil.cpp" />
+    <ClCompile Include="src\ThreadingUtil.ixx" />
+    <ClCompile Include="src\ThreadLocalResources.ixx" />
+    <ClCompile Include="src\ThreadSafeQueue.ixx" />
+    <ClCompile Include="src\WorkerThread.cpp" />
+    <ClCompile Include="src\WorkerThread.ixx" />
+    <ClCompile Include="src\WorkerThreadPool.cpp" />
+    <ClCompile Include="src\WorkerThreadPool.ixx" />
+    <ClCompile Include="src\I_ZSTDContext.cpp" />
+    <ClCompile Include="src\I_ZSTDContext.ixx" />
+    <ClCompile Include="src\XAudio2Voice.ixx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Win32Def.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
