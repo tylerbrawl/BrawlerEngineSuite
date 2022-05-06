@@ -25,15 +25,6 @@ namespace Brawler
 			// Root Descriptors
 			D3D12_GPU_VIRTUAL_ADDRESS,
 
-			// CBVs for Descriptor Tables
-			D3D12_CONSTANT_BUFFER_VIEW_DESC,
-
-			// SRVs for Descriptor Tables
-			D3D12_SHADER_RESOURCE_VIEW_DESC,
-
-			// UAVs for Descriptor Tables
-			D3D12_UNORDERED_ACCESS_VIEW_DESC,
-
 			// Descriptor Tables
 			D3D12_GPU_DESCRIPTOR_HANDLE
 		> ;
@@ -94,35 +85,8 @@ namespace Brawler
 			}
 		};
 
-		template <typename DataElementType>
-		struct CachedRootParameterInfo<ConstantBufferView<DataElementType>> : public CachedRootParameterInfoInstantiation<2>
-		{
-			static D3D12_CONSTANT_BUFFER_VIEW_DESC GetCacheableRootParameterValue(const ConstantBufferView<DataElementType>& cbv)
-			{
-				return cbv.CreateCBVDescription();
-			}
-		};
-
-		template <DXGI_FORMAT Format, D3D12_SRV_DIMENSION ViewDimension>
-		struct CachedRootParameterInfo<ShaderResourceView<Format, ViewDimension>> : public CachedRootParameterInfoInstantiation<3>
-		{
-			static D3D12_SHADER_RESOURCE_VIEW_DESC GetCacheableRootParameterValue(const ShaderResourceView<Format, ViewDimension>& srv)
-			{
-				return srv.CreateSRVDescription();
-			}
-		};
-
-		template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
-		struct CachedRootParameterInfo<UnorderedAccessView<Format, ViewDimension>> : public CachedRootParameterInfoInstantiation<4>
-		{
-			static D3D12_UNORDERED_ACCESS_VIEW_DESC GetCacheableRootParameterValue(const UnorderedAccessView<Format, ViewDimension>& uav)
-			{
-				return uav.CreateUAVDescription();
-			}
-		};
-
 		template <>
-		struct CachedRootParameterInfo<I_DescriptorTable> : public CachedRootParameterInfoInstantiation<5>
+		struct CachedRootParameterInfo<I_DescriptorTable> : public CachedRootParameterInfoInstantiation<2>
 		{
 			static D3D12_GPU_DESCRIPTOR_HANDLE GetCacheableRootParameterValue(const I_DescriptorTable& descriptorTable)
 			{
