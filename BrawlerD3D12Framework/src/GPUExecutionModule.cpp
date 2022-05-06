@@ -30,7 +30,7 @@ namespace
 	/// (per queue).
 	/// 
 	/// To allow for greater multithreading, each GPUExecutionModule can create multiple
-	/// command lists (per queue) for recording
+	/// command lists (per queue) for recording.
 	/// </summary>
 	static constexpr std::size_t MAX_RENDER_PASSES_PER_COMMAND_LIST = 50;
 }

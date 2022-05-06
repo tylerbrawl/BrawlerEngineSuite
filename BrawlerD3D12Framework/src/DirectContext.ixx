@@ -10,6 +10,7 @@ import Brawler.D3D12.RootSignatureDatabase;
 import Brawler.D3D12.PSODatabase;
 import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.D3D12.PipelineType;
+import Brawler.D3D12.RootParameterCache;
 
 namespace Brawler
 {
@@ -48,6 +49,9 @@ export namespace Brawler
 
 		private:
 			void PerformSpecialGPUResourceInitialization(I_GPUResource& resource);
+
+		private:
+			RootParameterCache mRootParamCache;
 		};
 	}
 }
@@ -89,6 +93,8 @@ namespace Brawler
 				GetCommandList().SetGraphicsRootSignature(&(RootSignatureDatabase<decltype(ROOT_SIGNATURE_ID)>::GetInstance().GetRootSignature<ROOT_SIGNATURE_ID>()));
 			else
 				GetCommandList().SetComputeRootSignature(&(RootSignatureDatabase<decltype(ROOT_SIGNATURE_ID)>::GetInstance().GetRootSignature<ROOT_SIGNATURE_ID>()));
+
+			mRootParamCache.SetRootSignature<ROOT_SIGNATURE_ID>();
 
 			return GPUResourceBinder<PSOIdentifier>{ GetCommandList() };
 		}

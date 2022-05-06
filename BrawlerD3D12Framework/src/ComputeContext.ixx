@@ -10,6 +10,7 @@ import Brawler.D3D12.PSODatabase;
 import Brawler.D3D12.RootSignatureDatabase;
 import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.D3D12.PipelineType;
+import Brawler.D3D12.RootParameterCache;
 
 namespace Brawler
 {
@@ -45,6 +46,9 @@ export namespace Brawler
 			GPUResourceBinder<PSOIdentifier> SetPipelineState();
 
 			void Dispatch(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY, const std::uint32_t numThreadGroupsZ) const;
+
+		private:
+			RootParameterCache mRootParamCache;
 		};
 	}
 }
@@ -71,6 +75,8 @@ namespace Brawler
 			// the resource binding cost comes from.
 			constexpr auto ROOT_SIGNATURE_ID = Brawler::PSOs::GetRootSignature<PSOIdentifier>();
 			GetCommandList().SetComputeRootSignature(&(RootSignatureDatabase<decltype(ROOT_SIGNATURE_ID)>::GetInstance().GetRootSignature<ROOT_SIGNATURE_ID>()));
+
+			mRootParamCache.SetRootSignature<ROOT_SIGNATURE_ID>();
 
 			return GPUResourceBinder<PSOIdentifier>{ GetCommandList() };
 		}

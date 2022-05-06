@@ -912,6 +912,9 @@
     <ClCompile Include="src\PipelineType.ixx">
       <Filter>Module Files\Pipeline State Management</Filter>
     </ClCompile>
+    <ClCompile Include="src\RootParameterCache.ixx">
+      <Filter>Module Files\GPU Work Submission\GPU Resource Binding</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

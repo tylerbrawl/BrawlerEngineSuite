@@ -13,6 +13,7 @@ import Brawler.D3D12.GPUFence;
 import Brawler.D3D12.FrameGraphResourceDependency;
 import Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.D3D12.TextureSubResource;
+import Brawler.D3D12.I_BufferSubAllocation;
 
 export namespace Brawler
 {
@@ -173,6 +174,8 @@ export namespace Brawler
 		public:
 			void CopyBufferToTexture(const TextureSubResource& destTexture, const TextureCopyBufferSubAllocation& srcSubAllocation) const;
 			void CopyTextureToBuffer(const TextureCopyBufferSubAllocation& destSubAllocation, const TextureSubResource& srcTexture) const;
+
+			void CopyBufferToBuffer(const I_BufferSubAllocation& destSubAllocation, const I_BufferSubAllocation& srcSubAllocation) const;
 
 		private:
 			Microsoft::WRL::ComPtr<Brawler::D3D12CommandAllocator> mCmdAllocator;
@@ -350,6 +353,23 @@ namespace Brawler
 				0,
 				&srcCopyLocation,
 				nullptr
+			);
+		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::CopyBufferToBuffer(const I_BufferSubAllocation& destSubAllocation, const I_BufferSubAllocation& srcSubAllocation) const
+		{
+			assert(IsResourceAccessValid(destSubAllocation.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination buffer resource in a call to GPUCommandContext::CopyBufferToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
+			assert(IsResourceAccessValid(srcSubAllocation.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source buffer resource in a call to GPUCommandContext::CopyBufferToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
+
+			assert(destSubAllocation.GetSubAllocationSize() == srcSubAllocation.GetSubAllocationSize() && "ERROR: An attempt was made to call GPUCommandContext::CopyBufferToBuffer() with two buffer sub-allocations which did not have equivalent sizes!");
+			
+			mCmdList->CopyBufferRegion(
+				&(destSubAllocation.GetD3D12Resource()),
+				destSubAllocation.GetOffsetFromBufferStart(),
+				&(srcSubAllocation.GetD3D12Resource()),
+				srcSubAllocation.GetOffsetFromBufferStart(),
+				srcSubAllocation.GetSubAllocationSize()
 			);
 		}
 	}

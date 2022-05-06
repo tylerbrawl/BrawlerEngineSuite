@@ -293,6 +293,7 @@
     <ClCompile Include="src\PipelineType.ixx" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\RootDescriptors.ixx" />
+    <ClCompile Include="src\RootParameterCache.ixx" />
     <ClCompile Include="src\RootParameterType.ixx" />
     <ClCompile Include="src\ShaderResourceView.ixx" />
     <ClCompile Include="src\StructuredBufferSubAllocation.ixx" />
