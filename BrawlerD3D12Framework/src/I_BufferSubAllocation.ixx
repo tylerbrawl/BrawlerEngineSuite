@@ -32,10 +32,9 @@ export namespace Brawler
 			I_BufferSubAllocation(I_BufferSubAllocation&& rhs) noexcept = default;
 			I_BufferSubAllocation& operator=(I_BufferSubAllocation&& rhs) noexcept = default;
 
-		protected:
+		public:
 			std::size_t GetOffsetFromBufferStart() const;
 
-		public:
 			Brawler::D3D12Resource& GetD3D12Resource() const;
 
 			BufferResource& GetBufferResource();
@@ -54,7 +53,6 @@ export namespace Brawler
 			virtual std::size_t GetSubAllocationSize() const = 0;
 			virtual std::size_t GetRequiredDataPlacementAlignment() const = 0;
 
-		public:
 			bool IsReservationCompatible(const BufferSubAllocationReservation& reservation) const;
 
 			void AssignReservation(std::unique_ptr<BufferSubAllocationReservation>&& reservation);

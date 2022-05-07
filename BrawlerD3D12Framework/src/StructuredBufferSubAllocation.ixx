@@ -185,12 +185,12 @@ export namespace Brawler
 			ConstantBufferView<T> CreateConstantBufferViewForDescriptorTable(const std::uint32_t elementIndex) const requires D3D12ConstantBufferDataPlacementAligned<T>;
 
 			RootShaderResourceView CreateRootShaderResourceView() const;
-			StructuredBufferShaderResourceView CreateShaderResourceViewForDescriptorTable() const;
-			StructuredBufferShaderResourceView CreateShaderResourceViewForDescriptorTable(const ElementRange& viewedElementsRange) const;
+			StructuredBufferShaderResourceView CreateShaderResourceViewForDescriptorTable();
+			StructuredBufferShaderResourceView CreateShaderResourceViewForDescriptorTable(const ElementRange& viewedElementsRange);
 
 			RootUnorderedAccessView CreateRootUnorderedAccessView() const;
-			StructuredBufferUnorderedAccessView CreateUnorderedAccessViewForDescriptorTable() const;
-			StructuredBufferUnorderedAccessView CreateUnorderedAccessViewForDescriptorTable(const ElementRange& viewedElementsRange) const;
+			StructuredBufferUnorderedAccessView CreateUnorderedAccessViewForDescriptorTable();
+			StructuredBufferUnorderedAccessView CreateUnorderedAccessViewForDescriptorTable(const ElementRange& viewedElementsRange);
 
 		private:
 			/// <summary>
@@ -317,7 +317,7 @@ namespace Brawler
 
 		template <typename T, std::size_t NumElements>
 			requires HLSLStructuredBufferCompatible<T>
-		StructuredBufferShaderResourceView StructuredBufferSubAllocation<T, NumElements>::CreateShaderResourceViewForDescriptorTable() const
+		StructuredBufferShaderResourceView StructuredBufferSubAllocation<T, NumElements>::CreateShaderResourceViewForDescriptorTable()
 		{
 			return StructuredBufferShaderResourceView{ GetBufferResource(), CreateBufferSRVDescription(ElementRange{
 				.FirstElement = 0,
@@ -327,7 +327,7 @@ namespace Brawler
 
 		template <typename T, std::size_t NumElements>
 			requires HLSLStructuredBufferCompatible<T>
-		StructuredBufferShaderResourceView StructuredBufferSubAllocation<T, NumElements>::CreateShaderResourceViewForDescriptorTable(const ElementRange& viewedElementsRange) const
+		StructuredBufferShaderResourceView StructuredBufferSubAllocation<T, NumElements>::CreateShaderResourceViewForDescriptorTable(const ElementRange& viewedElementsRange)
 		{
 			assert(viewedElementsRange.FirstElement + viewedElementsRange.NumElements <= this->GetElementCount() && "ERROR: An invalid ElementRange was provided to StructuredBufferSubAllocation::CreateShaderResourceViewForDescriptorTable()!");
 			return StructuredBufferShaderResourceView{ GetBufferResource(), CreateBufferSRVDescription(viewedElementsRange) };
@@ -342,7 +342,7 @@ namespace Brawler
 
 		template <typename T, std::size_t NumElements>
 			requires HLSLStructuredBufferCompatible<T>
-		StructuredBufferUnorderedAccessView StructuredBufferSubAllocation<T, NumElements>::CreateUnorderedAccessViewForDescriptorTable() const
+		StructuredBufferUnorderedAccessView StructuredBufferSubAllocation<T, NumElements>::CreateUnorderedAccessViewForDescriptorTable()
 		{
 			D3D12_BUFFER_UAV viewDesc{ CreateBufferUAVDescription(ElementRange{
 				.FirstElement = 0,
@@ -359,7 +359,7 @@ namespace Brawler
 
 		template <typename T, std::size_t NumElements>
 			requires HLSLStructuredBufferCompatible<T>
-		StructuredBufferUnorderedAccessView StructuredBufferSubAllocation<T, NumElements>::CreateUnorderedAccessViewForDescriptorTable(const ElementRange& viewedElementsRange) const
+		StructuredBufferUnorderedAccessView StructuredBufferSubAllocation<T, NumElements>::CreateUnorderedAccessViewForDescriptorTable(const ElementRange& viewedElementsRange)
 		{
 			StructuredBufferUnorderedAccessView bufferUAV{ GetBufferResource(), CreateBufferUAVDescription(viewedElementsRange) };
 

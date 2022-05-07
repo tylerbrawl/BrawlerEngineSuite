@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <CopyBrawlerShaderCompilerFiles>mkdir "$(SolutionDir)BrawlerD3D12Framework\src\ShaderCompilerFiles" &amp; copy "$(ProjectDir)src\PSODefinition.ixx" "$(SolutionDir)BrawlerD3D12Framework\src\ShaderCompilerFiles\PSODefinition.ixx" &amp;&amp; copy "$(ProjectDir)src\PSOID.ixx" "$(SolutionDir)BrawlerD3D12Framework\src\ShaderCompilerFiles\PSOID.ixx" &amp;&amp; copy "$(ProjectDir)src\RootParameterEnums.ixx" "$(SolutionDir)BrawlerD3D12Framework\src\ShaderCompilerFiles\RootParameterEnums.ixx" &amp;&amp; copy "$(ProjectDir)src\RootSignatureDefinition.ixx" "$(SolutionDir)BrawlerD3D12Framework\src\ShaderCompilerFiles\RootSignatureDefinition.ixx" &amp;&amp; copy "$(ProjectDir)src\RootSignatureID.ixx" "$(SolutionDir)BrawlerD3D12Framework\src\ShaderCompilerFiles\RootSignatureID.ixx"</CopyBrawlerShaderCompilerFiles>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="CopyBrawlerShaderCompilerFiles">
+      <Value>$(CopyBrawlerShaderCompilerFiles)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

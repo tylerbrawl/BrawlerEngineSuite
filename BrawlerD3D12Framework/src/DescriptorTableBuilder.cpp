@@ -99,8 +99,8 @@ namespace Brawler
 		void DescriptorTableBuilder::CreateConstantBufferView(const std::uint32_t index, const CBVInfo& cbvInfo)
 		{
 			const D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc{
-				.BufferLocation = cbvInfo.BufferSubAllocation.GetGPUVirtualAddress() + cbvInfo.OffsetFromSubAllocationStart,
-				.SizeInBytes = static_cast<std::uint32_t>(cbvInfo.BufferSubAllocation.GetSubAllocationSize())
+				.BufferLocation = cbvInfo.BufferSubAllocationPtr->GetGPUVirtualAddress() + cbvInfo.OffsetFromSubAllocationStart,
+				.SizeInBytes = static_cast<std::uint32_t>(cbvInfo.BufferSubAllocationPtr->GetSubAllocationSize())
 			};
 			
 			Util::Engine::GetD3D12Device().CreateConstantBufferView(&cbvDesc, GetCPUDescriptorHandle(index));
@@ -108,7 +108,7 @@ namespace Brawler
 
 		void DescriptorTableBuilder::CreateShaderResourceView(const std::uint32_t index, const SRVInfo& srvInfo)
 		{
-			Util::Engine::GetD3D12Device().CreateShaderResourceView(&(srvInfo.GPUResource.GetD3D12Resource()), &(srvInfo.SRVDesc), GetCPUDescriptorHandle(index));
+			Util::Engine::GetD3D12Device().CreateShaderResourceView(&(srvInfo.GPUResourcePtr->GetD3D12Resource()), &(srvInfo.SRVDesc), GetCPUDescriptorHandle(index));
 		}
 
 		void DescriptorTableBuilder::CreateUnorderedAccessView(const std::uint32_t index, const UAVInfo& uavInfo)
@@ -116,7 +116,7 @@ namespace Brawler
 			Brawler::D3D12Resource* const d3dCounterResourcePtr = (uavInfo.UAVCounter.HasValue() ? &(uavInfo.UAVCounter->GetD3D12Resource()) : nullptr);
 
 			Util::Engine::GetD3D12Device().CreateUnorderedAccessView(
-				&(uavInfo.GPUResource.GetD3D12Resource()),
+				&(uavInfo.GPUResourcePtr->GetD3D12Resource()),
 				d3dCounterResourcePtr,
 				&(uavInfo.UAVDesc),
 				GetCPUDescriptorHandle(index)

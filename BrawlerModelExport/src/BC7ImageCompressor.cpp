@@ -346,9 +346,7 @@ namespace Brawler
 
 	void BC7ImageCompressor::InitializeDescriptorTableBuilders()
 	{
-		// TODO: Use the correct DXGI_FORMAT for this function.
-		mTableBuilderInfo.SourceTextureTableBuilder.CreateShaderResourceView(0, mResourceInfo.SourceTexturePtr->CreateShaderResourceView());
-
+		mTableBuilderInfo.SourceTextureTableBuilder.CreateShaderResourceView(0, mResourceInfo.SourceTexturePtr->CreateShaderResourceView<DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM>());
 		mTableBuilderInfo.Error1SRVTableBuilder.CreateShaderResourceView(0, mResourceInfo.Error1BufferSubAllocation.CreateShaderResourceViewForDescriptorTable());
 		mTableBuilderInfo.Error1UAVTableBuilder.CreateUnorderedAccessView(0, mResourceInfo.Error1BufferSubAllocation.CreateUnorderedAccessViewForDescriptorTable());
 		mTableBuilderInfo.Error2SRVTableBuilder.CreateShaderResourceView(0, mResourceInfo.Error2BufferSubAllocation.CreateShaderResourceViewForDescriptorTable());
@@ -468,7 +466,7 @@ namespace Brawler
 		struct CompressionPassInfo
 		{
 			RootConstantsBC7 RootConstants;
-			const ResourceInfo& Resources;
+			ResourceInfo& Resources;
 			DescriptorTableBuilderInfo& DescriptorTableBuilders;
 			std::uint32_t ThreadGroupCount;
 		};
@@ -531,11 +529,11 @@ namespace Brawler
 					);
 				});
 
-				compressionBundle.AddRenderPass(std::move(mode0Pass));
+				compressionBundle.AddDirectRenderPass(std::move(mode0Pass));
 			}
 
 			{
-				const auto createRenderPassMode13702Lambda = [this, startBlockID, numBlocksInCurrentBatch, &compressionBundle] <Brawler::PSOs::PSOID PSOIdentifier, std::uint32_t ModeID> (const std::string_view renderPassName)
+				const auto createRenderPassMode13702Lambda = [this, startBlockID, numBlocksInCurrBatch, &compressionBundle] <Brawler::PSOs::PSOID PSOIdentifier, std::uint32_t ModeID> (const std::string_view renderPassName)
 				{
 					enum class ErrorBindingMode
 					{
@@ -543,7 +541,7 @@ namespace Brawler
 						ERROR1_UAV_ERROR2_SRV
 					};
 
-					constexpr ErrorBindingMode CURRENT_ERROR_BINDING_MODE = ((ModeID == 1 || ModeID == 7 || ModeID == 2) ? ErrorBindingMode::ERROR1_SRV_ERROR2_UAV : ErrorBindingMode::ERROR1_UAV_ERROR2_SRV);
+					static constexpr ErrorBindingMode CURRENT_ERROR_BINDING_MODE = ((ModeID == 1 || ModeID == 7 || ModeID == 2) ? ErrorBindingMode::ERROR1_SRV_ERROR2_UAV : ErrorBindingMode::ERROR1_UAV_ERROR2_SRV);
 
 					D3D12::RenderPass<D3D12::GPUCommandQueueType::DIRECT, CompressionPassInfo> compressionPass{};
 					compressionPass.SetRenderPassName(renderPassName);
@@ -569,8 +567,8 @@ namespace Brawler
 						},
 						.Resources{ mResourceInfo },
 						.DescriptorTableBuilders{ mTableBuilderInfo },
-						.ThreadGroupCount = numBlocksInCurrentBatch
-						});
+						.ThreadGroupCount = numBlocksInCurrBatch
+					});
 
 					compressionPass.SetRenderPassCommands([] (D3D12::DirectContext& context, const CompressionPassInfo& passInfo)
 					{
@@ -598,23 +596,23 @@ namespace Brawler
 						);
 					});
 
-					compressionBundle.AddRenderPass(std::move(compressionPass));
+					compressionBundle.AddDirectRenderPass(std::move(compressionPass));
 				};
 
 				// Mode 1
-				createRenderPassMode13702Lambda<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 1>("BC7 Image Compressor - Mode 1 Pass (BC7_TRY_MODE_137)");
+				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 1>("BC7 Image Compressor - Mode 1 Pass (BC7_TRY_MODE_137)");
 
 				// Mode 3
-				createRenderPassMode13702Lambda<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 3>("BC7 Image Compressor - Mode 3 Pass (BC7_TRY_MODE_137)");
+				createRenderPassMode13702Lambda.operator() <Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 3>("BC7 Image Compressor - Mode 3 Pass (BC7_TRY_MODE_137)");
 
 				// Mode 7
-				createRenderPassMode13702Lambda<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 7>("BC7 Image Compressor - Mode 7 Pass (BC7_TRY_MODE_137)");
+				createRenderPassMode13702Lambda.operator() <Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 7>("BC7 Image Compressor - Mode 7 Pass (BC7_TRY_MODE_137)");
 
 				// Mode 0
-				createRenderPassMode13702Lambda<Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 0>("BC7 Image Compressor - Mode 0 Pass (BC7_TRY_MODE_02)");
+				createRenderPassMode13702Lambda.operator() <Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 0>("BC7 Image Compressor - Mode 0 Pass (BC7_TRY_MODE_02)");
 
 				// Mode 2
-				createRenderPassMode13702Lambda<Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 2>("BC7 Image Compressor - Mode 2 Pass (BC7_TRY_MODE_02)");
+				createRenderPassMode13702Lambda.operator() <Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 2>("BC7 Image Compressor - Mode 2 Pass (BC7_TRY_MODE_02)");
 			}
 
 			// Encode Block
@@ -645,13 +643,13 @@ namespace Brawler
 					resourceBinder.BindDescriptorTable<RootParams::INPUT_BUFFER_SRV_TABLE>(passInfo.DescriptorTableBuilders.Error2SRVTableBuilder.FinalizeDescriptorTable());
 
 					{
-						D3D12::DescriptorTableBuilder outputTableBuilder{};
+						D3D12::DescriptorTableBuilder outputTableBuilder{ 1 };
 						outputTableBuilder.CreateUnorderedAccessView(0, passInfo.Resources.OutputBufferSubAllocation.CreateUnorderedAccessViewForDescriptorTable());
 
 						resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(outputTableBuilder.FinalizeDescriptorTable());
 					}
 
-					resourceBinder.BindRootCBV<RootParams::COMPRESSION_SETTINGS_CBV>(passInfo.ConstantBufferSubAllocation.CreateRootConstantBufferView());
+					resourceBinder.BindRootCBV<RootParams::COMPRESSION_SETTINGS_CBV>(passInfo.Resources.ConstantBufferSubAllocation.CreateRootConstantBufferView());
 					resourceBinder.BindRoot32BitConstants<RootParams::MODE_ID_AND_START_BLOCK_NUM_ROOT_CONSTANTS>(passInfo.RootConstants);
 
 					context.Dispatch(
@@ -661,7 +659,7 @@ namespace Brawler
 					);
 				});
 
-				compressionBundle.AddRenderPass(std::move(encodeBlockPass));
+				compressionBundle.AddDirectRenderPass(std::move(encodeBlockPass));
 			}
 
 			startBlockID += numBlocksInCurrBatch;
@@ -673,8 +671,8 @@ namespace Brawler
 
 	std::size_t BC7ImageCompressor::GetTotalBlockCount() const
 	{
-		const std::size_t numXBlocks = std::max<std::size_t>(1, (mInitInfo.SrcImage.Width + 3) >> 2);
-		const std::size_t numYBlocks = std::max<std::size_t>(1, (mInitInfo.SrcImage.Height + 3) >> 2);
+		const std::size_t numXBlocks = std::max<std::size_t>(1, (mInitInfo.SrcImage.width + 3) >> 2);
+		const std::size_t numYBlocks = std::max<std::size_t>(1, (mInitInfo.SrcImage.height + 3) >> 2);
 		return (numXBlocks * numYBlocks);
 	}
 

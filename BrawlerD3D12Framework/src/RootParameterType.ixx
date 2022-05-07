@@ -4,7 +4,7 @@ export module Brawler.D3D12.RootParameterType;
 
 export namespace Brawler
 {
-	namespace D3D12
+	namespace RootParameters
 	{
 		enum class RootParameterType
 		{

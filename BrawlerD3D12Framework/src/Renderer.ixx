@@ -23,7 +23,6 @@ export namespace Brawler
 			Renderer(Renderer&& rhs) noexcept = default;
 			Renderer& operator=(Renderer&& rhs) noexcept = default;
 
-			template <typename RSIdentifierEnumType, typename PSOIdentifierEnumType>
 			void Initialize();
 
 			GPUCommandManager& GetGPUCommandManager();
@@ -44,33 +43,5 @@ export namespace Brawler
 			PersistentGPUResourceManager mPersistentResourceManager;
 			std::atomic<std::uint64_t> mCurrFrameNum;
 		};
-	}
-}
-
-// ---------------------------------------------------------------------------------------------------------
-
-namespace Brawler
-{
-	namespace D3D12
-	{
-		template <typename RSIdentifierEnumType, typename PSOIdentifierEnumType>
-		void Renderer::Initialize()
-		{
-			// Initialize the GPUDevice.
-			mDevice.Initialize();
-
-			// Initialize the PersistentGPUResourceManager.
-			mPersistentResourceManager.Initialize();
-
-			// Initialize the GPUCommandManager.
-			mCmdManager.Initialize();
-
-			// Initialize the RootSignatureDatabase.
-			RootSignatureDatabase<RSIdentifierEnumType>::GetInstance();
-
-			// Initialize the PSODatabase. This *MUST* be initialized after the RootSignatureDatabase,
-			// since PSO compilation relies on compiled root signatures.
-			PSODatabase<PSOIdentifierEnumType>::GetInstance();
-		}
 	}
 }

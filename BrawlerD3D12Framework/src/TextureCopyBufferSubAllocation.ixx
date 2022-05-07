@@ -31,6 +31,7 @@ export namespace Brawler
 			};
 
 		public:
+			TextureCopyBufferSubAllocation() = default;
 			explicit TextureCopyBufferSubAllocation(const TextureSubResource& textureSubResource);
 
 			TextureCopyBufferSubAllocation(const TextureCopyBufferSubAllocation& rhs) = delete;

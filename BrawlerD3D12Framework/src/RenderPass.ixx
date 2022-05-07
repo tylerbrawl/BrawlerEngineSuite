@@ -4,6 +4,7 @@ module;
 #include <optional>
 #include <functional>
 #include <string>
+#include <cassert>
 #include "DxDef.h"
 
 export module Brawler.D3D12.RenderPass;
@@ -58,7 +59,7 @@ export namespace Brawler
 				requires (!std::is_same_v<InputDataType, EmptyInput> && std::is_same_v<std::decay_t<InputDataType>, std::decay_t<InputDataType_>>)
 			void SetInputData(InputDataType_&& inputData);
 
-			void SetRenderPassCommands(CallbackInfo<QueueType, InputDataType>::CallbackType&& callback);
+			void SetRenderPassCommands(typename CallbackInfo<QueueType, InputDataType>::CallbackType&& callback);
 
 			/// <summary>
 			/// Declares that this RenderPass instance will need access to the I_GPUResource instance
@@ -160,11 +161,11 @@ namespace Brawler
 			requires (!std::is_same_v<InputDataType, EmptyInput>&& std::is_same_v<std::decay_t<InputDataType>, std::decay_t<InputDataType_>>)
 		void RenderPass<QueueType, InputDataType>::SetInputData(InputDataType_&& inputData)
 		{
-			mInputData = std::forward<InputDataType_>(inputData);
+			mInputData.emplace(std::forward<InputDataType_>(inputData));
 		}
 
 		template <GPUCommandQueueType QueueType, typename InputDataType>
-		void RenderPass<QueueType, InputDataType>::SetRenderPassCommands(CallbackInfo<QueueType, InputDataType>::CallbackType&& callback)
+		void RenderPass<QueueType, InputDataType>::SetRenderPassCommands(typename CallbackInfo<QueueType, InputDataType>::CallbackType&& callback)
 		{
 			mCmdRecordCallback = std::move(callback);
 		}

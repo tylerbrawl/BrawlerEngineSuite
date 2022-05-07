@@ -39,19 +39,19 @@ export namespace Brawler
 		private:
 			struct CBVInfo
 			{
-				const I_BufferSubAllocation& BufferSubAllocation;
+				const I_BufferSubAllocation* BufferSubAllocationPtr;
 				std::size_t OffsetFromSubAllocationStart;
 			};
 
 			struct SRVInfo
 			{
-				const I_GPUResource& GPUResource;
+				const I_GPUResource* GPUResourcePtr;
 				D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc;
 			};
 
 			struct UAVInfo
 			{
-				const I_GPUResource& GPUResource;
+				const I_GPUResource* GPUResourcePtr;
 
 				/// <summary>
 				/// If this member is left empty, then no UAV counter is added to the created
@@ -172,7 +172,7 @@ namespace Brawler
 			assert(index < mDescriptorInfoArr.size());
 			
 			mDescriptorInfoArr[index] = CBVInfo{
-				.BufferSubAllocation{ cbv.GetBufferSubAllocation() },
+				.BufferSubAllocationPtr{ &(cbv.GetBufferSubAllocation()) },
 				.OffsetFromSubAllocationStart = cbv.GetOffsetFromSubAllocationStart()
 			};
 		}
@@ -184,7 +184,7 @@ namespace Brawler
 			assert(index < mDescriptorInfoArr.size());
 
 			mDescriptorInfoArr[index] = SRVInfo{
-				.GPUResource{ srv.GetGPUResource() },
+				.GPUResourcePtr{ &(srv.GetGPUResource()) },
 				.SRVDesc{ srv.CreateSRVDescription() }
 			};
 		}
@@ -196,7 +196,7 @@ namespace Brawler
 			assert(index < mDescriptorInfoArr.size());
 
 			mDescriptorInfoArr[index] = UAVInfo{
-				.GPUResource{ uav.GetGPUResource() },
+				.GPUResourcePtr{ &(uav.GetGPUResource()) },
 				.UAVCounter{ uav.GetUAVCounter() },
 				.UAVDesc{ uav.CreateUAVDescription() }
 			};

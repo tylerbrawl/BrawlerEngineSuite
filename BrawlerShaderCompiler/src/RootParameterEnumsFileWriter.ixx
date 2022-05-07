@@ -25,20 +25,12 @@ Contents:
 module;
 
 export module Brawler.RootParameters.RootParameterEnums;
+export import Brawler.D3D12.RootParameterType;
 
 export namespace Brawler
 {
 	namespace RootParameters
 	{
-		enum class RootParameterType
-		{
-			CBV,
-			SRV,
-			UAV,
-			ROOT_CONSTANT,
-			DESCRIPTOR_TABLE
-		};
-
 		enum class RootSignatureX
 		{
 			PARAM_NAME_0,
@@ -146,7 +138,7 @@ namespace Brawler
 
 			{
 				std::string preParamEnumListStr{ Brawler::FileStrings::AUTO_GENERATED_WARNING_COMMENT };
-				preParamEnumListStr += "module;\n\nexport module Brawler.RootParameters.RootParameterEnums;\n\nexport namespace Brawler\n{\n\tnamespace RootParameters\n\t{\n\t\tenum class RootParameterType\n\t\t{\n\t\t\tCBV,\n\t\t\tSRV,\n\t\t\tUAV,\n\t\t\tROOT_CONSTANT,\n\t\t\tDESCRIPTOR_TABLE\n\t\t};\n";
+				preParamEnumListStr += "module;\n\nexport module Brawler.RootParameters.RootParameterEnums;\nexport import Brawler.D3D12.RootParameterType;\n\nexport namespace Brawler\n{\n\tnamespace RootParameters\n\t{";
 
 				Brawler::FileWriterNode preParamEnumListNode{};
 				preParamEnumListNode.SetOutputText(std::move(preParamEnumListStr));

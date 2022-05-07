@@ -175,7 +175,7 @@ namespace Brawler
 				{
 					std::string rsResolveStr{ "\t\t\t\tpsoDesc." };
 					rsResolveStr += Brawler::PSOField<CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE>::FIELD_NAME;
-					rsResolveStr += " = &(Brawler::D3D12::RootSignatureDatabase<decltype(ROOT_SIGNATURE_ID)>::GetInstance().GetRootSignature<ROOT_SIGNATURE_ID>());\n";
+					rsResolveStr += " = &(Brawler::D3D12::RootSignatureDatabase::GetInstance().GetRootSignature<ROOT_SIGNATURE_ID>());\n";
 
 					Brawler::FileWriterNode rootSignatureResolveNode{};
 					rootSignatureResolveNode.SetOutputText(std::move(rsResolveStr));

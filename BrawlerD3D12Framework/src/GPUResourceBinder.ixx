@@ -8,8 +8,11 @@ import Brawler.D3D12.I_GPUResource;
 import Brawler.D3D12.I_DescriptorTable;
 import Brawler.D3D12.RootDescriptors;
 import Brawler.D3D12.RootParameterType;
-import Brawler.D3D12.PipelineType;
 import Brawler.D3D12.RootParameterCache;
+import Brawler.PSOs.PSOID;
+import Brawler.PSOs.PSODefinition;
+import Brawler.RootSignatures.RootSignatureID;
+import Brawler.RootSignatures.RootSignatureDefinition;
 
 export namespace Brawler
 {
@@ -20,29 +23,11 @@ export namespace Brawler
 	}
 }
 
-namespace Brawler
-{
-	namespace RootSignatures
-	{
-		template <auto RSIdentifier, auto RootParam>
-		extern Brawler::D3D12::RootParameterType GetRootParameterType();
-	}
-
-	namespace PSOs
-	{
-		template <auto PSOIdentifier>
-		extern auto GetRootSignature();
-
-		template <auto PSOIdentifier>
-		extern auto GetPipelineType();
-	}
-}
-
 export namespace Brawler
 {
 	namespace D3D12
 	{
-		template <auto PSOIdentifier>
+		template <Brawler::PSOs::PSOID PSOIdentifier>
 		class GPUResourceBinder
 		{
 		private:
@@ -59,28 +44,24 @@ export namespace Brawler
 			GPUResourceBinder(GPUResourceBinder&& rhs) noexcept = default;
 			GPUResourceBinder& operator=(GPUResourceBinder&& rhs) noexcept = default;
 
-			template <auto RootParam>
-				requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::D3D12::RootParameterType::CBV)
+			template <Brawler::RootSignatures::RootParamEnumType<Brawler::PSOs::GetRootSignature<PSOIdentifier>()> RootParam>
+				requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::RootParameters::RootParameterType::CBV)
 			void BindRootCBV(const RootConstantBufferView rootCBV);
 
-			template <auto RootParam>
-				requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::D3D12::RootParameterType::SRV)
+			template <Brawler::RootSignatures::RootParamEnumType<Brawler::PSOs::GetRootSignature<PSOIdentifier>()> RootParam>
+				requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::RootParameters::RootParameterType::SRV)
 			void BindRootSRV(const RootShaderResourceView rootSRV);
 
-			template <auto RootParam>
-				requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::D3D12::RootParameterType::UAV)
+			template <Brawler::RootSignatures::RootParamEnumType<Brawler::PSOs::GetRootSignature<PSOIdentifier>()> RootParam>
+				requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::RootParameters::RootParameterType::UAV)
 			void BindRootUAV(const RootUnorderedAccessView rootUAV);
 
-			template <auto RootParam, typename ConstantT>
-				requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::D3D12::RootParameterType::ROOT_CONSTANT) && (sizeof(std::remove_reference_t<ConstantT>) % 4 == 0) && (sizeof(std::remove_reference_t<ConstantT>) <= std::size_t)
-			void BindRoot32BitConstants(const std::remove_reference_t<ConstantT> rootConstants);
-
-			template <auto RootParam, typename ConstantT>
-				requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::D3D12::RootParameterType::ROOT_CONSTANT) && (sizeof(ConstantT) % 4 == 0) && (sizeof(ConstantT) > std::size_t)
+			template <Brawler::RootSignatures::RootParamEnumType<Brawler::PSOs::GetRootSignature<PSOIdentifier>()> RootParam, typename ConstantT>
+				requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::RootParameters::RootParameterType::ROOT_CONSTANT && (sizeof(ConstantT) % 4 == 0))
 			void BindRoot32BitConstants(const ConstantT& rootConstants);
 
-			template <auto RootParam>
-				requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::D3D12::RootParameterType::DESCRIPTOR_TABLE)
+			template <Brawler::RootSignatures::RootParamEnumType<Brawler::PSOs::GetRootSignature<PSOIdentifier>()> RootParam>
+				requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::RootParameters::RootParameterType::DESCRIPTOR_TABLE)
 			void BindDescriptorTable(const I_DescriptorTable& descriptorTable);
 
 		private:
@@ -96,15 +77,15 @@ namespace Brawler
 {
 	namespace D3D12
 	{
-		template <auto PSOIdentifier>
+		template <Brawler::PSOs::PSOID PSOIdentifier>
 		GPUResourceBinder<PSOIdentifier>::GPUResourceBinder(Brawler::D3D12GraphicsCommandList& cmdList, RootParameterCache& rootParamCache) :
 			mCmdList(&cmdList),
 			mRootParamCachePtr(&rootParamCache)
 		{}
 
-		template <auto PSOIdentifier>
-		template <auto RootParam>
-			requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::D3D12::RootParameterType::CBV)
+		template <Brawler::PSOs::PSOID PSOIdentifier>
+		template <Brawler::RootSignatures::RootParamEnumType<Brawler::PSOs::GetRootSignature<PSOIdentifier>()> RootParam>
+			requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::RootParameters::RootParameterType::CBV)
 		void GPUResourceBinder<PSOIdentifier>::BindRootCBV(const RootConstantBufferView rootCBV)
 		{
 			constexpr std::uint32_t ROOT_PARAM_INDEX = static_cast<std::uint32_t>(std::to_underlying(RootParam));
@@ -118,9 +99,9 @@ namespace Brawler
 				mCmdList->SetComputeRootConstantBufferView(ROOT_PARAM_INDEX, rootCBV.GetGPUVirtualAddress());
 		}
 
-		template <auto PSOIdentifier>
-		template <auto RootParam>
-			requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::D3D12::RootParameterType::SRV)
+		template <Brawler::PSOs::PSOID PSOIdentifier>
+		template <Brawler::RootSignatures::RootParamEnumType<Brawler::PSOs::GetRootSignature<PSOIdentifier>()> RootParam>
+			requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::RootParameters::RootParameterType::SRV)
 		void GPUResourceBinder<PSOIdentifier>::BindRootSRV(const RootShaderResourceView rootSRV)
 		{
 			constexpr std::uint32_t ROOT_PARAM_INDEX = static_cast<std::uint32_t>(std::to_underlying(RootParam));
@@ -134,9 +115,9 @@ namespace Brawler
 				mCmdList->SetComputeRootShaderResourceView(ROOT_PARAM_INDEX, rootSRV.GetGPUVirtualAddress());
 		}
 
-		template <auto PSOIdentifier>
-		template <auto RootParam>
-			requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::D3D12::RootParameterType::UAV)
+		template <Brawler::PSOs::PSOID PSOIdentifier>
+		template <Brawler::RootSignatures::RootParamEnumType<Brawler::PSOs::GetRootSignature<PSOIdentifier>()> RootParam>
+			requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::RootParameters::RootParameterType::UAV)
 		void GPUResourceBinder<PSOIdentifier>::BindRootUAV(const RootUnorderedAccessView rootUAV)
 		{
 			constexpr std::uint32_t ROOT_PARAM_INDEX = static_cast<std::uint32_t>(std::to_underlying(RootParam));
@@ -150,22 +131,9 @@ namespace Brawler
 				mCmdList->SetComputeRootUnorderedAccessView(ROOT_PARAM_INDEX, rootUAV.GetGPUVirtualAddress());
 		}
 
-		template <auto PSOIdentifier>
-		template <auto RootParam, typename ConstantT>
-			requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::D3D12::RootParameterType::ROOT_CONSTANT) && (sizeof(std::remove_reference_t<ConstantT>) % 4 == 0) && (sizeof(std::remove_reference_t<ConstantT>) <= std::size_t)
-		void GPUResourceBinder<PSOIdentifier>::BindRoot32BitConstants(const std::remove_reference_t<ConstantT> rootConstants)
-		{
-			// We do not cache root 32-bit constants.
-			
-			if constexpr (Brawler::PSOs::GetPipelineType<PSOIdentifier>() == Brawler::PSOs::PipelineType::GRAPHICS)
-				mCmdList->SetGraphicsRoot32BitConstants(static_cast<std::uint32_t>(std::to_underlying(RootParam)), (sizeof(rootConstants) / 4), &rootConstants, 0);
-			else
-				mCmdList->SetComputeRoot32BitConstants(static_cast<std::uint32_t>(std::to_underlying(RootParam)), (sizeof(rootConstants) / 4), &rootConstants, 0);
-		}
-
-		template <auto PSOIdentifier>
-		template <auto RootParam, typename ConstantT>
-			requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::D3D12::RootParameterType::ROOT_CONSTANT) && (sizeof(ConstantT) % 4 == 0) && (sizeof(ConstantT) > std::size_t)
+		template <Brawler::PSOs::PSOID PSOIdentifier>
+		template <Brawler::RootSignatures::RootParamEnumType<Brawler::PSOs::GetRootSignature<PSOIdentifier>()> RootParam, typename ConstantT>
+			requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::RootParameters::RootParameterType::ROOT_CONSTANT && (sizeof(ConstantT) % 4 == 0))
 		void GPUResourceBinder<PSOIdentifier>::BindRoot32BitConstants(const ConstantT& rootConstants)
 		{
 			// We do not cache root 32-bit constants.
@@ -176,9 +144,9 @@ namespace Brawler
 				mCmdList->SetComputeRoot32BitConstants(static_cast<std::uint32_t>(std::to_underlying(RootParam)), (sizeof(rootConstants) / 4), &rootConstants, 0);
 		}
 
-		template <auto PSOIdentifier>
-		template <auto RootParam>
-			requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::D3D12::RootParameterType::DESCRIPTOR_TABLE)
+		template <Brawler::PSOs::PSOID PSOIdentifier>
+		template <Brawler::RootSignatures::RootParamEnumType<Brawler::PSOs::GetRootSignature<PSOIdentifier>()> RootParam>
+			requires (Brawler::RootSignatures::GetRootParameterType<Brawler::PSOs::GetRootSignature<PSOIdentifier>(), RootParam>() == Brawler::RootParameters::RootParameterType::DESCRIPTOR_TABLE)
 		void GPUResourceBinder<PSOIdentifier>::BindDescriptorTable(const I_DescriptorTable& descriptorTable)
 		{
 			constexpr std::uint32_t ROOT_PARAM_INDEX = static_cast<std::uint32_t>(std::to_underlying(RootParam));

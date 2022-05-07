@@ -22,7 +22,7 @@ Contents:
 
 module;
 #include <array>
-#include "DxDef.h"
+#include "../DxDef.h"
 
 export module Brawler.PSOs.PSODefinition;
 import Brawler.PSOs.PSOID;
@@ -197,7 +197,7 @@ namespace Brawler
 				Brawler::FileWriterNode headerNode{};
 
 				std::string headerStr{ Brawler::FileStrings::AUTO_GENERATED_WARNING_COMMENT };
-				headerStr += "module;\n#include <array>\n#include \"DxDef.h\"\n\nexport module Brawler.PSOs.PSODefinition;\nimport Brawler.PSOs.PSOID;\nimport Brawler.RootSignatures.RootSignatureID;\nimport Util.Engine;\nimport Brawler.D3D12.RootSignatureDatabase;\nimport Util.Reflection;\n\n";
+				headerStr += "module;\n#include <array>\n#include \"../DxDef.h\"\n\nexport module Brawler.PSOs.PSODefinition;\nimport Brawler.PSOs.PSOID;\nimport Brawler.RootSignatures.RootSignatureID;\nimport Util.Engine;\nimport Brawler.D3D12.RootSignatureDatabase;\nimport Util.Reflection;\n\n";
 
 				headerNode.SetOutputText(std::move(headerStr));
 				rootNode.AddChildNode(std::move(headerNode));

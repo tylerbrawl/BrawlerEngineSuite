@@ -193,6 +193,12 @@
     <Filter Include="Source Files\GPU Resources\Texture Resource Types\General Texture Resource Types">
       <UniqueIdentifier>{08e80aa5-b01c-4cd7-be8b-50523d9f35b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Pipeline State Management\Shader Compiler Files">
+      <UniqueIdentifier>{c7df1d87-6cfd-40d8-a7d8-5bc5e3089eb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Pipeline State Management">
+      <UniqueIdentifier>{be4d8c03-2eaa-485e-bdd0-436284c8606c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GeneralUtil.ixx">
@@ -917,6 +923,42 @@
     </ClCompile>
     <ClCompile Include="src\GPUResourceBinding.ixx">
       <Filter>Module Files\GPU Work Submission\GPU Resource Binding</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSOID.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\RootParameterEnums.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\RootSignatureDefinition.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\RootSignatureID.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootSignatureDatabase.cpp">
+      <Filter>Source Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSODatabase.cpp">
+      <Filter>Source Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSODefinition_BC7_ENCODE_BLOCK.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSODefinition_BC7_TRY_MODE_137.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSODefinition_BC7_TRY_MODE_02.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSODefinition_BC7_TRY_MODE_456.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSODefinitionBase.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
