@@ -231,6 +231,12 @@
     <ClCompile Include="src\CompositeEnum.ixx">
       <Filter>Module Files\Convenience Types</Filter>
     </ClCompile>
+    <ClCompile Include="src\ModelExportUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelExportUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\Shaders\BC7Encode.hlsl">

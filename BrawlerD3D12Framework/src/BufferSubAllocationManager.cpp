@@ -29,7 +29,7 @@ namespace Brawler
 {
 	namespace D3D12
 	{
-		BufferSubAllocationManager::BufferSubAllocationManager(const BufferResource& owningBufferResource, const std::size_t sizeInBytes) :
+		BufferSubAllocationManager::BufferSubAllocationManager(BufferResource& owningBufferResource, const std::size_t sizeInBytes) :
 			mBufferMemoryAllocator(),
 			mOwningBufferResourcePtr(&owningBufferResource),
 			mPendingWriteRequestArr(),
@@ -52,6 +52,12 @@ namespace Brawler
 		{
 			assert(mOwningBufferResourcePtr != nullptr);
 			return mOwningBufferResourcePtr->GetD3D12Resource();
+		}
+
+		BufferResource& BufferSubAllocationManager::GetBufferResource()
+		{
+			assert(mOwningBufferResourcePtr != nullptr);
+			return *mOwningBufferResourcePtr;
 		}
 
 		const BufferResource& BufferSubAllocationManager::GetBufferResource() const

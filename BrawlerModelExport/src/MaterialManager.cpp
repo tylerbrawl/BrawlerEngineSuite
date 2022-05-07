@@ -12,6 +12,7 @@ import Brawler.JobSystem;
 import Brawler.OpaqueMaterialDefinition;
 import Util.Coroutine;
 import Util.General;
+import Util.ModelExport;
 
 namespace
 {
@@ -38,7 +39,7 @@ namespace Brawler
 {
 	void MaterialManager::BeginInitialization()
 	{
-		const aiScene& scene{ Util::General::GetScene() };
+		const aiScene& scene{ Util::ModelExport::GetScene() };
 		
 		mMaterialDefinitionArr.resize(static_cast<std::size_t>(scene.mNumMaterials));
 

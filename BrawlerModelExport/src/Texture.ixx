@@ -9,6 +9,7 @@ export module Brawler.Texture;
 import Brawler.FilePathHash;
 import Util.General;
 import Util.Texture;
+import Util.ModelExport;
 import Brawler.AppParams;
 
 namespace Brawler
@@ -114,7 +115,7 @@ namespace Brawler
 		// [Mesh Parent Directory]\[Mesh Name].[Mesh File Extension], then the output directory
 		// for this texture is [Root Output Directory]\Textures\[Mesh Name]\[Texture Name].btex.
 
-		const Brawler::AppParams& launchParams{ Util::General::GetLaunchParameters() };
+		const Brawler::AppParams& launchParams{ Util::ModelExport::GetLaunchParameters() };
 		const std::filesystem::path meshNamePath{ std::filesystem::path{ launchParams.InputMeshFilePath }.stem() };
 
 		std::filesystem::path outputTextureSubDirectory{ IMPL::TEXTURES_FOLDER_PATH / meshNamePath / Util::General::StringToWString(textureName.C_Str()) };

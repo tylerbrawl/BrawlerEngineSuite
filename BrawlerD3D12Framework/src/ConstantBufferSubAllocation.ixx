@@ -8,7 +8,6 @@ import Brawler.D3D12.I_BufferSubAllocation;
 import Util.HLSL;
 import Util.Math;
 import Brawler.D3D12.RootDescriptors;
-import Brawler.D3D12.DescriptorTableBuilder;
 import Brawler.D3D12.GPUResourceViews;
 
 namespace Brawler
@@ -100,7 +99,7 @@ namespace Brawler
 			requires HLSLConstantBufferCompatible<T>
 		ConstantBufferView<T> ConstantBufferSubAllocation<T>::CreateConstantBufferViewForDescriptorTable() const
 		{
-			return ConstantBufferView<T>{ GetGPUVirtualAddress() };
+			return ConstantBufferView<T>{ *this };
 		}
 
 		template <typename T>

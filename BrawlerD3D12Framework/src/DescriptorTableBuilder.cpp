@@ -1,12 +1,12 @@
 module;
 #include <cassert>
 #include <optional>
+#include <variant>
 #include "DxDef.h"
 
 module Brawler.D3D12.DescriptorTableBuilder;
 import Brawler.D3D12.GPUResourceDescriptorHeap;
 import Util.Engine;
-import Brawler.D3D12.I_GPUResource;
 
 namespace Brawler
 {
@@ -14,6 +14,8 @@ namespace Brawler
 	{
 		DescriptorTableBuilder::DescriptorTableBuilder(const std::uint32_t tableSizeInDescriptors) :
 			mStagingHeap(nullptr),
+			mDescriptorTable(),
+			mDescriptorInfoArr(),
 			mNumDescriptors(tableSizeInDescriptors)
 		{
 			// Create the non-shader-visible descriptor heap for staging the descriptors.
@@ -25,11 +27,16 @@ namespace Brawler
 			};
 
 			CheckHRESULT(Util::Engine::GetD3D12Device().CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mStagingHeap)));
+
+			mDescriptorInfoArr.resize(tableSizeInDescriptors);
 		}
 
-		PerFrameDescriptorTable DescriptorTableBuilder::FinalizeDescriptorTable() const
+		PerFrameDescriptorTable DescriptorTableBuilder::FinalizeDescriptorTable()
 		{
-			return Util::Engine::GetGPUResourceDescriptorHeap().CreatePerFrameDescriptorTable(*this);
+			if (!mDescriptorTable.has_value()) [[unlikely]]
+				CreateDescriptorTable();
+			
+			return *mDescriptorTable;
 		}
 
 		std::uint32_t DescriptorTableBuilder::GetDescriptorTableSize() const
@@ -42,24 +49,74 @@ namespace Brawler
 			return CD3DX12_CPU_DESCRIPTOR_HANDLE{ mStagingHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<std::int32_t>(offsetInDescriptors), Util::Engine::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE::D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) };
 		}
 
-		void DescriptorTableBuilder::CreateConstantBufferView(const std::uint32_t index, const D3D12_CONSTANT_BUFFER_VIEW_DESC& cbvDesc)
+		void DescriptorTableBuilder::CreateDescriptorTable()
 		{
-			assert(cbvDesc.BufferLocation != 0 && "ERROR: An attempt was made to create a CBV within a descriptor heap, but a nullptr buffer GPU virtual address was provided!");
+			// First, create the descriptors within the non-shader-visible heap.
+			std::uint32_t currIndex = 0;
+			for (const auto& descriptorInfo : mDescriptorInfoArr)
+			{
+				switch (descriptorInfo.index())
+				{
+				case 1:
+				{
+					CreateConstantBufferView(currIndex, std::get<CBVInfo>(descriptorInfo));
+					break;
+				}
 
+				case 2:
+				{
+					CreateShaderResourceView(currIndex, std::get<SRVInfo>(descriptorInfo));
+					break;
+				}
+
+				case 3:
+				{
+					CreateUnorderedAccessView(currIndex, std::get<UAVInfo>(descriptorInfo));
+					break;
+				}
+
+				default:
+				{
+					assert(false && "ERROR: A DescriptorTableBuilder was never assigned a descriptor for all of its entries!");
+					std::unreachable();
+
+					break;
+				}
+				}
+
+				++currIndex;
+			}
+
+			// Next, copy the descriptors over to the shader-visible GPUResourceDescriptorHeap.
+			// This creates the per-frame descriptor table.
+			mDescriptorTable = Util::Engine::GetGPUResourceDescriptorHeap().CreatePerFrameDescriptorTable(*this);
+
+			// Finally, we can destroy the information which we kept to create the descriptors.
+			mDescriptorInfoArr.clear();
+			mDescriptorInfoArr.shrink_to_fit();
+		}
+
+		void DescriptorTableBuilder::CreateConstantBufferView(const std::uint32_t index, const CBVInfo& cbvInfo)
+		{
+			const D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc{
+				.BufferLocation = cbvInfo.BufferSubAllocation.GetGPUVirtualAddress() + cbvInfo.OffsetFromSubAllocationStart,
+				.SizeInBytes = static_cast<std::uint32_t>(cbvInfo.BufferSubAllocation.GetSubAllocationSize())
+			};
+			
 			Util::Engine::GetD3D12Device().CreateConstantBufferView(&cbvDesc, GetCPUDescriptorHandle(index));
 		}
 
 		void DescriptorTableBuilder::CreateShaderResourceView(const std::uint32_t index, const SRVInfo& srvInfo)
 		{
-			Util::Engine::GetD3D12Device().CreateShaderResourceView(&(srvInfo.D3DResource), &(srvInfo.SRVDesc), GetCPUDescriptorHandle(index));
+			Util::Engine::GetD3D12Device().CreateShaderResourceView(&(srvInfo.GPUResource.GetD3D12Resource()), &(srvInfo.SRVDesc), GetCPUDescriptorHandle(index));
 		}
 
 		void DescriptorTableBuilder::CreateUnorderedAccessView(const std::uint32_t index, const UAVInfo& uavInfo)
 		{
-			Brawler::D3D12Resource* const d3dCounterResourcePtr = (uavInfo.UAVCounterD3DResource.HasValue() ? &(*(uavInfo.UAVCounterD3DResource)) : nullptr);
+			Brawler::D3D12Resource* const d3dCounterResourcePtr = (uavInfo.UAVCounter.HasValue() ? &(uavInfo.UAVCounter->GetD3D12Resource()) : nullptr);
 
 			Util::Engine::GetD3D12Device().CreateUnorderedAccessView(
-				&(uavInfo.D3DResource),
+				&(uavInfo.GPUResource.GetD3D12Resource()),
 				d3dCounterResourcePtr,
 				&(uavInfo.UAVDesc),
 				GetCPUDescriptorHandle(index)

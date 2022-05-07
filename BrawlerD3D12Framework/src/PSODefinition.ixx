@@ -3,6 +3,7 @@
 
 module;
 #include <array>
+#include <optional>
 #include "DxDef.h"
 
 export module Brawler.PSOs.PSODefinition;
@@ -120,17 +121,25 @@ export namespace Brawler
 		}
 
 		template <Brawler::PSOs::PSOID PSOIdentifier>
-		PSOStreamType<PSOIdentifier> CreatePSODescription()
+		D3D12_PIPELINE_STATE_STREAM_DESC CreatePSODescription()
 		{
-			// The contents of PSODefinition<PSOIdentifier>::DEFAULT_PSO_VALUE are the compile-time default
-			// values of the PSO description serialized as a byte array.
-			PSOStreamType<PSOIdentifier> psoDesc{ *(reinterpret_cast<const PSOStreamType<PSOIdentifier>*>(PSODefinition<PSOIdentifier>::DEFAULT_PSO_VALUE.data())) };
+			static std::optional<PSOStreamType<PSOIdentifier>> psoStream{};
 
-			// Resolve the remaining fields of the PSO description which could not be filled out at compile
-			// time.
-			PSODefinition<PSOIdentifier>::ExecuteRuntimePSOResolution(psoDesc);
+			if(!psoStream.has_value()) [[likely]]
+			{
+				// The contents of PSODefinition<PSOIdentifier>::DEFAULT_PSO_VALUE are the compile-time default
+				// values of the PSO description serialized as a byte array.
+				psoStream = *(reinterpret_cast<const PSOStreamType<PSOIdentifier>*>(PSODefinition<PSOIdentifier>::DEFAULT_PSO_VALUE.data()));
 
-			return psoDesc;
+				// Resolve the remaining fields of the PSO description which could not be filled out at compile
+				// time.
+				PSODefinition<PSOIdentifier>::ExecuteRuntimePSOResolution(*psoStream);
+			}
+
+			return D3D12_PIPELINE_STATE_STREAM_DESC{
+				.SizeInBytes = sizeof(PSOStreamType<PSOIdentifier>),
+				.pPipelineStateSubobjectStream = &(*psoStream)
+			};
 		}
 
 		template <Brawler::PSOs::PSOID PSOIdentifier>

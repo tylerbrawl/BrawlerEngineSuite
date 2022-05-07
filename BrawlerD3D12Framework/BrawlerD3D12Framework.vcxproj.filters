@@ -915,6 +915,9 @@
     <ClCompile Include="src\RootParameterCache.ixx">
       <Filter>Module Files\GPU Work Submission\GPU Resource Binding</Filter>
     </ClCompile>
+    <ClCompile Include="src\GPUResourceBinding.ixx">
+      <Filter>Module Files\GPU Work Submission\GPU Resource Binding</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

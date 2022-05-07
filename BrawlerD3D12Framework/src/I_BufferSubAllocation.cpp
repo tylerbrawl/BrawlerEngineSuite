@@ -24,6 +24,12 @@ namespace Brawler
 			return mReservation->GetBufferSubAllocationManager().GetBufferD3D12Resource();
 		}
 
+		BufferResource& I_BufferSubAllocation::GetBufferResource()
+		{
+			assert(mReservation != nullptr);
+			return mReservation->GetBufferSubAllocationManager().GetBufferResource();
+		}
+
 		const BufferResource& I_BufferSubAllocation::GetBufferResource() const
 		{
 			assert(mReservation != nullptr);

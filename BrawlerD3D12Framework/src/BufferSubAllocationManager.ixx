@@ -48,7 +48,7 @@ export namespace Brawler
 			friend class BufferResource;
 
 		public:
-			BufferSubAllocationManager(const BufferResource& owningBufferResource, const std::size_t sizeInBytes);
+			BufferSubAllocationManager(BufferResource& owningBufferResource, const std::size_t sizeInBytes);
 			~BufferSubAllocationManager();
 
 			BufferSubAllocationManager(const BufferSubAllocationManager& rhs) = delete;
@@ -58,6 +58,8 @@ export namespace Brawler
 			BufferSubAllocationManager& operator=(BufferSubAllocationManager&& rhs) noexcept = default;
 
 			Brawler::D3D12Resource& GetBufferD3D12Resource() const;
+
+			BufferResource& GetBufferResource();
 			const BufferResource& GetBufferResource() const;
 
 			D3D12_GPU_VIRTUAL_ADDRESS GetBufferGPUVirtualAddress() const;
@@ -78,7 +80,7 @@ export namespace Brawler
 
 		private:
 			TLSFAllocator mBufferMemoryAllocator;
-			const BufferResource* mOwningBufferResourcePtr;
+			BufferResource* mOwningBufferResourcePtr;
 			std::vector<DataWriteRequest> mPendingWriteRequestArr;
 			std::atomic<std::uint64_t> mActiveReservationCounter;
 			mutable std::mutex mCritSection;

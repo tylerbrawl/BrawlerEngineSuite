@@ -11,7 +11,6 @@ import Util.HLSL;
 import Util.Math;
 import Util.Reflection;
 import Brawler.D3D12.RootDescriptors;
-import Brawler.D3D12.DescriptorTableBuilder;
 import Brawler.D3D12.UAVCounterSubAllocation;
 import Brawler.D3D12.BufferResource;
 import Brawler.D3D12.GPUResourceViews;
@@ -117,39 +116,11 @@ export namespace Brawler
 		class StructuredBufferSubAllocation final : public I_BufferSubAllocation, private SizeContainer<T, NumElements>
 		{
 		public:
-			struct CBVCreationInfo
-			{
-				DescriptorTableBuilder& TableBuilder;
-				std::uint32_t DescriptorTableIndex;
-				std::uint32_t ElementIndex;
-			};
-
 			struct ElementRange
 			{
 				std::size_t FirstElement;
 				std::size_t NumElements;
 			};
-
-		private:
-			template <std::uint32_t DummyParam>
-			struct GeneralDescriptorCreationInfo
-			{
-				DescriptorTableBuilder& TableBuilder;
-				std::uint32_t DescriptorTableIndex;
-
-				/// <summary>
-				/// The range of elements which is to be used. If this std::optional instance is left empty,
-				/// then the entire StructuredBuffer is visible to the range. Otherwise, you can specify
-				/// what is essentially a std::span of elements which will be visible through the view.
-				/// 
-				/// Make sure that indices in shaders take any offsets which you add into account!
-				/// </summary>
-				std::optional<ElementRange> ViewedElementsRange;
-			};
-
-		public:
-			using SRVCreationInfo = GeneralDescriptorCreationInfo<0>;
-			using UAVCreationInfo = GeneralDescriptorCreationInfo<1>;
 
 		public:
 			StructuredBufferSubAllocation() requires (NumElements != DYNAMIC_BUFFER_SIZE) = default;
@@ -211,7 +182,7 @@ export namespace Brawler
 			UAVCounterSubAllocation& GetUAVCounter() const;
 
 			RootConstantBufferView CreateRootConstantBufferView(const std::uint32_t elementIndex) const requires D3D12ConstantBufferDataPlacementAligned<T>;
-			void CreateConstantBufferViewForDescriptorTable(const CBVCreationInfo& creationInfo) const requires D3D12ConstantBufferDataPlacementAligned<T>;
+			ConstantBufferView<T> CreateConstantBufferViewForDescriptorTable(const std::uint32_t elementIndex) const requires D3D12ConstantBufferDataPlacementAligned<T>;
 
 			RootShaderResourceView CreateRootShaderResourceView() const;
 			StructuredBufferShaderResourceView CreateShaderResourceViewForDescriptorTable() const;
@@ -330,14 +301,11 @@ namespace Brawler
 
 		template <typename T, std::size_t NumElements>
 			requires HLSLStructuredBufferCompatible<T>
-		void StructuredBufferSubAllocation<T, NumElements>::CreateConstantBufferViewForDescriptorTable(const CBVCreationInfo& creationInfo) const requires D3D12ConstantBufferDataPlacementAligned<T>
+		ConstantBufferView<T> StructuredBufferSubAllocation<T, NumElements>::CreateConstantBufferViewForDescriptorTable(const std::uint32_t elementIndex) const requires D3D12ConstantBufferDataPlacementAligned<T>
 		{
-			assert(static_cast<std::size_t>(creationInfo.ElementIndex) < this->GetElementCount());
+			assert(static_cast<std::size_t>(elementIndex) < this->GetElementCount());
 
-			creationInfo.TableBuilder.CreateConstantBufferView(creationInfo.ElementIndex, D3D12_CONSTANT_BUFFER_VIEW_DESC{
-				.BufferLocation = GetGPUVirtualAddress() + (sizeof(T) * creationInfo.ElementIndex),
-				.SizeInBytes = sizeof(T)
-			});
+			return ConstantBufferView<T>{ *this, elementIndex };
 		}
 
 		template <typename T, std::size_t NumElements>

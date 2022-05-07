@@ -8,7 +8,7 @@ module;
 export module Util.Texture;
 import Brawler.TextureTypeMap;
 import Brawler.AppParams;
-import Util.General;
+import Util.ModelExport;
 import Util.Win32;
 
 export namespace Util
@@ -229,7 +229,7 @@ namespace Util
 				// If the texture path is *NOT* absolute, then it is probably defined relative to
 				// the original mesh file's directory.
 
-				const std::filesystem::path meshFilePath{ Util::General::GetLaunchParameters().InputMeshFilePath };
+				const std::filesystem::path meshFilePath{ Util::ModelExport::GetLaunchParameters().InputMeshFilePath };
 				texturePath = (meshFilePath.parent_path() / texturePath);
 
 				const bool textureFound = std::filesystem::exists(texturePath, errorCode);
@@ -270,7 +270,7 @@ namespace Util
 		DirectX::ScratchImage CreateIntermediateTexture(const aiString& textureName)
 		{
 			// First, check to see if the texture is embedded.
-			const aiTexture* embeddedTexture{ Util::General::GetScene().GetEmbeddedTexture(textureName.C_Str()) };
+			const aiTexture* embeddedTexture{ Util::ModelExport::GetScene().GetEmbeddedTexture(textureName.C_Str()) };
 			DirectX::ScratchImage ddsImage{};
 
 			// Most textures, however, are likely to not be embedded.

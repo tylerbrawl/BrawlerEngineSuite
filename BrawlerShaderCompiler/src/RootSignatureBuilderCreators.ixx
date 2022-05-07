@@ -20,6 +20,12 @@ export namespace Brawler
 		{
 			RootSignatureBuilder<Brawler::RootSignatureID::BC6H_BC7_COMPRESSION> rootSigBuilder{};
 
+			/*
+			Root Parameter 0: DescriptorTable
+			{
+				STATIC SRV[1] -> Space0[t0]
+			}
+			*/
 			{
 				std::vector<CD3DX12_DESCRIPTOR_RANGE1> param0TableRanges{};
 				param0TableRanges.resize(1);
@@ -34,6 +40,12 @@ export namespace Brawler
 				});
 			}
 
+			/*
+			Root Parameter 1: DescriptorTable
+			{
+				STATIC_AT_EXECUTE SRV[1] -> Space0[t1]
+			}
+			*/
 			{
 				std::vector<CD3DX12_DESCRIPTOR_RANGE1> param1TableRanges{};
 				param1TableRanges.resize(1);
@@ -49,6 +61,12 @@ export namespace Brawler
 				});
 			}
 
+			/*
+			Root Parameter 2: DescriptorTable
+			{
+				VOLATILE UAV[1] -> Space0[u0]
+			}
+			*/
 			{
 				std::vector<CD3DX12_DESCRIPTOR_RANGE1> param2TableRanges{};
 				param2TableRanges.resize(1);
@@ -61,6 +79,7 @@ export namespace Brawler
 				});
 			}
 
+			// Root Parameter 3: STATIC CBV -> Space0[b0]
 			{
 				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::BC6HBC7Compression::COMPRESSION_SETTINGS_CBV>(RootCBVInfo{
 					.ShaderRegister = 0,
@@ -74,6 +93,9 @@ export namespace Brawler
 				});
 			}
 
+			/*
+			Root Parameter 4: RootConstantsBuffer<2> -> Space0[b1]
+			*/
 			{
 				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::BC6HBC7Compression::MODE_ID_AND_START_BLOCK_NUM_ROOT_CONSTANTS>(RootConstantsInfo{
 					.Num32BitValues = 2,

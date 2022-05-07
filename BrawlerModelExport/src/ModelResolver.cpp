@@ -7,13 +7,14 @@ module;
 module Brawler.ModelResolver;
 import Brawler.JobSystem;
 import Util.General;
+import Util.ModelExport;
 import Brawler.StaticMeshManager;
 
 namespace
 {
 	std::unique_ptr<Brawler::I_MeshManager> CreateMeshManager()
 	{
-		const aiScene& scene{ Util::General::GetScene() };
+		const aiScene& scene{ Util::ModelExport::GetScene() };
 
 		// TODO: Add support for skinned meshes. For now, we assert that the mesh is not
 		// skinned and simply create a StaticMeshManager.

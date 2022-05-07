@@ -1,13 +1,25 @@
 module;
+#include <variant>
+#include <optional>
+#include <cassert>
 #include "DxDef.h"
 
 export module Brawler.D3D12.DescriptorTableBuilder;
 import Brawler.D3D12.PerFrameDescriptorTable;
 import Brawler.OptionalRef;
 import Brawler.D3D12.GPUResourceViews;
+import Brawler.D3D12.I_BufferSubAllocation;
+import Brawler.D3D12.I_GPUResource;
 import Brawler.D3D12.UAVCounterSubAllocation;
 
 export namespace Brawler
+{
+	namespace D3D12
+	{
+	}
+}
+
+namespace Brawler
 {
 	namespace D3D12
 	{
@@ -25,15 +37,21 @@ export namespace Brawler
 			friend class GPUResourceDescriptorHeap;
 
 		private:
+			struct CBVInfo
+			{
+				const I_BufferSubAllocation& BufferSubAllocation;
+				std::size_t OffsetFromSubAllocationStart;
+			};
+
 			struct SRVInfo
 			{
-				Brawler::D3D12Resource& D3DResource;
+				const I_GPUResource& GPUResource;
 				D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc;
 			};
 
 			struct UAVInfo
 			{
-				Brawler::D3D12Resource& D3DResource;
+				const I_GPUResource& GPUResource;
 
 				/// <summary>
 				/// If this member is left empty, then no UAV counter is added to the created
@@ -45,10 +63,12 @@ export namespace Brawler
 				/// about this can be found at 
 				/// https://docs.microsoft.com/en-us/windows/win32/direct3d12/uav-counters#using-uav-counters.
 				/// </summary>
-				Brawler::OptionalRef<D3D12Resource> UAVCounterD3DResource;
+				Brawler::OptionalRef<const UAVCounterSubAllocation> UAVCounter;
 
 				D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc;
 			};
+
+			using DescriptorInfoVariant = std::variant<std::monostate, CBVInfo, SRVInfo, UAVInfo>;
 
 		public:
 			explicit DescriptorTableBuilder(const std::uint32_t tableSizeInDescriptors);
@@ -68,7 +88,45 @@ export namespace Brawler
 			template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
 			void CreateUnorderedAccessView(const std::uint32_t index, const UnorderedAccessView<Format, ViewDimension>& uav);
 
-			PerFrameDescriptorTable FinalizeDescriptorTable() const;
+			/// <summary>
+			/// If this is the first time which this function is called for this DescriptorTableBuilder
+			/// instance, then it will allocate from the GPUResourceDescriptorHeap's per-frame
+			/// descriptor segment and create the descriptors within it. After that, the return value
+			/// of this function is the table which was created.
+			/// 
+			/// The DescriptorTableBuilder::Create*View() functions do not immediately create D3D12
+			/// descriptors; instead, they copy information which will be used to actually create
+			/// the descriptors once DescriptorTableBuilder::FinalizeDescriptorTable() is called. This
+			/// allows for DescriptorTableBuilder instances to be created before the I_GPUResource
+			/// instances which it is creating descriptors for have been assigned ID3D12Resource
+			/// instances. For this reason, it is the caller's responsibility to ensure that
+			/// I_GPUResource instances for which descriptors are to be made outlive this
+			/// DescriptorTableBuilder instance.
+			/// 
+			/// *NOTE*: To ensure that descriptors can be created, this function should only be
+			/// called after all of the relevant I_GPUResource instances have had ID3D12Resource
+			/// instances assigned to them. For both persistent and transient resources, this is guaranteed
+			/// to be the case during RenderPass recording time on the CPU timeline; that is, it
+			/// is valid to call this function within a callback which is passed to
+			/// RenderPass::SetRenderPassCommands(). 
+			/// 
+			/// *WARNING*: The behavior is *undefined* if this function is used to retrieve a
+			/// PerFrameDescriptorTable on a frame number other than the one in which the first call
+			/// to DescriptorTableBuilder::FinalizeDescriptorTable() is made. In other words,
+			/// DescriptorTableBuilder instances should *NOT* outlive the frame on which they were
+			/// created.
+			/// </summary>
+			/// <returns>
+			/// The function returns a PerFrameDescriptorTable which contains the descriptors
+			/// described by this DescriptorTableBuilder.
+			/// 
+			/// *WARNING*: The behavior is *undefined* if this function is used to retrieve a
+			/// PerFrameDescriptorTable on a frame number other than the one in which the first call
+			/// to DescriptorTableBuilder::FinalizeDescriptorTable() is called. In other words,
+			/// DescriptorTableBuilder instances should *NOT* outlive the frame on which they were
+			/// created.
+			/// </returns>
+			PerFrameDescriptorTable FinalizeDescriptorTable();
 
 			/// <summary>
 			/// Retrieves the size of the descriptor table.
@@ -84,7 +142,9 @@ export namespace Brawler
 			std::uint32_t GetDescriptorTableSize() const;
 
 		private:
-			void CreateConstantBufferView(const std::uint32_t index, const D3D12_CONSTANT_BUFFER_VIEW_DESC& cbvDesc);
+			void CreateDescriptorTable();
+
+			void CreateConstantBufferView(const std::uint32_t index, const CBVInfo& cbvInfo);
 			void CreateShaderResourceView(const std::uint32_t index, const SRVInfo& srvInfo);
 			void CreateUnorderedAccessView(const std::uint32_t index, const UAVInfo& uavInfo);
 
@@ -92,6 +152,8 @@ export namespace Brawler
 
 		private:
 			Microsoft::WRL::ComPtr<Brawler::D3D12DescriptorHeap> mStagingHeap;
+			std::optional<PerFrameDescriptorTable> mDescriptorTable;
+			std::vector<DescriptorInfoVariant> mDescriptorInfoArr;
 			std::uint32_t mNumDescriptors;
 		};
 	}
@@ -106,35 +168,38 @@ namespace Brawler
 		template <typename DataElementType>
 		void DescriptorTableBuilder::CreateConstantBufferView(const std::uint32_t index, const ConstantBufferView<DataElementType> cbv)
 		{
-			CreateConstantBufferView(index, cbv.CreateCBVDescription());
+			assert(!mDescriptorTable.has_value() && "ERROR: DescriptorTableBuilder::CreateConstantBufferView() was called after DescriptorTableBuilder::FinalizeDescriptorTable()!");
+			assert(index < mDescriptorInfoArr.size());
+			
+			mDescriptorInfoArr[index] = CBVInfo{
+				.BufferSubAllocation{ cbv.GetBufferSubAllocation() },
+				.OffsetFromSubAllocationStart = cbv.GetOffsetFromSubAllocationStart()
+			};
 		}
 
 		template <DXGI_FORMAT Format, D3D12_SRV_DIMENSION ViewDimension>
 		void DescriptorTableBuilder::CreateShaderResourceView(const std::uint32_t index, const ShaderResourceView<Format, ViewDimension>& srv)
 		{
-			CreateShaderResourceView(index, SRVInfo{
-				.D3DResource{ srv.GetD3D12Resource() },
+			assert(!mDescriptorTable.has_value() && "ERROR: DescriptorTableBuilder::CreateShaderResourceView() was called after DescriptorTableBuilder::FinalizeDescriptorTable()!");
+			assert(index < mDescriptorInfoArr.size());
+
+			mDescriptorInfoArr[index] = SRVInfo{
+				.GPUResource{ srv.GetGPUResource() },
 				.SRVDesc{ srv.CreateSRVDescription() }
-			});
+			};
 		}
 
 		template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
 		void DescriptorTableBuilder::CreateUnorderedAccessView(const std::uint32_t index, const UnorderedAccessView<Format, ViewDimension>& uav)
 		{
-			Brawler::OptionalRef<Brawler::D3D12Resource> uavCounterResource{};
+			assert(!mDescriptorTable.has_value() && "ERROR: DescriptorTableBuilder::CreateUnorderedAccessView() was called after DescriptorTableBuilder::FinalizeDescriptorTable()!");
+			assert(index < mDescriptorInfoArr.size());
 
-			{
-				const Brawler::OptionalRef<const UAVCounterSubAllocation> uavCounterSubAllocation{ uav.GetUAVCounter() };
-
-				if (uavCounterSubAllocation.HasValue())
-					uavCounterResource = uavCounterSubAllocation->GetD3D12Resource();
-			}
-
-			CreateUnorderedAccessView(index, UAVInfo{
-				.D3DResource{uav.GetD3D12Resource()},
-				.UAVCounterD3DResource{std::move(uavCounterResource)},
-				.UAVDesc{uav.CreateUAVDescription()}
-			});
+			mDescriptorInfoArr[index] = UAVInfo{
+				.GPUResource{ uav.GetGPUResource() },
+				.UAVCounter{ uav.GetUAVCounter() },
+				.UAVDesc{ uav.CreateUAVDescription() }
+			};
 		}
 	}
 }

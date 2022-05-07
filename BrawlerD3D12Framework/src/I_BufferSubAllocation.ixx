@@ -37,6 +37,8 @@ export namespace Brawler
 
 		public:
 			Brawler::D3D12Resource& GetD3D12Resource() const;
+
+			BufferResource& GetBufferResource();
 			const BufferResource& GetBufferResource() const;
 
 			/// <summary>

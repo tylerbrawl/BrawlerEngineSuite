@@ -6,14 +6,14 @@ module;
 #include <assimp/scene.h>
 
 module Brawler.StaticMeshManager;
-import Util.General;
+import Util.ModelExport;
 import Brawler.JobSystem;
 
 namespace Brawler
 {
 	void StaticMeshManager::BeginInitialization()
 	{
-		const aiScene& scene{ Util::General::GetScene() };
+		const aiScene& scene{ Util::ModelExport::GetScene() };
 
 		const std::size_t meshCount = static_cast<std::size_t>(scene.mNumMeshes);
 		mMeshArr.resize(meshCount);
