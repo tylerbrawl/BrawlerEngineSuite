@@ -12,6 +12,7 @@ import Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.D3D12.RenderPassBundle;
 import Brawler.D3D12.Texture2D;
 import Brawler.D3D12.DescriptorTableBuilder;
+import Brawler.D3D12.BufferResource;
 
 namespace Brawler
 {
@@ -110,12 +111,13 @@ export namespace Brawler
 		BC7ImageCompressor(BC7ImageCompressor&& rhs) noexcept = default;
 		BC7ImageCompressor& operator=(BC7ImageCompressor&& rhs) noexcept = default;
 
-		void CreateTransientResources(D3D12::FrameGraphBuilder& frameGraphBuilder);
-		std::vector<D3D12::RenderPassBundle> GetImageCompressionRenderPassBundles();
+		std::vector<D3D12::RenderPassBundle> GetImageCompressionRenderPassBundles(D3D12::FrameGraphBuilder& frameGraphBuilder);
 
 		//void CompressImage(DirectX::Image& destImage);
 
 	private:
+		void CreateTransientResources(D3D12::FrameGraphBuilder& frameGraphBuilder);
+
 		void InitializeBufferResources(D3D12::FrameGraphBuilder& frameGraphBuilder);
 		void InitializeSourceTextureResource(D3D12::FrameGraphBuilder& frameGraphBuilder);
 
@@ -123,6 +125,7 @@ export namespace Brawler
 
 		D3D12::RenderPassBundle CreateResourceUploadRenderPassBundle();
 		D3D12::RenderPassBundle CreateCompressionRenderPassBundle();
+		D3D12::RenderPassBundle CreateResourceReadbackRenderPassBundle();
 
 		std::size_t GetTotalBlockCount() const;
 
@@ -130,6 +133,8 @@ export namespace Brawler
 		InitInfo mInitInfo;
 		ResourceInfo mResourceInfo;
 		DescriptorTableBuilderInfo mTableBuilderInfo;
+
+		std::unique_ptr<D3D12::BufferResource> mReadbackBufferPtr;
 
 		//std::unique_ptr<D3D12::StructuredBuffer<BufferBC7>> mOutputBuffer;
 		//std::unique_ptr<D3D12::StructuredBuffer<BufferBC7>> mError1Buffer;

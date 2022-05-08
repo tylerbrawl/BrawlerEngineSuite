@@ -188,7 +188,8 @@ namespace Brawler
 	BC7ImageCompressor::BC7ImageCompressor(InitInfo&& initInfo) :
 		mInitInfo(std::move(initInfo)),
 		mResourceInfo(),
-		mTableBuilderInfo()
+		mTableBuilderInfo(),
+		mReadbackBufferPtr(nullptr)
 	{
 		assert(mInitInfo.DestImage.format == mInitInfo.DesiredFormat && "ERROR: A DirectX::Image with an unexpected format was provided for BC7ImageCompressor::CompressImage()!");
 	}
@@ -232,21 +233,24 @@ namespace Brawler
 	}
 	*/
 
+	std::vector<D3D12::RenderPassBundle> BC7ImageCompressor::GetImageCompressionRenderPassBundles(D3D12::FrameGraphBuilder& frameGraphBuilder)
+	{
+		CreateTransientResources(frameGraphBuilder);
+		
+		std::vector<D3D12::RenderPassBundle> createdBundleArr{};
+		createdBundleArr.reserve(3);
+
+		createdBundleArr.push_back(CreateResourceUploadRenderPassBundle());
+		createdBundleArr.push_back(CreateCompressionRenderPassBundle());
+		createdBundleArr.push_back(CreateResourceReadbackRenderPassBundle());
+
+		return createdBundleArr;
+	}
+
 	void BC7ImageCompressor::CreateTransientResources(D3D12::FrameGraphBuilder& frameGraphBuilder)
 	{
 		InitializeSourceTextureResource(frameGraphBuilder);
 		InitializeBufferResources(frameGraphBuilder);
-	}
-
-	std::vector<D3D12::RenderPassBundle> BC7ImageCompressor::GetImageCompressionRenderPassBundles()
-	{
-		std::vector<D3D12::RenderPassBundle> createdBundleArr{};
-		createdBundleArr.reserve(3);
-		
-		createdBundleArr.push_back(CreateResourceUploadRenderPassBundle());
-		createdBundleArr.push_back(CreateCompressionRenderPassBundle());
-
-		return createdBundleArr;
 	}
 
 	void BC7ImageCompressor::InitializeBufferResources(D3D12::FrameGraphBuilder& frameGraphBuilder)
@@ -258,7 +262,7 @@ namespace Brawler
 		// D3D12_RESOURCE_STATE_UNORDERED_ACCESS state. Thus, they must sadly be placed into
 		// separate BufferResource instances.
 
-		static constexpr auto INITIALIZE_SUB_ALLOCATION_LAMBDA = []<typename SubAllocationType, typename... Args>(D3D12::FrameGraphBuilder& builder, const D3D12::BufferResourceInitializationInfo& bufferInitInfo, Args&&... args) -> SubAllocationType
+		static constexpr auto INITIALIZE_SUB_ALLOCATION_LAMBDA = []<typename SubAllocationType, typename... Args>(D3D12::FrameGraphBuilder & builder, const D3D12::BufferResourceInitializationInfo & bufferInitInfo, Args&&... args) -> SubAllocationType
 		{
 			D3D12::BufferResource& bufferResource{ builder.CreateTransientResource<D3D12::BufferResource>(bufferInitInfo) };
 
@@ -279,21 +283,21 @@ namespace Brawler
 		};
 
 		// Output Buffer
-		mResourceInfo.OutputBufferSubAllocation = INITIALIZE_SUB_ALLOCATION_LAMBDA.operator()<D3D12::StructuredBufferSubAllocation<BufferBC7>>(frameGraphBuilder, bufferInitInfo, numTotalBlocks);
+		mResourceInfo.OutputBufferSubAllocation = INITIALIZE_SUB_ALLOCATION_LAMBDA.operator() < D3D12::StructuredBufferSubAllocation<BufferBC7> > (frameGraphBuilder, bufferInitInfo, numTotalBlocks);
 
 		// Error 1 Buffer
 		// The error 1 buffer has the exact same description as the output buffer.
-		mResourceInfo.Error1BufferSubAllocation = INITIALIZE_SUB_ALLOCATION_LAMBDA.operator()<D3D12::StructuredBufferSubAllocation<BufferBC7>>(frameGraphBuilder, bufferInitInfo, numTotalBlocks);
+		mResourceInfo.Error1BufferSubAllocation = INITIALIZE_SUB_ALLOCATION_LAMBDA.operator() < D3D12::StructuredBufferSubAllocation<BufferBC7> > (frameGraphBuilder, bufferInitInfo, numTotalBlocks);
 
 		// Error 2 Buffer
 		// The error 2 buffer has the exact same description as the output buffer.
-		mResourceInfo.Error2BufferSubAllocation = INITIALIZE_SUB_ALLOCATION_LAMBDA.operator()<D3D12::StructuredBufferSubAllocation<BufferBC7>>(frameGraphBuilder, bufferInitInfo, numTotalBlocks);
+		mResourceInfo.Error2BufferSubAllocation = INITIALIZE_SUB_ALLOCATION_LAMBDA.operator() < D3D12::StructuredBufferSubAllocation<BufferBC7> > (frameGraphBuilder, bufferInitInfo, numTotalBlocks);
 
 		// Constants Buffer
 		bufferInitInfo.SizeInBytes = sizeof(ConstantsBC7);
 		bufferInitInfo.InitialResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST;
 
-		mResourceInfo.ConstantBufferSubAllocation = INITIALIZE_SUB_ALLOCATION_LAMBDA.operator()<D3D12::ConstantBufferSubAllocation<ConstantsBC7>>(frameGraphBuilder, bufferInitInfo);
+		mResourceInfo.ConstantBufferSubAllocation = INITIALIZE_SUB_ALLOCATION_LAMBDA.operator() < D3D12::ConstantBufferSubAllocation<ConstantsBC7> > (frameGraphBuilder, bufferInitInfo);
 
 		// We can, however, create the two sub-allocations from an upload heap buffer from within the
 		// same BufferResource.
@@ -324,10 +328,21 @@ namespace Brawler
 		}
 
 		// CPU Output Buffer
+		//
+		// This buffer needs to actually be a persistent resource, since it will need to outlive the
+		// frame on which it is recorded into. That way, we can access its data on the CPU when the time
+		// comes.
 		bufferInitInfo.SizeInBytes = (numTotalBlocks * sizeof(BufferBC7));
 		bufferInitInfo.HeapType = D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_READBACK;
 
-		mResourceInfo.CPUOutputBufferSubAllocation = INITIALIZE_SUB_ALLOCATION_LAMBDA.operator()<D3D12::StructuredBufferSubAllocation<BufferBC7>>(frameGraphBuilder, bufferInitInfo, numTotalBlocks);
+		mReadbackBufferPtr = std::make_unique<D3D12::BufferResource>(bufferInitInfo);
+
+		{
+			std::optional<D3D12::StructuredBufferSubAllocation<BufferBC7>> optionalCPUOutputSubAllocation{ mReadbackBufferPtr->CreateBufferSubAllocation<D3D12::StructuredBufferSubAllocation<BufferBC7>>(numTotalBlocks) };
+			assert(optionalCPUOutputSubAllocation.has_value());
+
+			mResourceInfo.CPUOutputBufferSubAllocation = std::move(*optionalCPUOutputSubAllocation);
+		}
 	}
 
 	void BC7ImageCompressor::InitializeSourceTextureResource(D3D12::FrameGraphBuilder& frameGraphBuilder)
@@ -434,7 +449,7 @@ namespace Brawler
 				.DestConstantBufferSubAllocation{mResourceInfo.ConstantBufferSubAllocation},
 				.ConstantBufferUploadSubAllocation{std::move(mResourceInfo.ConstantBufferCopySubAllocation)},
 				.ConstantsData{std::move(cbData)}
-			});
+				});
 
 			cbCopyRenderPass.SetRenderPassCommands([] (D3D12::CopyContext& context, const ConstantBufferCopyInfo& copyInfo)
 			{
@@ -470,7 +485,7 @@ namespace Brawler
 			DescriptorTableBuilderInfo& DescriptorTableBuilders;
 			std::uint32_t ThreadGroupCount;
 		};
-		
+
 		const std::size_t numXBlocks = std::max<std::size_t>(1, (mInitInfo.SrcImage.width + 3) >> 2);
 		const std::size_t numYBlocks = std::max<std::size_t>(1, (mInitInfo.SrcImage.height + 3) >> 2);
 		const std::size_t numTotalBlocks = (numXBlocks * numYBlocks);
@@ -506,19 +521,19 @@ namespace Brawler
 					.Resources{ mResourceInfo },
 					.DescriptorTableBuilders{ mTableBuilderInfo },
 					.ThreadGroupCount = std::max<std::uint32_t>(((numBlocksInCurrBatch + 3) / 4), 1)
-				});
+					});
 
 				mode0Pass.SetRenderPassCommands([] (D3D12::DirectContext& context, const CompressionPassInfo& passInfo)
 				{
 					auto resourceBinder{ context.SetPipelineState<Brawler::PSOs::PSOID::BC7_TRY_MODE_456>() };
 
-					resourceBinder.BindDescriptorTable<RootParams::SOURCE_TEXTURE_SRV_TABLE>(passInfo.DescriptorTableBuilders.SourceTextureTableBuilder.FinalizeDescriptorTable());
+					resourceBinder.BindDescriptorTable<RootParams::SOURCE_TEXTURE_SRV_TABLE>(passInfo.DescriptorTableBuilders.SourceTextureTableBuilder.GetDescriptorTable());
 
 					// We require Resource Binding Tier 2 as a minimum, so we can leave INPUT_BUFFER_SRV_TABLE
 					// unbound. (SRVs in descriptor tables do not need to be bound in this tier, and according
 					// to NVIDIA, leaving descriptors unbound when it is possible improves performance.)
 
-					resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(passInfo.DescriptorTableBuilders.Error1UAVTableBuilder.FinalizeDescriptorTable());
+					resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(passInfo.DescriptorTableBuilders.Error1UAVTableBuilder.GetDescriptorTable());
 					resourceBinder.BindRootCBV<RootParams::COMPRESSION_SETTINGS_CBV>(passInfo.Resources.ConstantBufferSubAllocation.CreateRootConstantBufferView());
 					resourceBinder.BindRoot32BitConstants<RootParams::MODE_ID_AND_START_BLOCK_NUM_ROOT_CONSTANTS>(passInfo.RootConstants);
 
@@ -568,25 +583,25 @@ namespace Brawler
 						.Resources{ mResourceInfo },
 						.DescriptorTableBuilders{ mTableBuilderInfo },
 						.ThreadGroupCount = numBlocksInCurrBatch
-					});
+						});
 
 					compressionPass.SetRenderPassCommands([] (D3D12::DirectContext& context, const CompressionPassInfo& passInfo)
 					{
 						auto resourceBinder{ context.SetPipelineState<PSOIdentifier>() };
 
-						resourceBinder.BindDescriptorTable<RootParams::SOURCE_TEXTURE_SRV_TABLE>(passInfo.DescriptorTableBuilders.SourceTextureTableBuilder.FinalizeDescriptorTable());
+						resourceBinder.BindDescriptorTable<RootParams::SOURCE_TEXTURE_SRV_TABLE>(passInfo.DescriptorTableBuilders.SourceTextureTableBuilder.GetDescriptorTable());
 						resourceBinder.BindRootCBV<RootParams::COMPRESSION_SETTINGS_CBV>(passInfo.Resources.ConstantBufferSubAllocation.CreateRootConstantBufferView());
 						resourceBinder.BindRoot32BitConstants<RootParams::MODE_ID_AND_START_BLOCK_NUM_ROOT_CONSTANTS>(passInfo.RootConstants);
 
 						if constexpr (CURRENT_ERROR_BINDING_MODE == ErrorBindingMode::ERROR1_SRV_ERROR2_UAV)
 						{
-							resourceBinder.BindDescriptorTable<RootParams::INPUT_BUFFER_SRV_TABLE>(passInfo.DescriptorTableBuilders.Error1SRVTableBuilder.FinalizeDescriptorTable());
-							resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(passInfo.DescriptorTableBuilders.Error2UAVTableBuilder.FinalizeDescriptorTable());
+							resourceBinder.BindDescriptorTable<RootParams::INPUT_BUFFER_SRV_TABLE>(passInfo.DescriptorTableBuilders.Error1SRVTableBuilder.GetDescriptorTable());
+							resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(passInfo.DescriptorTableBuilders.Error2UAVTableBuilder.GetDescriptorTable());
 						}
 						else
 						{
-							resourceBinder.BindDescriptorTable<RootParams::INPUT_BUFFER_SRV_TABLE>(passInfo.DescriptorTableBuilders.Error2SRVTableBuilder.FinalizeDescriptorTable());
-							resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(passInfo.DescriptorTableBuilders.Error1UAVTableBuilder.FinalizeDescriptorTable());
+							resourceBinder.BindDescriptorTable<RootParams::INPUT_BUFFER_SRV_TABLE>(passInfo.DescriptorTableBuilders.Error2SRVTableBuilder.GetDescriptorTable());
+							resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(passInfo.DescriptorTableBuilders.Error1UAVTableBuilder.GetDescriptorTable());
 						}
 
 						context.Dispatch(
@@ -603,16 +618,16 @@ namespace Brawler
 				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 1>("BC7 Image Compressor - Mode 1 Pass (BC7_TRY_MODE_137)");
 
 				// Mode 3
-				createRenderPassMode13702Lambda.operator() <Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 3>("BC7 Image Compressor - Mode 3 Pass (BC7_TRY_MODE_137)");
+				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 3>("BC7 Image Compressor - Mode 3 Pass (BC7_TRY_MODE_137)");
 
 				// Mode 7
-				createRenderPassMode13702Lambda.operator() <Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 7>("BC7 Image Compressor - Mode 7 Pass (BC7_TRY_MODE_137)");
+				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 7>("BC7 Image Compressor - Mode 7 Pass (BC7_TRY_MODE_137)");
 
 				// Mode 0
-				createRenderPassMode13702Lambda.operator() <Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 0>("BC7 Image Compressor - Mode 0 Pass (BC7_TRY_MODE_02)");
+				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 0>("BC7 Image Compressor - Mode 0 Pass (BC7_TRY_MODE_02)");
 
 				// Mode 2
-				createRenderPassMode13702Lambda.operator() <Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 2>("BC7 Image Compressor - Mode 2 Pass (BC7_TRY_MODE_02)");
+				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 2>("BC7 Image Compressor - Mode 2 Pass (BC7_TRY_MODE_02)");
 			}
 
 			// Encode Block
@@ -633,20 +648,20 @@ namespace Brawler
 					.Resources{ mResourceInfo },
 					.DescriptorTableBuilders{ mTableBuilderInfo },
 					.ThreadGroupCount = std::max<std::uint32_t>(((numBlocksInCurrBatch + 3) / 4), 1)
-				});
+					});
 
 				encodeBlockPass.SetRenderPassCommands([] (D3D12::DirectContext& context, const CompressionPassInfo& passInfo)
 				{
 					auto resourceBinder{ context.SetPipelineState<Brawler::PSOs::PSOID::BC7_ENCODE_BLOCK>() };
 
-					resourceBinder.BindDescriptorTable<RootParams::SOURCE_TEXTURE_SRV_TABLE>(passInfo.DescriptorTableBuilders.SourceTextureTableBuilder.FinalizeDescriptorTable());
-					resourceBinder.BindDescriptorTable<RootParams::INPUT_BUFFER_SRV_TABLE>(passInfo.DescriptorTableBuilders.Error2SRVTableBuilder.FinalizeDescriptorTable());
+					resourceBinder.BindDescriptorTable<RootParams::SOURCE_TEXTURE_SRV_TABLE>(passInfo.DescriptorTableBuilders.SourceTextureTableBuilder.GetDescriptorTable());
+					resourceBinder.BindDescriptorTable<RootParams::INPUT_BUFFER_SRV_TABLE>(passInfo.DescriptorTableBuilders.Error2SRVTableBuilder.GetDescriptorTable());
 
 					{
 						D3D12::DescriptorTableBuilder outputTableBuilder{ 1 };
 						outputTableBuilder.CreateUnorderedAccessView(0, passInfo.Resources.OutputBufferSubAllocation.CreateUnorderedAccessViewForDescriptorTable());
 
-						resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(outputTableBuilder.FinalizeDescriptorTable());
+						resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(outputTableBuilder.GetDescriptorTable());
 					}
 
 					resourceBinder.BindRootCBV<RootParams::COMPRESSION_SETTINGS_CBV>(passInfo.Resources.ConstantBufferSubAllocation.CreateRootConstantBufferView());
@@ -667,6 +682,36 @@ namespace Brawler
 		}
 
 		return compressionBundle;
+	}
+
+	D3D12::RenderPassBundle BC7ImageCompressor::CreateResourceReadbackRenderPassBundle()
+	{
+		struct ReadbackPassInfo
+		{
+			D3D12::StructuredBufferSubAllocation<BufferBC7>& BufferCopySrc;
+			D3D12::StructuredBufferSubAllocation<BufferBC7>& BufferCopyDest;
+		};
+
+		D3D12::RenderPass<D3D12::GPUCommandQueueType::COPY, ReadbackPassInfo> readbackPass{};
+		readbackPass.SetRenderPassName("BC7 Image Compressor - Read-Back Buffer Copy");
+
+		readbackPass.AddResourceDependency(mResourceInfo.CPUOutputBufferSubAllocation.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST);
+		readbackPass.AddResourceDependency(mResourceInfo.OutputBufferSubAllocation.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE);
+
+		readbackPass.SetInputData(ReadbackPassInfo{
+			.BufferCopySrc{mResourceInfo.OutputBufferSubAllocation},
+			.BufferCopyDest{mResourceInfo.CPUOutputBufferSubAllocation}
+		});
+
+		readbackPass.SetRenderPassCommands([] (D3D12::CopyContext& context, const ReadbackPassInfo& passInfo)
+		{
+			context.CopyBufferToBuffer(passInfo.BufferCopyDest, passInfo.BufferCopySrc);
+		});
+
+		D3D12::RenderPassBundle readbackPassBundle{};
+		readbackPassBundle.AddCopyRenderPass(std::move(readbackPass));
+
+		return readbackPassBundle;
 	}
 
 	std::size_t BC7ImageCompressor::GetTotalBlockCount() const
