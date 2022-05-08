@@ -176,6 +176,7 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalOptions>/constexpr:steps2000000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalBMIDirectories>%(AdditionalBMIDirectories)</AdditionalBMIDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -201,6 +202,7 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalOptions>/constexpr:steps2000000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalBMIDirectories>%(AdditionalBMIDirectories)</AdditionalBMIDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -228,6 +230,7 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalOptions>/constexpr:steps2000000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalBMIDirectories>%(AdditionalBMIDirectories)</AdditionalBMIDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -306,19 +309,20 @@
     <ClCompile Include="src\GPUResourceAllocationHandle.ixx" />
     <ClCompile Include="src\GPUResourceBarrierTypeSelectorState.ixx" />
     <ClCompile Include="src\GPUResourceCreationType.ixx" />
+    <ClCompile Include="src\PipelineEnums.ixx" />
     <ClCompile Include="src\PipelineType.ixx" />
     <ClCompile Include="src\PSODatabase.cpp" />
-    <ClCompile Include="src\PSODefinitionBase.ixx" />
-    <ClCompile Include="src\PSODefinition_BC7_ENCODE_BLOCK.ixx" />
-    <ClCompile Include="src\PSODefinition_BC7_TRY_MODE_02.ixx" />
-    <ClCompile Include="src\PSODefinition_BC7_TRY_MODE_137.ixx" />
-    <ClCompile Include="src\PSODefinition_BC7_TRY_MODE_456.ixx" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\RootDescriptors.ixx" />
     <ClCompile Include="src\RootParameterCache.ixx" />
     <ClCompile Include="src\RootParameterType.ixx" />
     <ClCompile Include="src\RootSignatureDatabase.cpp" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinitionBase.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_ENCODE_BLOCK.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_TRY_MODE_02.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_TRY_MODE_137.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_TRY_MODE_456.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSOID.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\RootParameterEnums.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\RootSignatureDefinition.ixx" />

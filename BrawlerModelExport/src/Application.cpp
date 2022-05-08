@@ -5,7 +5,6 @@ module;
 
 module Brawler.Application;
 import Brawler.AppParams;
-import Brawler.D3D12.PipelineEnums;
 
 import Brawler.Skeleton;
 
@@ -32,7 +31,7 @@ namespace Brawler
 	{
 		mThreadPool.SetInitialized();
 
-		mRenderer.Initialize<Brawler::RootSignatures::RootSignatureID, Brawler::PSOs::PSOID>();
+		mRenderer.Initialize();
 	}
 
 	void Application::Run(AppParams&& appParams)
@@ -78,5 +77,19 @@ namespace Brawler
 	{
 		assert(appPtr != nullptr && "ERROR: An attempt was made to get the static Brawler::Application pointer before it could be initialized!");
 		return *appPtr;
+	}
+
+	WorkerThreadPool& GetWorkerThreadPool()
+	{
+		thread_local WorkerThreadPool& threadPool{ GetApplication().GetWorkerThreadPool() };
+
+		return threadPool;
+	}
+
+	D3D12::Renderer& GetRenderer()
+	{
+		thread_local D3D12::Renderer& renderer{ GetApplication().GetRenderer() };
+
+		return renderer;
 	}
 }

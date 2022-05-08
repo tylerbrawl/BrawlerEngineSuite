@@ -302,12 +302,6 @@
     <ClCompile Include="src\ModelResolver.ixx" />
     <ClCompile Include="src\OpaqueMaterialDefinition.cpp" />
     <ClCompile Include="src\OpaqueMaterialDefinition.ixx" />
-    <ClCompile Include="src\PipelineEnums.ixx" />
-    <ClCompile Include="src\PSODefinition.ixx" />
-    <ClCompile Include="src\PSOID.ixx" />
-    <ClCompile Include="src\RootParameterEnums.ixx" />
-    <ClCompile Include="src\RootSignatureDefinition.ixx" />
-    <ClCompile Include="src\RootSignatureID.ixx" />
     <ClCompile Include="src\SceneLoader.cpp" />
     <ClCompile Include="src\SceneLoader.ixx" />
     <ClCompile Include="src\SerializationContext.ixx" />

@@ -61,12 +61,6 @@
     <Filter Include="Module Files\Convenience Types">
       <UniqueIdentifier>{11866207-1d0b-4fb1-98b9-94ab48ddfbc5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module Files\Pipeline State Management">
-      <UniqueIdentifier>{e77fec40-75af-4365-ab6f-f26a6bfcd643}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Module Files\Pipeline State Management\Shader Compiler Files">
-      <UniqueIdentifier>{8a2a1937-bc2f-4fd9-bdf2-875c421ee080}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Textures">
       <UniqueIdentifier>{18ee58e7-ebbe-4f33-aed5-de131425427d}</UniqueIdentifier>
     </Filter>
@@ -197,24 +191,6 @@
     </ClCompile>
     <ClCompile Include="src\Functional.ixx">
       <Filter>Module Files\Convenience Types</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PSODefinition.ixx">
-      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PSOID.ixx">
-      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\RootParameterEnums.ixx">
-      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\RootSignatureDefinition.ixx">
-      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\RootSignatureID.ixx">
-      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PipelineEnums.ixx">
-      <Filter>Module Files\Pipeline State Management</Filter>
     </ClCompile>
     <ClCompile Include="src\BCTextureCompressionContext.ixx">
       <Filter>Module Files\Textures</Filter>

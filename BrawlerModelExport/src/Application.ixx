@@ -38,4 +38,6 @@ export namespace Brawler
 	};
 
 	Application& GetApplication();
+	WorkerThreadPool& GetWorkerThreadPool();
+	D3D12::Renderer& GetRenderer();
 }

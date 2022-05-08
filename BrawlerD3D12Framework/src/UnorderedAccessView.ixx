@@ -224,10 +224,13 @@ namespace Brawler
 		template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
 		D3D12_UNORDERED_ACCESS_VIEW_DESC UnorderedAccessView<Format, ViewDimension>::CreateUAVDescription() const
 		{
-			D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{
-				.Format = Format,
-				.ViewDimension = ViewDimension
-			};
+			// We're also getting weird errors when we try to construct a D3D12_UNORDERED_ACCESS_VIEW_DESC
+			// instance, much like we do with ShaderResourceView::CreateSRVDescription(). Since we're just going
+			// to be initializing all of the fields anyways, however, it doesn't matter too much.
+			D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+			uavDesc.Format = Format;
+			uavDesc.ViewDimension = ViewDimension;
+
 			ViewDimensionInfo<ViewDimension>::InitializeUAVDescription(uavDesc, mViewDesc);
 
 			return uavDesc;

@@ -241,12 +241,12 @@ namespace Brawler
 	std::vector<D3D12::RenderPassBundle> BC7ImageCompressor::GetImageCompressionRenderPassBundles()
 	{
 		std::vector<D3D12::RenderPassBundle> createdBundleArr{};
+		createdBundleArr.reserve(3);
 		
-		const std::size_t numXBlocks = std::max<std::size_t>(1, (mInitInfo.SrcImage.width + 3) >> 2);
-		const std::size_t numYBlocks = std::max<std::size_t>(1, (mInitInfo.SrcImage.height + 3) >> 2);
-		const std::size_t numTotalBlocks = (numXBlocks * numYBlocks);
+		createdBundleArr.push_back(CreateResourceUploadRenderPassBundle());
+		createdBundleArr.push_back(CreateCompressionRenderPassBundle());
 
-
+		return createdBundleArr;
 	}
 
 	void BC7ImageCompressor::InitializeBufferResources(D3D12::FrameGraphBuilder& frameGraphBuilder)

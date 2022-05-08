@@ -7,16 +7,16 @@ module;
 export module Brawler.PSOs.PSODefinition;
 
 import :PSODefinitionBase;
-import :BC7_TRY_MODE_456;
-import :BC7_TRY_MODE_137;
-import :BC7_TRY_MODE_02;
-import :BC7_ENCODE_BLOCK;
+export import :BC7_TRY_MODE_456;
+export import :BC7_TRY_MODE_137;
+export import :BC7_TRY_MODE_02;
+export import :BC7_ENCODE_BLOCK;
 
 import Brawler.PSOs.PSOID;
 import Brawler.RootSignatures.RootSignatureID;
 import Util.Engine;
 import Util.Reflection;
-import Brawler.PSOs.PipelineType;
+import Brawler.D3D12.PipelineType;
 
 namespace Brawler
 {

@@ -125,7 +125,7 @@ namespace
 
 		static constexpr auto APPEND_IMPORT_LAMBDA = []<std::underlying_type_t<Brawler::PSOID>... PSOIdentifierNums>(std::string& importsStr, std::integer_sequence<std::underlying_type_t<Brawler::PSOID>, PSOIdentifierNums...> psoSequence)
 		{
-			((importsStr += std::string{ "import :" } + std::string{ Brawler::GetPSOIDString<static_cast<Brawler::PSOID>(PSOIdentifierNums)>() } + ";\n"), ...);
+			((importsStr += std::string{ "export import :" } + std::string{ Brawler::GetPSOIDString<static_cast<Brawler::PSOID>(PSOIdentifierNums)>() } + ";\n"), ...);
 		};
 
 		APPEND_IMPORT_LAMBDA(importsText, Brawler::ShaderProfiles::GetPSOIdentifiers<ProfileID>());
@@ -168,7 +168,7 @@ namespace Brawler
 
 				{
 					Brawler::FileWriterNode endHeaderNode{};
-					endHeaderNode.SetOutputText("import Brawler.PSOs.PSOID;\nimport Brawler.RootSignatures.RootSignatureID;\nimport Util.Engine;\nimport Util.Reflection;\nimport Brawler.PSOs.PipelineType;\n\n");
+					endHeaderNode.SetOutputText("import Brawler.PSOs.PSOID;\nimport Brawler.RootSignatures.RootSignatureID;\nimport Util.Engine;\nimport Util.Reflection;\nimport Brawler.D3D12.PipelineType;\n\n");
 
 					headerNode.AddChildNode(std::move(endHeaderNode));
 				}

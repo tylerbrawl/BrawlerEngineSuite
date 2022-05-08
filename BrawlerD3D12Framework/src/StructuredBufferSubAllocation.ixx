@@ -408,7 +408,7 @@ namespace Brawler
 				// need CounterOffsetInBytes to be 0, as the D3D12 API requires it, for some reason.
 				.CounterOffsetInBytes = (mUAVCounter.HasReservation() ? mUAVCounter.GetOffsetFromBufferStart() : 0),
 
-				.Flags = 0
+				.Flags = D3D12_BUFFER_UAV_FLAGS::D3D12_BUFFER_UAV_FLAG_NONE
 			};
 		}
 	}
