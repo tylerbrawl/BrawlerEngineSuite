@@ -30,6 +30,7 @@
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Application.ixx" />
     <ClCompile Include="src\AppParams.ixx" />
+    <ClCompile Include="src\CondensedByteArrayInfo.ixx" />
     <ClCompile Include="src\ConvenienceTypes.ixx" />
     <ClCompile Include="src\CoroutineUtil.cpp" />
     <ClCompile Include="src\CoroutineUtil.ixx" />
@@ -62,6 +63,9 @@
     <ClCompile Include="src\PSOBuilder.ixx" />
     <ClCompile Include="src\PSOBuilderCreators.ixx" />
     <ClCompile Include="src\PSODefinition.ixx" />
+    <ClCompile Include="src\PSODefinitionBaseFileWriter.cpp" />
+    <ClCompile Include="src\PSODefinitionSpecializationFileWriter.ixx" />
+    <ClCompile Include="src\PSODefinitionsBaseFileWriter.ixx" />
     <ClCompile Include="src\PSODefinitionsFileWriter.ixx" />
     <ClCompile Include="src\PSOField.ixx" />
     <ClCompile Include="src\PSOID.ixx" />

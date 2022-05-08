@@ -261,6 +261,18 @@
     <ClCompile Include="src\RootParameterEnumsFileWriter.ixx">
       <Filter>Module Files\File Writing\Source File Writers</Filter>
     </ClCompile>
+    <ClCompile Include="src\PSODefinitionsBaseFileWriter.ixx">
+      <Filter>Module Files\File Writing\Source File Writers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSODefinitionBaseFileWriter.cpp">
+      <Filter>Source Files\File Writing\Source File Writers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CondensedByteArrayInfo.ixx">
+      <Filter>Module Files\File Writing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSODefinitionSpecializationFileWriter.ixx">
+      <Filter>Module Files\File Writing\Source File Writers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

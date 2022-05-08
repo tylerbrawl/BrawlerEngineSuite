@@ -11,7 +11,7 @@ export namespace Brawler
 		class I_SourceFileWriter
 		{
 		protected:
-			explicit I_SourceFileWriter(const std::wstring_view sourceFileName);
+			explicit I_SourceFileWriter(std::wstring&& sourceFileName);
 
 		public:
 			virtual ~I_SourceFileWriter() = default;
@@ -22,7 +22,7 @@ export namespace Brawler
 			virtual Brawler::FileWriterNode CreateFileWriterTree() const = 0;
 
 		private:
-			std::wstring_view mSrcFileName;
+			std::wstring mSrcFileName;
 		};
 	}
 }

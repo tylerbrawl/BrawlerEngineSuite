@@ -2,11 +2,11 @@
 // wrath of God if you dare touch it.
 
 module;
-#include <array>
 #include "../DxDef.h"
 
 export module Brawler.PSOs.PSODefinition;
 
+import :PSODefinitionBase;
 import :BC7_TRY_MODE_456;
 import :BC7_TRY_MODE_137;
 import :BC7_TRY_MODE_02;
@@ -15,7 +15,6 @@ import :BC7_ENCODE_BLOCK;
 import Brawler.PSOs.PSOID;
 import Brawler.RootSignatures.RootSignatureID;
 import Util.Engine;
-import Brawler.D3D12.RootSignatureDatabase;
 import Util.Reflection;
 import Brawler.PSOs.PipelineType;
 
@@ -23,10 +22,6 @@ namespace Brawler
 {
 	namespace PSOs
 	{
-		template <Brawler::PSOs::PSOID PSOIdentifier>
-		struct PSODefinition
-		{};
-
 		template <typename PSOStreamType, std::size_t FieldIndex>
 		consteval bool IsComputePSOStream()
 		{

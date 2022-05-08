@@ -3,6 +3,7 @@ module;
 #include <string>
 
 export module Util.FileWrite;
+import Brawler.CondensedByteArrayInfo;
 
 export namespace Util
 {
@@ -25,6 +26,8 @@ export namespace Util
 		/// The function returns a string whose contents can be written to a source file as the initializer 
 		/// list parameters of a std::array<std::uint8_t, X>.
 		/// </returns>
-		std::string CreateSTDArrayContentsStringFromBuffer(std::span<const std::uint8_t> byteSpan);
+		std::string CreateSTDUInt8ArrayContentsStringFromBuffer(std::span<const std::uint8_t> byteSpan);
+
+		Brawler::CondensedByteArrayInfo CreateSTDUInt64ArrayContentsStringFromBuffer(std::span<const std::uint8_t> byteSpan);
 	}
 }

@@ -456,7 +456,7 @@ namespace Brawler
 			definitionStr += ">\n\t\t{\n\t\t\tstatic constexpr std::array<std::uint8_t, ";
 			definitionStr += std::to_string(rootSigBlobs.Version1_0->GetBufferSize());
 			definitionStr += "> SERIALIZED_ROOT_SIGNATURE_VERSION_1_0{";
-			definitionStr += Util::FileWrite::CreateSTDArrayContentsStringFromBuffer(std::span<const std::uint8_t>{
+			definitionStr += Util::FileWrite::CreateSTDUInt8ArrayContentsStringFromBuffer(std::span<const std::uint8_t>{
 				reinterpret_cast<const std::uint8_t*>(rootSigBlobs.Version1_0->GetBufferPointer()),
 					rootSigBlobs.Version1_0->GetBufferSize()
 			});
@@ -465,7 +465,7 @@ namespace Brawler
 			definitionStr += "};\n\t\t\tstatic constexpr std::array<std::uint8_t, ";
 			definitionStr += std::to_string(rootSigBlobs.Version1_1->GetBufferSize());
 			definitionStr += "> SERIALIZED_ROOT_SIGNATURE_VERSION_1_1{";
-			definitionStr += Util::FileWrite::CreateSTDArrayContentsStringFromBuffer(std::span<const std::uint8_t>{
+			definitionStr += Util::FileWrite::CreateSTDUInt8ArrayContentsStringFromBuffer(std::span<const std::uint8_t>{
 				reinterpret_cast<const std::uint8_t*>(rootSigBlobs.Version1_1->GetBufferPointer()),
 					rootSigBlobs.Version1_1->GetBufferSize()
 			});

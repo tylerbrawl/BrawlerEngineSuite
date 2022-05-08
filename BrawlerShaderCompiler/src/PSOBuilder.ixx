@@ -119,7 +119,7 @@ namespace Brawler
 			Brawler::FileWriterNode psoDefinitionRootNode{};
 
 			{
-				std::string psoDefinitionStr{ "\n\t\ttemplate <>\n\t\tstruct PSODefinition<PSOID::" };
+				std::string psoDefinitionStr{ "\t\ttemplate <>\n\t\tstruct PSODefinition<PSOID::" };
 				psoDefinitionStr += Brawler::GetPSOIDString<PSOIdentifier>();
 				psoDefinitionStr += ">\n\t\t{\n"; 
 				
@@ -133,7 +133,7 @@ namespace Brawler
 			// Write out the default PSO value as a byte array.
 			{
 				std::string defaultPSOValueStr{ "\t\t\tstatic constexpr std::array<std::uint8_t, sizeof(PSOStreamType)> DEFAULT_PSO_VALUE{" };
-				defaultPSOValueStr += Util::FileWrite::CreateSTDArrayContentsStringFromBuffer(std::span<const std::uint8_t, sizeof(PSOStreamType)>{ reinterpret_cast<const std::uint8_t*>(&mPSODefaultValue), sizeof(PSOStreamType) });
+				defaultPSOValueStr += Util::FileWrite::CreateSTDUInt8ArrayContentsStringFromBuffer(std::span<const std::uint8_t, sizeof(PSOStreamType)>{ reinterpret_cast<const std::uint8_t*>(&mPSODefaultValue), sizeof(PSOStreamType) });
 				defaultPSOValueStr += "};\n";
 
 				Brawler::FileWriterNode defaultPSOValueNode{};

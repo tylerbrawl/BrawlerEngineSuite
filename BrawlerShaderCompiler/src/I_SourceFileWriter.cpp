@@ -12,15 +12,15 @@ namespace Brawler
 {
 	namespace SourceFileWriters
 	{
-		I_SourceFileWriter::I_SourceFileWriter(const std::wstring_view sourceFileName) :
-			mSrcFileName(sourceFileName)
+		I_SourceFileWriter::I_SourceFileWriter(std::wstring&& sourceFileName) :
+			mSrcFileName(std::move(sourceFileName))
 		{}
 
 		void I_SourceFileWriter::WriteSourceFile() const
 		{
 			const Brawler::FileWriterNode rootNode{ CreateFileWriterTree() };
 
-			const std::filesystem::path outputDirectory{ Util::General::GetLaunchParameters().RootSourceDirectory / L"ShaderCompilerFiles" / mSrcFileName.data()};
+			const std::filesystem::path outputDirectory{ Util::General::GetLaunchParameters().RootSourceDirectory / L"ShaderCompilerFiles" / mSrcFileName };
 			
 			{
 				std::error_code errCode{};
