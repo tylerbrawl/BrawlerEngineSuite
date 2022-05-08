@@ -654,14 +654,8 @@
     <ClCompile Include="src\ResourceStateTrackingTest.ixx">
       <Filter>Module Files\Unit Tests\Resource State Tracking</Filter>
     </ClCompile>
-    <ClCompile Include="src\ResourceStateTrackingTest.cpp">
-      <Filter>Source Files\Unit Tests\Resource State Tracking</Filter>
-    </ClCompile>
     <ClCompile Include="src\ResourceStateTrackingTestModule.ixx">
       <Filter>Module Files\Unit Tests\Resource State Tracking</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ResourceStateTrackingTestModule.cpp">
-      <Filter>Source Files\Unit Tests\Resource State Tracking</Filter>
     </ClCompile>
     <ClCompile Include="src\FrameGraphBuilding.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
@@ -962,6 +956,18 @@
     </ClCompile>
     <ClCompile Include="src\PipelineEnums.ixx">
       <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphManager.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphManager.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceStateTrackingTest.cpp">
+      <Filter>Source Files\Unit Tests\Resource State Tracking</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceStateTrackingTestModule.cpp">
+      <Filter>Source Files\Unit Tests\Resource State Tracking</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

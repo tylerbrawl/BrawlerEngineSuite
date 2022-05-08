@@ -24,6 +24,9 @@ namespace Brawler
 			// Initialize the PSODatabase. This *MUST* be initialized after the RootSignatureDatabase,
 			// since PSO compilation relies on compiled root signatures.
 			PSODatabase::GetInstance();
+
+			// Initialize the FrameGraphManager.
+			mFrameGraphManager.Initialize();
 		}
 		
 		GPUCommandManager& Renderer::GetGPUCommandManager()
@@ -54,6 +57,14 @@ namespace Brawler
 		const PersistentGPUResourceManager& Renderer::GetPersistentGPUResourceManager() const
 		{
 			return mPersistentResourceManager;
+		}
+
+		void Renderer::ProcessFrame()
+		{
+			// Execute tasks which must be done during each frame, before Renderer::AdvanceFrame()
+			// is called.
+
+			mFrameGraphManager.ProcessCurrentFrame();
 		}
 
 		void Renderer::AdvanceFrame()
