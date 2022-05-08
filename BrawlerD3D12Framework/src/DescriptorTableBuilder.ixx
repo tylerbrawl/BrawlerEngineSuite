@@ -90,43 +90,37 @@ export namespace Brawler
 
 			/// <summary>
 			/// If this is the first time which this function is called for this DescriptorTableBuilder
-			/// instance, then it will allocate from the GPUResourceDescriptorHeap's per-frame
+			/// instance on a given frame, then it will allocate from the GPUResourceDescriptorHeap's per-frame
 			/// descriptor segment and create the descriptors within it. After that, the return value
-			/// of this function is the table which was created.
+			/// of this function is the table which was created for the remainder of the frame.
 			/// 
 			/// The DescriptorTableBuilder::Create*View() functions do not immediately create D3D12
 			/// descriptors; instead, they copy information which will be used to actually create
-			/// the descriptors once DescriptorTableBuilder::FinalizeDescriptorTable() is called. This
+			/// the descriptors once DescriptorTableBuilder::GetDescriptorTable() is called. This
 			/// allows for DescriptorTableBuilder instances to be created before the I_GPUResource
 			/// instances which it is creating descriptors for have been assigned ID3D12Resource
 			/// instances. For this reason, it is the caller's responsibility to ensure that
 			/// I_GPUResource instances for which descriptors are to be made outlive this
 			/// DescriptorTableBuilder instance.
 			/// 
+			/// Although this function returns a PerFrameDescriptorTable instance, it is valid to
+			/// both retain this DescriptorTableBuilder instance and call this function again across
+			/// multiple frames. A new PerFrameDescriptorTable instance is created on the first call
+			/// of this function on any given frame. However, it is *NOT* valid to persist the
+			/// created PerFrameDescriptorTable instances across multiple frames.
+			/// 
 			/// *NOTE*: To ensure that descriptors can be created, this function should only be
 			/// called after all of the relevant I_GPUResource instances have had ID3D12Resource
 			/// instances assigned to them. For both persistent and transient resources, this is guaranteed
 			/// to be the case during RenderPass recording time on the CPU timeline; that is, it
 			/// is valid to call this function within a callback which is passed to
-			/// RenderPass::SetRenderPassCommands(). 
-			/// 
-			/// *WARNING*: The behavior is *undefined* if this function is used to retrieve a
-			/// PerFrameDescriptorTable on a frame number other than the one in which the first call
-			/// to DescriptorTableBuilder::FinalizeDescriptorTable() is made. In other words,
-			/// DescriptorTableBuilder instances should *NOT* outlive the frame on which they were
-			/// created.
+			/// RenderPass::SetRenderPassCommands().
 			/// </summary>
 			/// <returns>
 			/// The function returns a PerFrameDescriptorTable which contains the descriptors
 			/// described by this DescriptorTableBuilder.
-			/// 
-			/// *WARNING*: The behavior is *undefined* if this function is used to retrieve a
-			/// PerFrameDescriptorTable on a frame number other than the one in which the first call
-			/// to DescriptorTableBuilder::FinalizeDescriptorTable() is called. In other words,
-			/// DescriptorTableBuilder instances should *NOT* outlive the frame on which they were
-			/// created.
 			/// </returns>
-			PerFrameDescriptorTable FinalizeDescriptorTable();
+			PerFrameDescriptorTable GetDescriptorTable();
 
 			/// <summary>
 			/// Retrieves the size of the descriptor table.
@@ -168,7 +162,7 @@ namespace Brawler
 		template <typename DataElementType>
 		void DescriptorTableBuilder::CreateConstantBufferView(const std::uint32_t index, const ConstantBufferView<DataElementType> cbv)
 		{
-			assert(!mDescriptorTable.has_value() && "ERROR: DescriptorTableBuilder::CreateConstantBufferView() was called after DescriptorTableBuilder::FinalizeDescriptorTable()!");
+			assert(!mDescriptorTable.has_value() && "ERROR: DescriptorTableBuilder::CreateConstantBufferView() was called after DescriptorTableBuilder::GetDescriptorTable()!");
 			assert(index < mDescriptorInfoArr.size());
 			
 			mDescriptorInfoArr[index] = CBVInfo{
@@ -180,7 +174,7 @@ namespace Brawler
 		template <DXGI_FORMAT Format, D3D12_SRV_DIMENSION ViewDimension>
 		void DescriptorTableBuilder::CreateShaderResourceView(const std::uint32_t index, const ShaderResourceView<Format, ViewDimension>& srv)
 		{
-			assert(!mDescriptorTable.has_value() && "ERROR: DescriptorTableBuilder::CreateShaderResourceView() was called after DescriptorTableBuilder::FinalizeDescriptorTable()!");
+			assert(!mDescriptorTable.has_value() && "ERROR: DescriptorTableBuilder::CreateShaderResourceView() was called after DescriptorTableBuilder::GetDescriptorTable()!");
 			assert(index < mDescriptorInfoArr.size());
 
 			mDescriptorInfoArr[index] = SRVInfo{
@@ -192,7 +186,7 @@ namespace Brawler
 		template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
 		void DescriptorTableBuilder::CreateUnorderedAccessView(const std::uint32_t index, const UnorderedAccessView<Format, ViewDimension>& uav)
 		{
-			assert(!mDescriptorTable.has_value() && "ERROR: DescriptorTableBuilder::CreateUnorderedAccessView() was called after DescriptorTableBuilder::FinalizeDescriptorTable()!");
+			assert(!mDescriptorTable.has_value() && "ERROR: DescriptorTableBuilder::CreateUnorderedAccessView() was called after DescriptorTableBuilder::GetDescriptorTable()!");
 			assert(index < mDescriptorInfoArr.size());
 
 			mDescriptorInfoArr[index] = UAVInfo{

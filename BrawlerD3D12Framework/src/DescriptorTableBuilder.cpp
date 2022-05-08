@@ -31,9 +31,11 @@ namespace Brawler
 			mDescriptorInfoArr.resize(tableSizeInDescriptors);
 		}
 
-		PerFrameDescriptorTable DescriptorTableBuilder::FinalizeDescriptorTable()
+		PerFrameDescriptorTable DescriptorTableBuilder::GetDescriptorTable()
 		{
-			if (!mDescriptorTable.has_value()) [[unlikely]]
+			// Create a new per-frame descriptor table if we do not have one for the
+			// current frame.
+			if (!mDescriptorTable.has_value() || !mDescriptorTable->IsDescriptorTableValid())
 				CreateDescriptorTable();
 			
 			return *mDescriptorTable;
@@ -87,13 +89,13 @@ namespace Brawler
 				++currIndex;
 			}
 
-			// Next, copy the descriptors over to the shader-visible GPUResourceDescriptorHeap.
+			// Now, copy the descriptors over to the shader-visible GPUResourceDescriptorHeap.
 			// This creates the per-frame descriptor table.
 			mDescriptorTable = Util::Engine::GetGPUResourceDescriptorHeap().CreatePerFrameDescriptorTable(*this);
 
-			// Finally, we can destroy the information which we kept to create the descriptors.
-			mDescriptorInfoArr.clear();
-			mDescriptorInfoArr.shrink_to_fit();
+			// We don't want to destroy the data which we used to create the descriptors, because
+			// we can still use them to create PerFrameDescriptorTable instances on the next
+			// frame.
 		}
 
 		void DescriptorTableBuilder::CreateConstantBufferView(const std::uint32_t index, const CBVInfo& cbvInfo)
