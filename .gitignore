@@ -364,4 +364,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Brawler Shader Compiler Symbolic Link/Directory Junction
-./BrawlerD3D12Framework/src/ShaderCompilerFiles
+/BrawlerD3D12Framework/src/ShaderCompilerFiles
