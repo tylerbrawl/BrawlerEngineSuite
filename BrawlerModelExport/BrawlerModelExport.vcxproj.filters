@@ -70,6 +70,9 @@
     <Filter Include="Module Files\Render Modules">
       <UniqueIdentifier>{272f588e-9adc-4c59-8690-b01baa7ea7f4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\File I/O\Mesh Attribute Pointers %28MAPs%29">
+      <UniqueIdentifier>{33599010-e8d6-45cf-b96a-de1469d2bd26}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -218,6 +221,18 @@
     </ClCompile>
     <ClCompile Include="src\BC7CompressionRenderModule.ixx">
       <Filter>Module Files\Render Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshAttributePointerDescriptor.ixx">
+      <Filter>Module Files\File I/O\Mesh Attribute Pointers %28MAPs%29</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshAttributeID.ixx">
+      <Filter>Module Files\File I/O\Mesh Attribute Pointers %28MAPs%29</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_MeshResolver.ixx">
+      <Filter>Module Files\Mesh Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SerializedMeshAttributeChunk.ixx">
+      <Filter>Module Files\File I/O\Mesh Attribute Pointers %28MAPs%29</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

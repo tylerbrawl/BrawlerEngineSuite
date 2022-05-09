@@ -5,6 +5,7 @@ module;
 #include <stdexcept>
 #include <string>
 #include <cassert>
+#include <atomic>
 #include <assimp/scene.h>
 
 module Brawler.MaterialManager;
@@ -37,16 +38,26 @@ namespace
 
 namespace Brawler
 {
-	void MaterialManager::BeginInitialization()
+	MaterialManager::MaterialManager() :
+		mMaterialDefinitionArr(),
+		mActiveSerializationCount(0)
+	{
+		CreateSerializationJobs();
+	}
+
+	void MaterialManager::CreateSerializationJobs()
 	{
 		const aiScene& scene{ Util::ModelExport::GetScene() };
 		
-		mMaterialDefinitionArr.resize(static_cast<std::size_t>(scene.mNumMaterials));
+		const std::size_t materialCount = static_cast<std::size_t>(scene.mNumMaterials);
+		mMaterialDefinitionArr.resize(materialCount);
+
+		mActiveSerializationCount.store(scene.mNumMaterials, std::memory_order::relaxed);
 
 		Brawler::JobGroup materialInitializationGroup{};
-		materialInitializationGroup.Reserve(static_cast<std::size_t>(scene.mNumMaterials));
+		materialInitializationGroup.Reserve(materialCount);
 
-		const std::span<aiMaterial*> materialSpan{ scene.mMaterials, static_cast<std::size_t>(scene.mNumMaterials) };
+		const std::span<aiMaterial*> materialSpan{ scene.mMaterials, materialCount };
 
 		// We don't have std::views::zip yet, so we'll just have to do this.
 		for (std::size_t i = 0; i < materialSpan.size(); ++i)

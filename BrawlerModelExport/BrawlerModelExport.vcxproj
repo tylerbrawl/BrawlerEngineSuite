@@ -290,6 +290,7 @@
     <ClCompile Include="src\IndexBuffer.ixx" />
     <ClCompile Include="src\I_MaterialDefinition.ixx" />
     <ClCompile Include="src\I_MeshManager.ixx" />
+    <ClCompile Include="src\I_MeshResolver.ixx" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MaterialID.ixx" />
     <ClCompile Include="src\MaterialIDMap.ixx" />
@@ -297,6 +298,8 @@
     <ClCompile Include="src\MaterialManager.ixx" />
     <ClCompile Include="src\Matrix.ixx" />
     <ClCompile Include="src\MeshTypeID.ixx" />
+    <ClCompile Include="src\MeshAttributeID.ixx" />
+    <ClCompile Include="src\MeshAttributePointerDescriptor.ixx" />
     <ClCompile Include="src\ModelExportUtil.cpp" />
     <ClCompile Include="src\ModelExportUtil.ixx" />
     <ClCompile Include="src\ModelResolver.cpp" />
@@ -306,6 +309,7 @@
     <ClCompile Include="src\SceneLoader.cpp" />
     <ClCompile Include="src\SceneLoader.ixx" />
     <ClCompile Include="src\SerializationContext.ixx" />
+    <ClCompile Include="src\SerializedMeshAttributeChunk.ixx" />
     <ClCompile Include="src\Skeleton.cpp" />
     <ClCompile Include="src\Skeleton.ixx" />
     <ClCompile Include="src\SkeletonBone.cpp" />
