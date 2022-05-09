@@ -7,6 +7,7 @@ module;
 module Brawler.D3D12.DescriptorTableBuilder;
 import Brawler.D3D12.GPUResourceDescriptorHeap;
 import Util.Engine;
+import Util.General;
 
 namespace Brawler
 {
@@ -26,7 +27,7 @@ namespace Brawler
 				.NodeMask = 0
 			};
 
-			CheckHRESULT(Util::Engine::GetD3D12Device().CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mStagingHeap)));
+			Util::General::CheckHRESULT(Util::Engine::GetD3D12Device().CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mStagingHeap)));
 
 			mDescriptorInfoArr.resize(tableSizeInDescriptors);
 		}

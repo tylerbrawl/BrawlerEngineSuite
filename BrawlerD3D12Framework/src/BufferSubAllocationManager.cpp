@@ -11,6 +11,7 @@ module Brawler.D3D12.BufferSubAllocationManager;
 import Brawler.D3D12.I_BufferSubAllocation;
 import Brawler.D3D12.BufferSubAllocationReservation;
 import Brawler.D3D12.BufferResource;
+import Util.General;
 
 namespace
 {
@@ -110,7 +111,7 @@ namespace Brawler
 			Brawler::D3D12Resource& d3dBufferResource{ mOwningBufferResourcePtr->GetD3D12Resource() };
 
 			std::uint8_t* destinationPtr = nullptr;
-			CheckHRESULT(d3dBufferResource.Map(0, &DISABLE_READ_RANGE, reinterpret_cast<void**>(&destinationPtr)));
+			Util::General::CheckHRESULT(d3dBufferResource.Map(0, &DISABLE_READ_RANGE, reinterpret_cast<void**>(&destinationPtr)));
 			destinationPtr += bufferOffset;
 
 			// Copy the data into the buffer. Rather than going in a for-loop for each resource
@@ -150,7 +151,7 @@ namespace Brawler
 			Brawler::D3D12Resource& d3dBufferResource{ mOwningBufferResourcePtr->GetD3D12Resource() };
 
 			std::uint8_t* srcPtr = nullptr;
-			CheckHRESULT(d3dBufferResource.Map(0, &readRange, reinterpret_cast<void**>(&srcPtr)));
+			Util::General::CheckHRESULT(d3dBufferResource.Map(0, &readRange, reinterpret_cast<void**>(&srcPtr)));
 			srcPtr += bufferOffset;
 
 			// Copy the data from the buffer. Rather than going in a for-loop for each resource
@@ -224,7 +225,7 @@ namespace Brawler
 				for (const auto& dataWriteRequest : mPendingWriteRequestArr)
 				{
 					std::uint8_t* destinationPtr = nullptr;
-					CheckHRESULT(d3dBufferResource.Map(0, &DISABLE_READ_RANGE, reinterpret_cast<void**>(&destinationPtr)));
+					Util::General::CheckHRESULT(d3dBufferResource.Map(0, &DISABLE_READ_RANGE, reinterpret_cast<void**>(&destinationPtr)));
 					destinationPtr += dataWriteRequest.BufferOffset;
 
 					std::memcpy(destinationPtr, dataWriteRequest.DataArr.data(), dataWriteRequest.DataArr.size());
@@ -239,7 +240,7 @@ namespace Brawler
 			else
 			{
 				std::uint8_t* baseBufferPtr = nullptr;
-				CheckHRESULT(d3dBufferResource.Map(0, &DISABLE_READ_RANGE, reinterpret_cast<void**>(&baseBufferPtr)));
+				Util::General::CheckHRESULT(d3dBufferResource.Map(0, &DISABLE_READ_RANGE, reinterpret_cast<void**>(&baseBufferPtr)));
 
 				for (const auto& dataWriteRequest : mPendingWriteRequestArr)
 					std::memcpy(baseBufferPtr + dataWriteRequest.BufferOffset, dataWriteRequest.DataArr.data(), dataWriteRequest.DataArr.size());

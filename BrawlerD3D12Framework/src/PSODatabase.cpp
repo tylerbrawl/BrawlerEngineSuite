@@ -6,6 +6,7 @@ module;
 module Brawler.D3D12.PSODatabase;
 import Brawler.JobSystem;
 import Util.Engine;
+import Util.General;
 import Brawler.PSOs.PSODefinition;
 
 namespace Brawler
@@ -64,7 +65,7 @@ namespace Brawler
 			psoCompileGroup.ExecuteJobs();
 
 			for (const auto& compilationResult : compileResultsArr)
-				CheckHRESULT(compilationResult);
+				Util::General::CheckHRESULT(compilationResult);
 		}
 
 		PSODatabase& PSODatabase::GetInstance()

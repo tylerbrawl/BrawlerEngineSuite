@@ -9,6 +9,7 @@ module Brawler.D3D12.GPUResourceDescriptorHeap;
 import Brawler.D3D12.I_GPUResource;
 import Brawler.D3D12.DescriptorTableBuilder;
 import Util.Engine;
+import Util.General;
 
 namespace Brawler
 {
@@ -46,7 +47,7 @@ namespace Brawler
 					.NodeMask = 0
 				};
 
-				CheckHRESULT(Util::Engine::GetD3D12Device().CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mHeap)));
+				Util::General::CheckHRESULT(Util::Engine::GetD3D12Device().CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mHeap)));
 			}
 
 			// Create a separate index for every available bindless SRV index.

@@ -10,6 +10,7 @@ import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.D3D12.GPUCommandContextGroup;
 import Brawler.D3D12.GPUCommandContexts;
 import Util.Engine;
+import Util.General;
 
 export namespace Brawler
 {
@@ -105,7 +106,7 @@ namespace Brawler
 		void GPUCommandQueue<QueueType>::Initialize()
 		{
 			// Create the command queue.
-			CheckHRESULT(Util::Engine::GetD3D12Device().CreateCommandQueue(
+			Util::General::CheckHRESULT(Util::Engine::GetD3D12Device().CreateCommandQueue(
 				&(QueueInfo<QueueType>::QUEUE_DESC),
 				IID_PPV_ARGS(&mCmdQueue)
 			));

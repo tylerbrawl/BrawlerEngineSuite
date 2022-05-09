@@ -35,21 +35,3 @@ namespace Brawler
 	using DXGISwapChain = IDXGISwapChain4;
 	using DXGIOutput = IDXGIOutput6;
 }
-
-import Util.General;
-
-#define CheckHRESULT(x)																																																						\
-{																																																											\
-	const HRESULT hr_ = (x);																																																					\
-	if (FAILED(hr_)) [[unlikely]]																																																			\
-	{																																																										\
-		if constexpr (Util::General::IsDebugModeEnabled())																																													\
-		{																																																									\
-			_com_error comErr{ hr_ };																																																		\
-			throw std::runtime_error{ std::string{"An HRESULT check failed!\n\nHRESULT Returned: "} + Util::General::WStringToString(comErr.ErrorMessage()) +																				\
-				"\nFunction: " + __FUNCSIG__ + "\nFile : " + __FILE__ + " (Line Number : " + std::to_string(__LINE__) + ")" };																												\
-		}																																																									\
-		else																																																								\
-			throw std::runtime_error{ "" };																																																	\
-	}																																																										\
-}

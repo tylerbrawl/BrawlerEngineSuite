@@ -7,6 +7,7 @@ module;
 module Brawler.D3D12.RootSignatureDatabase;
 import Brawler.JobSystem;
 import Util.Engine;
+import Util.General;
 import Brawler.RootSignatures.RootSignatureDefinition;
 
 namespace
@@ -20,7 +21,7 @@ namespace
 			if constexpr (std::to_underlying(HighestVersion) >= D3D_ROOT_SIGNATURE_VERSION::D3D_ROOT_SIGNATURE_VERSION_1_1)
 			{
 				constexpr auto rootSignatureSpan{ Brawler::RootSignatures::GetSerializedRootSignature1_1<RSIdentifier>() };
-				CheckHRESULT(Util::Engine::GetD3D12Device().CreateRootSignature(
+				Util::General::CheckHRESULT(Util::Engine::GetD3D12Device().CreateRootSignature(
 					0,
 					rootSignatureSpan.data(),
 					rootSignatureSpan.size_bytes(),
@@ -31,7 +32,7 @@ namespace
 			if constexpr (HighestVersion == D3D_ROOT_SIGNATURE_VERSION::D3D_ROOT_SIGNATURE_VERSION_1_0)
 			{
 				constexpr auto rootSignatureSpan{ Brawler::RootSignatures::GetSerializedRootSignature1_0<RSIdentifier>() };
-				CheckHRESULT(Util::Engine::GetD3D12Device().CreateRootSignature(
+				Util::General::CheckHRESULT(Util::Engine::GetD3D12Device().CreateRootSignature(
 					0,
 					rootSignatureSpan.data(),
 					rootSignatureSpan.size_bytes(),

@@ -63,7 +63,7 @@ namespace
 
 	void InitializeCOM()
 	{
-		CheckHRESULT(CoInitializeEx(nullptr, COINIT_MULTITHREADED));
+		Util::General::CheckHRESULT(CoInitializeEx(nullptr, COINIT_MULTITHREADED));
 	}
 }
 

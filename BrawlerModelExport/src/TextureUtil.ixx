@@ -10,6 +10,7 @@ import Brawler.TextureTypeMap;
 import Brawler.AppParams;
 import Util.ModelExport;
 import Util.Win32;
+import Util.General;
 
 export namespace Util
 {
@@ -168,7 +169,7 @@ namespace Util
 			};
 
 			DirectX::ScratchImage ddsImage{};
-			CheckHRESULT(DirectX::Convert(
+			Util::General::CheckHRESULT(DirectX::Convert(
 				embeddedImage,
 				Brawler::GetIntermediateTextureFormat<TextureType>(),
 				DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT,
@@ -187,7 +188,7 @@ namespace Util
 			// is in a WIC-compatible format.
 
 			DirectX::ScratchImage wicImage{};
-			CheckHRESULT(DirectX::LoadFromWICMemory(
+			Util::General::CheckHRESULT(DirectX::LoadFromWICMemory(
 				embeddedTexture.pcData,
 				embeddedTexture.mWidth,
 				DirectX::WIC_FLAGS::WIC_FLAGS_NONE,
@@ -196,7 +197,7 @@ namespace Util
 			));
 
 			DirectX::ScratchImage ddsImage{};
-			CheckHRESULT(DirectX::Convert(
+			Util::General::CheckHRESULT(DirectX::Convert(
 				wicImage.GetImages(),
 				wicImage.GetImageCount(),
 				wicImage.GetMetadata(),
@@ -245,7 +246,7 @@ namespace Util
 			const std::wstring texturePathStr{ texturePath.wstring() };
 			DirectX::ScratchImage wicImage{};
 
-			CheckHRESULT(DirectX::LoadFromWICFile(
+			Util::General::CheckHRESULT(DirectX::LoadFromWICFile(
 				texturePathStr.c_str(),
 				DirectX::WIC_FLAGS::WIC_FLAGS_NONE,
 				nullptr,
@@ -253,7 +254,7 @@ namespace Util
 			));
 
 			DirectX::ScratchImage ddsImage{};
-			CheckHRESULT(DirectX::Convert(
+			Util::General::CheckHRESULT(DirectX::Convert(
 				wicImage.GetImages(),
 				wicImage.GetImageCount(),
 				wicImage.GetMetadata(),
@@ -314,7 +315,7 @@ namespace Util
 #endif // _DEBUG
 
 			DirectX::ScratchImage mipMapChain{};
-			CheckHRESULT(DirectX::GenerateMipMaps(
+			Util::General::CheckHRESULT(DirectX::GenerateMipMaps(
 				texture.GetImages(),
 				texture.GetImageCount(),
 				texture.GetMetadata(),
@@ -340,7 +341,7 @@ namespace Util
 				// The desired texture type is in a block-compressed format, so we need to use a
 				// specific DirectXTex function for that.
 
-				CheckHRESULT(DirectX::Compress(
+				Util::General::CheckHRESULT(DirectX::Compress(
 					texture.GetImages(),
 					texture.GetImageCount(),
 					texture.GetMetadata(),
@@ -357,7 +358,7 @@ namespace Util
 			}
 			else
 			{
-				CheckHRESULT(DirectX::Convert(
+				Util::General::CheckHRESULT(DirectX::Convert(
 					texture.GetImages(),
 					texture.GetImageCount(),
 					texture.GetMetadata(),

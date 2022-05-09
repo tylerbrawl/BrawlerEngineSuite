@@ -6,6 +6,7 @@ module Brawler.D3D12.PlacedD3D12ResourceContainer;
 import Brawler.D3D12.GPUResourceInitializationInfo;
 import Brawler.D3D12.I_GPUResource;
 import Util.Engine;
+import Util.General;
 
 namespace Brawler
 {
@@ -26,7 +27,7 @@ namespace Brawler
 				optimizedClearValuePtr = &(*optimizedClearValue);
 
 			Microsoft::WRL::ComPtr<Brawler::D3D12Resource> d3dResource{};
-			CheckHRESULT(Util::Engine::GetD3D12Device().CreatePlacedResource1(
+			Util::General::CheckHRESULT(Util::Engine::GetD3D12Device().CreatePlacedResource1(
 				&(hAllocation.GetD3D12Heap()),
 				hAllocation.GetHeapOffset(),
 				&(initInfo.ResourceDesc),

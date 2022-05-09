@@ -6,6 +6,7 @@ module;
 
 module Brawler.D3D12.GPUDevice;
 import Brawler.CompositeEnum;
+import Util.General;
 
 namespace
 {
@@ -18,7 +19,7 @@ namespace
 			D3D12_FEATURE_DATA_SHADER_MODEL shaderModelData{
 				.HighestShaderModel = D3D_SHADER_MODEL::D3D_SHADER_MODEL_6_0
 			};
-			CheckHRESULT(d3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_SHADER_MODEL, &shaderModelData, sizeof(shaderModelData)));
+			Util::General::CheckHRESULT(d3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_SHADER_MODEL, &shaderModelData, sizeof(shaderModelData)));
 
 			if (shaderModelData.HighestShaderModel < D3D_SHADER_MODEL::D3D_SHADER_MODEL_6_0)
 				return false;
@@ -27,7 +28,7 @@ namespace
 		// Ensure Resource Binding Tier 2 support.
 		{
 			D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12OptionsData{};
-			CheckHRESULT(d3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_D3D12_OPTIONS, &d3d12OptionsData, sizeof(d3d12OptionsData)));
+			Util::General::CheckHRESULT(d3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_D3D12_OPTIONS, &d3d12OptionsData, sizeof(d3d12OptionsData)));
 
 			if (d3d12OptionsData.ResourceBindingTier < D3D12_RESOURCE_BINDING_TIER::D3D12_RESOURCE_BINDING_TIER_2)
 				return false;
@@ -110,7 +111,7 @@ case TypedUAVFormat::formatName:		\
 			.Support2{}
 		};
 
-		CheckHRESULT(d3dDevice.CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_FORMAT_SUPPORT, &formatSupport, sizeof(formatSupport)));
+		Util::General::CheckHRESULT(d3dDevice.CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_FORMAT_SUPPORT, &formatSupport, sizeof(formatSupport)));
 		return ((formatSupport.Support2 & D3D12_FORMAT_SUPPORT2::D3D12_FORMAT_SUPPORT2_UAV_TYPED_LOAD) != 0);
 	}
 
@@ -206,10 +207,10 @@ namespace Brawler
 			if constexpr (Util::General::IsDebugModeEnabled()) 
 			{
 				Microsoft::WRL::ComPtr<ID3D12Debug> debugController{};
-				CheckHRESULT(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
+				Util::General::CheckHRESULT(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
 
 				Microsoft::WRL::ComPtr<ID3D12Debug3> latestDebugController{};
-				CheckHRESULT(debugController.As(&latestDebugController));
+				Util::General::CheckHRESULT(debugController.As(&latestDebugController));
 
 				latestDebugController->EnableDebugLayer();
 				latestDebugController->SetEnableGPUBasedValidation(true);
@@ -223,8 +224,8 @@ namespace Brawler
 				if constexpr (Util::General::IsDebugModeEnabled())
 					factoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 
-				CheckHRESULT(CreateDXGIFactory2(factoryFlags, IID_PPV_ARGS(&dxgiFactory)));
-				CheckHRESULT(dxgiFactory.As(&mDXGIFactory));
+				Util::General::CheckHRESULT(CreateDXGIFactory2(factoryFlags, IID_PPV_ARGS(&dxgiFactory)));
+				Util::General::CheckHRESULT(dxgiFactory.As(&mDXGIFactory));
 			}
 
 			// Get the best possible DXGI adapter and use it to create the D3D12 device.
@@ -257,8 +258,8 @@ namespace Brawler
 					if (!VerifyD3D12DeviceFeatureSupport(d3dDevice)) [[unlikely]]
 						continue;
 
-					CheckHRESULT(bestAdapter.As(&mDXGIAdapter));
-					CheckHRESULT(d3dDevice.As(&mD3dDevice));
+					Util::General::CheckHRESULT(bestAdapter.As(&mDXGIAdapter));
+					Util::General::CheckHRESULT(d3dDevice.As(&mD3dDevice));
 				}
 			}
 		}
@@ -325,7 +326,7 @@ namespace Brawler
 				// non-depth/stencil texturs can be placed into the same heap.
 
 				D3D12_FEATURE_DATA_D3D12_OPTIONS optionsData{};
-				CheckHRESULT(mD3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_D3D12_OPTIONS, &optionsData, sizeof(optionsData)));
+				Util::General::CheckHRESULT(mD3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_D3D12_OPTIONS, &optionsData, sizeof(optionsData)));
 
 				mDeviceCapabilities.GPUResourceHeapTier = (optionsData.ResourceHeapTier == D3D12_RESOURCE_HEAP_TIER::D3D12_RESOURCE_HEAP_TIER_1 ? ResourceHeapTier::TIER_1 : ResourceHeapTier::TIER_2);
 
@@ -352,7 +353,7 @@ namespace Brawler
 				// and not the actual GPU memory amount.
 
 				D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT vaSupportData{};
-				CheckHRESULT(mD3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT, &vaSupportData, sizeof(vaSupportData)));
+				Util::General::CheckHRESULT(mD3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT, &vaSupportData, sizeof(vaSupportData)));
 
 				mDeviceCapabilities.MaxGPUVirtualAddressBitsPerProcess = vaSupportData.MaxGPUVirtualAddressBitsPerProcess;
 			}

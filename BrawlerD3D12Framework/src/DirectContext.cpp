@@ -8,6 +8,7 @@ module;
 module Brawler.D3D12.DirectContext;
 import Brawler.D3D12.I_GPUResource;
 import Util.Engine;
+import Util.General;
 
 namespace
 {
@@ -22,7 +23,7 @@ namespace
 		};
 
 		Microsoft::WRL::ComPtr<Brawler::D3D12DescriptorHeap> descriptorHeap{};
-		CheckHRESULT(Util::Engine::GetD3D12Device().CreateDescriptorHeap(&HEAP_DESC, IID_PPV_ARGS(&descriptorHeap)));
+		Util::General::CheckHRESULT(Util::Engine::GetD3D12Device().CreateDescriptorHeap(&HEAP_DESC, IID_PPV_ARGS(&descriptorHeap)));
 
 		return descriptorHeap;
 	}

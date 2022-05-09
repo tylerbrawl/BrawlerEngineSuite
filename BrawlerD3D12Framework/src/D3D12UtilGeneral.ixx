@@ -8,6 +8,7 @@ import Util.Math;
 import Brawler.D3D12.GPUMemoryBudgetInfo;
 import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.D3D12.I_GPUResource;
+import Util.General;
 import Util.Engine;
 
 export namespace Util
@@ -176,8 +177,8 @@ namespace Util
 		{
 			Brawler::D3D12::GPUMemoryBudgetInfo budgetInfo{};
 
-			CheckHRESULT(Util::Engine::GetDXGIAdapter().QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP::DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &(budgetInfo.DeviceLocalMemoryInfo)));
-			CheckHRESULT(Util::Engine::GetDXGIAdapter().QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP::DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &(budgetInfo.SystemMemoryInfo)));
+			Util::General::CheckHRESULT(Util::Engine::GetDXGIAdapter().QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP::DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &(budgetInfo.DeviceLocalMemoryInfo)));
+			Util::General::CheckHRESULT(Util::Engine::GetDXGIAdapter().QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP::DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &(budgetInfo.SystemMemoryInfo)));
 
 			return budgetInfo;
 		}

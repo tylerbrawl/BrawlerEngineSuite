@@ -4,6 +4,7 @@ module;
 #include "DxDef.h"
 
 export module Brawler.D3D12.Texture2DBuilders;
+import Util.General;
 
 namespace Brawler
 {

@@ -276,6 +276,7 @@
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Application.ixx" />
     <ClCompile Include="src\AppParams.ixx" />
+    <ClCompile Include="src\BC7CompressionRenderModule.ixx" />
     <ClCompile Include="src\BC7ImageCompressor.cpp" />
     <ClCompile Include="src\BC7ImageCompressor.ixx" />
     <ClCompile Include="src\BCTextureCompressionContext.ixx" />

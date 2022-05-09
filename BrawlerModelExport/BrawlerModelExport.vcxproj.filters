@@ -67,6 +67,9 @@
     <Filter Include="Shader Files">
       <UniqueIdentifier>{e48d366f-5c91-4676-8d7d-624ceea01c89}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Render Modules">
+      <UniqueIdentifier>{272f588e-9adc-4c59-8690-b01baa7ea7f4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -212,6 +215,9 @@
     </ClCompile>
     <ClCompile Include="src\ModelExportUtil.cpp">
       <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BC7CompressionRenderModule.ixx">
+      <Filter>Module Files\Render Modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

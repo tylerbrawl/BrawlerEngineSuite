@@ -207,7 +207,7 @@ namespace Brawler
 
 			{
 				// Create the command allocator.
-				CheckHRESULT(d3dDevice.CreateCommandAllocator(
+				Util::General::CheckHRESULT(d3dDevice.CreateCommandAllocator(
 					GPUCommandContextInfo<CmdListType>::D3D_CMD_LIST_TYPE,
 					IID_PPV_ARGS(&mCmdAllocator)
 				));
@@ -216,14 +216,14 @@ namespace Brawler
 			{
 				// Create the command list in the closed state.
 				Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList{};
-				CheckHRESULT(d3dDevice.CreateCommandList1(
+				Util::General::CheckHRESULT(d3dDevice.CreateCommandList1(
 					0,
 					GPUCommandContextInfo<CmdListType>::D3D_CMD_LIST_TYPE,
 					D3D12_COMMAND_LIST_FLAGS::D3D12_COMMAND_LIST_FLAG_NONE,
 					IID_PPV_ARGS(&cmdList)
 				));
 
-				CheckHRESULT(cmdList.As(&mCmdList));
+				Util::General::CheckHRESULT(cmdList.As(&mCmdList));
 			}
 		}
 
@@ -273,8 +273,8 @@ namespace Brawler
 			assert(ReadyForUse() && "ERROR: An attempt was made to record commands into a command context, but the GPU was not finished executing all of its previous commands!");
 
 			// Reset the command list so that we can record commands into it.
-			CheckHRESULT(mCmdAllocator->Reset());
-			CheckHRESULT(mCmdList->Reset(mCmdAllocator.Get(), nullptr));
+			Util::General::CheckHRESULT(mCmdAllocator->Reset());
+			Util::General::CheckHRESULT(mCmdList->Reset(mCmdAllocator.Get(), nullptr));
 
 			// At the beginning of a command list, it has no commands recorded into it.
 			mHasCommands = false;
@@ -285,7 +285,7 @@ namespace Brawler
 		{
 			// Close the command list. This lets D3D12 know that we are finished recording commands
 			// into it.
-			CheckHRESULT(mCmdList->Close());
+			Util::General::CheckHRESULT(mCmdList->Close());
 		}
 
 		template <GPUCommandQueueType CmdListType>

@@ -11,6 +11,7 @@ module;
 module Brawler.D3D12.FrameGraph;
 import Util.Coroutine;
 import Util.Engine;
+import Util.General;
 import Brawler.JobSystem;
 import Brawler.D3D12.TransientGPUResourceAliasTracker;
 import Brawler.D3D12.FrameGraphBuilder;
@@ -363,7 +364,7 @@ namespace Brawler
 				
 			default:
 			{
-				CheckHRESULT(hAllocationResult);
+				Util::General::CheckHRESULT(hAllocationResult);
 				break;
 			}
 			}

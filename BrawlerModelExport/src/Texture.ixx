@@ -84,7 +84,7 @@ namespace Brawler
 		// Save the texture as a DDS file. This will be loaded at runtime by the Brawler
 		// Engine.
 		DirectX::Blob ddsTextureBlob{};
-		CheckHRESULT(DirectX::SaveToDDSMemory(
+		Util::General::CheckHRESULT(DirectX::SaveToDDSMemory(
 			convertedImage.GetImages(),
 			convertedImage.GetImageCount(),
 			convertedImage.GetMetadata(),
