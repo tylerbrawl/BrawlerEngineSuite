@@ -9,6 +9,11 @@ namespace Util
 {
 	namespace General
 	{
+		// NOTE: std::string_view and std::wstring_view are *NEVER* guaranteed to include a null-terminating
+		// character! Thus, we need to explicitly use their size() functions to determine how many characters
+		// to translate. Failing to do so can lead to more characters than necessary being translated... or
+		// worse.
+
 		std::wstring StringToWString(const std::string_view str)
 		{
 			if (str.empty())
@@ -18,13 +23,16 @@ namespace Util
 				CP_UTF8,
 				0,
 				str.data(),
-				-1,
+				str.size(),
 				nullptr,
 				0
 			);
 
-			if (!wideCharsNeeded)
+			if (!wideCharsNeeded) [[unlikely]]
 				throw std::runtime_error{ "MultiByteToWideChar() failed to get the number of required characters!" };
+
+			// Add one to account for the null-terminating character.
+			++wideCharsNeeded;
 
 			wchar_t* wStrBuffer = new wchar_t[wideCharsNeeded];
 			ZeroMemory(wStrBuffer, wideCharsNeeded * sizeof(wchar_t));
@@ -33,12 +41,12 @@ namespace Util
 				CP_UTF8,
 				0,
 				str.data(),
-				-1,
+				str.size(),
 				wStrBuffer,
 				wideCharsNeeded
 			);
 
-			if (result != wideCharsNeeded)
+			if (result != (wideCharsNeeded - 1)) [[unlikely]]
 				throw std::runtime_error{ "MultiByteToWideChar() failed to convert a string!" };
 
 			std::wstring wideStr{ wStrBuffer };
@@ -56,15 +64,18 @@ namespace Util
 				CP_UTF8,
 				0,
 				wStr.data(),
-				-1,
+				wStr.size(),
 				nullptr,
 				0,
 				nullptr,
 				nullptr
 			);
 
-			if (!byteCharsNeeded)
+			if (!byteCharsNeeded) [[unlikely]]
 				throw std::runtime_error{ "WideCharToMultiByte() failed to get the number of required characters!" };
+
+			// Add one to account for the null-terminating character.
+			++byteCharsNeeded;
 
 			char* strBuffer = new char[byteCharsNeeded];
 			ZeroMemory(strBuffer, byteCharsNeeded);
@@ -73,12 +84,15 @@ namespace Util
 				CP_UTF8,
 				0,
 				wStr.data(),
-				-1,
+				wStr.size(),
 				strBuffer,
 				byteCharsNeeded,
 				nullptr,
 				nullptr
 			);
+
+			if (result != (byteCharsNeeded - 1)) [[unlikely]]
+				throw std::runtime_error{ "WideCharToMultiByte() failed to convert a string!" };
 
 			std::string str{ strBuffer };
 			delete[] strBuffer;
