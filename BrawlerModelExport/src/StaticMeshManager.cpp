@@ -24,7 +24,7 @@ namespace Brawler
 	bool StaticMeshManager::AreMAPsSerialized() const
 	{
 		// If this function is called, then we can expect the thread which called this function
-		// to soon access this StaticMeshManager's StaticMesh pointers. Thus, we use a
+		// to soon access this StaticMeshManager's StaticMeshResolver pointers. Thus, we use a
 		// read-acquire memory ordering here to synchronize with the writes done in the serialization
 		// jobs.
 
@@ -52,10 +52,10 @@ namespace Brawler
 
 			// Create a CPU job for every mesh which is to be initialized. The actual process of initializing
 			// the meshes can take some time, especially since mesh vertices need to be packed appropriately.
-			std::unique_ptr<StaticMesh>& staticMeshPtr{ mMeshArr[i] };
+			std::unique_ptr<StaticMeshResolver>& staticMeshPtr{ mMeshArr[i] };
 			meshInitializationJobGroup.AddJob([this, &staticMeshPtr, meshPtr = meshSpan[i]]()
 			{
-				staticMeshPtr = std::make_unique<StaticMesh>(*meshPtr);
+				staticMeshPtr = std::make_unique<StaticMeshResolver>(*meshPtr);
 
 				// Once the job is finished, decrement the active serialization count. We use a write-release
 				// memory ordering here to ensure that the thread which calls StaticMeshManager::Update() again

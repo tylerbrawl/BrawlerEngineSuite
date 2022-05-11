@@ -969,6 +969,12 @@
     <ClCompile Include="src\ResourceStateTrackingTestModule.cpp">
       <Filter>Source Files\Unit Tests\Resource State Tracking</Filter>
     </ClCompile>
+    <ClCompile Include="src\FormattedConsoleMessageBuilder.ixx">
+      <Filter>Module Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ConsoleFormat.ixx">
+      <Filter>Module Files\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

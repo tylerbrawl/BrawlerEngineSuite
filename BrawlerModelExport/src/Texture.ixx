@@ -5,10 +5,10 @@ module;
 #include <DirectXTex.h>
 #include "DxDef.h"
 
-export module Brawler.Texture;
+export module Brawler.ModelTexture;
 import Brawler.FilePathHash;
 import Util.General;
-import Util.Texture;
+import Util.ModelTexture;
 import Util.ModelExport;
 import Brawler.AppParams;
 
@@ -27,17 +27,17 @@ namespace Brawler
 export namespace Brawler
 {
 	template <aiTextureType TextureType>
-	class Texture
+	class ModelTexture
 	{
 	public:
-		Texture() = default;
-		explicit Texture(const aiString& textureName);
+		ModelTexture() = default;
+		explicit ModelTexture(const aiString& textureName);
 
-		Texture(const Texture<TextureType>& rhs) = delete;
-		Texture& operator=(const Texture<TextureType>& rhs) = delete;
+		ModelTexture(const ModelTexture<TextureType>& rhs) = delete;
+		ModelTexture& operator=(const ModelTexture<TextureType>& rhs) = delete;
 
-		Texture(Texture<TextureType>&& rhs) noexcept = default;
-		Texture& operator=(Texture<TextureType>&& rhs) noexcept = default;
+		ModelTexture(ModelTexture<TextureType>&& rhs) noexcept = default;
+		ModelTexture& operator=(ModelTexture<TextureType>&& rhs) noexcept = default;
 
 		void GenerateMipMaps();
 		void WriteToFileSystem() const;
@@ -61,8 +61,8 @@ export namespace Brawler
 namespace Brawler
 {
 	template <aiTextureType TextureType>
-	Texture<TextureType>::Texture(const aiString& textureName) :
-		mScratchTexture(Util::Texture::CreateIntermediateTexture<TextureType>(textureName)),
+	ModelTexture<TextureType>::ModelTexture(const aiString& textureName) :
+		mScratchTexture(Util::ModelTexture::CreateIntermediateTexture<TextureType>(textureName)),
 		mOutputPathHash(),
 		mOutputPath()
 	{
@@ -70,16 +70,16 @@ namespace Brawler
 	}
 
 	template <aiTextureType TextureType>
-	void Texture<TextureType>::GenerateMipMaps()
+	void ModelTexture<TextureType>::GenerateMipMaps()
 	{
-		mScratchTexture = Util::Texture::GenerateMipMaps<TextureType>(mScratchTexture);
+		mScratchTexture = Util::ModelTexture::GenerateMipMaps<TextureType>(mScratchTexture);
 	}
 
 	template <aiTextureType TextureType>
-	void Texture<TextureType>::WriteToFileSystem() const
+	void ModelTexture<TextureType>::WriteToFileSystem() const
 	{
 		// First, we need to make sure that the texture is in the proper format.
-		const DirectX::ScratchImage convertedImage{ Util::Texture::ConvertTextureToDesiredFormat<TextureType>(mScratchTexture) };
+		const DirectX::ScratchImage convertedImage{ Util::ModelTexture::ConvertTextureToDesiredFormat<TextureType>(mScratchTexture) };
 
 		// Save the texture as a DDS file. This will be loaded at runtime by the Brawler
 		// Engine.
@@ -94,7 +94,7 @@ namespace Brawler
 
 		// Save the texture file to the file system. It will then be ready for packing into
 		// the BPK archive.
-		Util::Texture::WriteTextureToFile(Util::Texture::TextureWriteInfo{
+		Util::ModelTexture::WriteTextureToFile(Util::ModelTexture::TextureWriteInfo{
 			.OutputDirectory{ mOutputPath },
 			.ResourceDescription{ CreateD3D12ResourceDescription() },
 			.DDSBlob{ std::move(ddsTextureBlob) }
@@ -102,18 +102,18 @@ namespace Brawler
 	}
 
 	template <aiTextureType TextureType>
-	FilePathHash Texture<TextureType>::GetOutputPathHash() const
+	FilePathHash ModelTexture<TextureType>::GetOutputPathHash() const
 	{
 		return mOutputPathHash;
 	}
 
 	template <aiTextureType TextureType>
-	void Texture<TextureType>::InitializeOutputPathInformation(const aiString& textureName)
+	void ModelTexture<TextureType>::InitializeOutputPathInformation(const aiString& textureName)
 	{
 		// Let [Root Output Directory] be the file path of the root directory for outputting
 		// source asset files. If the name of our mesh is 
 		// [Mesh Parent Directory]\[Mesh Name].[Mesh File Extension], then the output directory
-		// for this texture is [Root Output Directory]\Textures\[Mesh Name]\[Texture Name].btex.
+		// for this texture is [Root Output Directory]\Textures\[Mesh Name]\[ModelTexture Name].btex.
 
 		const Brawler::AppParams& launchParams{ Util::ModelExport::GetLaunchParameters() };
 		const std::filesystem::path meshNamePath{ std::filesystem::path{ launchParams.InputMeshFilePath }.stem() };
@@ -126,7 +126,7 @@ namespace Brawler
 	}
 
 	template <aiTextureType TextureType>
-	Brawler::D3D12_RESOURCE_DESC Texture<TextureType>::CreateD3D12ResourceDescription() const
+	Brawler::D3D12_RESOURCE_DESC ModelTexture<TextureType>::CreateD3D12ResourceDescription() const
 	{
 		Brawler::D3D12_RESOURCE_DESC resourceDesc{};
 		const DirectX::TexMetadata& metadata{ mScratchTexture.GetMetadata() };

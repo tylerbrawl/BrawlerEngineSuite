@@ -31,7 +31,7 @@ namespace Brawler
 		const aiReturn diffuseResult{ material.GetTexture(aiTextureType_DIFFUSE, 0, &diffuseTextureName) };
 		assert(diffuseResult == aiReturn_SUCCESS);
 
-		mDiffuseTexture = Texture<aiTextureType::aiTextureType_DIFFUSE>{ diffuseTextureName };
+		mDiffuseTexture = ModelTexture<aiTextureType::aiTextureType_DIFFUSE>{ diffuseTextureName };
 		mDiffuseTexture.GenerateMipMaps();
 
 		mDiffuseTexture.WriteToFileSystem();

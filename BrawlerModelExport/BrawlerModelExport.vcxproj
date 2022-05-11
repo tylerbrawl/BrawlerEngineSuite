@@ -282,21 +282,26 @@
     <ClCompile Include="src\BCTextureCompressionContext.ixx" />
     <ClCompile Include="src\BCTextureCompressor.ixx" />
     <ClCompile Include="src\BTEXFileAttributes.ixx" />
+    <ClCompile Include="src\CommandLineParser.cpp" />
+    <ClCompile Include="src\CommandLineParser.ixx" />
     <ClCompile Include="src\CompositeEnum.ixx" />
     <ClCompile Include="src\FileAttributes.ixx" />
     <ClCompile Include="src\FilePathHash.ixx" />
-    <ClCompile Include="src\Functional.ixx" />
     <ClCompile Include="src\IndexBuffer.cpp" />
     <ClCompile Include="src\IndexBuffer.ixx" />
     <ClCompile Include="src\I_MaterialDefinition.ixx" />
     <ClCompile Include="src\I_MeshManager.ixx" />
     <ClCompile Include="src\I_MeshResolver.ixx" />
+    <ClCompile Include="src\LODResolver.cpp" />
+    <ClCompile Include="src\LODResolver.ixx" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MaterialID.ixx" />
     <ClCompile Include="src\MaterialIDMap.ixx" />
     <ClCompile Include="src\MaterialManager.cpp" />
     <ClCompile Include="src\MaterialManager.ixx" />
     <ClCompile Include="src\Matrix.ixx" />
+    <ClCompile Include="src\MeshResolverCollection.cpp" />
+    <ClCompile Include="src\MeshResolverCollection.ixx" />
     <ClCompile Include="src\MeshTypeID.ixx" />
     <ClCompile Include="src\MeshAttributeID.ixx" />
     <ClCompile Include="src\MeshAttributePointerDescriptor.ixx" />
@@ -304,6 +309,7 @@
     <ClCompile Include="src\ModelExportUtil.ixx" />
     <ClCompile Include="src\ModelResolver.cpp" />
     <ClCompile Include="src\ModelResolver.ixx" />
+    <ClCompile Include="src\ModelTextureDatabase.ixx" />
     <ClCompile Include="src\OpaqueMaterialDefinition.cpp" />
     <ClCompile Include="src\OpaqueMaterialDefinition.ixx" />
     <ClCompile Include="src\SceneLoader.cpp" />
@@ -314,16 +320,16 @@
     <ClCompile Include="src\Skeleton.ixx" />
     <ClCompile Include="src\SkeletonBone.cpp" />
     <ClCompile Include="src\SkeletonBone.ixx" />
-    <ClCompile Include="src\StaticMesh.cpp" />
-    <ClCompile Include="src\StaticMesh.ixx" />
+    <ClCompile Include="src\StaticMeshResolver.cpp" />
+    <ClCompile Include="src\StaticMeshResolver.ixx" />
     <ClCompile Include="src\StaticMeshManager.cpp" />
     <ClCompile Include="src\StaticMeshManager.ixx" />
     <ClCompile Include="src\StaticVertexBuffer.cpp" />
     <ClCompile Include="src\StaticVertexBuffer.ixx" />
     <ClCompile Include="src\Texture.ixx" />
     <ClCompile Include="src\TextureTypeMap.ixx" />
-    <ClCompile Include="src\TextureUtil.cpp" />
-    <ClCompile Include="src\TextureUtil.ixx" />
+    <ClCompile Include="src\ModelTextureUtil.cpp" />
+    <ClCompile Include="src\ModelTextureUtil.ixx" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\Shaders\BC7Encode.hlsl">

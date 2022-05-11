@@ -312,7 +312,7 @@ namespace Brawler
 				.HeapType = D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_UPLOAD
 			}) };
 
-			// Source Texture Copy Buffer
+			// Source ModelTexture Copy Buffer
 			const D3D12::TextureSubResource srcTextureSubResource{ mResourceInfo.SourceTexturePtr->GetSubResource() };
 
 			std::optional<D3D12::TextureCopyBufferSubAllocation> optionalTextureCopySubAllocation{ uploadBufferResource.CreateBufferSubAllocation<D3D12::TextureCopyBufferSubAllocation>(srcTextureSubResource) };

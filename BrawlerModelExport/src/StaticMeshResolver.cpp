@@ -1,11 +1,11 @@
 module;
 #include <assimp/scene.h>
 
-module Brawler.StaticMesh;
+module Brawler.StaticMeshResolver;
 
 namespace Brawler
 {
-	StaticMesh::StaticMesh(const aiMesh& mesh) :
+	StaticMeshResolver::StaticMeshResolver(const aiMesh& mesh) :
 		mVertexBuffer(mesh),
 		mIndexBuffer(mesh)
 	{}

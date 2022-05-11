@@ -3,7 +3,7 @@ module;
 #include <vector>
 
 export module Brawler.ModelResolver;
-import Brawler.I_ModelResolverComponent;
+import Brawler.LODResolver;
 
 export namespace Brawler
 {
@@ -18,16 +18,10 @@ export namespace Brawler
 		ModelResolver(ModelResolver&& rhs) noexcept = default;
 		ModelResolver& operator=(ModelResolver&& rhs) noexcept = default;
 
-		void CreateModelResolverComponents();
 		void Update();
-
-		bool IsModelSerialized() const;
-
-	private:
-		void CreateMeshManager();
-		void CreateMaterialManager();
+		bool IsReadyForSerialization() const;
 
 	private:
-		std::vector<std::unique_ptr<I_ModelResolverComponent>> mComponentPtrArr;
+		std::vector<std::unique_ptr<LODResolver>> mLODResolverPtrArr;
 	};
 }

@@ -14,31 +14,6 @@ import Util.General;
 
 namespace
 {
-	constexpr std::wstring GetConsoleFormatString(const Util::Win32::ConsoleFormat format)
-	{
-		// Visit the MSDN at https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences#text-formatting
-		// for documentation regarding the various virtual terminal sequences used for
-		// text formatting.
-
-		switch (format)
-		{
-		case Util::Win32::ConsoleFormat::SUCCESS:
-			return std::wstring{ L"\x1b[22;32m" };  // Normal Green Foreground Text
-
-		case Util::Win32::ConsoleFormat::WARNING:
-			return std::wstring{ L"\x1b[22;33m" };  // Normal Yellow Foreground Text
-
-		case Util::Win32::ConsoleFormat::CRITICAL_FAILURE:
-			return std::wstring{ L"\x1b[1;31m" };   // Bold Red Foreground Text
-
-		case Util::Win32::ConsoleFormat::NORMAL:
-			[[fallthrough]];
-
-		default:
-			return std::wstring{ L"\x1b[0m" };	  // Default Text Format
-		}
-	}
-
 	void EnableConsoleFormatting()
 	{
 		HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -77,12 +52,12 @@ namespace Util
 			InitializeCOM();
 		}
 
-		void WriteFormattedConsoleMessage(const std::string_view msg, const ConsoleFormat format)
+		void WriteFormattedConsoleMessage(const std::string_view msg, const Brawler::Win32::ConsoleFormat format)
 		{
 			WriteFormattedConsoleMessage(Util::General::StringToWString(msg), format);
 		}
 
-		void WriteFormattedConsoleMessage(const std::wstring_view msg, const ConsoleFormat format)
+		void WriteFormattedConsoleMessage(const std::wstring_view msg, const Brawler::Win32::ConsoleFormat format)
 		{
 			// Rather than using SetConsoleTextAttribute(), we make use of virtual terminal characters -
 			// but not because the MSDN recommends it, nor because we want to. We do it like this for
@@ -90,7 +65,7 @@ namespace Util
 			// be atomic without the need for us to use critical sections. (Windows might itself use
 			// these, but that isn't for us to worry about.)
 
-			const std::wstring formattedMsg{ GetConsoleFormatString(format) + std::wstring{ msg } + GetConsoleFormatString(ConsoleFormat::NORMAL) + L"\n" };
+			const std::wstring formattedMsg{ Brawler::Win32::GetConsoleFormatString(format) + std::wstring{ msg } + Brawler::Win32::GetConsoleFormatString(Brawler::Win32::ConsoleFormat::NORMAL) + L"\n" };
 			std::wcout << formattedMsg;
 		}
 	}

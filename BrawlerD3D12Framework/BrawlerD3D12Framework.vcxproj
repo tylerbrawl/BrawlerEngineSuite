@@ -250,9 +250,11 @@
     <ClCompile Include="src\AsyncGPUResourceBuilder.ixx" />
     <ClCompile Include="src\BindlessSRVSentinel.cpp" />
     <ClCompile Include="src\BindlessSRVSentinel.ixx" />
+    <ClCompile Include="src\ConsoleFormat.ixx" />
     <ClCompile Include="src\ConstantBufferView.ixx" />
     <ClCompile Include="src\D3D12UtilFormats.ixx" />
     <ClCompile Include="src\D3D12UtilGeneral.ixx" />
+    <ClCompile Include="src\FormattedConsoleMessageBuilder.ixx" />
     <ClCompile Include="src\FrameGraphManager.cpp" />
     <ClCompile Include="src\FrameGraphManager.ixx" />
     <ClCompile Include="src\GPUResourceBinding.ixx" />

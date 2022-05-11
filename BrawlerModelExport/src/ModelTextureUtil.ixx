@@ -5,16 +5,17 @@ module;
 #include <DirectXTex.h>
 #include "DxDef.h"
 
-export module Util.Texture;
+export module Util.ModelTexture;
 import Brawler.TextureTypeMap;
 import Brawler.AppParams;
 import Util.ModelExport;
 import Util.Win32;
 import Util.General;
+import Brawler.FilePathHash;
 
 export namespace Util
 {
-	namespace Texture
+	namespace ModelTexture
 	{
 		struct TextureWriteInfo
 		{
@@ -56,7 +57,7 @@ export namespace Util
 
 		/// <summary>
 		/// Generates a mip-map chain for the provided DirectX::ScratchImage. Call this function
-		/// after a texture has been converted to DDS format by calling Util::Texture::CreateIntermediateTexture().
+		/// after a texture has been converted to DDS format by calling Util::ModelTexture::CreateIntermediateTexture().
 		/// 
 		/// The default behavior is to use DirectXTex to automatically create a mip-map chain by
 		/// repeatedly downsampling the image. This works fine for things likes diffuse albedo
@@ -94,13 +95,15 @@ export namespace Util
 
 		/// <summary>
 		/// Writes the texture data specified by writeInfo to the filesystem. See the documentation
-		/// of Util::Texture::TextureWriteInfo for more information.
+		/// of Util::ModelTexture::TextureWriteInfo for more information.
 		/// </summary>
 		/// <param name="writeInfo">
 		/// - A TextureWriteInfo instance which includes all of the necessary information for
 		///   writing out the texture file.
 		/// </param>
 		void WriteTextureToFile(const TextureWriteInfo& writeInfo);
+
+		Brawler::FilePathHash GetTextureFilePathHash(const aiString& textureName);
 	}
 }
 
@@ -108,7 +111,7 @@ export namespace Util
 
 namespace Util
 {
-	namespace Texture
+	namespace ModelTexture
 	{
 		template <aiTextureType TextureType>
 		DirectX::ScratchImage CreateIntermediateTextureFromAssimpInterpretedEmbeddedTexture(const aiTexture& embeddedTexture)
@@ -311,7 +314,7 @@ namespace Util
 			const std::span<const DirectX::Image> imageSpan{ texture.GetImages(), texture.GetImageCount() };
 
 			for (const auto& image : imageSpan)
-				assert(!DirectX::IsCompressed(image.format) && "ERROR: A block-compressed image was provided for Util::Texture::GenerateMipMaps()! (Did you forget to use Util::Texture::CreateIntermediateTexture()?)");
+				assert(!DirectX::IsCompressed(image.format) && "ERROR: A block-compressed image was provided for Util::ModelTexture::GenerateMipMaps()! (Did you forget to use Util::ModelTexture::CreateIntermediateTexture()?)");
 #endif // _DEBUG
 
 			DirectX::ScratchImage mipMapChain{};

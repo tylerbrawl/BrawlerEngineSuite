@@ -20,8 +20,7 @@ export namespace Brawler
 		I_MeshResolver& operator=(I_MeshResolver&& rhs) noexcept = default;
 
 		virtual void Update() = 0;
-
-		bool 
+		virtual bool IsReadyForSerialization() const = 0;
 
 	private:
 		const aiMesh* mMeshPtr;

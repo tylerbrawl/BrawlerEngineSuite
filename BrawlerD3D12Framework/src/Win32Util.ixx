@@ -3,23 +3,16 @@ module;
 #include "DxDef.h"
 
 export module Util.Win32;
+import Brawler.Win32.ConsoleFormat;
 
 export namespace Util
 {
 	namespace Win32
 	{
-		enum class ConsoleFormat
-		{
-			NORMAL,
-			SUCCESS,
-			WARNING,
-			CRITICAL_FAILURE  // We can't use ERROR because that's a macro in the Windows headers. *sigh*...
-		};
-
 		void InitializeWin32Components();
 
-		void WriteFormattedConsoleMessage(const std::string_view msg, const ConsoleFormat format = Util::Win32::ConsoleFormat::NORMAL);
-		void WriteFormattedConsoleMessage(const std::wstring_view msg, const ConsoleFormat format = Util::Win32::ConsoleFormat::NORMAL);
+		void WriteFormattedConsoleMessage(const std::string_view msg, const Brawler::Win32::ConsoleFormat format = Brawler::Win32::ConsoleFormat::NORMAL);
+		void WriteFormattedConsoleMessage(const std::wstring_view msg, const Brawler::Win32::ConsoleFormat format = Brawler::Win32::ConsoleFormat::NORMAL);
 
 		__forceinline constexpr bool IsHandleValid(const HANDLE hObject);
 	}

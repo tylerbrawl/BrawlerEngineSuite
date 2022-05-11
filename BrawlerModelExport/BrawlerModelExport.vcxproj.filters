@@ -73,6 +73,12 @@
     <Filter Include="Module Files\File I/O\Mesh Attribute Pointers %28MAPs%29">
       <UniqueIdentifier>{33599010-e8d6-45cf-b96a-de1469d2bd26}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Command Line Parsing">
+      <UniqueIdentifier>{87cf4233-9db8-444b-b7e6-4c9aed189576}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Command Line Parsing">
+      <UniqueIdentifier>{5ca79dfb-240b-467d-97c3-01af256b049d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -84,19 +90,16 @@
     <ClCompile Include="src\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\AppParams.ixx">
-      <Filter>Module Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\SceneLoader.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
     </ClCompile>
     <ClCompile Include="src\SceneLoader.cpp">
       <Filter>Source Files\Mesh Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\StaticMesh.ixx">
+    <ClCompile Include="src\StaticMeshResolver.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\StaticMesh.cpp">
+    <ClCompile Include="src\StaticMeshResolver.cpp">
       <Filter>Source Files\Mesh Parsing</Filter>
     </ClCompile>
     <ClCompile Include="src\FilePathHash.ixx">
@@ -108,13 +111,13 @@
     <ClCompile Include="src\TextureTypeMap.ixx">
       <Filter>Module Files\Textures</Filter>
     </ClCompile>
-    <ClCompile Include="src\TextureUtil.ixx">
+    <ClCompile Include="src\ModelTextureUtil.ixx">
       <Filter>Module Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="src\Texture.ixx">
       <Filter>Module Files\Textures</Filter>
     </ClCompile>
-    <ClCompile Include="src\TextureUtil.cpp">
+    <ClCompile Include="src\ModelTextureUtil.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="src\BTEXFileAttributes.ixx">
@@ -195,9 +198,6 @@
     <ClCompile Include="src\ModelResolver.cpp">
       <Filter>Source Files\Mesh Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\Functional.ixx">
-      <Filter>Module Files\Convenience Types</Filter>
-    </ClCompile>
     <ClCompile Include="src\BCTextureCompressionContext.ixx">
       <Filter>Module Files\Textures</Filter>
     </ClCompile>
@@ -233,6 +233,30 @@
     </ClCompile>
     <ClCompile Include="src\SerializedMeshAttributeChunk.ixx">
       <Filter>Module Files\File I/O\Mesh Attribute Pointers %28MAPs%29</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LODResolver.ixx">
+      <Filter>Module Files\Mesh Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LODResolver.cpp">
+      <Filter>Source Files\Mesh Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelTextureDatabase.ixx">
+      <Filter>Module Files\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshResolverCollection.ixx">
+      <Filter>Module Files\Mesh Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshResolverCollection.cpp">
+      <Filter>Source Files\Mesh Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AppParams.ixx">
+      <Filter>Module Files\Command Line Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandLineParser.ixx">
+      <Filter>Module Files\Command Line Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandLineParser.cpp">
+      <Filter>Source Files\Command Line Parsing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

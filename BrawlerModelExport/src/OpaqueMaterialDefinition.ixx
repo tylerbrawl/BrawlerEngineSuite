@@ -4,7 +4,7 @@ module;
 export module Brawler.OpaqueMaterialDefinition;
 import Brawler.I_MaterialDefinition;
 import Brawler.MaterialID;
-import Brawler.Texture;
+import Brawler.ModelTexture;
 
 export namespace Brawler
 {
@@ -22,6 +22,6 @@ export namespace Brawler
 		MaterialID GetMaterialID() const override;
 
 	private:
-		Texture<aiTextureType::aiTextureType_DIFFUSE> mDiffuseTexture;
+		ModelTexture<aiTextureType::aiTextureType_DIFFUSE> mDiffuseTexture;
 	};
 }

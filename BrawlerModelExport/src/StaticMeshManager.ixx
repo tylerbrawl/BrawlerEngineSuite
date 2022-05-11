@@ -5,7 +5,7 @@ module;
 
 export module Brawler.StaticMeshManager;
 import Brawler.I_MeshManager;
-import Brawler.StaticMesh;
+import Brawler.StaticMeshResolver;
 import Brawler.MeshAttributePointerDescriptor;
 
 export namespace Brawler
@@ -27,7 +27,7 @@ export namespace Brawler
 		void CreateSerializationJobs();
 
 	private:
-		std::vector<std::unique_ptr<StaticMesh>> mMeshArr;
+		std::vector<std::unique_ptr<StaticMeshResolver>> mMeshArr;
 		std::atomic<std::uint32_t> mActiveSerializationsCounter;
 	};
 }
