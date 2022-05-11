@@ -2,7 +2,11 @@ module;
 
 export module Brawler.I_MaterialDefinition;
 import Brawler.MaterialID;
-import Brawler.MeshAttributePointerDescriptor;
+
+export namespace Brawler
+{
+	class ModelTextureDatabase;
+}
 
 export namespace Brawler
 {
@@ -14,9 +18,10 @@ export namespace Brawler
 	public:
 		virtual ~I_MaterialDefinition() = default;
 
+		virtual void RegisterModelTextures(ModelTextureDatabase& textureDatabase) = 0;
+
 		virtual void Update() = 0;
-		virtual bool IsMAPSerialized() const = 0;
-		virtual MeshAttributePointerDescriptor GetMAPDescriptor() const;
+		virtual bool IsReadyForSerialization() const = 0;
 
 		virtual MaterialID GetMaterialID() const = 0;
 	};

@@ -4,6 +4,7 @@ module;
 #include <limits>
 #include <stdexcept>
 #include <span>
+#include <format>
 #include <assimp/mesh.h>
 #include <DirectXMath/DirectXMath.h>
 
@@ -96,12 +97,34 @@ namespace Brawler
 		const std::size_t vertexCount = static_cast<std::size_t>(mesh.mNumVertices);
 
 		if (vertexCount > std::numeric_limits<std::uint16_t>::max()) [[unlikely]]
-			throw std::runtime_error{ std::string{ "ERROR: The mesh " } + mesh.mName.C_Str() + " has more vertices than can be represented with 16-bit indices (i.e., it has more than 65,536 vertices)!" };
+			throw std::runtime_error{ std::format("ERROR: The mesh {} has more vertices than can be represented with 16-bit indices (i.e., it has more than 65,536 vertices)!", mesh.mName.C_Str()) };
+
+		if (vertexCount == 0) [[unlikely]]
+			throw std::runtime_error{ std::format("ERROR: The mesh {} has no vertices!", mesh.mName.C_Str()) };
 
 		mUnpackedVertices.reserve(vertexCount);
 		mPackedVertices.reserve(vertexCount);
 
 		InitializeUnpackedData(mesh);
+	}
+
+	void StaticVertexBuffer::Update()
+	{
+		// TODO: Create the equivalent GPU implementation. It should run much faster than
+		// a CPU version. For now, however, during the first update, we can just initialize
+		// all of the packed data.
+
+		if (mPackedVertices.empty()) [[unlikely]]
+			InitializePackedData();
+	}
+
+	bool StaticVertexBuffer::IsReadyForSerialization() const
+	{
+		// TODO: Create the equivalent GPU implementation. It should run much faster than
+		// a CPU version. However, since we know that all of the data was prepared by the
+		// time this function gets called, we can go ahead and return true.
+
+		return true;
 	}
 
 	void StaticVertexBuffer::InitializePackedData()

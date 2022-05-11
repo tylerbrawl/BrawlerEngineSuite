@@ -59,7 +59,7 @@ namespace Brawler
 	bool MeshResolverCollection::IsReadyForSerialization() const
 	{
 		bool readyForSerialization = true;
-		ForEachMeshResolver([&readyForSerialization]<typename T>(T& meshResolver)
+		ForEachMeshResolver([&readyForSerialization]<typename T>(const T& meshResolver)
 		{
 			if (!meshResolver.IsReadyForSerialization())
 				readyForSerialization = false;

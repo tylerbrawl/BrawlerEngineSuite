@@ -114,7 +114,7 @@
     <ClCompile Include="src\ModelTextureUtil.ixx">
       <Filter>Module Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="src\Texture.ixx">
+    <ClCompile Include="src\ModelTexture.ixx">
       <Filter>Module Files\Textures</Filter>
     </ClCompile>
     <ClCompile Include="src\ModelTextureUtil.cpp">
@@ -257,6 +257,24 @@
     </ClCompile>
     <ClCompile Include="src\CommandLineParser.cpp">
       <Filter>Source Files\Command Line Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshResolverBase.ixx">
+      <Filter>Module Files\Mesh Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshResolverBase.cpp">
+      <Filter>Source Files\Mesh Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ImportedMesh.ixx">
+      <Filter>Module Files\Mesh Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ImportedMesh.cpp">
+      <Filter>Source Files\Mesh Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelTextureLUT.ixx">
+      <Filter>Module Files\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LODScene.ixx">
+      <Filter>Module Files\Mesh Parsing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

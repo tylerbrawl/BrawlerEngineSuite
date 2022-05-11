@@ -16,7 +16,7 @@ namespace Util
 
 		std::wstring StringToWString(const std::string_view str)
 		{
-			if (str.empty())
+			if (str.empty()) [[unlikely]]
 				return std::wstring{};
 
 			std::int32_t wideCharsNeeded = MultiByteToWideChar(
@@ -57,7 +57,7 @@ namespace Util
 
 		std::string WStringToString(const std::wstring_view wStr)
 		{
-			if (wStr.empty())
+			if (wStr.empty()) [[unlikely]]
 				return std::string{};
 
 			std::int32_t byteCharsNeeded = WideCharToMultiByte(

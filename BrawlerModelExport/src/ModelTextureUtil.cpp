@@ -43,7 +43,7 @@ namespace Util
 			/*
 			We want the command line to work as follows:
 
-			BrawlerModelExport.exe /ModelName:[Model Name] [Path to LOD 0 FBX] [Path to LOD 1 FBX] ... [Root Output Directory]
+			BrawlerModelExport.exe /ModelName [Model Name] [Path to LOD 0 FBX] [Path to LOD 1 FBX] ... [Root Output Directory]
 
 			The texture FilePathHash should then be calculated as the path "Textures\[Model Name]\[textureName without Extension].btex."
 			Remember to make use of constexpr!

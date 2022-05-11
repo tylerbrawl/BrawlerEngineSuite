@@ -11,6 +11,7 @@ module;
 
 module Util.Win32;
 import Util.General;
+import Brawler.Win32.SafeHandle;
 
 namespace
 {
@@ -67,6 +68,35 @@ namespace Util
 
 			const std::wstring formattedMsg{ Brawler::Win32::GetConsoleFormatString(format) + std::wstring{ msg } + Brawler::Win32::GetConsoleFormatString(Brawler::Win32::ConsoleFormat::NORMAL) + L"\n" };
 			std::wcout << formattedMsg;
+		}
+
+		std::wstring GetLastErrorString()
+		{
+			LPWSTR messageStrBuffer = nullptr;
+			
+			const std::uint32_t formatMessageResult = FormatMessage(
+				FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER,
+				nullptr,
+				GetLastError(),
+				0,
+				reinterpret_cast<LPWSTR>(&messageStrBuffer),
+				0,
+				nullptr
+			);
+
+			if (formatMessageResult == 0) [[unlikely]]
+				throw std::runtime_error{ "ERROR: FormatMessage() failed to allocate a buffer to get the string equivalent of a GetLastError() error code!" };
+
+			const std::wstring errMsgString{ messageStrBuffer };
+
+			{
+				const HLOCAL hFreeResult = LocalFree(messageStrBuffer);
+
+				if (hFreeResult != nullptr) [[unlikely]]
+					throw std::runtime_error{ "ERROR: LocalFree() failed to deallocate the buffer allocated by FormatMessage()!" };
+			}
+			
+			return errMsgString;
 		}
 	}
 }

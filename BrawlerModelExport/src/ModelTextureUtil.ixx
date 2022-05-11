@@ -10,6 +10,7 @@ import Brawler.TextureTypeMap;
 import Brawler.AppParams;
 import Util.ModelExport;
 import Util.Win32;
+import Brawler.Win32.ConsoleFormat;
 import Util.General;
 import Brawler.FilePathHash;
 
@@ -125,7 +126,7 @@ namespace Util
 			// errors, we need to create a copy of the texture data and swizzle that, instead.
 
 			// Warn the user that this texture may have been processed incorrectly.
-			Util::Win32::WriteFormattedConsoleMessage(std::string{ "WARNING: The embedded texture " } + embeddedTexture.mFilename.C_Str() + " was interpreted by Assimp ambiguously. The resulting texture file, if produced, may be incorrect for several reasons, such as color space inconsistency. Please use either unembedded textures or embedded textures in a compressed format, such as .png.", Util::Win32::ConsoleFormat::WARNING);
+			Util::Win32::WriteFormattedConsoleMessage(std::string{ "WARNING: The embedded texture " } + embeddedTexture.mFilename.C_Str() + " was interpreted by Assimp ambiguously. The resulting texture file, if produced, may be incorrect for several reasons, such as color space inconsistency. Please use either unembedded textures or embedded textures in a compressed format, such as .png.", Brawler::Win32::ConsoleFormat::WARNING);
 
 			assert(std::strcmp(embeddedTexture.achFormatHint, "argb8888") == 0 && "ERROR: Assimp's documentation was lying about its embedded texture format!");
 

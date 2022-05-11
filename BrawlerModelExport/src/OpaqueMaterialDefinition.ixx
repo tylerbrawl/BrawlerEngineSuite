@@ -10,6 +10,14 @@ export namespace Brawler
 {
 	class OpaqueMaterialDefinition final : public I_MaterialDefinition
 	{
+	private:
+		template <aiTextureType TextureType>
+		struct ModelTextureContainer
+		{
+			ModelTexture<TextureType>* ModelTexturePtr;
+			aiString ModelTextureName;
+		};
+
 	public:
 		explicit OpaqueMaterialDefinition(const aiMaterial& material);
 
@@ -19,9 +27,11 @@ export namespace Brawler
 		OpaqueMaterialDefinition(OpaqueMaterialDefinition&& rhs) noexcept = default;
 		OpaqueMaterialDefinition& operator=(OpaqueMaterialDefinition&& rhs) noexcept = default;
 
+		void RegisterModelTextures(ModelTextureDatabase& textureDatabase) override;
+
 		MaterialID GetMaterialID() const override;
 
 	private:
-		ModelTexture<aiTextureType::aiTextureType_DIFFUSE> mDiffuseTexture;
+		ModelTextureContainer<aiTextureType::aiTextureType_DIFFUSE> mDiffuseTextureContainer;
 	};
 }

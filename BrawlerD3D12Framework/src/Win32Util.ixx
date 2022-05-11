@@ -14,6 +14,8 @@ export namespace Util
 		void WriteFormattedConsoleMessage(const std::string_view msg, const Brawler::Win32::ConsoleFormat format = Brawler::Win32::ConsoleFormat::NORMAL);
 		void WriteFormattedConsoleMessage(const std::wstring_view msg, const Brawler::Win32::ConsoleFormat format = Brawler::Win32::ConsoleFormat::NORMAL);
 
+		std::wstring GetLastErrorString();
+
 		__forceinline constexpr bool IsHandleValid(const HANDLE hObject);
 	}
 }

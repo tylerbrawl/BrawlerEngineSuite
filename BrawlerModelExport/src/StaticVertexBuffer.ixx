@@ -34,9 +34,11 @@ export namespace Brawler
 		StaticVertexBuffer(StaticVertexBuffer&& rhs) noexcept = default;
 		StaticVertexBuffer& operator=(StaticVertexBuffer&& rhs) noexcept = default;
 
-		void InitializePackedData();
+		void Update();
+		bool IsReadyForSerialization() const;
 
 	private:
+		void InitializePackedData();
 		void InitializeUnpackedData(const aiMesh& mesh);
 
 	private:
