@@ -18,6 +18,8 @@ export namespace Brawler
 		ModelResolver(ModelResolver&& rhs) noexcept = default;
 		ModelResolver& operator=(ModelResolver&& rhs) noexcept = default;
 
+		void InitializeLODResolvers();
+
 		void Update();
 		bool IsReadyForSerialization() const;
 

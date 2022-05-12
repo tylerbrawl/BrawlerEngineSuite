@@ -1,12 +1,19 @@
 module;
 #include <memory>
+#include <format>
+#include <cassert>
+#include <assimp/scene.h>
 
 export module Brawler.MeshResolverBase;
 import Brawler.I_MaterialDefinition;
 import Brawler.ImportedMesh;
+import Brawler.OpaqueMaterialDefinition;
 
 export namespace Brawler
 {
+	// As of writing this, the MSVC still doesn't support decuding this for C++20 modules. *sigh*...
+	
+	template <typename DerivedClass>
 	class MeshResolverBase
 	{
 	protected:
@@ -21,11 +28,8 @@ export namespace Brawler
 		MeshResolverBase(MeshResolverBase&& rhs) noexcept = default;
 		MeshResolverBase& operator=(MeshResolverBase&& rhs) noexcept = default;
 
-		template <typename Self>
-		void Update(this Self&& self);
-
-		template <typename Self>
-		bool IsReadyForSerialization(this const Self& self);
+		void Update();
+		bool IsReadyForSerialization() const;
 
 	protected:
 		const ImportedMesh& GetImportedMesh() const;
@@ -45,16 +49,52 @@ export namespace Brawler
 
 namespace Brawler
 {
-	template <typename Self>
-	void MeshResolverBase::Update(this Self&& self)
+	std::unique_ptr<Brawler::I_MaterialDefinition> CreateMaterialDefinition(const Brawler::ImportedMesh& mesh)
+	{
+		const aiMaterial& material{ mesh.GetMeshMaterial() };
+		
+		aiString materialName{};
+		const aiReturn getMaterialNameReturn{ material.Get(AI_MATKEY_NAME, materialName) };
+		assert(getMaterialNameReturn == aiReturn::aiReturn_SUCCESS);
+
+		// For now, we only support opaque materials.
+
+		float materialOpacity = 0.0f;
+		const aiReturn getMaterialOpacityReturn{ material.Get(AI_MATKEY_OPACITY, materialOpacity) };
+		assert(getMaterialOpacityReturn == aiReturn::aiReturn_SUCCESS);
+
+		if (materialOpacity != 1.0f) [[unlikely]]
+			throw std::runtime_error{ std::format("ERROR: The material {} is transparent! (Currently, transparent/translucent materials are not supported.)", materialName.C_Str()) };
+
+		return std::make_unique<Brawler::OpaqueMaterialDefinition>(Brawler::ImportedMesh{ mesh });
+	}
+}
+
+namespace Brawler
+{
+	template <typename DerivedClass>
+	MeshResolverBase<DerivedClass>::MeshResolverBase(ImportedMesh&& mesh) :
+		mMaterialDefinitionPtr(CreateMaterialDefinition(mesh)),
+		mImportedMesh(std::move(mesh))
+	{}
+	
+	template <typename DerivedClass>
+	void MeshResolverBase<DerivedClass>::Update()
 	{
 		mMaterialDefinitionPtr->Update();
-		self.UpdateIMPL();
+		
+		static_cast<DerivedClass*>(this)->UpdateIMPL();
 	}
 
-	template <typename Self>
-	bool MeshResolverBase::IsReadyForSerialization(this const Self& self)
+	template <typename DerivedClass>
+	bool MeshResolverBase<DerivedClass>::IsReadyForSerialization() const
 	{
-		return (mMaterialDefinitionPtr->IsReadyForSerialization() && self.IsReadyForSerializationIMPL());
+		return (mMaterialDefinitionPtr->IsReadyForSerialization() && static_cast<const DerivedClass*>(this)->IsReadyForSerializationIMPL());
+	}
+
+	template <typename DerivedClass>
+	const ImportedMesh& MeshResolverBase<DerivedClass>::GetImportedMesh() const
+	{
+		return mImportedMesh;
 	}
 }

@@ -5,11 +5,15 @@ export module Brawler.StaticMeshResolver;
 import Brawler.StaticVertexBuffer;
 import Brawler.IndexBuffer;
 import Brawler.MeshResolverBase;
+import Brawler.ImportedMesh;
 
 export namespace Brawler
 {
-	class StaticMeshResolver final : public MeshResolverBase
+	class StaticMeshResolver final : public MeshResolverBase<StaticMeshResolver>
 	{
+	private:
+		friend class MeshResolverBase<StaticMeshResolver>;
+
 	public:
 		explicit StaticMeshResolver(ImportedMesh&& mesh);
 
@@ -19,7 +23,7 @@ export namespace Brawler
 		StaticMeshResolver(StaticMeshResolver&& rhs) noexcept = default;
 		StaticMeshResolver& operator=(StaticMeshResolver&& rhs) noexcept = default;
 
-	protected:
+	private:
 		void UpdateIMPL();
 		bool IsReadyForSerializationIMPL() const;
 

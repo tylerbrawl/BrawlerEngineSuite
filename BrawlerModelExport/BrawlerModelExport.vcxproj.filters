@@ -79,8 +79,14 @@
     <Filter Include="Source Files\Command Line Parsing">
       <UniqueIdentifier>{5ca79dfb-240b-467d-97c3-01af256b049d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module Files\Textures\Mip-Map Generation">
+    <Filter Include="Module Files\Textures\Texture Update States">
+      <UniqueIdentifier>{0c2d3c21-68c9-47e5-88b4-b733a77a4b74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Textures\Mip-Map Generators">
       <UniqueIdentifier>{47a5f549-eb19-4a46-9578-244887a5c9e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Polymorphism Traits">
+      <UniqueIdentifier>{1e0d6f00-38b1-4a4e-be01-e799c7be4a54}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -92,12 +98,6 @@
     </ClCompile>
     <ClCompile Include="src\Application.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\SceneLoader.ixx">
-      <Filter>Module Files\Mesh Parsing</Filter>
-    </ClCompile>
-    <ClCompile Include="src\SceneLoader.cpp">
-      <Filter>Source Files\Mesh Parsing</Filter>
     </ClCompile>
     <ClCompile Include="src\StaticMeshResolver.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
@@ -162,12 +162,6 @@
     <ClCompile Include="src\MaterialIDMap.ixx">
       <Filter>Module Files\Materials</Filter>
     </ClCompile>
-    <ClCompile Include="src\MaterialManager.ixx">
-      <Filter>Module Files\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MaterialManager.cpp">
-      <Filter>Source Files\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="src\Skeleton.ixx">
       <Filter>Module Files\Animations</Filter>
     </ClCompile>
@@ -188,12 +182,6 @@
     </ClCompile>
     <ClCompile Include="src\MeshTypeID.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
-    </ClCompile>
-    <ClCompile Include="src\StaticMeshManager.ixx">
-      <Filter>Module Files\Mesh Parsing</Filter>
-    </ClCompile>
-    <ClCompile Include="src\StaticMeshManager.cpp">
-      <Filter>Source Files\Mesh Parsing</Filter>
     </ClCompile>
     <ClCompile Include="src\ModelResolver.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
@@ -264,9 +252,6 @@
     <ClCompile Include="src\MeshResolverBase.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\MeshResolverBase.cpp">
-      <Filter>Source Files\Mesh Parsing</Filter>
-    </ClCompile>
     <ClCompile Include="src\ImportedMesh.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
     </ClCompile>
@@ -283,10 +268,34 @@
       <Filter>Source Files\Command Line Parsing</Filter>
     </ClCompile>
     <ClCompile Include="src\MipMapGeneration.ixx">
-      <Filter>Module Files\Textures\Mip-Map Generation</Filter>
+      <Filter>Module Files\Textures\Mip-Map Generators</Filter>
     </ClCompile>
     <ClCompile Include="src\GenericMipMapGenerator.ixx">
-      <Filter>Module Files\Textures\Mip-Map Generation</Filter>
+      <Filter>Module Files\Textures\Mip-Map Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_MaterialDefinition.cpp">
+      <Filter>Source Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelTextureHandle.ixx">
+      <Filter>Module Files\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_ModelTextureUpdateState.ixx">
+      <Filter>Module Files\Textures\Texture Update States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelTextureUpdateStateID.ixx">
+      <Filter>Module Files\Textures\Texture Update States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MipMapGenerationModelTextureUpdateState.ixx">
+      <Filter>Module Files\Textures\Texture Update States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FormatConversionModelTextureUpdateState.ixx">
+      <Filter>Module Files\Textures\Texture Update States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AwaitingSerializationModelTextureUpdateState.ixx">
+      <Filter>Module Files\Textures\Texture Update States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelTextureUpdateStateTraits.ixx">
+      <Filter>Module Files\Polymorphism Traits</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

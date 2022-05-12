@@ -10,6 +10,7 @@ export namespace Brawler
 {
 	class LODResolver
 	{
+	public:
 		// We disallow default constructors because Assimp::Importer instances are
 		// expensive to construct.
 		LODResolver() = delete;
@@ -22,7 +23,15 @@ export namespace Brawler
 		LODResolver(LODResolver&& rhs) noexcept = default;
 		LODResolver& operator=(LODResolver&& rhs) noexcept = default;
 
-		void ImportScene(const std::filesystem::path& fbxFile);
+		/// <summary>
+		/// Begins the scene importing process, using the LOD value assigned to this LODResolver
+		/// in its constructor.
+		/// 
+		/// This is a relatively long-running process, and it is done only on a single thread. To 
+		/// improve efficiency, all of the LOD mesh files should have their scenes be imported
+		/// concurrently. This is guaranteed to be thread safe.
+		/// </summary>
+		void ImportScene();
 
 		void Update();
 		bool IsReadyForSerialization() const;
@@ -31,7 +40,7 @@ export namespace Brawler
 		std::uint32_t GetLODLevel() const;
 
 	private:
-		void CreateAIScene(const std::filesystem::path& fbxFile);
+		void CreateAIScene();
 		void CreateMeshResolvers();
 
 	private:

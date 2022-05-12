@@ -7,8 +7,8 @@ namespace Brawler
 {
 	StaticMeshResolver::StaticMeshResolver(ImportedMesh&& mesh) :
 		MeshResolverBase(std::move(mesh)),
-		mVertexBuffer(mesh),
-		mIndexBuffer(mesh)
+		mVertexBuffer(mesh.GetMesh()),
+		mIndexBuffer(mesh.GetMesh())
 	{}
 
 	void StaticMeshResolver::UpdateIMPL()

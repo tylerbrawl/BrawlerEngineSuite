@@ -2,6 +2,7 @@ module;
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <span>
 #include <cassert>
 
 module Brawler.AppParams;
@@ -36,6 +37,12 @@ namespace Brawler
 	std::uint32_t AppParams::GetLODCount() const
 	{
 		return static_cast<std::uint32_t>(mInputLODFilePathArr.size());
+	}
+
+	std::span<const std::filesystem::path> AppParams::GetLODFilePaths() const
+	{
+		assert(!mInputLODFilePathArr.empty());
+		return std::span<const std::filesystem::path>{ mInputLODFilePathArr };
 	}
 
 	const std::filesystem::path& AppParams::GetLODFilePath(const std::uint32_t lodLevel) const

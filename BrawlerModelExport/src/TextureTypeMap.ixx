@@ -56,8 +56,8 @@ namespace Brawler
 		template <typename MipMapGeneratorType>
 		concept IsMipMapGenerator = requires (MipMapGeneratorType generator, const DirectX::ScratchImage& srcTexture)
 		{
-			// void MipMapGeneratorType::BeginMipMapGeneration(const DirectX::ScratchImage& srcTexture)
-			{ generator.BeginMipMapGeneration(srcTexture) } -> std::same_as<void>;
+			// void MipMapGeneratorType::Update(const DirectX::ScratchImage& srcTexture)
+			{ generator.Update() } -> std::same_as<void>;
 
 			// bool-ish MipMapGeneratorType::IsMipMapGenerationFinished() const
 			{ std::as_const(generator).IsMipMapGenerationFinished() } -> std::convertible_to<bool>;

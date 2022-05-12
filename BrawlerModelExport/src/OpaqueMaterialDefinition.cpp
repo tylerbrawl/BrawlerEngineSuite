@@ -12,61 +12,68 @@ import Brawler.ModelTextureDatabase;
 
 namespace
 {
-	template <aiTextureType TextureType>
-	struct TextureTypeStringInfo
+	aiString GetMaterialName(const aiMaterial& material)
 	{
-		static_assert(sizeof(TextureType) != sizeof(TextureType));
-	};
+		aiString materialName{};
+		const aiReturn materialNameResult{ material.Get(AI_MATKEY_NAME, materialName) };
 
-	template <>
-	struct TextureTypeStringInfo<aiTextureType::aiTextureType_DIFFUSE>
-	{
-		static constexpr std::string_view TEXTURE_TYPE_STR{ "diffuse albedo" };
-	};
-	
-	template <aiTextureType TextureType>
-	aiString GetTextureNameString(const aiMaterial& material, const std::uint32_t textureIndex = 0)
-	{
-		if (material.GetTextureCount(TextureType) < (textureIndex + 1)) [[unlikely]]
-		{
-			// For some reason, aiMaterial.GetName() is not const, even though it says that it is
-			// in the documentation.
-			aiString materialName{};
-			const aiReturn materialNameResult{ material.Get(AI_MATKEY_NAME, materialName) };
-			assert(materialNameResult == aiReturn::aiReturn_SUCCESS);
+		assert(materialNameResult == aiReturn::aiReturn_SUCCESS);
 
-			throw std::runtime_error{ std::format("ERROR: The material {} does not have enough {} textures for an OpaqueMaterialDefinition!", materialName.C_Str(), TextureTypeStringInfo<TextureType>::TEXTURE_TYPE_STR.data()) };
-		}
-
-		aiString textureName{};
-		const aiReturn textureNameResult{ material.GetTexture(TextureType, textureIndex, &textureName) };
-		assert(textureNameResult == aiReturn::aiReturn_SUCCESS);
-
-		return textureName;
+		return materialName;
 	}
 }
 
 namespace Brawler
 {
-	OpaqueMaterialDefinition::OpaqueMaterialDefinition(const aiMaterial& material) :
-		I_MaterialDefinition(),
-		mDiffuseTextureContainer(ModelTextureContainer<aiTextureType::aiTextureType_DIFFUSE>{
-			.ModelTexturePtr = nullptr,
-			.ModelTextureName{GetTextureNameString<aiTextureType::aiTextureType_DIFFUSE>(material)}
-		})
-	{
-		// For now, we will only worry about the diffuse albedo texture.
+	OpaqueMaterialDefinition::OpaqueMaterialDefinition(ImportedMesh&& mesh) :
+		I_MaterialDefinition(std::move(mesh)),
+		mHDiffuseTexture(),
+		mInitialized(nullptr)
+	{}
 
-		
+	void OpaqueMaterialDefinition::Update()
+	{
+		if (!mInitialized) [[unlikely]]
+		{
+			VerifyModelTextureCount();
+			CreateModelTextureHandles();
+
+			mInitialized = true;
+		}
 	}
 
-	void OpaqueMaterialDefinition::RegisterModelTextures(ModelTextureDatabase& textureDatabase)
+	bool OpaqueMaterialDefinition::IsReadyForSerialization() const
 	{
+		// Serializing the OpaqueMaterialDefinition involves writing out the output FilePathHash
+		// of all involved textures. These are ready by the time the corresponding
+		// ModelTextureHandle instances are created.
+		//
+		// So, we have all of the data needed to serialize this definition.
 
+		return true;
 	}
 
 	MaterialID OpaqueMaterialDefinition::GetMaterialID() const
 	{
 		return Brawler::GetMaterialID<OpaqueMaterialDefinition>();
+	}
+
+	void OpaqueMaterialDefinition::VerifyModelTextureCount() const
+	{
+		// For now, we will only worry about the diffuse albedo texture.
+		
+		const aiMaterial& material{ GetImportedMesh().GetMeshMaterial() };
+
+		{
+			const std::uint32_t diffuseTextureCount = material.GetTextureCount(aiTextureType::aiTextureType_DIFFUSE);
+
+			if (diffuseTextureCount < 1) [[unlikely]]
+				throw std::runtime_error{ std::format("ERROR: The material {} does not have enough diffuse albedo textures for an OpaqueMaterialDefinition!", GetMaterialName(material).C_Str()) };
+		}
+	}
+
+	void OpaqueMaterialDefinition::CreateModelTextureHandles()
+	{
+		mHDiffuseTexture = ModelTextureDatabase::GetInstance().GetModelTextureHandle<aiTextureType::aiTextureType_DIFFUSE>(GetImportedMesh());
 	}
 }

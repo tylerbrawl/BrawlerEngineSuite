@@ -2,6 +2,7 @@ module;
 #include <assimp/scene.h>
 
 export module Brawler.ImportedMesh;
+import Brawler.LODScene;
 
 export namespace Brawler
 {
@@ -9,7 +10,7 @@ export namespace Brawler
 	{
 	public:
 		ImportedMesh() = default;
-		ImportedMesh(const aiMesh& mesh, const aiScene& owningScene);
+		ImportedMesh(const aiMesh& mesh, LODScene&& owningScene);
 
 		// The ImportedMesh doesn't actually own the aiMesh* and aiScene*, so
 		// allowing default copy and move is fine.
@@ -34,8 +35,10 @@ export namespace Brawler
 		/// <returns></returns>
 		const aiMaterial& GetMeshMaterial() const;
 
+		LODScene GetLODScene() const;
+
 	private:
 		const aiMesh* mAIMeshPtr;
-		const aiScene* mAIScenePtr;
+		LODScene mOwningScene;
 	};
 }

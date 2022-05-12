@@ -7,9 +7,9 @@ module Brawler.ImportedMesh;
 
 namespace Brawler
 {
-	ImportedMesh::ImportedMesh(const aiMesh& mesh, const aiScene& owningScene) :
+	ImportedMesh::ImportedMesh(const aiMesh& mesh, LODScene&& owningScene) :
 		mAIMeshPtr(&mesh),
-		mAIScenePtr(&owningScene)
+		mOwningScene(std::move(owningScene))
 	{}
 
 	const aiMesh& ImportedMesh::GetMesh() const
@@ -20,15 +20,21 @@ namespace Brawler
 
 	const aiScene& ImportedMesh::GetOwningScene() const
 	{
-		assert(mAIScenePtr != nullptr);
-		return *mAIScenePtr;
+		return mOwningScene.GetScene();
 	}
 
 	const aiMaterial& ImportedMesh::GetMeshMaterial() const
 	{
-		assert(mAIScenePtr != nullptr && mAIMeshPtr != nullptr);
+		assert(mAIMeshPtr != nullptr);
 		
-		const std::span<const aiMaterial*> materialPtrSpan{ const_cast<const aiMaterial**>(mAIScenePtr->mMaterials), mAIScenePtr->mNumMaterials };
+		const aiScene& assimpScene{ mOwningScene.GetScene() };
+		const std::span<const aiMaterial*> materialPtrSpan{ const_cast<const aiMaterial**>(assimpScene.mMaterials), assimpScene.mNumMaterials };
+
 		return *(materialPtrSpan[mAIMeshPtr->mMaterialIndex]);
+	}
+
+	LODScene ImportedMesh::GetLODScene() const
+	{
+		return mOwningScene;
 	}
 }

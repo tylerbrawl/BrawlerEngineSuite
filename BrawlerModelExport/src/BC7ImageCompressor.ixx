@@ -97,7 +97,6 @@ export namespace Brawler
 	public:
 		struct InitInfo
 		{
-			DirectX::Image& DestImage;
 			const DirectX::Image& SrcImage;
 			DXGI_FORMAT DesiredFormat;
 		};
@@ -111,13 +110,14 @@ export namespace Brawler
 		BC7ImageCompressor(BC7ImageCompressor&& rhs) noexcept = default;
 		BC7ImageCompressor& operator=(BC7ImageCompressor&& rhs) noexcept = default;
 
-		std::vector<D3D12::RenderPassBundle> GetImageCompressionRenderPassBundles(D3D12::FrameGraphBuilder& frameGraphBuilder);
+		void CreateTransientResources(D3D12::FrameGraphBuilder& frameGraphBuilder);
+		std::vector<D3D12::RenderPassBundle> GetImageCompressionRenderPassBundles();
+
+		bool TryCopyCompressedImage(DirectX::Image& destImage) const;
 
 		//void CompressImage(DirectX::Image& destImage);
 
 	private:
-		void CreateTransientResources(D3D12::FrameGraphBuilder& frameGraphBuilder);
-
 		void InitializeBufferResources(D3D12::FrameGraphBuilder& frameGraphBuilder);
 		void InitializeSourceTextureResource(D3D12::FrameGraphBuilder& frameGraphBuilder);
 
@@ -135,6 +135,8 @@ export namespace Brawler
 		DescriptorTableBuilderInfo mTableBuilderInfo;
 
 		std::unique_ptr<D3D12::BufferResource> mReadbackBufferPtr;
+		std::uint64_t mCompletionFrameNum;
+		bool mReadyForDeletion;
 
 		//std::unique_ptr<D3D12::StructuredBuffer<BufferBC7>> mOutputBuffer;
 		//std::unique_ptr<D3D12::StructuredBuffer<BufferBC7>> mError1Buffer;

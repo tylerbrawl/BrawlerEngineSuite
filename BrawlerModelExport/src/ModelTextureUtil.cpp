@@ -37,19 +37,5 @@ namespace Util
 			// Write out the DDS data.
 			fileStream.write(reinterpret_cast<const char*>(writeInfo.DDSBlob.GetBufferPointer()), writeInfo.DDSBlob.GetBufferSize());
 		}
-
-		Brawler::FilePathHash GetTextureFilePathHash(const aiString& textureName)
-		{
-			/*
-			We want the command line to work as follows:
-
-			BrawlerModelExport.exe /ModelName [Model Name] [Path to LOD 0 FBX] [Path to LOD 1 FBX] ... [Root Output Directory]
-
-			The texture FilePathHash should then be calculated as the path "Textures\[Model Name]\[textureName without Extension].btex."
-			Remember to make use of constexpr!
-			*/
-
-			static_assert(false, "TODO: Implement Util::ModelTexture::WriteTextureToFile()! (See ModelTextureUtil.cpp for more information.)");
-		}
 	}
 }

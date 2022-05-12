@@ -1,5 +1,6 @@
 module;
 #include <span>
+#include <optional>
 #include <DirectXTex.h>
 
 export module Brawler.MipMapGeneration:GenericMipMapGenerator;
@@ -18,13 +19,13 @@ export namespace Brawler
 		GenericMipMapGenerator(GenericMipMapGenerator&& rhs) noexcept = default;
 		GenericMipMapGenerator& operator=(GenericMipMapGenerator&& rhs) noexcept = default;
 
-		void BeginMipMapGeneration(const DirectX::ScratchImage& srcTexture);
+		void Update(const DirectX::ScratchImage& srcTexture);
 		bool IsMipMapGenerationFinished() const;
 
 		DirectX::ScratchImage ExtractGeneratedMipMaps();
 
 	private:
-		DirectX::ScratchImage mGeneratedMipMapTexture;
+		std::optional<DirectX::ScratchImage> mGeneratedMipMapTexture;
 	};
 }
 
@@ -32,28 +33,35 @@ export namespace Brawler
 
 namespace Brawler
 {
-	void GenericMipMapGenerator::BeginMipMapGeneration(const DirectX::ScratchImage& srcTexture)
+	void GenericMipMapGenerator::Update(const DirectX::ScratchImage& srcTexture)
 	{
 		// DirectXTex does not support generating mip-map chains directly from BC formats.
 		// We could first decompress the textures, create the chain, and then compress them 
 		// again, but this can be incredibly slow.
-
-		if constexpr (Util::General::IsDebugModeEnabled())
+		
+		if (!mGeneratedMipMapTexture.has_value()) [[likely]]
 		{
-			const std::span<const DirectX::Image> imageSpan{ srcTexture.GetImages(), srcTexture.GetImageCount() };
+			DirectX::ScratchImage generatedTexture{};
+			
+			if constexpr (Util::General::IsDebugModeEnabled())
+			{
+				const std::span<const DirectX::Image> imageSpan{ srcTexture.GetImages(), srcTexture.GetImageCount() };
 
-			for (const auto& image : imageSpan)
-				assert(!DirectX::IsCompressed(image.format) && "ERROR: A block-compressed image was provided for GenericMipMapGenerator::BeginMipMapGeneration()! (Did you forget to use Util::ModelTexture::CreateIntermediateTexture()?)");
+				for (const auto& image : imageSpan)
+					assert(!DirectX::IsCompressed(image.format) && "ERROR: A block-compressed image was provided for GenericMipMapGenerator::BeginMipMapGeneration()! (Did you forget to use Util::ModelTexture::CreateIntermediateTexture()?)");
+			}
+
+			Util::General::CheckHRESULT(DirectX::GenerateMipMaps(
+				srcTexture.GetImages(),
+				srcTexture.GetImageCount(),
+				srcTexture.GetMetadata(),
+				DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT,
+				0,  // Create a full mip-map chain, down to a 1x1 texture.
+				generatedTexture
+			));
+
+			mGeneratedMipMapTexture = std::move(generatedTexture);
 		}
-
-		Util::General::CheckHRESULT(DirectX::GenerateMipMaps(
-			srcTexture.GetImages(),
-			srcTexture.GetImageCount(),
-			srcTexture.GetMetadata(),
-			DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT,
-			0,  // Create a full mip-map chain, down to a 1x1 texture.
-			mGeneratedMipMapTexture
-		));
 	}
 
 	bool GenericMipMapGenerator::IsMipMapGenerationFinished() const

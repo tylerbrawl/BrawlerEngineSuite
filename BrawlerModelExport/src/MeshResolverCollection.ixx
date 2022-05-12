@@ -6,6 +6,14 @@ module;
 export module Brawler.MeshResolverCollection;
 import Brawler.StaticMeshResolver;
 import Brawler.Functional;
+import Brawler.ImportedMesh;
+
+namespace Brawler
+{
+	using MeshResolverArrayTuple = std::tuple<
+		std::vector<StaticMeshResolver>
+	>;
+}
 
 export namespace Brawler
 {
@@ -20,10 +28,12 @@ export namespace Brawler
 		MeshResolverCollection(MeshResolverCollection&& rhs) noexcept = default;
 		MeshResolverCollection& operator=(MeshResolverCollection&& rhs) noexcept = default;
 
-		void CreateMeshResolverForAIMesh(const aiMesh& mesh);
+		void CreateMeshResolverForImportedMesh(ImportedMesh&& mesh);
 
 		void Update();
 		bool IsReadyForSerialization() const;
+
+		std::size_t GetMeshResolverCount() const;
 
 	private:
 		/// <summary>
@@ -42,11 +52,17 @@ export namespace Brawler
 		///   Specifically, let M represent a mesh resolver. Then, for each mesh resolver in this
 		///   MeshResolverCollection instance, this function calls callback(M).
 		/// </param>
-		template <typename MeshResolverType, Brawler::Function<void, MeshResolverType&> Callback>
+		template <typename Callback>
 		void ForEachMeshResolver(const Callback& callback);
 
+		template <typename Callback>
+		void ForEachMeshResolver(const Callback& callback) const;
+
+		template <typename MeshResolverType, typename... Args>
+		void EmplaceMeshResolver(Args&&... args);
+
 	private:
-		std::vector<StaticMeshResolver> mStaticMeshResolverArr;
+		MeshResolverArrayTuple mResolverArrTuple;
 	};
 }
 
@@ -54,14 +70,36 @@ export namespace Brawler
 
 namespace Brawler
 {
-	template <typename MeshResolverType, Brawler::Function<void, MeshResolverType&> Callback>
+	template <std::size_t CurrIndex, typename TupleType, typename Callback>
+	void ForEachMeshResolverIMPL(std::add_lvalue_reference_t<TupleType> tuple, const Callback& callback)
+	{
+		if constexpr (CurrIndex != std::tuple_size_v<MeshResolverArrayTuple>)
+		{
+			for (auto& meshResolver : std::get<CurrIndex>(tuple))
+				callback.operator()<std::remove_reference_t<decltype(meshResolver)>>(meshResolver);
+
+			ForEachMeshResolverIMPL<(CurrIndex + 1), TupleType>(tuple, callback);
+		}
+	}
+}
+
+namespace Brawler
+{
+	template <typename Callback>
 	void MeshResolverCollection::ForEachMeshResolver(const Callback& callback)
 	{
-		// Execute the callback for all StaticMeshResolver instances.
-		for (auto& staticResolver : mStaticMeshResolverArr)
-			callback.operator()<MeshResolverType>(staticResolver);
+		ForEachMeshResolverIMPL<0, MeshResolverArrayTuple>(mResolverArrTuple, callback);
+	}
 
-		// Add additional loops for new MeshResolver types as they are needed.
-		// We do this to avoid dynamic polymorphism.
+	template <typename Callback>
+	void MeshResolverCollection::ForEachMeshResolver(const Callback& callback) const
+	{
+		ForEachMeshResolverIMPL<0, const MeshResolverArrayTuple>(mResolverArrTuple, callback);
+	}
+
+	template <typename MeshResolverType, typename... Args>
+	void MeshResolverCollection::EmplaceMeshResolver(Args&&... args)
+	{
+		std::get<std::vector<MeshResolverType>>(mResolverArrTuple).emplace_back(std::forward<Args>(args)...);
 	}
 }

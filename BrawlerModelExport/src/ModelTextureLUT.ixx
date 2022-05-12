@@ -13,13 +13,17 @@ import Brawler.ModelTexture;
 import Brawler.LODScene;
 import Util.ModelTexture;
 import Brawler.FilePathHash;
+import Util.General;
+import Brawler.ModelTextureHandle;
+import Brawler.ImportedMesh;
 
 export namespace Brawler
 {
 	template <aiTextureType TextureType>
 	class ModelTextureLUT
 	{
-		
+	private:
+		using ModelTextureType = ModelTexture<TextureType>;
 
 	public:
 		ModelTextureLUT() = default;
@@ -43,19 +47,22 @@ export namespace Brawler
 		/// </param>
 		void AddTexturesFromScene(const LODScene& scene);
 
+		std::size_t GetTextureCount() const;
+		ModelTextureHandle<TextureType> GetModelTextureHandle(const ImportedMesh& mesh, const std::size_t textureIndex) const;
+
 	private:
 		void AddTexturesFromMaterial(const LODScene& scene, const aiMaterial& material);
 		void TryEmplaceModelTexture(const LODScene& scene, const aiString& textureName);
 
 	private:
-		std::vector<std::unique_ptr<ModelTextureInfo>> mTextureInfoPtrArr;
-		std::unordered_map<std::string, ModelTextureInfo*> mTextureNameMap;
+		std::vector<std::unique_ptr<ModelTextureType>> mModelTexturePtrArr;
+		std::unordered_map<std::string, ModelTextureType*> mTextureNameMap;
 	};
 }
 
 // -------------------------------------------------------------------------------------------------------------------------
 
-namespace
+namespace Brawler
 {
 	std::string GetTextureNameMapKey(const Brawler::LODScene& scene, const aiString& textureName)
 	{
@@ -127,6 +134,10 @@ namespace
 		// To ensure that there are no ambiguities, we will always use the canonical path to the texture
 		// as the key. This ensures that the file path is always absolute, and that there are no symbolic
 		// links in the path.
+		//
+		// This can reduce the number of texture files which we need to create if, e.g., the same texture
+		// file is externally referenced across one or more input LOD mesh files, but with symbolic links
+		// and/or relative paths.
 
 		const std::filesystem::path canonicalTexturePath = std::filesystem::canonical(texturePath, errorCode);
 
@@ -142,10 +153,34 @@ namespace Brawler
 	template <aiTextureType TextureType>
 	void ModelTextureLUT<TextureType>::AddTexturesFromScene(const LODScene& scene)
 	{
-		const std::span<const aiMaterial*> materialPtrSpan{ const_cast<const aiMaterial**>(scene.GetScene().mMaterials), scene.mNumMaterials};
+		const aiScene& assimpScene{ scene.GetScene() };
+		const std::span<const aiMaterial*> materialPtrSpan{ const_cast<const aiMaterial**>(assimpScene.mMaterials), assimpScene.mNumMaterials};
 
 		for (const auto materialPtr : materialPtrSpan)
 			AddTexturesFromMaterial(scene, *materialPtr);
+	}
+
+	template <aiTextureType TextureType>
+	std::size_t ModelTextureLUT<TextureType>::GetTextureCount() const
+	{
+		return mModelTexturePtrArr.size();
+	}
+
+	template <aiTextureType TextureType>
+	ModelTextureHandle<TextureType> ModelTextureLUT<TextureType>::GetModelTextureHandle(const ImportedMesh& mesh, const std::size_t textureIndex) const
+	{
+		const aiMaterial& material{ mesh.GetMeshMaterial() };
+		
+		aiString textureName{};
+		const aiReturn textureNameResult{ material.GetTexture(TextureType, static_cast<std::uint32_t>(textureIndex), &textureName) };
+
+		// This should still fire if the search goes out-of-bounds.
+		assert(textureNameResult == aiReturn::aiReturn_SUCCESS);
+
+		const std::string textureNameKey{ GetTextureNameMapKey(mesh.GetLODScene(), textureName) };
+
+		assert(mTextureNameMap.contains(textureNameKey) && "ERROR: An attempt was made to get a ModelTexture which was never registered to the ModelTextureDatabase!");
+		return ModelTextureHandle<TextureType>{ *(mTextureNameMap.at(textureNameKey)) };
 	}
 
 	template <aiTextureType TextureType>
@@ -160,7 +195,7 @@ namespace Brawler
 
 			assert(textureNameResult == aiReturn::aiReturn_SUCCESS);
 
-
+			TryEmplaceModelTexture(scene, textureName);
 		}
 	}
 
@@ -169,7 +204,18 @@ namespace Brawler
 	{
 		const std::string textureNameMapKey = GetTextureNameMapKey(scene, textureName);
 		
-		if(!mTextureNameMap.contains(textureNameMapKey))
+		if (!mTextureNameMap.contains(textureNameMapKey))
+		{
+			std::unique_ptr<ModelTextureType> modelTexture{ std::make_unique<ModelTextureType>(typename ModelTextureType::ModelTextureInfo{
+				.OriginalTextureName{ textureName },
+				.ResolvedTextureNameHash{ FilePathHash{ Util::General::StringToWString(textureNameMapKey) } },
+				.Scene{ scene }
+			}) };
 
+			ModelTextureType* const modelTexturePtr = modelTexture.get();
+			mTextureNameMap[textureNameMapKey] = modelTexturePtr;
+
+			mModelTexturePtrArr.push_back(std::move(modelTexture));
+		}
 	}
 }

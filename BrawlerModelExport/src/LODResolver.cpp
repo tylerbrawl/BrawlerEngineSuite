@@ -9,6 +9,10 @@ module;
 #include <span>
 
 module Brawler.LODResolver;
+import Brawler.ImportedMesh;
+import Util.ModelExport;
+import Brawler.AppParams;
+import Brawler.LODScene;
 
 namespace Brawler
 {
@@ -19,9 +23,9 @@ namespace Brawler
 		mLODLevel(lodLevel)
 	{}
 
-	void LODResolver::ImportScene(const std::filesystem::path& fbxFile)
+	void LODResolver::ImportScene()
 	{
-		CreateAIScene(fbxFile);
+		CreateAIScene();
 		CreateMeshResolvers();
 	}
 
@@ -46,8 +50,10 @@ namespace Brawler
 		return mLODLevel;
 	}
 
-	void LODResolver::CreateAIScene(const std::filesystem::path& fbxFile)
+	void LODResolver::CreateAIScene()
 	{
+		const std::filesystem::path& fbxFile{ Util::ModelExport::GetLaunchParameters().GetLODFilePath(mLODLevel) };
+		
 		// Check that the provided file is an FBX file. Although Assimp supports files of arbitrary
 		// types, there are certain properties of FBX files which we assume throughout the import
 		// process. For instance, FBX's unit system is 1 unit = 1 centimeter, but the Brawler Engine uses
@@ -79,7 +85,7 @@ namespace Brawler
 			aiPostProcessSteps::aiProcess_OptimizeGraph
 		);
 
-		if (mAiScenePtr == nullptr) [[unlikely]]
+		if (mAIScenePtr == nullptr) [[unlikely]]
 			throw std::runtime_error{ std::string{ "ERROR: The model file " } + fbxFile.string() + " could not be imported!" };
 	}
 
@@ -88,6 +94,6 @@ namespace Brawler
 		const std::span<const aiMesh*> meshSpan{ const_cast<const aiMesh**>(mAIScenePtr->mMeshes), mAIScenePtr->mNumMeshes };
 
 		for (const auto meshPtr : meshSpan)
-			mMeshResolverCollection.CreateMeshResolverForAIMesh(*meshPtr);
+			mMeshResolverCollection.CreateMeshResolverForImportedMesh(ImportedMesh{ *meshPtr, LODScene{ *mAIScenePtr, mLODLevel } });
 	}
 }

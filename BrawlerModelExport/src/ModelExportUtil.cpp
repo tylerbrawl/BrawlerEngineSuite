@@ -3,7 +3,6 @@ module;
 
 module Util.ModelExport;
 import Brawler.Application;
-import Brawler.SceneLoader;
 
 namespace Util
 {

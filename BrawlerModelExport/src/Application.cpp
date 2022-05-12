@@ -5,8 +5,7 @@ module;
 
 module Brawler.Application;
 import Brawler.AppParams;
-
-import Brawler.Skeleton;
+import Brawler.BC7CompressionRenderModule;
 
 namespace
 {
@@ -18,7 +17,7 @@ namespace Brawler
 	Application::Application() :
 		mThreadPool(),
 		mRenderer(),
-		mSceneLoader(nullptr),
+		mModelResolver(),
 		mLaunchParams()
 	{
 		assert(appPtr == nullptr && "ERROR: An attempt was made to create a second instance of a Brawler::Application!");
@@ -32,20 +31,16 @@ namespace Brawler
 		mThreadPool.SetInitialized();
 
 		mRenderer.Initialize();
+
+		// Add the I_RenderModules used by the application.
+		mRenderer.AddRenderModule<BC7CompressionRenderModule>();
 	}
 
 	void Application::Run(AppParams&& appParams)
 	{
 		mLaunchParams = std::move(appParams);
-		mSceneLoader = std::make_unique<SceneLoader>(mLaunchParams.InputMeshFilePath);
 
-		mSceneLoader->ProcessScene();
-	}
 
-	const SceneLoader& Application::GetSceneLoader() const
-	{
-		assert(mSceneLoader != nullptr);
-		return *mSceneLoader;
 	}
 
 	const AppParams& Application::GetLaunchParameters() const

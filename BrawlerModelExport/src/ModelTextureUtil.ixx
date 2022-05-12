@@ -80,6 +80,7 @@ export namespace Util
 		/// Brawler::IMPL::TextureTypeMap<TextureType>::DESIRED_FORMAT.
 		/// </returns>
 		template <aiTextureType TextureType>
+			requires !Brawler::IsBlockCompressedFormat<Brawler::GetDesiredTextureFormat<TextureType>()>()
 		DirectX::ScratchImage ConvertTextureToDesiredFormat(const DirectX::ScratchImage& texture);
 
 		/// <summary>
@@ -91,8 +92,6 @@ export namespace Util
 		///   writing out the texture file.
 		/// </param>
 		void WriteTextureToFile(const TextureWriteInfo& writeInfo);
-
-		Brawler::FilePathHash GetTextureFilePathHash(const aiString& textureName);
 	}
 }
 
@@ -293,6 +292,7 @@ namespace Util
 		}
 
 		template <aiTextureType TextureType>
+			requires !Brawler::IsBlockCompressedFormat<Brawler::GetDesiredTextureFormat<TextureType>()>()
 		DirectX::ScratchImage ConvertTextureToDesiredFormat(const DirectX::ScratchImage& texture)
 		{
 			// Don't do any conversions if the intermediate and desired formats are the same.
@@ -300,39 +300,16 @@ namespace Util
 				return texture;
 			
 			DirectX::ScratchImage finalImage{};
-			
-			if constexpr (Brawler::IsBlockCompressedFormat<Brawler::GetDesiredTextureFormat<TextureType>()>())
-			{
-				// The desired texture type is in a block-compressed format, so we need to use a
-				// specific DirectXTex function for that.
 
-				Util::General::CheckHRESULT(DirectX::Compress(
-					texture.GetImages(),
-					texture.GetImageCount(),
-					texture.GetMetadata(),
-					Brawler::GetDesiredTextureFormat<TextureType>(),
-
-					// There is a multi-threading flag provided for compression. However, since we
-					// are using our own CPU job system, creating additional threads for this would
-					// only introduce more context switching. So, we do not use that flag.
-					DirectX::TEX_COMPRESS_FLAGS::TEX_COMPRESS_DEFAULT,
-
-					DirectX::TEX_THRESHOLD_DEFAULT,
-					finalImage
-				));
-			}
-			else
-			{
-				Util::General::CheckHRESULT(DirectX::Convert(
-					texture.GetImages(),
-					texture.GetImageCount(),
-					texture.GetMetadata(),
-					Brawler::GetDesiredTextureFormat<TextureType>(),
-					DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT,
-					DirectX::TEX_THRESHOLD_DEFAULT,
-					finalImage
-				));
-			}
+			Util::General::CheckHRESULT(DirectX::Convert(
+				texture.GetImages(),
+				texture.GetImageCount(),
+				texture.GetMetadata(),
+				Brawler::GetDesiredTextureFormat<TextureType>(),
+				DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT,
+				DirectX::TEX_THRESHOLD_DEFAULT,
+				finalImage
+			));
 
 			return finalImage;
 		}

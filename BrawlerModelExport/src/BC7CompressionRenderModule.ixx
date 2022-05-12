@@ -19,6 +19,9 @@ export namespace Brawler
 		BC7CompressionRenderModule(BC7CompressionRenderModule&& rhs) noexcept = default;
 		BC7CompressionRenderModule& operator=(BC7CompressionRenderModule&& rhs) noexcept = default;
 
+	protected:
+		void BuildFrameGraph(D3D12::FrameGraphBuilder& builder) override;
+
 	private:
 		ThreadSafeVector<std::unique_ptr<BC7ImageCompressor>> mImageCompressorPtrArr;
 	};

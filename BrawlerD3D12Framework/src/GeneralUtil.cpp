@@ -23,7 +23,7 @@ namespace Util
 				CP_UTF8,
 				0,
 				str.data(),
-				str.size(),
+				static_cast<std::int32_t>(str.size()),
 				nullptr,
 				0
 			);
@@ -41,7 +41,7 @@ namespace Util
 				CP_UTF8,
 				0,
 				str.data(),
-				str.size(),
+				static_cast<std::int32_t>(str.size()),
 				wStrBuffer,
 				wideCharsNeeded
 			);
@@ -64,7 +64,7 @@ namespace Util
 				CP_UTF8,
 				0,
 				wStr.data(),
-				wStr.size(),
+				static_cast<std::int32_t>(wStr.size()),
 				nullptr,
 				0,
 				nullptr,
@@ -84,7 +84,7 @@ namespace Util
 				CP_UTF8,
 				0,
 				wStr.data(),
-				wStr.size(),
+				static_cast<std::int32_t>(wStr.size()),
 				strBuffer,
 				byteCharsNeeded,
 				nullptr,

@@ -31,7 +31,7 @@ export namespace Brawler
 	template <aiTextureType TextureType>
 	class ModelTexture : private Brawler::ModelTextureMipMapGeneratorType<TextureType>
 	{
-	private:
+	public:
 		struct ModelTextureInfo
 		{
 			aiString OriginalTextureName;
@@ -46,7 +46,7 @@ export namespace Brawler
 		};
 
 	public:
-		ModelTexture() = default;
+		ModelTexture() = delete;
 		explicit ModelTexture(ModelTextureInfo&& textureInfo);
 
 		ModelTexture(const ModelTexture<TextureType>& rhs) = delete;
@@ -57,8 +57,10 @@ export namespace Brawler
 
 		void GenerateIntermediateScratchTexture();
 
-		void WriteToFileSystem() const;
+		void Update();
+		bool IsReadyForSerialization() const;
 
+		void WriteToFileSystem() const;
 		FilePathHash GetOutputPathHash() const;
 
 	private:
@@ -109,6 +111,25 @@ namespace Brawler
 
 		// Begin generating mip-maps.
 		ModelTextureMipMapGeneratorType<TextureType>::BeginMipMapGeneration();
+	}
+
+	template <aiTextureType TextureType>
+	void ModelTexture<TextureType>::Update()
+	{
+		ModelTextureMipMapGeneratorType<TextureType>::Update();
+		
+		// If the mip-map generation has finished, then modify the texture for it.
+		if (ModelTextureMipMapGeneratorType<TextureType>::IsMipMapGenerationFinished())
+			mScratchTexture = ModelTextureMipMapGeneratorType<TextureType>::ExtractGeneratedMipMaps();
+	}
+
+	template <aiTextureType TextureType>
+	bool ModelTexture<TextureType>::IsReadyForSerialization() const
+	{
+		// As of writing this, the texture are ready to be serialized as soon as mip-map generation has
+		// finished.
+
+		return ModelTextureMipMapGeneratorType<TextureType>::IsMipMapGenerationFinished();
 	}
 
 	template <aiTextureType TextureType>

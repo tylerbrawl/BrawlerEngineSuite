@@ -8,6 +8,7 @@ module;
 
 module Brawler.MeshResolverCollection;
 import Brawler.MeshTypeID;
+import Brawler.JobGroup;
 
 namespace
 {
@@ -25,13 +26,13 @@ namespace
 
 namespace Brawler
 {
-	void MeshResolverCollection::CreateMeshResolverForAIMesh(const aiMesh& mesh)
+	void MeshResolverCollection::CreateMeshResolverForImportedMesh(ImportedMesh&& mesh)
 	{
-		switch (GetMeshTypeID(mesh))
+		switch (GetMeshTypeID(mesh.GetMesh()))
 		{
 		case Brawler::MeshTypeID::STATIC: [[likely]]
 		{
-			mStaticMeshResolverArr.emplace_back(mesh);
+			EmplaceMeshResolver<StaticMeshResolver>(std::move(mesh));
 			break;
 		}
 
@@ -40,7 +41,7 @@ namespace Brawler
 		case Brawler::MeshTypeID::SKINNED: [[fallthrough]];
 		default:
 		{
-			assert(false);
+			assert(false && "ERROR: A unique derived MeshResolverBase type was never specified for a given Brawler::MeshTypeID in MeshResolverCollection::CreateMeshResolverForImportedMesh()!");
 			std::unreachable();
 
 			break;
@@ -50,10 +51,15 @@ namespace Brawler
 
 	void MeshResolverCollection::Update()
 	{
-		ForEachMeshResolver([]<typename T>(T& meshResolver)
+		Brawler::JobGroup meshResolverUpdateGroup{};
+		meshResolverUpdateGroup.Reserve(GetMeshResolverCount());
+
+		ForEachMeshResolver([&meshResolverUpdateGroup]<typename T>(T& meshResolver)
 		{
-			meshResolver.Update();
-		})
+			meshResolverUpdateGroup.AddJob([&meshResolver] () { meshResolver.Update(); });
+		});
+
+		meshResolverUpdateGroup.ExecuteJobs();
 	}
 
 	bool MeshResolverCollection::IsReadyForSerialization() const
@@ -66,5 +72,16 @@ namespace Brawler
 		});
 
 		return readyForSerialization;
+	}
+
+	std::size_t MeshResolverCollection::GetMeshResolverCount() const
+	{
+		std::size_t currSize = 0;
+		ForEachMeshResolver([&currSize]<typename T>(const T & meshResolver)
+		{
+			++currSize;
+		});
+
+		return currSize;
 	}
 }

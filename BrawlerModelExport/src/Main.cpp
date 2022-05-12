@@ -7,6 +7,7 @@ import Util.Win32;
 import Util.General;
 import Brawler.AppParams;
 import Brawler.CommandLineParser;
+import Brawler.Win32.ConsoleFormat;
 
 namespace
 {
@@ -40,7 +41,7 @@ int main(const int argc, const char* argv[])
 	}
 	catch (const std::exception& e)
 	{
-		Util::Win32::WriteFormattedConsoleMessage(e.what(), Util::Win32::ConsoleFormat::CRITICAL_FAILURE);
+		Util::Win32::WriteFormattedConsoleMessage(e.what(), Brawler::Win32::ConsoleFormat::CRITICAL_FAILURE);
 		return 1;
 	}
 

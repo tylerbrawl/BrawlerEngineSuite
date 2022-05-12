@@ -2,6 +2,7 @@ module;
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <span>
 
 export module Brawler.AppParams;
 
@@ -25,6 +26,7 @@ export namespace Brawler
 		void AddLODFilePath(const std::uint32_t lodLevel, const std::string_view lodFilePath);
 
 		std::uint32_t GetLODCount() const; 
+		std::span<const std::filesystem::path> GetLODFilePaths() const;
 		const std::filesystem::path& GetLODFilePath(const std::uint32_t lodLevel) const;
 
 		void SetRootOutputDirectory(const std::string_view rootOutputDir);

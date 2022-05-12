@@ -22,6 +22,8 @@ import Brawler.D3D12.TextureSubResource;
 import Brawler.D3D12.GPUResourceBinding;
 import Brawler.D3D12.PipelineEnums;
 import Util.Math;
+import Util.Engine;
+import Util.General;
 import Brawler.RootSignatures.RootSignatureDefinition;
 
 #pragma push_macro("max")
@@ -33,6 +35,7 @@ import Brawler.RootSignatures.RootSignatureDefinition;
 namespace
 {
 	static constexpr float BC7_COMPRESSION_ALPHA_WEIGHT = 1.0f;
+	static constexpr std::uint64_t INVALID_COMPLETION_FRAME_NUMBER = std::numeric_limits<std::uint64_t>::max();
 }
 
 /*
@@ -189,7 +192,8 @@ namespace Brawler
 		mInitInfo(std::move(initInfo)),
 		mResourceInfo(),
 		mTableBuilderInfo(),
-		mReadbackBufferPtr(nullptr)
+		mReadbackBufferPtr(nullptr),
+		mCompretionFrameNum(INVALID_COMPLETION_FRAME_NUMBER)
 	{
 		assert(mInitInfo.DestImage.format == mInitInfo.DesiredFormat && "ERROR: A DirectX::Image with an unexpected format was provided for BC7ImageCompressor::CompressImage()!");
 	}
@@ -233,9 +237,15 @@ namespace Brawler
 	}
 	*/
 
-	std::vector<D3D12::RenderPassBundle> BC7ImageCompressor::GetImageCompressionRenderPassBundles(D3D12::FrameGraphBuilder& frameGraphBuilder)
+	void BC7ImageCompressor::CreateTransientResources(D3D12::FrameGraphBuilder& frameGraphBuilder)
 	{
-		CreateTransientResources(frameGraphBuilder);
+		InitializeSourceTextureResource(frameGraphBuilder);
+		InitializeBufferResources(frameGraphBuilder);
+	}
+
+	std::vector<D3D12::RenderPassBundle> BC7ImageCompressor::GetImageCompressionRenderPassBundles()
+	{
+		assert(mResourceInfo.SourceTexturePtr != nullptr && "ERROR: BC7ImageCompressor::GetImageCompressionRenderPassBundles() was called before the compressor's transient resource could be created (i.e., before BC7ImageCompressor::CreateTransientResources())!");
 		
 		std::vector<D3D12::RenderPassBundle> createdBundleArr{};
 		createdBundleArr.reserve(3);
@@ -244,13 +254,82 @@ namespace Brawler
 		createdBundleArr.push_back(CreateCompressionRenderPassBundle());
 		createdBundleArr.push_back(CreateResourceReadbackRenderPassBundle());
 
+		// Although there are MAX_FRAMES_IN_FLIGHT frames in flight, we actually need to
+		// wait until (MAX_FRAMES_IN_FLIGHT + 1) frames *after* these commands are recorded
+		// in order to guarantee that data will be available in the readback heap. Here's why:
+		//
+		// Let frame N be the frame on which BC7ImageCompressor::GetImageCompressionRenderPassBundles()
+		// is called, i.e., the frame on which the commands will be submitted to the GPU.
+		//
+		//   - [Frame N] BC7ImageCompressor Generates RenderPass Commands for GPU
+		// 
+		//   - [Frame N] Submit Commands to GPU -> [Frame N + 1]
+		// 
+		//   - [Frame N + 1] Before FrameGraph (N - 1) is Reset:
+		//       - The BC7ImageCompressor is asked if the images are available. FrameGraph N has not been
+		//         reset, so the answer is no, since we can't guarantee that the GPU has executed the commands.
+		// 
+		//   - [Frame N + 1] FrameGraph (N - 1) is Reset to Prepare for FrameGraph (N + 1)
+		//
+		//   - [Frame N + 1] BC7ImageCompressor has no RenderPass Commands for GPU - No Commands Submitted
+		//
+		//   - [Frame N + 1] Submit Commands to GPU -> [Frame N + 2]
+		//
+		//   - [Frame N + 2] Before FrameGraph N is Reset:
+		//       - The BC7ImageCompressor is asked if the images are available. FrameGraph N has not been
+		//         reset, so the answer is no, since we can't guarantee that the GPU has executed the commands.
+		//
+		//   - [Frame N + 2] FrameGraph N is Reset to Prepare for FrameGraph (N + 2)
+		//
+		//   - [Frame N + 2] BC7ImageCompressor has no RenderPass Commands for GPU - No Commands Submitted
+		//
+		//   - [Frame N + 2] Submit Commands to GPU -> [Frame N + 3]
+		//
+		//   - [Frame N + 3] Before FrameGraph (N + 1) is Reset:
+		//       - The BC7ImageCompressor is asked if the images are available. Since FrameGraph N has been reset
+		//         by this point, we know that the GPU has finished executing the commands, since a reset implies
+		//         a GPU command flush for that FrameGraph. Thus, the answer is yes.
+		//
+		// This additional one frame delay is due, in part, to the lack of a way to determine exactly
+		// when a GPU finishes executing a single command list; the Brawler Engine only tracks completion
+		// on the GPU on a per-frame basis. In practice, however, I don't see this delay as being especially
+		// harmful.
+
+		mCompletionFrameNum = (Util::Engine::GetCurrentFrameNumber() + 3);
+
 		return createdBundleArr;
 	}
 
-	void BC7ImageCompressor::CreateTransientResources(D3D12::FrameGraphBuilder& frameGraphBuilder)
+	bool BC7ImageCompressor::TryCopyCompressedImage(DirectX::Image& destImage) const
 	{
-		InitializeSourceTextureResource(frameGraphBuilder);
-		InitializeBufferResources(frameGraphBuilder);
+		assert(destImage.format != mInitInfo.SrcImage.format && destImage.width == mInitInfo.SrcImage.width && destImage.height == mInitInfo.SrcImage.height &&
+			destImage.pixels != mInitInfo.SrcImage.pixels && "ERROR: An invalid DirectX::Image was provided to BC7ImageCompressor::TryCopyCompressedImage()!");
+
+		// Make sure that the GPU has finished executing the commands.
+		if (Util::Engine::GetCurrentFrameNumber() < mCompletionFrameNum)
+			return false;
+
+		std::size_t destRowPitch = 0;
+		std::size_t destSlicePitch = 0;
+
+		Util::General::CheckHRESULT(DirectX::ComputePitch(
+			destImage.format,
+			destImage.width,
+			destImage.height,
+			destRowPitch,
+			destSlicePitch
+		));
+
+		const std::size_t numOutputBufferXBlocksPerRow = std::max<std::size_t>(1, (mInitInfo.SrcImage.width + 3) >> 2);
+		const std::size_t numRows = std::max<std::size_t>(1, (mInitInfo.SrcImage.height + 3) >> 2);
+
+		for (std::size_t i = 0; i < numRows; ++i)
+		{
+			const std::span<BufferBC7> destDataSpan{ reinterpret_cast<BufferBC7*>(destImage.pixels + (i * destRowPitch)), (destRowPitch / sizeof(BufferBC7)) };
+			mResourceInfo.CPUOutputBufferSubAllocation.ReadStructuredBufferData((numOutputBufferXBlocksPerRow * i), destDataSpan);
+		}
+
+		return true;
 	}
 
 	void BC7ImageCompressor::InitializeBufferResources(D3D12::FrameGraphBuilder& frameGraphBuilder)
@@ -388,7 +467,7 @@ namespace Brawler
 			struct TextureCopyInfo
 			{
 				D3D12::TextureSubResource CopyDestTexture;
-				D3D12::TextureCopyBufferSubAllocation CopySrcSubAllocation;
+				D3D12::TextureCopyBufferSubAllocation& CopySrcSubAllocation;
 				const DirectX::Image& SrcImage;
 			};
 
@@ -402,7 +481,7 @@ namespace Brawler
 
 			textureCopyRenderPass.SetInputData(TextureCopyInfo{
 				.CopyDestTexture{mResourceInfo.SourceTexturePtr->GetSubResource()},
-				.CopySrcSubAllocation{std::move(mResourceInfo.SourceTextureCopySubAllocation)},
+				.CopySrcSubAllocation{mResourceInfo.SourceTextureCopySubAllocation},
 				.SrcImage{mInitInfo.SrcImage}
 				});
 
@@ -411,9 +490,20 @@ namespace Brawler
 				// When we get to this point on the CPU, we know that the resources have been created on the GPU.
 				// So, it is safe to both write to the buffer resource and perform the copy.
 
+				std::size_t rowPitch = 0;
+				std::size_t slicePitch = 0;
+
+				Util::General::CheckHRESULT(DirectX::ComputePitch(
+					copyInfo.SrcImage.format,
+					copyInfo.SrcImage.width,
+					copyInfo.SrcImage.height,
+					rowPitch,
+					slicePitch
+				));
+
 				for (std::size_t rowIndex = 0; rowIndex < copyInfo.SrcImage.height; ++rowIndex)
 				{
-					const std::span<const std::uint8_t> rowDataSpan{ (copyInfo.SrcImage.pixels + (copyInfo.SrcImage.rowPitch * rowIndex)), copyInfo.SrcImage.rowPitch };
+					const std::span<const std::uint8_t> rowDataSpan{ (copyInfo.SrcImage.pixels + (rowPitch * rowIndex)), rowPitch };
 					copyInfo.CopySrcSubAllocation.WriteTextureData(static_cast<std::uint32_t>(rowIndex), rowDataSpan);
 				}
 

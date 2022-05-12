@@ -4,7 +4,7 @@ module;
 
 export module Brawler.Application;
 import Brawler.WorkerThreadPool;
-import Brawler.SceneLoader;
+import Brawler.ModelResolver;
 import Brawler.AppParams;
 import Brawler.D3D12.Renderer;
 
@@ -21,7 +21,6 @@ export namespace Brawler
 	public:
 		void Run(AppParams&& appParams);
 
-		const SceneLoader& GetSceneLoader() const;
 		const AppParams& GetLaunchParameters() const;
 
 		WorkerThreadPool& GetWorkerThreadPool();
@@ -33,7 +32,7 @@ export namespace Brawler
 	private:
 		WorkerThreadPool mThreadPool;
 		D3D12::Renderer mRenderer;
-		std::unique_ptr<SceneLoader> mSceneLoader;
+		ModelResolver mModelResolver;
 		AppParams mLaunchParams;
 	};
 

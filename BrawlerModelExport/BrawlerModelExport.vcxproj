@@ -277,6 +277,7 @@
     <ClCompile Include="src\Application.ixx" />
     <ClCompile Include="src\AppParams.cpp" />
     <ClCompile Include="src\AppParams.ixx" />
+    <ClCompile Include="src\AwaitingSerializationModelTextureUpdateState.ixx" />
     <ClCompile Include="src\BC7CompressionRenderModule.ixx" />
     <ClCompile Include="src\BC7ImageCompressor.cpp" />
     <ClCompile Include="src\BC7ImageCompressor.ixx" />
@@ -288,24 +289,24 @@
     <ClCompile Include="src\CompositeEnum.ixx" />
     <ClCompile Include="src\FileAttributes.ixx" />
     <ClCompile Include="src\FilePathHash.ixx" />
+    <ClCompile Include="src\FormatConversionModelTextureUpdateState.ixx" />
     <ClCompile Include="src\GenericMipMapGenerator.ixx" />
     <ClCompile Include="src\ImportedMesh.cpp" />
     <ClCompile Include="src\ImportedMesh.ixx" />
     <ClCompile Include="src\IndexBuffer.cpp" />
     <ClCompile Include="src\IndexBuffer.ixx" />
+    <ClCompile Include="src\I_MaterialDefinition.cpp" />
     <ClCompile Include="src\I_MaterialDefinition.ixx" />
     <ClCompile Include="src\I_MeshManager.ixx" />
     <ClCompile Include="src\I_MeshResolver.ixx" />
+    <ClCompile Include="src\I_ModelTextureUpdateState.ixx" />
     <ClCompile Include="src\LODResolver.cpp" />
     <ClCompile Include="src\LODResolver.ixx" />
     <ClCompile Include="src\LODScene.ixx" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MaterialID.ixx" />
     <ClCompile Include="src\MaterialIDMap.ixx" />
-    <ClCompile Include="src\MaterialManager.cpp" />
-    <ClCompile Include="src\MaterialManager.ixx" />
     <ClCompile Include="src\Matrix.ixx" />
-    <ClCompile Include="src\MeshResolverBase.cpp" />
     <ClCompile Include="src\MeshResolverBase.ixx" />
     <ClCompile Include="src\MeshResolverCollection.cpp" />
     <ClCompile Include="src\MeshResolverCollection.ixx" />
@@ -313,26 +314,42 @@
     <ClCompile Include="src\MeshAttributeID.ixx" />
     <ClCompile Include="src\MeshAttributePointerDescriptor.ixx" />
     <ClCompile Include="src\MipMapGeneration.ixx" />
+    <ClCompile Include="src\MipMapGenerationModelTextureUpdateState.ixx" />
     <ClCompile Include="src\ModelExportUtil.cpp" />
     <ClCompile Include="src\ModelExportUtil.ixx" />
     <ClCompile Include="src\ModelResolver.cpp" />
     <ClCompile Include="src\ModelResolver.ixx" />
     <ClCompile Include="src\ModelTextureDatabase.ixx" />
+    <ClCompile Include="src\ModelTextureHandle.ixx" />
     <ClCompile Include="src\ModelTextureLUT.ixx" />
+    <ClCompile Include="src\ModelTextureUpdateStateID.ixx" />
+    <ClCompile Include="src\ModelTextureUpdateStateTraits.ixx" />
     <ClCompile Include="src\OpaqueMaterialDefinition.cpp" />
     <ClCompile Include="src\OpaqueMaterialDefinition.ixx" />
-    <ClCompile Include="src\SceneLoader.cpp" />
-    <ClCompile Include="src\SceneLoader.ixx" />
     <ClCompile Include="src\SerializationContext.ixx" />
     <ClCompile Include="src\SerializedMeshAttributeChunk.ixx" />
-    <ClCompile Include="src\Skeleton.cpp" />
-    <ClCompile Include="src\Skeleton.ixx" />
-    <ClCompile Include="src\SkeletonBone.cpp" />
-    <ClCompile Include="src\SkeletonBone.ixx" />
+    <ClCompile Include="src\Skeleton.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Skeleton.ixx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\SkeletonBone.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\SkeletonBone.ixx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\StaticMeshResolver.cpp" />
     <ClCompile Include="src\StaticMeshResolver.ixx" />
-    <ClCompile Include="src\StaticMeshManager.cpp" />
-    <ClCompile Include="src\StaticMeshManager.ixx" />
     <ClCompile Include="src\StaticVertexBuffer.cpp" />
     <ClCompile Include="src\StaticVertexBuffer.ixx" />
     <ClCompile Include="src\ModelTexture.ixx" />
