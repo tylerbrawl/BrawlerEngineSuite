@@ -1,8 +1,10 @@
 module;
 #include <assimp/material.h>
 #include <dxgiformat.h>
+#include <DirectXTex.h>
 
 export module Brawler.TextureTypeMap;
+import Brawler.MipMapGeneration;
 
 export namespace Brawler
 {
@@ -51,12 +53,31 @@ namespace Brawler
 {
 	namespace IMPL
 	{
-		template <DXGI_FORMAT IntermediateFormat, DXGI_FORMAT DesiredFormat>
-			requires !Brawler::IsBlockCompressedFormat<IntermediateFormat>()
+		template <typename MipMapGeneratorType>
+		concept IsMipMapGenerator = requires (MipMapGeneratorType generator, const DirectX::ScratchImage& srcTexture)
+		{
+			// void MipMapGeneratorType::BeginMipMapGeneration(const DirectX::ScratchImage& srcTexture)
+			{ generator.BeginMipMapGeneration(srcTexture) } -> std::same_as<void>;
+
+			// bool-ish MipMapGeneratorType::IsMipMapGenerationFinished() const
+			{ std::as_const(generator).IsMipMapGenerationFinished() } -> std::convertible_to<bool>;
+
+			// DirectX::ScratchImage MipMapGeneratorType::ExtractGeneratedMipMaps()
+			{ generator.ExtractGeneratedMipMaps() } -> std::same_as<DirectX::ScratchImage>;
+		};
+		
+		template <
+			DXGI_FORMAT IntermediateFormat, 
+			DXGI_FORMAT DesiredFormat,
+			typename MipMapGeneratorType_
+		>
+			requires !Brawler::IsBlockCompressedFormat<IntermediateFormat>() && IsMipMapGenerator<MipMapGeneratorType_>
 		struct TextureTypeMapInstantiation
 		{
 			static constexpr DXGI_FORMAT INTERMEDIATE_FORMAT = IntermediateFormat;
 			static constexpr DXGI_FORMAT DESIRED_FORMAT = DesiredFormat;
+
+			using MipMapGeneratorType = MipMapGeneratorType_;
 		};
 	}
 }
@@ -72,7 +93,10 @@ export namespace Brawler
 	template <>
 	struct TextureTypeMap<aiTextureType::aiTextureType_DIFFUSE> : public IMPL::TextureTypeMapInstantiation<
 		DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
-		DXGI_FORMAT::DXGI_FORMAT_BC7_UNORM_SRGB
+		DXGI_FORMAT::DXGI_FORMAT_BC7_UNORM_SRGB,
+
+		// Albedo textures *CAN* have mip-maps created in the default fashion.
+		GenericMipMapGenerator
 	>
 	{};
 }
@@ -92,4 +116,7 @@ export namespace Brawler
 	{
 		return TextureTypeMap<TextureType>::DESIRED_FORMAT;
 	}
+
+	template <aiTextureType TextureType>
+	using ModelTextureMipMapGeneratorType = typename TextureTypeMap<TextureType>::MipMapGeneratorType;
 }

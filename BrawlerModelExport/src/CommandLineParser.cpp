@@ -162,6 +162,33 @@ namespace Brawler
 			mCmdLineErrorMsgBuilder->WriteFormattedConsoleMessage();
 	}
 
+	AppParams CommandLineParser::GetLaunchParameters() const
+	{
+		// As of writing this, every time an error occurs in parsing, a FormattedConsoleMessageBuilder is generated
+		// for it.
+		assert(!mCmdLineErrorMsgBuilder.has_value());
+
+		AppParams launchParams{};
+
+		assert(mModelNameIndex != INVALID_CMD_LINE_ARG_INDEX);
+		launchParams.SetModelName(mCmdLineArgsSpan[mModelNameIndex]);
+
+		assert(!mLODFBXPathIndexArr.empty());
+		launchParams.SetLODCount(static_cast<std::uint32_t>(mLODFBXPathIndexArr.size()));
+
+		std::uint32_t currIndex = 0;
+		for (const auto lodFilePathIndex : mLODFBXPathIndexArr)
+		{
+			assert(lodFilePathIndex != INVALID_CMD_LINE_ARG_INDEX);
+			launchParams.AddLODFilePath(currIndex++, mCmdLineArgsSpan[lodFilePathIndex]);
+		}
+
+		assert(mRootOutputDirectoryIndex != INVALID_CMD_LINE_ARG_INDEX);
+		launchParams.SetRootOutputDirectory(mCmdLineArgsSpan[mRootOutputDirectoryIndex]);
+
+		return launchParams;
+	}
+
 	bool CommandLineParser::ParseOptionsList(std::size_t& currIndex)
 	{
 		// options_list -> option options_list | option

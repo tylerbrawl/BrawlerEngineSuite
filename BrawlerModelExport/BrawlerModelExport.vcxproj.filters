@@ -79,6 +79,9 @@
     <Filter Include="Source Files\Command Line Parsing">
       <UniqueIdentifier>{5ca79dfb-240b-467d-97c3-01af256b049d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Textures\Mip-Map Generation">
+      <UniqueIdentifier>{47a5f549-eb19-4a46-9578-244887a5c9e3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -275,6 +278,15 @@
     </ClCompile>
     <ClCompile Include="src\LODScene.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AppParams.cpp">
+      <Filter>Source Files\Command Line Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MipMapGeneration.ixx">
+      <Filter>Module Files\Textures\Mip-Map Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GenericMipMapGenerator.ixx">
+      <Filter>Module Files\Textures\Mip-Map Generation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -9,12 +9,6 @@ namespace Util
 {
 	namespace ModelExport
 	{
-		const aiScene& GetScene()
-		{
-			thread_local const aiScene& scene{ Brawler::GetApplication().GetSceneLoader().GetScene() };
-			return scene;
-		}
-
 		const Brawler::AppParams& GetLaunchParameters()
 		{
 			thread_local const Brawler::AppParams& appParams{ Brawler::GetApplication().GetLaunchParameters() };

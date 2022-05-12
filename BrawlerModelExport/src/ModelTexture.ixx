@@ -11,6 +11,8 @@ import Util.General;
 import Util.ModelTexture;
 import Util.ModelExport;
 import Brawler.AppParams;
+import Brawler.LODScene;
+import Brawler.TextureTypeMap;
 
 namespace Brawler
 {
@@ -27,11 +29,25 @@ namespace Brawler
 export namespace Brawler
 {
 	template <aiTextureType TextureType>
-	class ModelTexture
+	class ModelTexture : private Brawler::ModelTextureMipMapGeneratorType<TextureType>
 	{
+	private:
+		struct ModelTextureInfo
+		{
+			aiString OriginalTextureName;
+
+			/// <summary>
+			/// This is a FilePathHash which uniquely identifies this ModelTexture. It is
+			/// used to construct the output path for the texture file upon export.
+			/// </summary>
+			FilePathHash ResolvedTextureNameHash;
+
+			LODScene Scene;
+		};
+
 	public:
 		ModelTexture() = default;
-		explicit ModelTexture(const aiString& textureName);
+		explicit ModelTexture(ModelTextureInfo&& textureInfo);
 
 		ModelTexture(const ModelTexture<TextureType>& rhs) = delete;
 		ModelTexture& operator=(const ModelTexture<TextureType>& rhs) = delete;
@@ -39,18 +55,21 @@ export namespace Brawler
 		ModelTexture(ModelTexture<TextureType>&& rhs) noexcept = default;
 		ModelTexture& operator=(ModelTexture<TextureType>&& rhs) noexcept = default;
 
-		void GenerateMipMaps();
+		void GenerateIntermediateScratchTexture();
+
 		void WriteToFileSystem() const;
 
 		FilePathHash GetOutputPathHash() const;
 
 	private:
-		void InitializeOutputPathInformation(const aiString& textureName);
+		void InitializeOutputPathInformation(const FilePathHash resolvedTextureNameHash);
 
 		Brawler::D3D12_RESOURCE_DESC CreateD3D12ResourceDescription() const;
 
 	private:
 		DirectX::ScratchImage mScratchTexture;
+		aiString mOriginalTextureName;
+		LODScene mScene;
 		FilePathHash mOutputPathHash;
 		std::filesystem::path mOutputPath;
 	};
@@ -61,18 +80,35 @@ export namespace Brawler
 namespace Brawler
 {
 	template <aiTextureType TextureType>
-	ModelTexture<TextureType>::ModelTexture(const aiString& textureName) :
-		mScratchTexture(Util::ModelTexture::CreateIntermediateTexture<TextureType>(textureName)),
+	ModelTexture<TextureType>::ModelTexture(ModelTextureInfo&& textureInfo) :
+		mScratchTexture(),
+		mOriginalTextureName(std::move(textureInfo.OriginalTextureName)),
+		mScene(std::move(textureInfo.Scene)),
 		mOutputPathHash(),
 		mOutputPath()
 	{
-		InitializeOutputPathInformation(textureName);
+		InitializeOutputPathInformation(textureInfo.ResolvedTextureNameHash);
 	}
 
 	template <aiTextureType TextureType>
-	void ModelTexture<TextureType>::GenerateMipMaps()
+	void ModelTexture<TextureType>::GenerateIntermediateScratchTexture()
 	{
-		mScratchTexture = Util::ModelTexture::GenerateMipMaps<TextureType>(mScratchTexture);
+		// Convert the texture to the appropriate intermediate texture format. This serves as a space where
+		// we can do additional texture manipulation operations before we finally export to our desired
+		// format.
+		//
+		// Why do we do it like this? The answer is that some formats make it more difficult to perform some
+		// types of operations. For example, DirectXTex does not support automatically generating mip-maps for
+		// block-compressed textures.
+		//
+		// Don't worry, though: If the intermediate format for a given texture type is the same as its final
+		// format, then the conversion to the final format is essentially a no-op. (The relevant function
+		// Util::ModelTexture::ConvertTextureToDesiredFormat() uses an if-constexpr to see if the conversion
+		// process is necessary.)
+		mScratchTexture = Util::ModelTexture::CreateIntermediateTexture<TextureType>(mScene, mOriginalTextureName);
+
+		// Begin generating mip-maps.
+		ModelTextureMipMapGeneratorType<TextureType>::BeginMipMapGeneration();
 	}
 
 	template <aiTextureType TextureType>
@@ -108,21 +144,30 @@ namespace Brawler
 	}
 
 	template <aiTextureType TextureType>
-	void ModelTexture<TextureType>::InitializeOutputPathInformation(const aiString& textureName)
+	void ModelTexture<TextureType>::InitializeOutputPathInformation(const FilePathHash resolvedTextureNameHash)
 	{
 		// Let [Root Output Directory] be the file path of the root directory for outputting
-		// source asset files. If the name of our mesh is 
-		// [Mesh Parent Directory]\[Mesh Name].[Mesh File Extension], then the output directory
-		// for this texture is [Root Output Directory]\Textures\[Mesh Name]\[ModelTexture Name].btex.
+		// source asset files. If the name of our mesh is [Model Name], then the output file path
+		// for this texture is
+		// [Root Output Directory]\Textures\[Model Name]\[Original Texture File Name without Extension]_[resolvedTextureNameHash].btex.
+		// 
+		// The resolvedTextureNameHash is appended to the original texture name in order to guarantee
+		// that files do not conflict with each other upon export. For this function, the details of
+		// how this FilePathHash is generated are irrelevant; all that matters is that it is a unique
+		// value for each texture across all LOD meshes.
 
 		const Brawler::AppParams& launchParams{ Util::ModelExport::GetLaunchParameters() };
-		const std::filesystem::path meshNamePath{ std::filesystem::path{ launchParams.InputMeshFilePath }.stem() };
 
-		std::filesystem::path outputTextureSubDirectory{ IMPL::TEXTURES_FOLDER_PATH / meshNamePath / Util::General::StringToWString(textureName.C_Str()) };
-		outputTextureSubDirectory.replace_extension(IMPL::BTEX_EXTENSION_PATH);
+		// Get the output texture file name (without the extension) by getting the stem of the path
+		// from the original texture name and then appending "_[resolvedTextureNameHash]".
+		const std::filesystem::path textureNamePathNoExt{ std::filesystem::path{ mOriginalTextureName.C_Str() }.stem() };
+		const std::wstring uniqueTextureName{ std::format(L"{}_{}", textureNamePathNoExt.c_str(), Util::General::StringToWString(resolvedTextureNameHash.GetHashString())) };
 
-		mOutputPathHash = FilePathHash{ outputTextureSubDirectory.wstring() };
-		mOutputPath = std::filesystem::path{ launchParams.RootOutputDirectory } / outputTextureSubDirectory;
+		std::filesystem::path outputTextureSubDirectoryRelativeToRoot{ IMPL::TEXTURES_FOLDER_PATH / launchParams.GetModelName() / uniqueTextureName};
+		outputTextureSubDirectoryRelativeToRoot.replace_extension(IMPL::BTEX_EXTENSION_PATH);
+
+		mOutputPathHash = FilePathHash{ outputTextureSubDirectoryRelativeToRoot.wstring() };
+		mOutputPath = std::filesystem::path{ launchParams.GetRootOutputDirectory() } / outputTextureSubDirectoryRelativeToRoot;
 	}
 
 	template <aiTextureType TextureType>

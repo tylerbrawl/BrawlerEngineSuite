@@ -275,6 +275,7 @@
     <ClCompile Include="src\AABB.ixx" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Application.ixx" />
+    <ClCompile Include="src\AppParams.cpp" />
     <ClCompile Include="src\AppParams.ixx" />
     <ClCompile Include="src\BC7CompressionRenderModule.ixx" />
     <ClCompile Include="src\BC7ImageCompressor.cpp" />
@@ -287,6 +288,7 @@
     <ClCompile Include="src\CompositeEnum.ixx" />
     <ClCompile Include="src\FileAttributes.ixx" />
     <ClCompile Include="src\FilePathHash.ixx" />
+    <ClCompile Include="src\GenericMipMapGenerator.ixx" />
     <ClCompile Include="src\ImportedMesh.cpp" />
     <ClCompile Include="src\ImportedMesh.ixx" />
     <ClCompile Include="src\IndexBuffer.cpp" />
@@ -310,6 +312,7 @@
     <ClCompile Include="src\MeshTypeID.ixx" />
     <ClCompile Include="src\MeshAttributeID.ixx" />
     <ClCompile Include="src\MeshAttributePointerDescriptor.ixx" />
+    <ClCompile Include="src\MipMapGeneration.ixx" />
     <ClCompile Include="src\ModelExportUtil.cpp" />
     <ClCompile Include="src\ModelExportUtil.ixx" />
     <ClCompile Include="src\ModelResolver.cpp" />

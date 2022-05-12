@@ -20,7 +20,7 @@ export namespace Brawler
 		const aiScene& GetScene() const;
 		std::uint32_t GetLODLevel() const;
 
-		std::filesystem::path GetInputMeshFilePath() const;
+		const std::filesystem::path& GetInputMeshFilePath() const;
 
 	private:
 		const aiScene* mAIScenePtr;

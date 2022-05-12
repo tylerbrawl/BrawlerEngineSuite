@@ -1,22 +1,26 @@
 #include <stdexcept>
 #include <span>
+#include <optional>
 
 import Brawler.Application;
 import Util.Win32;
 import Util.General;
 import Brawler.AppParams;
+import Brawler.CommandLineParser;
 
 namespace
 {
-	Brawler::AppParams ParseCommandLine(const std::span<const char*> cmdLineArgs)
+	std::optional<Brawler::AppParams> ParseCommandLine(const std::span<const char*> cmdLineArgs)
 	{
-		if (cmdLineArgs.size() < 3) [[unlikely]]
-			throw std::runtime_error{ "ERROR: Not enough command line parameters were provided!" };
+		Brawler::CommandLineParser cmdLineParser{ cmdLineArgs };
 
-		return Brawler::AppParams{
-			.InputMeshFilePath{ Util::General::StringToWString(cmdLineArgs[1]) },
-			.RootOutputDirectory{ Util::General::StringToWString(cmdLineArgs[2]) }
-		};
+		if (!cmdLineParser.ParseCommandLineArguments()) [[unlikely]]
+		{
+			cmdLineParser.PrintCommandLineErrorMessage();
+			return std::optional<Brawler::AppParams>{};
+		}
+
+		return std::optional<Brawler::AppParams>{ cmdLineParser.GetLaunchParameters() };
 	}
 }
 
@@ -26,10 +30,13 @@ int main(const int argc, const char* argv[])
 	{
 		Util::Win32::InitializeWin32Components();
 
-		Brawler::AppParams appParams{ ParseCommandLine(std::span<const char*>{argv, static_cast<std::size_t>(argc)}) };
+		std::optional<Brawler::AppParams> appParams{ ParseCommandLine(std::span<const char*>{argv, static_cast<std::size_t>(argc)}) };
+
+		if (!appParams.has_value()) [[unlikely]]
+			return 1;
 
 		Brawler::Application app{};
-		app.Run(std::move(appParams));
+		app.Run(std::move(*appParams));
 	}
 	catch (const std::exception& e)
 	{

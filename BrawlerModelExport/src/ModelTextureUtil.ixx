@@ -13,11 +13,14 @@ import Util.Win32;
 import Brawler.Win32.ConsoleFormat;
 import Util.General;
 import Brawler.FilePathHash;
+import Brawler.LODScene;
 
 export namespace Util
 {
 	namespace ModelTexture
 	{
+		constexpr std::string_view EMBEDDED_TEXTURE_NAME_FORMAT_STR = "EmbeddedLOD{}_{}";
+
 		struct TextureWriteInfo
 		{
 			/// <summary>
@@ -46,6 +49,10 @@ export namespace Util
 		/// This intermediate texture can be used by later DirectXTex operations to modify it
 		/// before exporting.
 		/// </summary>
+		/// <param name="lodScene">
+		/// - The LODScene instance referring to the aiScene which contains the relevant
+		///   texture.
+		/// </param>
 		/// <param name="textureName">
 		/// - The name of the texture which will be converted.
 		/// </param>
@@ -54,26 +61,7 @@ export namespace Util
 		/// This can be used in future texture manipulation operations.
 		/// </returns>
 		template <aiTextureType TextureType>
-		DirectX::ScratchImage CreateIntermediateTexture(const aiString& textureName);
-
-		/// <summary>
-		/// Generates a mip-map chain for the provided DirectX::ScratchImage. Call this function
-		/// after a texture has been converted to DDS format by calling Util::ModelTexture::CreateIntermediateTexture().
-		/// 
-		/// The default behavior is to use DirectXTex to automatically create a mip-map chain by
-		/// repeatedly downsampling the image. This works fine for things likes diffuse albedo
-		/// textures, but it can cause problems for other texture types, such as normal maps. For these,
-		/// one should create an explicit template specialization of this function.
-		/// </summary>
-		/// <param name="texture">
-		/// - The texture for which a mip-map chain is to be generated.
-		/// </param>
-		/// <returns>
-		/// The function returns a DirectX::ScratchImage which contains a mip-map chain generated
-		/// from the input texture.
-		/// </returns>
-		template <aiTextureType TextureType>
-		DirectX::ScratchImage GenerateMipMaps(const DirectX::ScratchImage& texture);
+		DirectX::ScratchImage CreateIntermediateTexture(const Brawler::LODScene& lodScene, const aiString& textureName);
 
 		/// <summary>
 		/// Converts the specified texture into its final format, as specified by
@@ -272,10 +260,10 @@ namespace Util
 		}
 
 		template <aiTextureType TextureType>
-		DirectX::ScratchImage CreateIntermediateTexture(const aiString& textureName)
+		DirectX::ScratchImage CreateIntermediateTexture(const Brawler::LODScene& scene, const aiString& textureName)
 		{
 			// First, check to see if the texture is embedded.
-			const aiTexture* embeddedTexture{ Util::ModelExport::GetScene().GetEmbeddedTexture(textureName.C_Str()) };
+			const aiTexture* embeddedTexture{ scene.GetScene().GetEmbeddedTexture(textureName.C_Str())};
 			DirectX::ScratchImage ddsImage{};
 
 			// Most textures, however, are likely to not be embedded.
@@ -302,33 +290,6 @@ namespace Util
 			}
 			
 			return CreateIntermediateTextureFromFile<TextureType>(textureName);
-		}
-
-		template <aiTextureType TextureType>
-		DirectX::ScratchImage GenerateMipMaps(const DirectX::ScratchImage& texture)
-		{
-			// DirectXTex does not support generating mip-map chains directly from BC formats.
-			// We could decompress then, create the chain, and then compress that, but this can
-			// be incredibly slow.
-
-#ifdef _DEBUG
-			const std::span<const DirectX::Image> imageSpan{ texture.GetImages(), texture.GetImageCount() };
-
-			for (const auto& image : imageSpan)
-				assert(!DirectX::IsCompressed(image.format) && "ERROR: A block-compressed image was provided for Util::ModelTexture::GenerateMipMaps()! (Did you forget to use Util::ModelTexture::CreateIntermediateTexture()?)");
-#endif // _DEBUG
-
-			DirectX::ScratchImage mipMapChain{};
-			Util::General::CheckHRESULT(DirectX::GenerateMipMaps(
-				texture.GetImages(),
-				texture.GetImageCount(),
-				texture.GetMetadata(),
-				DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT,
-				0,  // Create a full mip-map chain, down to a 1x1 texture.
-				mipMapChain
-			));
-
-			return mipMapChain;
 		}
 
 		template <aiTextureType TextureType>

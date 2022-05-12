@@ -6,6 +6,7 @@ module;
 
 export module Brawler.CommandLineParser;
 import Brawler.Win32.FormattedConsoleMessageBuilder;
+import Brawler.AppParams;
 
 namespace Brawler
 {
@@ -51,6 +52,8 @@ export namespace Brawler
 		/// returns false.
 		/// </summary>
 		void PrintCommandLineErrorMessage() const;
+
+		AppParams GetLaunchParameters() const;
 
 	private:
 		bool ParseOptionsList(std::size_t& currIndex);

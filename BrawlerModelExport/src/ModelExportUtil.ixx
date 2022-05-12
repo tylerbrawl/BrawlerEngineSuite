@@ -12,8 +12,6 @@ export namespace Util
 {
 	namespace ModelExport
 	{
-		const aiScene& GetScene();
-
 		const Brawler::AppParams& GetLaunchParameters();
 	}
 }
