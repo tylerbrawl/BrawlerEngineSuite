@@ -6,6 +6,7 @@ module;
 
 module Brawler.Application;
 import Brawler.BC7CompressionRenderModule;
+import Util.Win32;
 
 namespace
 {
@@ -39,6 +40,12 @@ namespace Brawler
 	void Application::Run(LaunchParams&& launchParams)
 	{
 		mLaunchParams = std::move(launchParams);
+
+		Util::Win32::WriteFormattedConsoleMessage(L"Beginning LOD mesh imports...");
+		mModelResolver.InitializeLODResolvers();
+
+		Util::Win32::WriteFormattedConsoleMessage(L"All LOD meshes have been imported. Initiating conversion sequence...");
+		ExecuteModelConversionLoop();
 	}
 
 	const LaunchParams& Application::GetLaunchParameters() const
@@ -85,4 +92,6 @@ namespace Brawler
 
 		return renderer;
 	}
+
+	// TODO: Implement the model conversion process. We're almost there!
 }

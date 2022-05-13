@@ -30,6 +30,9 @@ export namespace Brawler
 		const D3D12::Renderer& GetRenderer() const;
 
 	private:
+		void ExecuteModelConversionLoop();
+
+	private:
 		WorkerThreadPool mThreadPool;
 		D3D12::Renderer mRenderer;
 		ModelResolver mModelResolver;

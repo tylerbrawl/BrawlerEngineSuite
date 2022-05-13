@@ -7,12 +7,14 @@ module;
 #include <cassert>
 #include <algorithm>
 #include <span>
+#include <format>
 
 module Brawler.LODResolver;
 import Brawler.ImportedMesh;
 import Util.ModelExport;
 import Brawler.LaunchParams;
 import Brawler.LODScene;
+import Util.Win32;
 
 namespace Brawler
 {
@@ -27,6 +29,10 @@ namespace Brawler
 	{
 		CreateAIScene();
 		CreateMeshResolvers();
+
+		// Notify the user that the LOD mesh represented by this LODResolver has been imported.
+		const std::filesystem::path& lodMeshFilePath{ Util::ModelExport::GetLaunchParameters().GetLODFilePath(mLODLevel) };
+		Util::Win32::WriteFormattedConsoleMessage(std::format(L"LOD {} Mesh Import Finished (Mesh File: {})", mLODLevel, lodMeshFilePath.c_str()));
 	}
 
 	void LODResolver::Update()
