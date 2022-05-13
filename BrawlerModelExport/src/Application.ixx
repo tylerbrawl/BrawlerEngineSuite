@@ -19,8 +19,9 @@ export namespace Brawler
 		void Initialize();
 
 	public:
-		void Run(AppParams&& appParams);
+		void Run();
 
+		void SetLaunchParameters(AppParams&& appParams);
 		const AppParams& GetLaunchParameters() const;
 
 		WorkerThreadPool& GetWorkerThreadPool();

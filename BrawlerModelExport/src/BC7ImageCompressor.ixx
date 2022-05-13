@@ -113,7 +113,10 @@ export namespace Brawler
 		void CreateTransientResources(D3D12::FrameGraphBuilder& frameGraphBuilder);
 		std::vector<D3D12::RenderPassBundle> GetImageCompressionRenderPassBundles();
 
-		bool TryCopyCompressedImage(DirectX::Image& destImage) const;
+		bool TryCopyCompressedImage(const DirectX::Image& destImage) const;
+
+		void MarkForDeletion();
+		bool ReadyForDeletion() const;
 
 		//void CompressImage(DirectX::Image& destImage);
 

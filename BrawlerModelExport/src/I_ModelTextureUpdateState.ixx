@@ -7,7 +7,7 @@ export module Brawler.I_ModelTextureUpdateState;
 
 export namespace Brawler
 {
-	template <typename DerivedType, aiTextureType TextureType>
+	template <typename DerivedType, auto TextureType>
 	class I_ModelTextureUpdateState
 	{
 	protected:
@@ -33,19 +33,19 @@ export namespace Brawler
 
 namespace Brawler
 {
-	template <typename DerivedType, aiTextureType TextureType>
+	template <typename DerivedType, auto TextureType>
 	void I_ModelTextureUpdateState<DerivedType, TextureType>::UpdateTextureScratchImage(DirectX::ScratchImage& image)
 	{
 		static_cast<DerivedType*>(this)->UpdateTextureScratchImage(image);
 	}
 
-	template <typename DerivedType, aiTextureType TextureType>
+	template <typename DerivedType, auto TextureType>
 	bool I_ModelTextureUpdateState<DerivedType, TextureType>::IsFinalTextureReadyForSerialization() const
 	{
 		return static_cast<const DerivedType*>(this)->IsFinalTextureReadyForSerialization();
 	}
 
-	template <typename DerivedType, aiTextureType TextureType>
+	template <typename DerivedType, auto TextureType>
 	auto I_ModelTextureUpdateState<DerivedType, TextureType>::GetNextState() const
 	{
 		return static_cast<DerivedType*>(this)->GetNextState();

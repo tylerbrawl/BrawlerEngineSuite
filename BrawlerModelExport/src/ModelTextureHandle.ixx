@@ -32,3 +32,13 @@ export namespace Brawler
 		const ModelTexture<TextureType>* mTexturePtr;
 	};
 }
+
+// ----------------------------------------------------------------------------------------------------------------
+
+namespace Brawler
+{
+	template <aiTextureType TextureType>
+	ModelTextureHandle<TextureType>::ModelTextureHandle(const ModelTexture<TextureType>& texture) :
+		mTexturePtr(&texture)
+	{}
+}

@@ -1,5 +1,6 @@
 module;
 #include <optional>
+#include <assimp/material.h>
 #include <DirectXTex.h>
 
 export module Brawler.AwaitingSerializationModelTextureUpdateState;
@@ -7,7 +8,8 @@ import Brawler.I_ModelTextureUpdateState;
 
 export namespace Brawler
 {
-	class AwaitingSerializationModelTextureUpdateState final : public I_ModelTextureUpdateState<AwaitingSerializationModelTextureUpdateState>
+	template <aiTextureType TextureType>
+	class AwaitingSerializationModelTextureUpdateState final : public I_ModelTextureUpdateState<AwaitingSerializationModelTextureUpdateState<TextureType>, TextureType>
 	{
 	public:
 		AwaitingSerializationModelTextureUpdateState() = default;
@@ -23,4 +25,27 @@ export namespace Brawler
 
 		std::optional<AwaitingSerializationModelTextureUpdateState> GetNextState() const;
 	};
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+namespace Brawler
+{
+	template <aiTextureType TextureType>
+	void AwaitingSerializationModelTextureUpdateState<TextureType>::UpdateTextureScratchImage(DirectX::ScratchImage& image)
+	{}
+
+	template <aiTextureType TextureType>
+	bool AwaitingSerializationModelTextureUpdateState<TextureType>::IsFinalTextureReadyForSerialization() const
+	{
+		// In this state, we know that the texture is ready to be serialized.
+
+		return true;
+	}
+
+	template <aiTextureType TextureType>
+	std::optional<AwaitingSerializationModelTextureUpdateState<TextureType>> AwaitingSerializationModelTextureUpdateState<TextureType>::GetNextState() const
+	{
+		return std::optional<AwaitingSerializationModelTextureUpdateState<TextureType>>{};
+	}
 }

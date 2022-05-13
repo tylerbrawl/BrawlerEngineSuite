@@ -21,11 +21,13 @@ namespace Brawler
 		FormatConversionModelTextureUpdateState<TextureType>,
 
 		// ModelTextureUpdateStateID::AWAITING_SERIALIZATION_STATE
-		AwaitingSerializationModelTextureUpdateState
+		AwaitingSerializationModelTextureUpdateState<TextureType>
 	>;
 }
 
 export namespace Brawler
 {
-	template <
+	template <typename DummyType, aiTextureType TextureType>
+	struct PolymorphismInfo<I_ModelTextureUpdateState<DummyType, TextureType>> : public PolymorphismInfoInstantiation<ModelTextureUpdateStateID, ModelTextureUpdateStateTuple<TextureType>>
+	{};
 }

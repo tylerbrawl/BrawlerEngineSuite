@@ -74,6 +74,6 @@ namespace Brawler
 
 	DirectX::ScratchImage GenericMipMapGenerator::ExtractGeneratedMipMaps()
 	{
-		return std::move(mGeneratedMipMapTexture);
+		return std::move(*mGeneratedMipMapTexture);
 	}
 }

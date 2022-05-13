@@ -9,6 +9,11 @@ import Brawler.AppParams;
 import Brawler.CommandLineParser;
 import Brawler.Win32.ConsoleFormat;
 
+namespace Brawler
+{
+	class AppParams;
+}
+
 namespace
 {
 	std::optional<Brawler::AppParams> ParseCommandLine(const std::span<const char*> cmdLineArgs)
@@ -37,7 +42,9 @@ int main(const int argc, const char* argv[])
 			return 1;
 
 		Brawler::Application app{};
-		app.Run(std::move(*appParams));
+		app.SetLaunchParameters(std::move(*appParams));
+
+		app.Run();
 	}
 	catch (const std::exception& e)
 	{

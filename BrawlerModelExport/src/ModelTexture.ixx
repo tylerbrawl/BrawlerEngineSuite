@@ -3,7 +3,7 @@ module;
 #include <filesystem>
 #include <assimp/material.h>
 #include <DirectXTex.h>
-#include "DxDef.h"
+#include <DxDef.h>
 
 export module Brawler.ModelTexture;
 import Brawler.FilePathHash;
@@ -13,6 +13,10 @@ import Util.ModelExport;
 import Brawler.AppParams;
 import Brawler.LODScene;
 import Brawler.TextureTypeMap;
+import Brawler.PolymorphicAdapter;
+import Brawler.I_ModelTextureUpdateState;
+import Brawler.MipMapGenerationModelTextureUpdateState;
+export import Brawler.ModelTextureUpdateStateTraits;
 
 namespace Brawler
 {
@@ -74,6 +78,7 @@ export namespace Brawler
 		LODScene mScene;
 		FilePathHash mOutputPathHash;
 		std::filesystem::path mOutputPath;
+		PolymorphicAdapter<I_ModelTextureUpdateState, TextureType> mTextureUpdateAdapter;
 	};
 }
 
@@ -87,7 +92,8 @@ namespace Brawler
 		mOriginalTextureName(std::move(textureInfo.OriginalTextureName)),
 		mScene(std::move(textureInfo.Scene)),
 		mOutputPathHash(),
-		mOutputPath()
+		mOutputPath(),
+		mTextureUpdateAdapter(MipMapGenerationModelTextureUpdateState<TextureType>{})
 	{
 		InitializeOutputPathInformation(textureInfo.ResolvedTextureNameHash);
 	}
@@ -108,30 +114,48 @@ namespace Brawler
 		// Util::ModelTexture::ConvertTextureToDesiredFormat() uses an if-constexpr to see if the conversion
 		// process is necessary.)
 		mScratchTexture = Util::ModelTexture::CreateIntermediateTexture<TextureType>(mScene, mOriginalTextureName);
-
-		// Begin generating mip-maps.
-		ModelTextureMipMapGeneratorType<TextureType>::BeginMipMapGeneration();
 	}
 
 	template <aiTextureType TextureType>
 	void ModelTexture<TextureType>::Update()
 	{
-		ModelTextureMipMapGeneratorType<TextureType>::Update();
+		std::optional<PolymorphicAdapter<I_ModelTextureUpdateState, TextureType>> optionalNextStateAdapter{};
 		
-		// If the mip-map generation has finished, then modify the texture for it.
-		if (ModelTextureMipMapGeneratorType<TextureType>::IsMipMapGenerationFinished())
-			mScratchTexture = ModelTextureMipMapGeneratorType<TextureType>::ExtractGeneratedMipMaps();
+		do
+		{
+			optionalNextStateAdapter.reset();
+
+			// Access the PolymorphicAdapter to update the texture for the current state.
+			mTextureUpdateAdapter.AccessData([this]<typename UpdateStateType>(UpdateStateType& updateState)
+			{
+				updateState.UpdateTextureScratchImage(mScratchTexture);
+			});
+
+			// Try to move to the next state. If we can, then we continue looping; otherwise,
+			// we exit the loop.
+			mTextureUpdateAdapter.AccessData([&optionalNextStateAdapter]<typename UpdateStateType>(const UpdateStateType& updateState)
+			{
+				auto optionalNextState{ updateState.GetNextState() };
+
+				if (optionalNextState.has_value())
+					optionalNextStateAdapter.emplace(std::move(*optionalNextState));
+			});
+
+			if (optionalNextStateAdapter.has_value())
+				mTextureUpdateAdapter = std::move(*optionalNextStateAdapter);
+		} while (optionalNextStateAdapter.has_value());
 	}
 
 	template <aiTextureType TextureType>
 	bool ModelTexture<TextureType>::IsReadyForSerialization() const
 	{
-		// As of writing this, the texture are ready to be serialized as soon as mip-map generation has
-		// finished.
-
-		return ModelTextureMipMapGeneratorType<TextureType>::IsMipMapGenerationFinished();
+		return mTextureUpdateAdapter.AccessData([]<typename UpdateStateType>(const UpdateStateType& updateState)
+		{
+			return updateState.IsFinalTextureReadyForSerialization();
+		});
 	}
 
+	/*
 	template <aiTextureType TextureType>
 	void ModelTexture<TextureType>::WriteToFileSystem() const
 	{
@@ -157,6 +181,7 @@ namespace Brawler
 			.DDSBlob{ std::move(ddsTextureBlob) }
 		});
 	}
+	*/
 
 	template <aiTextureType TextureType>
 	FilePathHash ModelTexture<TextureType>::GetOutputPathHash() const

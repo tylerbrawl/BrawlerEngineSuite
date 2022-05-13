@@ -11,7 +11,7 @@ import Brawler.TextureTypeMap;
 export namespace Brawler
 {
 	template <aiTextureType TextureType>
-	class MipMapGenerationModelTextureUpdateState final : public I_ModelTextureUpdateState<MipMapGenerationModelTextureUpdateState>, private ModelTextureMipMapGeneratorType<TextureType>
+	class MipMapGenerationModelTextureUpdateState final : public I_ModelTextureUpdateState<MipMapGenerationModelTextureUpdateState<TextureType>, TextureType>, private ModelTextureMipMapGeneratorType<TextureType>
 	{
 	public:
 		MipMapGenerationModelTextureUpdateState() = default;
@@ -25,7 +25,7 @@ export namespace Brawler
 		void UpdateTextureScratchImage(DirectX::ScratchImage& image);
 		bool IsFinalTextureReadyForSerialization() const;
 
-		std::optional<FormatConversionModelTextureUpdateState> GetNextState() const;
+		std::optional<FormatConversionModelTextureUpdateState<TextureType>> GetNextState() const;
 	};
 }
 
@@ -49,8 +49,8 @@ namespace Brawler
 	}
 
 	template <aiTextureType TextureType>
-	std::optional<FormatConversionModelTextureUpdateState> MipMapGenerationModelTextureUpdateState<TextureType>::GetNextState() const
+	std::optional<FormatConversionModelTextureUpdateState<TextureType>> MipMapGenerationModelTextureUpdateState<TextureType>::GetNextState() const
 	{
-		return (ModelTextureMipMapGeneratorType<TextureType>::IsMipMapGenerationFinished() ? FormatConversionModelTextureUpdateState{} : std::optional<FormatConversionModelTextureUpdateState>{});
+		return (ModelTextureMipMapGeneratorType<TextureType>::IsMipMapGenerationFinished() ? FormatConversionModelTextureUpdateState<TextureType>{} : std::optional<FormatConversionModelTextureUpdateState<TextureType>>{});
 	}
 }

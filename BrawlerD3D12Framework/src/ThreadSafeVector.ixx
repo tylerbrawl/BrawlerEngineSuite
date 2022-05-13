@@ -90,6 +90,9 @@ export namespace Brawler
 		void AccessData(const std::size_t index, const Callback& callback) const;
 
 		template <typename Callback>
+		void ForEach(const Callback& callback);
+
+		template <typename Callback>
 		void ForEach(const Callback& callback) const;
 
 		/// <summary>
@@ -108,6 +111,31 @@ export namespace Brawler
 }
 
 // --------------------------------------------------------------------------------------------------------
+
+namespace Brawler
+{
+	template <typename DataType, typename Callback>
+	struct ParameterTypeSolver
+	{
+		static constexpr bool IS_PARAMETER_CORRECT = false;
+	};
+
+	template <typename DataType, typename Callback>
+		requires requires (Callback callback, DataType data)
+	{
+		callback(data);
+	}
+	struct ParameterTypeSolver<DataType, Callback>
+	{
+		static constexpr bool IS_PARAMETER_CORRECT = true;
+	};
+
+	template <typename DataType, typename Callback>
+	consteval bool IsParameterTypeCorrect()
+	{
+		return ParameterTypeSolver<DataType, Callback>::IS_PARAMETER_CORRECT;
+	}
+}
 
 namespace Brawler
 {
@@ -256,12 +284,51 @@ namespace Brawler
 	template <typename T, typename LockType>
 		requires Lockable<LockType>
 	template <typename Callback>
+	void ThreadSafeVector<T, LockType>::ForEach(const Callback& callback)
+	{
+		ScopedReadLockType readLock{ mCritSection };
+
+		// We need to deduce the parameter type here.
+		if constexpr (IsParameterTypeCorrect<T&, Callback>())
+		{
+			for (auto& val : mDataArr)
+				callback(val);
+		}
+		else if constexpr (IsParameterTypeCorrect<const T&, Callback>())
+		{
+			for (const auto& val : mDataArr)
+				callback(val);
+		}
+		else if constexpr (IsParameterTypeCorrect<T&&, Callback>())
+		{
+			for (auto&& val : mDataArr)
+				callback(std::move(val));
+		}
+	}
+
+	template <typename T, typename LockType>
+		requires Lockable<LockType>
+	template <typename Callback>
 	void ThreadSafeVector<T, LockType>::ForEach(const Callback& callback) const
 	{
 		ScopedReadLockType readLock{ mCritSection };
 
-		for (auto& val : mDataArr)
-			callback(val);
+		// We need to deduce the parameter type here.
+		if constexpr (IsParameterTypeCorrect<T&, Callback>())
+		{
+			for (auto& val : mDataArr)
+				callback(val);
+		}
+		else if constexpr (IsParameterTypeCorrect<const T&, Callback>())
+		{
+			for (const auto& val : mDataArr)
+				callback(val);
+		}
+		else if constexpr (IsParameterTypeCorrect<T&&, Callback>())
+		{
+			for (auto&& val : mDataArr)
+				callback(std::move(val));
+		}
 	}
 
 	template <typename T, typename LockType>

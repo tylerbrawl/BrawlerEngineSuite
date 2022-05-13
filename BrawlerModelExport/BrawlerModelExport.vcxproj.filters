@@ -88,6 +88,9 @@
     <Filter Include="Module Files\Polymorphism Traits">
       <UniqueIdentifier>{1e0d6f00-38b1-4a4e-be01-e799c7be4a54}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Render Modules">
+      <UniqueIdentifier>{915515ab-d8e8-45c0-9b7d-82f2fc15dc4a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -240,9 +243,6 @@
     <ClCompile Include="src\MeshResolverCollection.cpp">
       <Filter>Source Files\Mesh Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\AppParams.ixx">
-      <Filter>Module Files\Command Line Parsing</Filter>
-    </ClCompile>
     <ClCompile Include="src\CommandLineParser.ixx">
       <Filter>Module Files\Command Line Parsing</Filter>
     </ClCompile>
@@ -296,6 +296,24 @@
     </ClCompile>
     <ClCompile Include="src\ModelTextureUpdateStateTraits.ixx">
       <Filter>Module Files\Polymorphism Traits</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BC7CompressionEventHandle.ixx">
+      <Filter>Module Files\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BC7CompressionEventHandle.cpp">
+      <Filter>Source Files\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BC7CompressionRenderModule.cpp">
+      <Filter>Source Files\Render Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshResolverBase.cpp">
+      <Filter>Source Files\Mesh Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LODScene.cpp">
+      <Filter>Source Files\Mesh Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AppParams.ixx">
+      <Filter>Module Files\Command Line Parsing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

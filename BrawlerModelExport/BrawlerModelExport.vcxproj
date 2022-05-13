@@ -278,6 +278,9 @@
     <ClCompile Include="src\AppParams.cpp" />
     <ClCompile Include="src\AppParams.ixx" />
     <ClCompile Include="src\AwaitingSerializationModelTextureUpdateState.ixx" />
+    <ClCompile Include="src\BC7CompressionEventHandle.cpp" />
+    <ClCompile Include="src\BC7CompressionEventHandle.ixx" />
+    <ClCompile Include="src\BC7CompressionRenderModule.cpp" />
     <ClCompile Include="src\BC7CompressionRenderModule.ixx" />
     <ClCompile Include="src\BC7ImageCompressor.cpp" />
     <ClCompile Include="src\BC7ImageCompressor.ixx" />
@@ -302,11 +305,13 @@
     <ClCompile Include="src\I_ModelTextureUpdateState.ixx" />
     <ClCompile Include="src\LODResolver.cpp" />
     <ClCompile Include="src\LODResolver.ixx" />
+    <ClCompile Include="src\LODScene.cpp" />
     <ClCompile Include="src\LODScene.ixx" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MaterialID.ixx" />
     <ClCompile Include="src\MaterialIDMap.ixx" />
     <ClCompile Include="src\Matrix.ixx" />
+    <ClCompile Include="src\MeshResolverBase.cpp" />
     <ClCompile Include="src\MeshResolverBase.ixx" />
     <ClCompile Include="src\MeshResolverCollection.cpp" />
     <ClCompile Include="src\MeshResolverCollection.ixx" />

@@ -193,10 +193,9 @@ namespace Brawler
 		mResourceInfo(),
 		mTableBuilderInfo(),
 		mReadbackBufferPtr(nullptr),
-		mCompretionFrameNum(INVALID_COMPLETION_FRAME_NUMBER)
-	{
-		assert(mInitInfo.DestImage.format == mInitInfo.DesiredFormat && "ERROR: A DirectX::Image with an unexpected format was provided for BC7ImageCompressor::CompressImage()!");
-	}
+		mCompletionFrameNum(INVALID_COMPLETION_FRAME_NUMBER),
+		mReadyForDeletion(false)
+	{}
 
 	/*
 	bool BC7ImageCompressor::IsMipLevelSpanValid() const
@@ -300,9 +299,9 @@ namespace Brawler
 		return createdBundleArr;
 	}
 
-	bool BC7ImageCompressor::TryCopyCompressedImage(DirectX::Image& destImage) const
+	bool BC7ImageCompressor::TryCopyCompressedImage(const DirectX::Image& destImage) const
 	{
-		assert(destImage.format != mInitInfo.SrcImage.format && destImage.width == mInitInfo.SrcImage.width && destImage.height == mInitInfo.SrcImage.height &&
+		assert(destImage.format == mInitInfo.DesiredFormat && destImage.width == mInitInfo.SrcImage.width && destImage.height == mInitInfo.SrcImage.height &&
 			destImage.pixels != mInitInfo.SrcImage.pixels && "ERROR: An invalid DirectX::Image was provided to BC7ImageCompressor::TryCopyCompressedImage()!");
 
 		// Make sure that the GPU has finished executing the commands.
@@ -326,10 +325,20 @@ namespace Brawler
 		for (std::size_t i = 0; i < numRows; ++i)
 		{
 			const std::span<BufferBC7> destDataSpan{ reinterpret_cast<BufferBC7*>(destImage.pixels + (i * destRowPitch)), (destRowPitch / sizeof(BufferBC7)) };
-			mResourceInfo.CPUOutputBufferSubAllocation.ReadStructuredBufferData((numOutputBufferXBlocksPerRow * i), destDataSpan);
+			mResourceInfo.CPUOutputBufferSubAllocation.ReadStructuredBufferData(static_cast<std::uint32_t>(numOutputBufferXBlocksPerRow * i), destDataSpan);
 		}
 
 		return true;
+	}
+
+	void BC7ImageCompressor::MarkForDeletion()
+	{
+		mReadyForDeletion = true;
+	}
+
+	bool BC7ImageCompressor::ReadyForDeletion() const
+	{
+		return mReadyForDeletion;
 	}
 
 	void BC7ImageCompressor::InitializeBufferResources(D3D12::FrameGraphBuilder& frameGraphBuilder)

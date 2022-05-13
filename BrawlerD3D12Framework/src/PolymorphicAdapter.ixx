@@ -13,10 +13,10 @@ namespace Brawler
 	class PolymorphicAdapterIMPL
 	{};
 
-	template <template<typename...> typename BaseType, typename DerivedType, typename... OtherParams>
+	template <template<typename, auto...> typename BaseType, typename DerivedType, auto... OtherParams>
 	concept IsDerivedType = std::derived_from<DerivedType, BaseType<DerivedType, OtherParams...>>;
 
-	template <template<typename...> typename BaseType, typename DummyType, typename... OtherParams>
+	template <template<typename, auto...> typename BaseType, typename DummyType, auto... OtherParams>
 	class PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>
 	{
 	private:
@@ -70,14 +70,14 @@ namespace Brawler
 
 namespace Brawler
 {
-	template <template<typename...> typename BaseType, typename DummyType, typename... OtherParams>
+	template <template<typename, auto...> typename BaseType, typename DummyType, auto... OtherParams>
 	template <typename DerivedType>
 		requires IsDerivedType<BaseType, DerivedType, OtherParams...>
 	constexpr PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::PolymorphicAdapterIMPL(DerivedType&& derivedValue) :
 		mDataVariant(std::forward<DerivedType>(derivedValue))
 	{}
 
-	template <template<typename...> typename BaseType, typename DummyType, typename... OtherParams>
+	template <template<typename, auto...> typename BaseType, typename DummyType, auto... OtherParams>
 	template <typename DerivedType>
 		requires IsDerivedType<BaseType, DerivedType, OtherParams...>
 	constexpr PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>& PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::operator=(DerivedType&& derivedValue)
@@ -87,7 +87,7 @@ namespace Brawler
 		return *this;
 	}
 
-	template <template<typename...> typename BaseType, typename DummyType, typename... OtherParams>
+	template <template<typename, auto...> typename BaseType, typename DummyType, auto... OtherParams>
 	template <typename Callback>
 		requires requires (Callback callback, typename PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::FirstType& value)
 	{
@@ -99,7 +99,7 @@ namespace Brawler
 		return AccessDataIMPL<Callback, static_cast<PolymorphismInfo<BaseType<void, OtherParams...>>::EnumType>(0)>(callback);
 	}
 
-	template <template<typename...> typename BaseType, typename DummyType, typename... OtherParams>
+	template <template<typename, auto...> typename BaseType, typename DummyType, auto... OtherParams>
 	template <typename Callback>
 		requires requires (Callback callback, typename PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::FirstType& value)
 	{
@@ -111,7 +111,7 @@ namespace Brawler
 		return AccessDataIMPL<Callback, static_cast<PolymorphismInfo<BaseType<void, OtherParams...>>::EnumType>(0)>(callback);
 	}
 
-	template <template<typename...> typename BaseType, typename DummyType, typename... OtherParams>
+	template <template<typename, auto...> typename BaseType, typename DummyType, auto... OtherParams>
 	template <typename Callback, PolymorphismInfo<BaseType<void, OtherParams...>>::EnumType CurrEnum>
 	constexpr auto PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::AccessDataIMPL(const Callback& callback)
 	{
@@ -135,7 +135,7 @@ namespace Brawler
 		}
 	}
 
-	template <template<typename...> typename BaseType, typename DummyType, typename... OtherParams>
+	template <template<typename, auto...> typename BaseType, typename DummyType, auto... OtherParams>
 	template <typename Callback, PolymorphismInfo<BaseType<void, OtherParams...>>::EnumType CurrEnum>
 	constexpr auto PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::AccessDataIMPL(const Callback& callback) const
 	{
@@ -162,6 +162,6 @@ namespace Brawler
 
 export namespace Brawler
 {
-	template <template<typename...> typename BaseType, typename... OtherParams>
+	template <template<typename, auto...> typename BaseType, auto... OtherParams>
 	using PolymorphicAdapter = PolymorphicAdapterIMPL<BaseType<void, OtherParams...>>;
 }

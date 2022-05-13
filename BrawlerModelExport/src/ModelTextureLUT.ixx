@@ -7,6 +7,7 @@ module;
 #include <filesystem>
 #include <format>
 #include <assimp/scene.h>
+#include <DirectXTex.h>
 
 export module Brawler.ModelTextureLUT;
 import Brawler.ModelTexture;

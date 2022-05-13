@@ -64,26 +64,6 @@ export namespace Util
 		DirectX::ScratchImage CreateIntermediateTexture(const Brawler::LODScene& lodScene, const aiString& textureName);
 
 		/// <summary>
-		/// Converts the specified texture into its final format, as specified by
-		/// Brawler::IMPL::TextureTypeMap<TextureType>::DESIRED_FORMAT (see TextureTypeMap.ixx). 
-		/// The returned DirectX::ScratchImage can then be written to the filesystem.
-		/// 
-		/// This function should only be called after all texture manipulation operations
-		/// have been finished.
-		/// </summary>
-		/// <param name="texture">
-		/// - The texture which is to be converted to its corresponding final format, as
-		///   specified by the TextureType template parameter.
-		/// </param>
-		/// <returns>
-		/// The function returns a DirectX::ScratchImage in the format specified by
-		/// Brawler::IMPL::TextureTypeMap<TextureType>::DESIRED_FORMAT.
-		/// </returns>
-		template <aiTextureType TextureType>
-			requires !Brawler::IsBlockCompressedFormat<Brawler::GetDesiredTextureFormat<TextureType>()>()
-		DirectX::ScratchImage ConvertTextureToDesiredFormat(const DirectX::ScratchImage& texture);
-
-		/// <summary>
 		/// Writes the texture data specified by writeInfo to the filesystem. See the documentation
 		/// of Util::ModelTexture::TextureWriteInfo for more information.
 		/// </summary>
@@ -289,29 +269,6 @@ namespace Util
 			}
 			
 			return CreateIntermediateTextureFromFile<TextureType>(textureName);
-		}
-
-		template <aiTextureType TextureType>
-			requires !Brawler::IsBlockCompressedFormat<Brawler::GetDesiredTextureFormat<TextureType>()>()
-		DirectX::ScratchImage ConvertTextureToDesiredFormat(const DirectX::ScratchImage& texture)
-		{
-			// Don't do any conversions if the intermediate and desired formats are the same.
-			if constexpr (Brawler::GetIntermediateTextureFormat<TextureType>() == Brawler::GetDesiredTextureFormat<TextureType>())
-				return texture;
-			
-			DirectX::ScratchImage finalImage{};
-
-			Util::General::CheckHRESULT(DirectX::Convert(
-				texture.GetImages(),
-				texture.GetImageCount(),
-				texture.GetMetadata(),
-				Brawler::GetDesiredTextureFormat<TextureType>(),
-				DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT,
-				DirectX::TEX_THRESHOLD_DEFAULT,
-				finalImage
-			));
-
-			return finalImage;
 		}
 	}
 }

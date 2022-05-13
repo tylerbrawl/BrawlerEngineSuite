@@ -2,6 +2,7 @@ module;
 #include <tuple>
 #include <vector>
 #include <assimp/texture.h>
+#include <DirectXTex.h>
 
 export module Brawler.ModelTextureDatabase;
 import Brawler.ModelTexture;

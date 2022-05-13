@@ -2,11 +2,7 @@ module;
 #include <assimp/scene.h>
 
 export module Util.ModelExport;
-
-export namespace Brawler
-{
-	struct AppParams;
-}
+import Brawler.AppParams;
 
 export namespace Util
 {

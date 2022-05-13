@@ -2,9 +2,9 @@ module;
 #include <cassert>
 #include <memory>
 #include <assimp/scene.h>
+#include <DirectXTex.h>
 
 module Brawler.Application;
-import Brawler.AppParams;
 import Brawler.BC7CompressionRenderModule;
 
 namespace
@@ -36,11 +36,12 @@ namespace Brawler
 		mRenderer.AddRenderModule<BC7CompressionRenderModule>();
 	}
 
-	void Application::Run(AppParams&& appParams)
+	void Application::Run()
+	{}
+
+	void Application::SetLaunchParameters(AppParams&& appParams)
 	{
 		mLaunchParams = std::move(appParams);
-
-
 	}
 
 	const AppParams& Application::GetLaunchParameters() const
