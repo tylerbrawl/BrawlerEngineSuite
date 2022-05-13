@@ -79,7 +79,7 @@ namespace
 		rootParamEnumStr += Brawler::RootParameters::GetEnumClassNameString<RootParamEnumType>();
 		rootParamEnumStr += "\n\t\t{\n";
 
-		auto strSpan{ Brawler::RootParameters::GetEnumValueStrings<RootParamEnumType>() };
+		constexpr auto strSpan{ Brawler::RootParameters::GetEnumValueStrings<RootParamEnumType>() };
 		for (const auto& rootParamStr : strSpan)
 			rootParamEnumStr += "\t\t\t" + std::string{ rootParamStr } + ",\n";
 
