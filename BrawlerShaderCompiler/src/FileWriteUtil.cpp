@@ -41,24 +41,56 @@ namespace
 		charArr.push_back('0');
 		charArr.push_back('x');
 
-		std::size_t numBytesAdded = 0;
+		// What follows might hurt your brain a little. We need to reverse the order
+		// in which the bytes are written out into a string due to endianness.
+		//
+		// The naive method would write out the bytes in the order in which they appear
+		// in memory. This works fine when writing out binary values, but it does NOT work
+		// when writing out bytes into a string representing an integer larger than a byte.
+		//
+		// As an example, consider the 32-bit integer 0x12345678. If we write out the bytes
+		// directly in the order they appear in memory into a source file, then what we would 
+		// get is as we expect: the hexadecimal literal 0x12345678. This is fine if our intention 
+		// really was to write out this value, but our goal is to write out a set of bytes.
+		//
+		// For our case, the problem comes when using it in the initializer list of a
+		// std::array<std::uint32_t> which is being used to represent an array of bytes, e.g.,
+		// for shader bytecode. The compiler will see that we have written out the literal value
+		// 0x12345678, but since we tell it that it is an array of 32-bit integers, it swaps the 
+		// order of bytes to 0x78563412 when it writes the value out to static data. It does this 
+		// because Windows is a little-endian system, and the compiler is assuming that we are 
+		// going to be using the array as an array of 32-bit integers (and rightfully so).
+		//
+		// However, because the compiler wrote the bytes out as static data in reverse order, if
+		// we then attempt to reinterpret_cast the data pointer of the std::array<std::uint32_t>
+		// to an array of bytes, we will find that each 4 bytes have been reversed from the order
+		// in which they were written out in the source file!
+		//
+		// The solution, then, is to write out the bytes in the *reverse* order in which they
+		// appear in memory. That way, when the compiler swaps the bytes around to account for
+		// endianness, they will be written to static data in the order in which we intended.
 
-		for (const auto byte : byteSpan | std::views::take(8))
-		{
-			charArr.push_back(HEX_STR[(byte & 0xF0) >> 4]);
-			charArr.push_back(HEX_STR[byte & 0xF]);
-
-			++numBytesAdded;
-		}
+		// ---------------------------------------------------------------------------------------------
 
 		// If byteSpan did not have enough bytes to fill a 64-bit integer, then
 		// fill the remaining bits with zeroes.
-		while (numBytesAdded < 8)
 		{
-			charArr.push_back('0');
-			charArr.push_back('0');
+			std::size_t numZeroBytesToAdd = std::max<std::size_t>((8 - byteSpan.size()), 0);
 
-			++numBytesAdded;
+			while (numZeroBytesToAdd > 0)
+			{
+				charArr.push_back('0');
+				charArr.push_back('0');
+
+				--numZeroBytesToAdd;
+			}
+		}
+		
+
+		for (const auto byte : byteSpan | std::views::take(8) | std::views::reverse)
+		{
+			charArr.push_back(HEX_STR[(byte & 0xF0) >> 4]);
+			charArr.push_back(HEX_STR[byte & 0xF]);
 		}
 	}
 

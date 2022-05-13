@@ -254,6 +254,9 @@ namespace Brawler
 			static constexpr std::array<std::uint64_t, [64-Bit Integer Initializer List Length]> [IMPL::ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_ARRAY_FIELD_NAME]{[Incomprehensible Byte List]};
 			static constexpr std::size_t [IMPL::ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_SIZE_FIELD_NAME] = [Shader Size in Bytes];
 			*/
+			const LPVOID blobData = mDebugShaderBlob->GetBufferPointer();
+			const std::size_t blobSize = mDebugShaderBlob->GetBufferSize();
+
 			Brawler::CondensedByteArrayInfo debugShaderBytecodeArrayInfo{ Util::FileWrite::CreateSTDUInt64ArrayContentsStringFromBuffer(std::span<const std::uint8_t>{ reinterpret_cast<const std::uint8_t*>(mDebugShaderBlob->GetBufferPointer()), mDebugShaderBlob->GetBufferSize() }) };
 
 			bytecodeStr += "#ifdef _DEBUG\n\t\t\tstatic constexpr std::array<std::uint64_t, ";
@@ -340,7 +343,7 @@ namespace Brawler
 		const DxcBuffer sourceBuffer{
 			.Ptr = sourceBlob->GetBufferPointer(),
 			.Size = sourceBlob->GetBufferSize(),
-			.Encoding = DXC_CP_ACP
+			.Encoding = DXC_CP_UTF8
 		};
 
 		auto compilationLambda = [&absoluteShaderPath]<ShaderCompilationMode CompileMode>(const ShaderCompilationParams& params, const DxcBuffer& srcBuffer, IDxcIncludeHandler& includeHandler) -> Microsoft::WRL::ComPtr<IDxcBlob>
