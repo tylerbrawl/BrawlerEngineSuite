@@ -7,7 +7,7 @@ import Brawler.ImportedMesh;
 
 export namespace Brawler
 {
-	// As of writing this, the MSVC still doesn't support decuding this for C++20 modules. *sigh*...
+	// As of writing this, the MSVC still doesn't support deducing this for C++20 modules. *sigh*...
 	
 	template <typename DerivedClass>
 	class MeshResolverBase
