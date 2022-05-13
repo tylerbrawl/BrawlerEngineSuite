@@ -36,7 +36,20 @@ namespace Brawler
 {
 	namespace D3D12
 	{
-		void GPUResourceDescriptorHeap::Initialize()
+		void GPUResourceDescriptorHeap::InitializeBindlessSRVQueue()
+		{
+			// Create a separate index for every available bindless SRV index. This is done
+			// separately from initializing the ID3D12DescriptorHeap because it is a long-running
+			// process.
+			{
+				std::scoped_lock<std::mutex> lock{ mBindlessIndexQueue.CritSection };
+
+				for (std::uint32_t i = 0; i < static_cast<std::uint32_t>(BINDLESS_SRVS_PARTITION_SIZE); ++i)
+					mBindlessIndexQueue.Queue.push(i);
+			}
+		}
+
+		void GPUResourceDescriptorHeap::InitializeD3D12DescriptorHeap()
 		{
 			// Create the shader-visible resource descriptor heap.
 			{
@@ -48,14 +61,6 @@ namespace Brawler
 				};
 
 				Util::General::CheckHRESULT(Util::Engine::GetD3D12Device().CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mHeap)));
-			}
-
-			// Create a separate index for every available bindless SRV index.
-			{
-				std::scoped_lock<std::mutex> lock{ mBindlessIndexQueue.CritSection };
-
-				for (std::uint32_t i = 0; i < static_cast<std::uint32_t>(BINDLESS_SRVS_PARTITION_SIZE); ++i)
-					mBindlessIndexQueue.Queue.push(i);
 			}
 
 			// Cache the descriptor handle increment size.

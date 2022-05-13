@@ -2,6 +2,8 @@ module;
 #include <atomic>
 
 module Brawler.D3D12.Renderer;
+import Brawler.JobGroup;
+import Util.Coroutine;
 
 namespace Brawler
 {
@@ -9,6 +11,26 @@ namespace Brawler
 	{
 		void Renderer::Initialize()
 		{
+			// On a separate thread, asynchronously create the bindless SRV index queue. This
+			// is a long-running process which involves a lot of heap allocations, but so is
+			// initializing the D3D12 device. In fact, the latter takes so long that by doing these
+			// two concurrently, creating the bindless SRV index queue should be "free."
+			std::atomic<bool> bindlessSRVQueueInitialized{ false };
+
+			Brawler::JobGroup bindlessSRVQueueInitializationGroup{};
+			bindlessSRVQueueInitializationGroup.Reserve(1);
+
+			bindlessSRVQueueInitializationGroup.AddJob([this, &bindlessSRVQueueInitialized] ()
+			{
+				mDevice.GetGPUResourceDescriptorHeap().InitializeBindlessSRVQueue();
+
+				// We can use std::memory_order::relaxed, because the bindless SRV queue itself
+				// is protected by a std::mutex.
+				bindlessSRVQueueInitialized.store(true, std::memory_order::relaxed);
+			});
+
+			bindlessSRVQueueInitializationGroup.ExecuteJobsAsync();
+			
 			// Initialize the GPUDevice.
 			mDevice.Initialize();
 
@@ -27,6 +49,10 @@ namespace Brawler
 
 			// Initialize the FrameGraphManager.
 			mFrameGraphManager.Initialize();
+
+			// Wait for the bindless SRV queue to be initialized.
+			while (!bindlessSRVQueueInitialized.load(std::memory_order::relaxed))
+				Util::Coroutine::TryExecuteJob();
 		}
 		
 		GPUCommandManager& Renderer::GetGPUCommandManager()

@@ -61,7 +61,8 @@ export namespace Brawler
 			GPUResourceDescriptorHeap(GPUResourceDescriptorHeap&& rhs) noexcept = default;
 			GPUResourceDescriptorHeap& operator=(GPUResourceDescriptorHeap&& rhs) noexcept = default;
 
-			void Initialize();
+			void InitializeBindlessSRVQueue();
+			void InitializeD3D12DescriptorHeap();
 
 			std::unique_ptr<BindlessSRVSentinel> AllocateBindlessSRV();
 			void ReClaimBindlessSRV(BindlessSRVSentinel& srvAllocation);

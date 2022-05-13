@@ -143,7 +143,7 @@ namespace Brawler
 			InitializeGPUCapabilities();
 			InitializeDescriptorHandleIncrementSizeArray();
 
-			mDescriptorHeap.Initialize();
+			mDescriptorHeap.InitializeD3D12DescriptorHeap();
 		}
 		
 		Brawler::D3D12Device& GPUDevice::GetD3D12Device()

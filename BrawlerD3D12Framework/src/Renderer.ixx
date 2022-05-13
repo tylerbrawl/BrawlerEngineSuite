@@ -54,7 +54,7 @@ export namespace Brawler
 			/// instance are then instructed to create RenderPass instances for the frame.
 			/// 
 			/// Although there is no way to remove I_RenderModule instances once added,
-			/// a derived I_RenderModule instance be "skipped" during FrameGraph generation
+			/// a derived I_RenderModule instance will be "skipped" during FrameGraph generation
 			/// if its I_RenderModule::IsRenderModuleEnabled() function returns false. This
 			/// is helpful if, e.g., a set of RenderPasses should only be created if a certain
 			/// configuration option is set.
