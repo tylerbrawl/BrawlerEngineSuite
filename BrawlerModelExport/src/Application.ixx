@@ -5,7 +5,7 @@ module;
 export module Brawler.Application;
 import Brawler.WorkerThreadPool;
 import Brawler.ModelResolver;
-import Brawler.AppParams;
+import Brawler.LaunchParams;
 import Brawler.D3D12.Renderer;
 
 export namespace Brawler
@@ -19,10 +19,9 @@ export namespace Brawler
 		void Initialize();
 
 	public:
-		void Run();
+		void Run(LaunchParams&& launchParams);
 
-		void SetLaunchParameters(AppParams&& appParams);
-		const AppParams& GetLaunchParameters() const;
+		const LaunchParams& GetLaunchParameters() const;
 
 		WorkerThreadPool& GetWorkerThreadPool();
 		const WorkerThreadPool& GetWorkerThreadPool() const;
@@ -34,7 +33,7 @@ export namespace Brawler
 		WorkerThreadPool mThreadPool;
 		D3D12::Renderer mRenderer;
 		ModelResolver mModelResolver;
-		AppParams mLaunchParams;
+		LaunchParams mLaunchParams;
 	};
 
 	Application& GetApplication();

@@ -4,14 +4,14 @@ module;
 
 module Brawler.ModelResolver;
 import Brawler.JobGroup;
-import Brawler.AppParams;
+import Brawler.LaunchParams;
 import Util.ModelExport;
 
 namespace Brawler
 {
 	void ModelResolver::InitializeLODResolvers()
 	{
-		const Brawler::AppParams& launchParams{ Util::ModelExport::GetLaunchParameters() };
+		const Brawler::LaunchParams& launchParams{ Util::ModelExport::GetLaunchParameters() };
 		const std::size_t lodCount = launchParams.GetLODCount();
 
 		Brawler::JobGroup lodResolverCreationGroup{};

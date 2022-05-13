@@ -8,10 +8,10 @@ namespace Util
 {
 	namespace ModelExport
 	{
-		const Brawler::AppParams& GetLaunchParameters()
+		const Brawler::LaunchParams& GetLaunchParameters()
 		{
-			thread_local const Brawler::AppParams& appParams{ Brawler::GetApplication().GetLaunchParameters() };
-			return appParams;
+			thread_local const Brawler::LaunchParams& launchParams{ Brawler::GetApplication().GetLaunchParameters() };
+			return launchParams;
 		}
 	}
 }

@@ -11,7 +11,7 @@ module;
 module Brawler.LODResolver;
 import Brawler.ImportedMesh;
 import Util.ModelExport;
-import Brawler.AppParams;
+import Brawler.LaunchParams;
 import Brawler.LODScene;
 
 namespace Brawler

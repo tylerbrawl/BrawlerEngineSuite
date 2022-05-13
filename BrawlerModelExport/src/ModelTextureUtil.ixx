@@ -7,7 +7,7 @@ module;
 
 export module Util.ModelTexture;
 import Brawler.TextureTypeMap;
-import Brawler.AppParams;
+import Brawler.LaunchParams;
 import Util.ModelExport;
 import Util.Win32;
 import Brawler.Win32.ConsoleFormat;
@@ -182,7 +182,7 @@ namespace Util
 		}
 
 		template <aiTextureType TextureType>
-		DirectX::ScratchImage CreateIntermediateTextureFromFile(const aiString& textureName)
+		DirectX::ScratchImage CreateIntermediateTextureFromFile(const Brawler::LODScene& scene, const aiString& textureName)
 		{
 			// The texture is *NOT* embedded within the model. In that case, we need to read it
 			// and save it to our appropriate format.
@@ -201,7 +201,7 @@ namespace Util
 				// If the texture path is *NOT* absolute, then it is probably defined relative to
 				// the original mesh file's directory.
 
-				const std::filesystem::path meshFilePath{ Util::ModelExport::GetLaunchParameters().InputMeshFilePath };
+				const std::filesystem::path meshFilePath{ Util::ModelExport::GetLaunchParameters().GetLODFilePath(scene.GetLODLevel()) };
 				texturePath = (meshFilePath.parent_path() / texturePath);
 
 				const bool textureFound = std::filesystem::exists(texturePath, errorCode);
@@ -268,7 +268,7 @@ namespace Util
 				return CreateIntermediateTextureFromCompressedEmbeddedTexture<TextureType>(*embeddedTexture);
 			}
 			
-			return CreateIntermediateTextureFromFile<TextureType>(textureName);
+			return CreateIntermediateTextureFromFile<TextureType>(scene, textureName);
 		}
 	}
 }

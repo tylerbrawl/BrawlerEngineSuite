@@ -264,7 +264,7 @@
     <ClCompile Include="src\LODScene.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\AppParams.cpp">
+    <ClCompile Include="src\LaunchParams.cpp">
       <Filter>Source Files\Command Line Parsing</Filter>
     </ClCompile>
     <ClCompile Include="src\MipMapGeneration.ixx">
@@ -312,7 +312,7 @@
     <ClCompile Include="src\LODScene.cpp">
       <Filter>Source Files\Mesh Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\AppParams.ixx">
+    <ClCompile Include="src\LaunchParams.ixx">
       <Filter>Module Files\Command Line Parsing</Filter>
     </ClCompile>
   </ItemGroup>

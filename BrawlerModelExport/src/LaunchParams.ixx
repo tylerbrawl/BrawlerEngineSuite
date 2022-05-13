@@ -4,20 +4,20 @@ module;
 #include <filesystem>
 #include <span>
 
-export module Brawler.AppParams;
+export module Brawler.LaunchParams;
 
 export namespace Brawler
 {
-	class AppParams
+	class LaunchParams
 	{
 	public:
-		AppParams() = default;
+		LaunchParams() = default;
 
-		AppParams(const AppParams& rhs) = delete;
-		AppParams& operator=(const AppParams& rhs) = delete;
+		LaunchParams(const LaunchParams& rhs) = delete;
+		LaunchParams& operator=(const LaunchParams& rhs) = delete;
 
-		AppParams(AppParams&& rhs) noexcept = default;
-		AppParams& operator=(AppParams&& rhs) noexcept = default;
+		LaunchParams(LaunchParams&& rhs) noexcept = default;
+		LaunchParams& operator=(LaunchParams&& rhs) noexcept = default;
 
 		void SetModelName(const std::string_view modelName);
 		const std::wstring_view GetModelName() const;

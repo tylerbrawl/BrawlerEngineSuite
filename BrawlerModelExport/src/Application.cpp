@@ -36,15 +36,12 @@ namespace Brawler
 		mRenderer.AddRenderModule<BC7CompressionRenderModule>();
 	}
 
-	void Application::Run()
-	{}
-
-	void Application::SetLaunchParameters(AppParams&& appParams)
+	void Application::Run(LaunchParams&& launchParams)
 	{
-		mLaunchParams = std::move(appParams);
+		mLaunchParams = std::move(launchParams);
 	}
 
-	const AppParams& Application::GetLaunchParameters() const
+	const LaunchParams& Application::GetLaunchParameters() const
 	{
 		return mLaunchParams;
 	}

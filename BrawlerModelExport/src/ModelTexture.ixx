@@ -10,7 +10,7 @@ import Brawler.FilePathHash;
 import Util.General;
 import Util.ModelTexture;
 import Util.ModelExport;
-import Brawler.AppParams;
+import Brawler.LaunchParams;
 import Brawler.LODScene;
 import Brawler.TextureTypeMap;
 import Brawler.PolymorphicAdapter;
@@ -202,7 +202,7 @@ namespace Brawler
 		// how this FilePathHash is generated are irrelevant; all that matters is that it is a unique
 		// value for each texture across all LOD meshes.
 
-		const Brawler::AppParams& launchParams{ Util::ModelExport::GetLaunchParameters() };
+		const Brawler::LaunchParams& launchParams{ Util::ModelExport::GetLaunchParameters() };
 
 		// Get the output texture file name (without the extension) by getting the stem of the path
 		// from the original texture name and then appending "_[resolvedTextureNameHash]".

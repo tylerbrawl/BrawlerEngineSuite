@@ -275,8 +275,8 @@
     <ClCompile Include="src\AABB.ixx" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Application.ixx" />
-    <ClCompile Include="src\AppParams.cpp" />
-    <ClCompile Include="src\AppParams.ixx" />
+    <ClCompile Include="src\LaunchParams.cpp" />
+    <ClCompile Include="src\LaunchParams.ixx" />
     <ClCompile Include="src\AwaitingSerializationModelTextureUpdateState.ixx" />
     <ClCompile Include="src\BC7CompressionEventHandle.cpp" />
     <ClCompile Include="src\BC7CompressionEventHandle.ixx" />

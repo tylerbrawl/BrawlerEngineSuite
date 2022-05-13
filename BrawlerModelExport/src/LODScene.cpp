@@ -5,7 +5,7 @@ module;
 
 module Brawler.LODScene;
 import Util.ModelExport;
-import Brawler.AppParams;
+import Brawler.LaunchParams;
 
 namespace Brawler
 {

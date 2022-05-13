@@ -2,12 +2,12 @@ module;
 #include <assimp/scene.h>
 
 export module Util.ModelExport;
-import Brawler.AppParams;
+import Brawler.LaunchParams;
 
 export namespace Util
 {
 	namespace ModelExport
 	{
-		const Brawler::AppParams& GetLaunchParameters();
+		const Brawler::LaunchParams& GetLaunchParameters();
 	}
 }

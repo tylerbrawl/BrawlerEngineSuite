@@ -162,13 +162,13 @@ namespace Brawler
 			mCmdLineErrorMsgBuilder->WriteFormattedConsoleMessage();
 	}
 
-	AppParams CommandLineParser::GetLaunchParameters() const
+	LaunchParams CommandLineParser::GetLaunchParameters() const
 	{
 		// As of writing this, every time an error occurs in parsing, a FormattedConsoleMessageBuilder is generated
 		// for it.
 		assert(!mCmdLineErrorMsgBuilder.has_value());
 
-		AppParams launchParams{};
+		LaunchParams launchParams{};
 
 		assert(mModelNameIndex != INVALID_CMD_LINE_ARG_INDEX);
 		launchParams.SetModelName(mCmdLineArgsSpan[mModelNameIndex]);

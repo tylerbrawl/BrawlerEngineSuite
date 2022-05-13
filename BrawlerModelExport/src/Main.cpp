@@ -5,28 +5,23 @@
 import Brawler.Application;
 import Util.Win32;
 import Util.General;
-import Brawler.AppParams;
+import Brawler.LaunchParams;
 import Brawler.CommandLineParser;
 import Brawler.Win32.ConsoleFormat;
 
-namespace Brawler
-{
-	class AppParams;
-}
-
 namespace
 {
-	std::optional<Brawler::AppParams> ParseCommandLine(const std::span<const char*> cmdLineArgs)
+	std::optional<Brawler::LaunchParams> ParseCommandLine(const std::span<const char*> cmdLineArgs)
 	{
 		Brawler::CommandLineParser cmdLineParser{ cmdLineArgs };
 
 		if (!cmdLineParser.ParseCommandLineArguments()) [[unlikely]]
 		{
 			cmdLineParser.PrintCommandLineErrorMessage();
-			return std::optional<Brawler::AppParams>{};
+			return std::optional<Brawler::LaunchParams>{};
 		}
 
-		return std::optional<Brawler::AppParams>{ cmdLineParser.GetLaunchParameters() };
+		return std::optional<Brawler::LaunchParams>{ cmdLineParser.GetLaunchParameters() };
 	}
 }
 
@@ -36,15 +31,13 @@ int main(const int argc, const char* argv[])
 	{
 		Util::Win32::InitializeWin32Components();
 
-		std::optional<Brawler::AppParams> appParams{ ParseCommandLine(std::span<const char*>{argv, static_cast<std::size_t>(argc)}) };
+		std::optional<Brawler::LaunchParams> launchParams{ ParseCommandLine(std::span<const char*>{argv, static_cast<std::size_t>(argc)}) };
 
-		if (!appParams.has_value()) [[unlikely]]
+		if (!launchParams.has_value()) [[unlikely]]
 			return 1;
 
 		Brawler::Application app{};
-		app.SetLaunchParameters(std::move(*appParams));
-
-		app.Run();
+		app.Run(std::move(*launchParams));
 	}
 	catch (const std::exception& e)
 	{
