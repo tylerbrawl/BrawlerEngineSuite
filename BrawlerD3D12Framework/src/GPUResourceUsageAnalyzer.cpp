@@ -47,7 +47,8 @@ namespace
 						.EntranceRenderPass{renderPass.get()},
 						.QueueType = QueueType,
 						.ExecutionModule = &executionModule,
-						.IsImplicitTransition = false
+						.IsImplicitTransition = false,
+						.IsDeleted = false
 					});
 
 					resourceUsedInPass = true;
@@ -63,7 +64,8 @@ namespace
 					.EntranceRenderPass{renderPass.get()},
 					.QueueType = QueueType,
 					.ExecutionModule = &executionModule,
-					.IsImplicitTransition = false
+					.IsImplicitTransition = false,
+					.IsDeleted = false
 				});
 		}
 

@@ -32,6 +32,8 @@ export namespace Brawler
 
 			bool IsImplicitTransition;
 
+			bool IsDeleted;
+
 			/// <summary>
 			/// Checks whether this ResourceStateZone instance is a null ResourceStateZone. A null
 			/// ResourceStateZone does not have a required resource state for a given resource.

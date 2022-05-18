@@ -29,7 +29,7 @@ namespace Brawler
 			// here.
 			const bool transitionsToCommonState = (!stateZone.IsNull() && *(stateZone.RequiredState) == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON);
 
-			mMapSegmentArr.back().push_back(std::make_unique<ResourceStateZone>(stateZone));
+			mMapSegmentArr.back().push_back(stateZone);
 
 			if (transitionsToCommonState)
 				AddStateDecayBarrier();
@@ -57,22 +57,30 @@ namespace Brawler
 			for (auto& mapSegment : mMapSegmentArr | std::views::take(mMapSegmentArr.size() - 1))
 			{
 				for (auto& stateZone : mapSegment)
-					zoneOptimizer.ProcessResourceStateZone(*stateZone);
+					zoneOptimizer.ProcessResourceStateZone(stateZone);
 
 				zoneOptimizer.OnStateDecayBarrier();
 			}
 
 			for (auto& stateZone : mMapSegmentArr.back())
-				zoneOptimizer.ProcessResourceStateZone(*stateZone);
+				zoneOptimizer.ProcessResourceStateZone(stateZone);
 
 			const std::span<ResourceStateZone* const> stateZonesToDeleteSpan{ zoneOptimizer.GetResourceStateZonesToDelete() };
+			std::size_t numStateZonesDeleted = 0;
 
 			for (auto& mapSegment : mMapSegmentArr)
-				std::erase_if(mapSegment, [stateZonesToDeleteSpan] (const std::unique_ptr<ResourceStateZone>& existingStateZone)
 			{
-				return (std::ranges::find(stateZonesToDeleteSpan, existingStateZone.get()) != stateZonesToDeleteSpan.end());
-			});
+				for (auto& stateZone : mapSegment)
+				{
+					if (std::ranges::find(stateZonesToDeleteSpan, &stateZone) != stateZonesToDeleteSpan.end())
+					{
+						stateZone.IsDeleted = true;
+						++numStateZonesDeleted;
+					}
+				}
+			}
 
+			assert(numStateZonesDeleted == stateZonesToDeleteSpan.size());
 		}
 
 		void ResourceStateZoneMap::AddStateDecayBarrier()
@@ -86,25 +94,25 @@ namespace Brawler
 
 			for (const auto& mapSegment : mMapSegmentArr | std::views::take(mMapSegmentArr.size() - 1))
 			{
-				for (const auto& stateZone : mapSegment)
-					stateTracker.AddNextResourceStateZone(*stateZone);
+				for (const auto& stateZone : mapSegment | std::views::filter([](const ResourceStateZone& stateZone){ return !(stateZone.IsDeleted); }))
+					stateTracker.AddNextResourceStateZone(stateZone);
 
 				stateTracker.OnStateDecayBarrier();
 			}
 
-			for (const auto& stateZone : mMapSegmentArr.back())
-				stateTracker.AddNextResourceStateZone(*stateZone);
+			for (const auto& stateZone : mMapSegmentArr.back() | std::views::filter([] (const ResourceStateZone& stateZone) { return !(stateZone.IsDeleted); }))
+				stateTracker.AddNextResourceStateZone(stateZone);
 
 			return stateTracker.FinalizeStateTracking();
 		}
 
 		void ResourceStateZoneMap::CheckSegmentForImplicitTransition(ResourceStateZoneMapSegment& mapSegment) const
 		{
-			auto result = std::ranges::find_if(mapSegment, [] (const std::unique_ptr<ResourceStateZone>& stateZone) { return (!stateZone->IsNull()); });
+			auto result = std::ranges::find_if(mapSegment, [] (const ResourceStateZone& stateZone) { return (!stateZone.IsNull()); });
 
 			if (result != mapSegment.end())
 			{
-				ResourceStateZone& stateZone{ *(result->get()) };
+				ResourceStateZone& stateZone{ *result };
 				stateZone.IsImplicitTransition = Util::D3D12::IsImplicitStateTransitionPossible(*mResourcePtr, *(stateZone.RequiredState));
 			}
 		}

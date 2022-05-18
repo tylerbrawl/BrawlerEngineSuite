@@ -29,7 +29,7 @@ export namespace Brawler
 		class ResourceStateZoneMap
 		{
 		private:
-			using ResourceStateZoneMapSegment = std::vector<std::unique_ptr<ResourceStateZone>>;
+			using ResourceStateZoneMapSegment = std::vector<ResourceStateZone>;
 
 		public:
 			explicit ResourceStateZoneMap(I_GPUResource& resource);
