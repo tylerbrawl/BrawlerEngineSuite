@@ -127,10 +127,6 @@ namespace
 		{
 			for (const auto& dependency : copyPass->GetResourceDependencies())
 			{
-				// This should never fire if we are correctly preventing resources from being used
-				// in both the copy queue and the direct/compute queue simultaneously.
-				assert(!resourceStateMap.contains(dependency.ResourcePtr));
-
 				resourceStateMap[dependency.ResourcePtr].CombinedState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON;
 				resourceStateMap[dependency.ResourcePtr].UsedQueues = Brawler::D3D12::GPUCommandQueueType::COPY;
 			}

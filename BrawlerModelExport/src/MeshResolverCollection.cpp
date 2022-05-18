@@ -5,6 +5,7 @@ module;
 #include <span>
 #include <stdexcept>
 #include <cassert>
+#include <ranges>
 
 module Brawler.MeshResolverCollection;
 import Brawler.MeshTypeID;
@@ -47,6 +48,37 @@ namespace Brawler
 			break;
 		}
 		}
+	}
+
+	ModelTextureBuilderCollection MeshResolverCollection::CreateModelTextureBuilders()
+	{
+		const std::size_t numMeshResolvers = GetMeshResolverCount();
+
+		Brawler::JobGroup modelTextureBuilderCreationGroup{};
+		modelTextureBuilderCreationGroup.Reserve(numMeshResolvers);
+
+		std::vector<ModelTextureBuilderCollection> textureBuilderCollectionArr{};
+		textureBuilderCollectionArr.resize(numMeshResolvers);
+
+		std::size_t currIndex = 0;
+		ForEachMeshResolver([&currIndex, &textureBuilderCollectionArr, &modelTextureBuilderCreationGroup]<typename T>(T& meshResolver)
+		{
+			ModelTextureBuilderCollection& currBuilderCollection{ textureBuilderCollectionArr[currIndex++] };
+			modelTextureBuilderCreationGroup.AddJob([&meshResolver, &currBuilderCollection] ()
+			{
+				currBuilderCollection = meshResolver.CreateModelTextureBuilders();
+			});
+		});
+
+		modelTextureBuilderCreationGroup.ExecuteJobs();
+
+		assert(!textureBuilderCollectionArr.empty());
+		ModelTextureBuilderCollection& baseCollection{ textureBuilderCollectionArr[0] };
+
+		for (auto&& mergedCollection : textureBuilderCollectionArr | std::views::drop(1))
+			baseCollection.MergeModelTextureBuilderCollection(std::move(mergedCollection));
+
+		return std::move(baseCollection);
 	}
 
 	void MeshResolverCollection::Update()

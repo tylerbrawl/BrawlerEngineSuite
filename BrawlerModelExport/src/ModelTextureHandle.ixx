@@ -3,6 +3,8 @@ module;
 
 export module Brawler.ModelTextureHandle;
 import Brawler.ModelTexture;
+import Brawler.I_ModelTextureBuilder;
+import Brawler.FilePathHash;
 
 export namespace Brawler
 {
@@ -20,7 +22,7 @@ export namespace Brawler
 	{
 	public:
 		ModelTextureHandle() = default;
-		ModelTextureHandle(const ModelTexture<TextureType>& texture);
+		explicit ModelTextureHandle(const I_ModelTextureBuilder<TextureType>& textureBuilder);
 
 		ModelTextureHandle(const ModelTextureHandle& rhs) = default;
 		ModelTextureHandle& operator=(const ModelTextureHandle& rhs) = default;
@@ -29,7 +31,7 @@ export namespace Brawler
 		ModelTextureHandle& operator=(ModelTextureHandle&& rhs) noexcept = default;
 
 	private:
-		const ModelTexture<TextureType>* mTexturePtr;
+		FilePathHash mUniqueTextureNameHash;
 	};
 }
 
@@ -38,7 +40,7 @@ export namespace Brawler
 namespace Brawler
 {
 	template <aiTextureType TextureType>
-	ModelTextureHandle<TextureType>::ModelTextureHandle(const ModelTexture<TextureType>& texture) :
-		mTexturePtr(&texture)
+	ModelTextureHandle<TextureType>::ModelTextureHandle(const I_ModelTextureBuilder<TextureType>& textureBuilder) :
+		mUniqueTextureNameHash(FilePathHash{textureBuilder.GetUniqueTextureName()})
 	{}
 }

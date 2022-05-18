@@ -35,6 +35,11 @@ namespace Brawler
 		Util::Win32::WriteFormattedConsoleMessage(std::format(L"LOD {} Mesh Import Finished (Mesh File: {})", mLODLevel, lodMeshFilePath.c_str()));
 	}
 
+	ModelTextureBuilderCollection LODResolver::CreateModelTextureBuilders()
+	{
+		return mMeshResolverCollection.CreateModelTextureBuilders();
+	}
+
 	void LODResolver::Update()
 	{
 		mMeshResolverCollection.Update();

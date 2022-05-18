@@ -18,10 +18,15 @@ export namespace Brawler
 		ModelResolver(ModelResolver&& rhs) noexcept = default;
 		ModelResolver& operator=(ModelResolver&& rhs) noexcept = default;
 
-		void InitializeLODResolvers();
+		void Initialize();
 
 		void Update();
 		bool IsReadyForSerialization() const;
+
+	private:
+		void InitializeLODResolvers();
+		void InitializeModelTextures();
+		void CreateModelTextureBuilders();
 
 	private:
 		std::vector<std::unique_ptr<LODResolver>> mLODResolverPtrArr;

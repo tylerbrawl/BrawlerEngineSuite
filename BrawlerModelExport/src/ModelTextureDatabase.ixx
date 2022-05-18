@@ -13,6 +13,11 @@ import Brawler.Like_T;
 import Brawler.LODScene;
 import Brawler.ModelTextureHandle;
 import Brawler.ImportedMesh;
+import Brawler.JobGroup;
+import Brawler.ModelTextureBuilderCollection;
+
+#pragma push_macro("AddJob")
+#undef AddJob
 
 namespace Brawler
 {
@@ -49,34 +54,12 @@ export namespace Brawler
 
 		static ModelTextureDatabase& GetInstance();
 
-		void RegisterModelTextureFromScene(const LODScene& scene);
+		void CreateModelTextures(ModelTextureBuilderCollection& textureBuilderCollection);
 
-		/// <summary>
-		/// Constructs a ModelTextureHandle&lt;TextureType&gt; instance which refers to the corresponding
-		/// ModelTexture instance based on the specified parameters. The textureIndex value refers to the
-		/// index of the texture within the aiMaterial of mesh (i.e., 
-		/// mesh.GetMeshMaterial.GetTexture(TextureType, textureIndex, ...)).
-		/// 
-		/// The function asserts in Debug builds if no such texture exists for that material. This will
-		/// be the case if the texture search goes out of bounds.
-		/// 
-		/// *NOTE*: This function *IS* thread safe.
-		/// </summary>
-		/// <param name="mesh">
-		/// - The ImportedMesh instance whose aiMaterial refers to the texture of instance. The
-		///   ModelTextureDatabase resolves this reference to the corresponding ModelTexture instance.
-		/// </param>
-		/// <param name="textureIndex">
-		/// - The index into the mMaterials list of mesh.GetMeshMaterials() at which the texture
-		///   is to be found. By default, this value is zero (0).
-		/// </param>
-		/// <returns>
-		/// The function returns a ModelTextureHandle&lt;TextureType&gt; instance which refers to the
-		/// corresponding ModelTexture instance based on the specified parameters.
-		/// </returns>
-		template <aiTextureType TextureType>
-			requires IsRecognizedTextureType<TextureType>
-		ModelTextureHandle<TextureType> GetModelTextureHandle(const ImportedMesh& mesh, const std::size_t textureIndex = 0) const;
+		void InitializeScratchTextures();
+
+		void UpdateModelTextures();
+		bool AreModelTexturesReadyForSerialization() const;
 
 	private:
 		template <aiTextureType TextureType>
@@ -87,6 +70,9 @@ export namespace Brawler
 
 		template <typename Callback>
 		void ForEachModelTextureLUT(const Callback& callback);
+
+		template <typename Callback>
+		void ForEachModelTextureLUT(const Callback& callback) const;
 
 	private:
 		RecognizedTextureTypeLUTTuple mLUTTuple;
@@ -102,20 +88,57 @@ namespace Brawler
 		static ModelTextureDatabase instance{};
 		return instance;
 	}
-	
-	void ModelTextureDatabase::RegisterModelTextureFromScene(const LODScene& scene)
+
+	void ModelTextureDatabase::CreateModelTextures(ModelTextureBuilderCollection& textureBuilderCollection)
 	{
-		ForEachModelTextureLUT([&scene]<aiTextureType TextureType>(ModelTextureLUT<TextureType>& textureLUT)
+		ForEachModelTextureLUT([&textureBuilderCollection]<aiTextureType TextureType>(ModelTextureLUT<TextureType>&textureLUT)
 		{
-			textureLUT.AddTexturesFromScene(scene);
+			textureLUT.CreateModelTextures(textureBuilderCollection);
 		});
 	}
 
-	template <aiTextureType TextureType>
-		requires IsRecognizedTextureType<TextureType>
-	ModelTextureHandle<TextureType> ModelTextureDatabase::GetModelTextureHandle(const ImportedMesh& mesh, const std::size_t textureIndex) const
+	void ModelTextureDatabase::InitializeScratchTextures()
 	{
-		return GetModelTextureLUT<TextureType>().GetModelTextureHandle(mesh, textureIndex);
+		Brawler::JobGroup initScratchTexturesInLUTGroup{};
+		initScratchTexturesInLUTGroup.Reserve(std::tuple_size_v<RecognizedTextureTypeLUTTuple>);
+
+		ForEachModelTextureLUT([&initScratchTexturesInLUTGroup]<aiTextureType TextureType>(ModelTextureLUT<TextureType>&modelTextureLUT)
+		{
+			initScratchTexturesInLUTGroup.AddJob([&modelTextureLUT] ()
+			{
+				modelTextureLUT.InitializeScratchTextures();
+			});
+		});
+
+		initScratchTexturesInLUTGroup.ExecuteJobs();
+	}
+
+	void ModelTextureDatabase::UpdateModelTextures()
+	{
+		Brawler::JobGroup modelTextureLUTUpdateGroup{};
+		modelTextureLUTUpdateGroup.Reserve(std::tuple_size_v<RecognizedTextureTypeLUTTuple>);
+
+		ForEachModelTextureLUT([&modelTextureLUTUpdateGroup]<aiTextureType TextureType>(ModelTextureLUT<TextureType>&modelTextureLUT)
+		{
+			modelTextureLUTUpdateGroup.AddJob([&modelTextureLUT] ()
+			{
+				modelTextureLUT.UpdateModelTextures();
+			});
+		});
+
+		modelTextureLUTUpdateGroup.ExecuteJobs();
+	}
+
+	bool ModelTextureDatabase::AreModelTexturesReadyForSerialization() const
+	{
+		bool readyForSerialization = true;
+		ForEachModelTextureLUT([&readyForSerialization]<aiTextureType TextureType>(const ModelTextureLUT<TextureType>&modelTextureLUT)
+		{
+			if (!modelTextureLUT.AreModelTexturesReadyForSerialization())
+				readyForSerialization = false;
+		});
+
+		return readyForSerialization;
 	}
 	
 	template <aiTextureType TextureType>
@@ -144,4 +167,21 @@ namespace Brawler
 
 		EXECUTE_LAMBDA_CALLBACK.operator()<0>(mLUTTuple, callback);
 	}
+
+	template <typename Callback>
+	void ModelTextureDatabase::ForEachModelTextureLUT(const Callback& callback) const
+	{
+		static constexpr auto EXECUTE_LAMBDA_CALLBACK = []<std::size_t CurrIndex>(this const auto& lambdaSelf, const RecognizedTextureTypeLUTTuple& lutTuple, const Callback& callback)
+		{
+			if constexpr (CurrIndex != std::tuple_size_v<RecognizedTextureTypeLUTTuple>)
+			{
+				callback(std::get<CurrIndex>(lutTuple));
+				lambdaSelf.operator()<(CurrIndex + 1)>(lutTuple, callback);
+			}
+		};
+
+		EXECUTE_LAMBDA_CALLBACK.operator()<0>(mLUTTuple, callback);
+	}
 }
+
+#pragma pop_macro("AddJob")

@@ -5,6 +5,7 @@ module;
 
 export module Brawler.LODResolver;
 import Brawler.MeshResolverCollection;
+import Brawler.ModelTextureBuilderCollection;
 
 export namespace Brawler
 {
@@ -32,6 +33,8 @@ export namespace Brawler
 		/// concurrently. This is guaranteed to be thread safe.
 		/// </summary>
 		void ImportScene();
+
+		ModelTextureBuilderCollection CreateModelTextureBuilders();
 
 		void Update();
 		bool IsReadyForSerialization() const;

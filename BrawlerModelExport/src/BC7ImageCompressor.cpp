@@ -390,19 +390,32 @@ namespace Brawler
 		// We can, however, create the two sub-allocations from an upload heap buffer from within the
 		// same BufferResource.
 		{
+
+			const D3D12::TextureSubResource srcTextureSubResource{ mResourceInfo.SourceTexturePtr->GetSubResource() };
+			std::uint64_t requiredSizeForTextureCopy = 0;
+
+			Util::Engine::GetD3D12Device().GetCopyableFootprints1(
+				&(srcTextureSubResource.GetResourceDescription()),
+				srcTextureSubResource.GetSubResourceIndex(),
+				1,
+				0,
+				nullptr,
+				nullptr,
+				nullptr,
+				&requiredSizeForTextureCopy
+			);
+
 			D3D12::BufferResource& uploadBufferResource{ frameGraphBuilder.CreateTransientResource<D3D12::BufferResource>(D3D12::BufferResourceInitializationInfo{
 				// The upload buffer must contain enough space for both the source texture and the constant buffer
 				// upload. The latter has a smaller alignment, so we will add that one after the texture to reduce
 				// the required space.
-				.SizeInBytes = (Util::Math::AlignToPowerOfTwo(mInitInfo.SrcImage.slicePitch, sizeof(ConstantsBC7)) + sizeof(ConstantsBC7)),
+				.SizeInBytes = (Util::Math::AlignToPowerOfTwo(requiredSizeForTextureCopy, sizeof(ConstantsBC7)) + sizeof(ConstantsBC7)),
 
 				.InitialResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_GENERIC_READ,
 				.HeapType = D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_UPLOAD
 			}) };
 
 			// Source ModelTexture Copy Buffer
-			const D3D12::TextureSubResource srcTextureSubResource{ mResourceInfo.SourceTexturePtr->GetSubResource() };
-
 			std::optional<D3D12::TextureCopyBufferSubAllocation> optionalTextureCopySubAllocation{ uploadBufferResource.CreateBufferSubAllocation<D3D12::TextureCopyBufferSubAllocation>(srcTextureSubResource) };
 			assert(optionalTextureCopySubAllocation.has_value());
 

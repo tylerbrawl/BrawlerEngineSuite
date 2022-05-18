@@ -91,6 +91,15 @@
     <Filter Include="Source Files\Render Modules">
       <UniqueIdentifier>{915515ab-d8e8-45c0-9b7d-82f2fc15dc4a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Textures\Model Texture Builders">
+      <UniqueIdentifier>{02b5e01a-f8a6-43cf-a8af-d8d68afa8945}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Textures\Model Texture Builders">
+      <UniqueIdentifier>{fcd83040-3197-4b69-ad1b-27a8cb3b23b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Textures\Texture Update States">
+      <UniqueIdentifier>{c4d5379b-ad8a-4e7f-99b9-8be806d4a519}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -314,6 +323,30 @@
     </ClCompile>
     <ClCompile Include="src\LaunchParams.ixx">
       <Filter>Module Files\Command Line Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssimpMaterialKey.ixx">
+      <Filter>Module Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssimpMaterialKeyID.ixx">
+      <Filter>Module Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_ModelTextureBuilder.ixx">
+      <Filter>Module Files\Textures\Model Texture Builders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ExternalTextureModelTextureBuilder.ixx">
+      <Filter>Module Files\Textures\Model Texture Builders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EmbeddedTextureModelTextureBuilder.ixx">
+      <Filter>Module Files\Textures\Model Texture Builders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MaterialColorModelTextureBuilder.ixx">
+      <Filter>Module Files\Textures\Model Texture Builders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelTextureBuilderCollection.ixx">
+      <Filter>Module Files\Textures\Model Texture Builders</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FormatConversionModelTextureUpdateState.cpp">
+      <Filter>Source Files\Textures\Texture Update States</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

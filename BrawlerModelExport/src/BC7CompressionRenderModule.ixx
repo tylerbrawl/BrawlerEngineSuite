@@ -74,7 +74,7 @@ namespace Brawler
 			.SrcImage{srcImage},
 			.DesiredFormat{Brawler::GetDesiredTextureFormat<TextureType>()}
 		}) };
-		const BC7CompressionEventHandle hCompressionEvent{ *imageCompressorPtr };
+		BC7CompressionEventHandle hCompressionEvent{ *imageCompressorPtr };
 
 		mPendingCompressorPtrArr.PushBack(std::move(imageCompressorPtr));
 

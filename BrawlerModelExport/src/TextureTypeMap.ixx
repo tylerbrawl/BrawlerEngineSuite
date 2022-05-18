@@ -5,6 +5,7 @@ module;
 
 export module Brawler.TextureTypeMap;
 import Brawler.MipMapGeneration;
+import Brawler.AssimpMaterialKeyID;
 
 export namespace Brawler
 {
@@ -69,6 +70,7 @@ namespace Brawler
 		template <
 			DXGI_FORMAT IntermediateFormat, 
 			DXGI_FORMAT DesiredFormat,
+			Brawler::AssimpMaterialKeyID MaterialKeyID,
 			typename MipMapGeneratorType_
 		>
 			requires !Brawler::IsBlockCompressedFormat<IntermediateFormat>() && IsMipMapGenerator<MipMapGeneratorType_>
@@ -76,6 +78,7 @@ namespace Brawler
 		{
 			static constexpr DXGI_FORMAT INTERMEDIATE_FORMAT = IntermediateFormat;
 			static constexpr DXGI_FORMAT DESIRED_FORMAT = DesiredFormat;
+			static constexpr Brawler::AssimpMaterialKeyID MATERIAL_KEY_ID{ MaterialKeyID };
 
 			using MipMapGeneratorType = MipMapGeneratorType_;
 		};
@@ -94,6 +97,7 @@ export namespace Brawler
 	struct TextureTypeMap<aiTextureType::aiTextureType_DIFFUSE> : public IMPL::TextureTypeMapInstantiation<
 		DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
 		DXGI_FORMAT::DXGI_FORMAT_BC7_UNORM_SRGB,
+		AssimpMaterialKeyID::COLOR_DIFFUSE,
 
 		// Albedo textures *CAN* have mip-maps created in the default fashion.
 		GenericMipMapGenerator
@@ -115,6 +119,12 @@ export namespace Brawler
 	consteval DXGI_FORMAT GetDesiredTextureFormat()
 	{
 		return TextureTypeMap<TextureType>::DESIRED_FORMAT;
+	}
+
+	template <aiTextureType TextureType>
+	consteval AssimpMaterialKeyID GetTextureMaterialKeyID()
+	{
+		return TextureTypeMap<TextureType>::MATERIAL_KEY_ID;
 	}
 
 	template <aiTextureType TextureType>

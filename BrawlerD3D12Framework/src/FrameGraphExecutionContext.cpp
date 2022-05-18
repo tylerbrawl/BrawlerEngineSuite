@@ -160,7 +160,10 @@ namespace Brawler
 
 		void FrameGraphExecutionContext::PerformGPUResourceAnalysis()
 		{
-			// Get a list of all of the used I_GPUResource instances in the FrameGraph.
+			// Get a list of all of the used I_GPUResource instances in the FrameGraph which are
+			// located in a D3D12_HEAP_TYPE_DEFAULT heap. We restrict the search to only this heap
+			// type because resources created in either D3D12_HEAP_TYPE_UPLOAD heaps or
+			// D3D12_HEAP_TYPE_READBACK heaps are never to transition out of their initial state.
 			std::unordered_map<I_GPUResource*, GPUResourceEventManager> resourceEventManagerMap{};
 
 			for (const auto& executionModule : mExecutionModuleArr)
@@ -169,7 +172,10 @@ namespace Brawler
 
 				moduleResourceDependencies.ForEach([&resourceEventManagerMap] (I_GPUResource* const& resourceDependency)
 				{
-					resourceEventManagerMap.try_emplace(resourceDependency);
+					const D3D12_HEAP_TYPE heapType{ resourceDependency->GetHeapType() };
+
+					if (heapType == D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_DEFAULT)
+						resourceEventManagerMap.try_emplace(resourceDependency);
 				});
 			}
 

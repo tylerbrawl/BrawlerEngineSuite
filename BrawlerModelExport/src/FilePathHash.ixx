@@ -1,6 +1,7 @@
 module;
 #include <string>
 #include <cstdint>
+#include <functional>
 
 export module Brawler.FilePathHash;
 
@@ -96,4 +97,18 @@ namespace Brawler
 
 		return hashStr;
 	}
+}
+
+export namespace std
+{
+	template <>
+	struct hash<Brawler::FilePathHash>
+	{
+		hash() = default;
+
+		std::size_t operator()(const Brawler::FilePathHash filePathHash) const
+		{
+			return filePathHash.GetHash();
+		}
+	};
 }

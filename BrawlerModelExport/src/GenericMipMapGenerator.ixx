@@ -5,6 +5,8 @@ module;
 
 export module Brawler.MipMapGeneration:GenericMipMapGenerator;
 import Util.General;
+import Util.Win32;
+import Brawler.Win32.ConsoleFormat;
 
 export namespace Brawler
 {
@@ -38,7 +40,7 @@ namespace Brawler
 		// DirectXTex does not support generating mip-map chains directly from BC formats.
 		// We could first decompress the textures, create the chain, and then compress them 
 		// again, but this can be incredibly slow.
-		
+
 		if (!mGeneratedMipMapTexture.has_value()) [[likely]]
 		{
 			DirectX::ScratchImage generatedTexture{};
@@ -51,14 +53,40 @@ namespace Brawler
 					assert(!DirectX::IsCompressed(image.format) && "ERROR: A block-compressed image was provided for GenericMipMapGenerator::BeginMipMapGeneration()! (Did you forget to use Util::ModelTexture::CreateIntermediateTexture()?)");
 			}
 
-			Util::General::CheckHRESULT(DirectX::GenerateMipMaps(
+			const HRESULT hr = DirectX::GenerateMipMaps(
 				srcTexture.GetImages(),
 				srcTexture.GetImageCount(),
 				srcTexture.GetMetadata(),
 				DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT,
 				0,  // Create a full mip-map chain, down to a 1x1 texture.
 				generatedTexture
-			));
+			);
+
+			if (FAILED(hr)) [[unlikely]]
+			{
+				// If mip-map generation failed, then send out a warning, but only if the texture should
+				// supposedly have the ability to generate mip-maps.
+
+				const std::span<const DirectX::Image> imageSpan{ srcTexture.GetImages(), srcTexture.GetImageCount() };
+				bool issueWarning = true;
+
+				for (const auto& image : imageSpan)
+				{
+					if (image.width == image.height && image.width == 1)
+						issueWarning = false;
+				}
+
+				if (issueWarning) [[unlikely]]
+					Util::Win32::WriteFormattedConsoleMessage(L"WARNING: Mip-map generation for a ModelTexture failed, even though it probably shouldn't have!", Brawler::Win32::ConsoleFormat::WARNING);
+
+				generatedTexture.Initialize(srcTexture.GetMetadata());
+
+				const std::span<const DirectX::Image> destImageSpan{ generatedTexture.GetImages(), generatedTexture.GetImageCount() };
+				assert(destImageSpan.size() == imageSpan.size());
+				
+				for (std::size_t i = 0; i < destImageSpan.size(); ++i)
+					std::memcpy(destImageSpan[i].pixels, imageSpan[i].pixels, destImageSpan[i].slicePitch);
+			}
 
 			mGeneratedMipMapTexture = std::move(generatedTexture);
 		}

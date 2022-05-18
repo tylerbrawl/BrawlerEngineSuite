@@ -1,6 +1,7 @@
 module;
 #include <memory>
 #include <vector>
+#include <format>
 #include <cassert>
 #include <DirectXTex.h>
 
@@ -11,6 +12,9 @@ module;
 module Brawler.BC7CompressionRenderModule;
 import Brawler.JobGroup;
 import Brawler.D3D12.FrameGraphBuilding;
+import Brawler.Timer;
+import Util.Win32;
+import Util.General;
 
 namespace Brawler
 {
@@ -58,7 +62,14 @@ namespace Brawler
 			});
 		});
 
+		Brawler::Timer bundleCreationTimer{};
+		bundleCreationTimer.Start();
+
 		renderPassBundleCreationGroup.ExecuteJobs();
+
+		bundleCreationTimer.Stop();
+
+		Util::Win32::WriteFormattedConsoleMessage(std::format(L"All BC7ImageCompressor RenderPassBundle instances were created in {} milliseconds.", bundleCreationTimer.GetElapsedTimeInMilliseconds()));
 
 		// Now, we need to add the RenderPassBundles to the FrameGraphBuilder. The order which we do this
 		// indeed has a significant impact. Since renderPassBundleArrayArr is a multi-dimensional vector,
@@ -136,7 +147,7 @@ namespace Brawler
 		}
 
 		// Finally, move all of the pending compressors to the active compressor array.
-		mPendingCompressorPtrArr.ForEach([this] (std::unique_ptr<BC7ImageCompressor>&& compressorPtr)
+		mPendingCompressorPtrArr.ForEach([this] (std::unique_ptr<BC7ImageCompressor>& compressorPtr)
 		{
 			mActiveCompressorPtrArr.push_back(std::move(compressorPtr));
 		});

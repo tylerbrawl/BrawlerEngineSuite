@@ -7,6 +7,8 @@ export module Brawler.MeshResolverCollection;
 import Brawler.StaticMeshResolver;
 import Brawler.Functional;
 import Brawler.ImportedMesh;
+import Util.General;
+import Brawler.ModelTextureBuilderCollection;
 
 namespace Brawler
 {
@@ -29,6 +31,8 @@ export namespace Brawler
 		MeshResolverCollection& operator=(MeshResolverCollection&& rhs) noexcept = default;
 
 		void CreateMeshResolverForImportedMesh(ImportedMesh&& mesh);
+
+		ModelTextureBuilderCollection CreateModelTextureBuilders();
 
 		void Update();
 		bool IsReadyForSerialization() const;
@@ -76,7 +80,7 @@ namespace Brawler
 		if constexpr (CurrIndex != std::tuple_size_v<MeshResolverArrayTuple>)
 		{
 			for (auto& meshResolver : std::get<CurrIndex>(tuple))
-				callback.operator()<std::remove_reference_t<decltype(meshResolver)>>(meshResolver);
+				callback(meshResolver);
 
 			ForEachMeshResolverIMPL<(CurrIndex + 1), TupleType>(tuple, callback);
 		}

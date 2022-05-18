@@ -11,8 +11,6 @@ import Brawler.AwaitingSerializationModelTextureUpdateState;
 import Brawler.BC7CompressionEventHandle;
 import Brawler.TextureTypeMap;
 import Util.General;
-import Brawler.Application;
-import Brawler.D3D12.Renderer;
 import Brawler.BC7CompressionRenderModule;
 
 namespace Brawler
@@ -130,6 +128,11 @@ export namespace Brawler
 
 namespace Brawler
 {
+	BC7CompressionRenderModule& GetBC7CompressionRenderModule();
+}
+
+namespace Brawler
+{
 	template <aiTextureType TextureType>
 	void CPUFormatConverter<TextureType>::UpdateTextureScratchImage(DirectX::ScratchImage& image)
 	{
@@ -204,7 +207,7 @@ namespace Brawler
 
 		for (std::size_t i = 0; i < destImageSpan.size(); ++i)
 		{
-			BC7CompressionRenderModule& compressionModule{ Brawler::GetRenderer().GetRenderModule<BC7CompressionRenderModule>() };
+			BC7CompressionRenderModule& compressionModule{ Brawler::GetBC7CompressionRenderModule() };
 			BC7CompressionEventHandle hCompressionEvent{ compressionModule.MakeGPUCompressionRequest<TextureType>(srcImageSpan[i]) };
 
 			hCompressionEvent.SetDestinationImage(destImageSpan[i]);

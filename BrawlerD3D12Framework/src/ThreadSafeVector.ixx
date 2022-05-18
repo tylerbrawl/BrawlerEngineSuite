@@ -2,6 +2,7 @@ module;
 #include <mutex>
 #include <shared_mutex>
 #include <ranges>
+#include <algorithm>
 #include <cassert>
 
 export module Brawler.ThreadSafeVector;
@@ -111,31 +112,6 @@ export namespace Brawler
 }
 
 // --------------------------------------------------------------------------------------------------------
-
-namespace Brawler
-{
-	template <typename DataType, typename Callback>
-	struct ParameterTypeSolver
-	{
-		static constexpr bool IS_PARAMETER_CORRECT = false;
-	};
-
-	template <typename DataType, typename Callback>
-		requires requires (Callback callback, DataType data)
-	{
-		callback(data);
-	}
-	struct ParameterTypeSolver<DataType, Callback>
-	{
-		static constexpr bool IS_PARAMETER_CORRECT = true;
-	};
-
-	template <typename DataType, typename Callback>
-	consteval bool IsParameterTypeCorrect()
-	{
-		return ParameterTypeSolver<DataType, Callback>::IS_PARAMETER_CORRECT;
-	}
-}
 
 namespace Brawler
 {
@@ -288,22 +264,7 @@ namespace Brawler
 	{
 		ScopedReadLockType readLock{ mCritSection };
 
-		// We need to deduce the parameter type here.
-		if constexpr (IsParameterTypeCorrect<T&, Callback>())
-		{
-			for (auto& val : mDataArr)
-				callback(val);
-		}
-		else if constexpr (IsParameterTypeCorrect<const T&, Callback>())
-		{
-			for (const auto& val : mDataArr)
-				callback(val);
-		}
-		else if constexpr (IsParameterTypeCorrect<T&&, Callback>())
-		{
-			for (auto&& val : mDataArr)
-				callback(std::move(val));
-		}
+		std::ranges::for_each(mDataArr, callback);
 	}
 
 	template <typename T, typename LockType>
@@ -313,22 +274,7 @@ namespace Brawler
 	{
 		ScopedReadLockType readLock{ mCritSection };
 
-		// We need to deduce the parameter type here.
-		if constexpr (IsParameterTypeCorrect<T&, Callback>())
-		{
-			for (auto& val : mDataArr)
-				callback(val);
-		}
-		else if constexpr (IsParameterTypeCorrect<const T&, Callback>())
-		{
-			for (const auto& val : mDataArr)
-				callback(val);
-		}
-		else if constexpr (IsParameterTypeCorrect<T&&, Callback>())
-		{
-			for (auto&& val : mDataArr)
-				callback(std::move(val));
-		}
+		std::ranges::for_each(mDataArr, callback);
 	}
 
 	template <typename T, typename LockType>

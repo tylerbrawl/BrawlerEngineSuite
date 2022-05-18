@@ -223,6 +223,8 @@ namespace Brawler
 			mResourceDesc(),
 			mInitialResourceState(BuilderInfo<Type>::INITIAL_RESOURCE_STATE)
 		{
+			mResourceDesc.DepthOrArraySize = 1;
+			
 			// By default, the mip level count should be 1. This will allow supporting resources
 			// which cannot have more than one mip level by default, and should likely be the common
 			// case.

@@ -19,17 +19,14 @@ export namespace Brawler
 		OpaqueMaterialDefinition(OpaqueMaterialDefinition&& rhs) noexcept = default;
 		OpaqueMaterialDefinition& operator=(OpaqueMaterialDefinition&& rhs) noexcept = default;
 
+		ModelTextureBuilderCollection CreateModelTextureBuilders() override;
+
 		void Update() override;
 		bool IsReadyForSerialization() const override;
 
 		MaterialID GetMaterialID() const override;
 
 	private:
-		void VerifyModelTextureCount() const;
-		void CreateModelTextureHandles();
-
-	private:
 		ModelTextureHandle<aiTextureType::aiTextureType_DIFFUSE> mHDiffuseTexture;
-		bool mInitialized;
 	};
 }

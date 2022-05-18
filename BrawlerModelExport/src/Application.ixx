@@ -32,6 +32,11 @@ export namespace Brawler
 	private:
 		void ExecuteModelConversionLoop();
 
+		void UpdateModelConversionComponents();
+		void ProcessFrame();
+
+		bool IsModelReadyForSerialization() const;
+
 	private:
 		WorkerThreadPool mThreadPool;
 		D3D12::Renderer mRenderer;

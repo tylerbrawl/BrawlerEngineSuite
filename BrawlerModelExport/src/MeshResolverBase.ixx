@@ -4,6 +4,7 @@ module;
 export module Brawler.MeshResolverBase;
 import Brawler.I_MaterialDefinition;
 import Brawler.ImportedMesh;
+import Brawler.ModelTextureBuilderCollection;
 
 export namespace Brawler
 {
@@ -23,6 +24,8 @@ export namespace Brawler
 
 		MeshResolverBase(MeshResolverBase&& rhs) noexcept = default;
 		MeshResolverBase& operator=(MeshResolverBase&& rhs) noexcept = default;
+
+		ModelTextureBuilderCollection CreateModelTextureBuilders();
 
 		void Update();
 		bool IsReadyForSerialization() const;
@@ -55,6 +58,12 @@ namespace Brawler
 		mMaterialDefinitionPtr(CreateMaterialDefinition(mesh)),
 		mImportedMesh(std::move(mesh))
 	{}
+
+	template <typename DerivedClass>
+	ModelTextureBuilderCollection MeshResolverBase<DerivedClass>::CreateModelTextureBuilders()
+	{
+		return mMaterialDefinitionPtr->CreateModelTextureBuilders();
+	}
 	
 	template <typename DerivedClass>
 	void MeshResolverBase<DerivedClass>::Update()

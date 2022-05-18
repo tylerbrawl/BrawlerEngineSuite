@@ -262,6 +262,40 @@ namespace Brawler
 					Util::General::CheckHRESULT(d3dDevice.As(&mD3dDevice));
 				}
 			}
+
+			// In Debug builds, edit the Debug Layer messages and breakpoints.
+			if constexpr (Util::General::IsDebugModeEnabled())
+			{
+				// Add D3D12 Debug Layer warnings which you wish to ignore here V. You better have a good reason for
+				// doing so, though, and you should document it well.
+
+				static std::array<D3D12_MESSAGE_ID, 1> ignoredD3D12DebugLayerMessageArr{
+					// Disable error messages for invalid alignments from ID3D12Device::GetResourceAllocationInfo2().
+					// We already check if an alignment value is invalid when calling that function, and revert
+					// to standard (non-small) alignment when this happens. As a result, this error message becomes
+					// redundant. (In fact, I'm not entirely sure why this is even an error message in the debug
+					// layer in the first place, considering that the function returns an error value if the small
+					// alignment cannot be used, anyways.)
+					D3D12_MESSAGE_ID::D3D12_MESSAGE_ID_CREATERESOURCE_INVALIDALIGNMENT
+				};
+
+				D3D12_INFO_QUEUE_FILTER infoQueueFilter{};
+				infoQueueFilter.DenyList.NumIDs = static_cast<std::uint32_t>(ignoredD3D12DebugLayerMessageArr.size());
+
+				// Some genius made pIDList a non-const D3D12_MESSAGE_ID*, so ignoredD3D12DebugLayerMessageArr can't
+				// be constexpr.
+				infoQueueFilter.DenyList.pIDList = ignoredD3D12DebugLayerMessageArr.data();
+
+				Microsoft::WRL::ComPtr<ID3D12InfoQueue> d3dInfoQueue{};
+				Util::General::CheckHRESULT(mD3dDevice.As(&d3dInfoQueue));
+
+				Util::General::CheckHRESULT(d3dInfoQueue->AddStorageFilterEntries(&infoQueueFilter));
+
+				// Do a debug break on any D3D12 error messages with a severity >= D3D12_MESSAGE_SEVERITY_WARNING.
+				Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_WARNING, true));
+				Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_ERROR, true));
+				Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_CORRUPTION, true));
+			}
 		}
 
 		void GPUDevice::InitializeGPUVendor()

@@ -2,11 +2,7 @@ module;
 #include <DirectXTex.h>
 
 export module Brawler.BC7CompressionEventHandle;
-
-namespace Brawler
-{
-	class BC7ImageCompressor;
-}
+import Brawler.BC7ImageCompressor;
 
 export namespace Brawler
 {
