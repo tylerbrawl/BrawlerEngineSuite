@@ -66,21 +66,9 @@ namespace Brawler
 				zoneOptimizer.ProcessResourceStateZone(stateZone);
 
 			const std::span<ResourceStateZone* const> stateZonesToDeleteSpan{ zoneOptimizer.GetResourceStateZonesToDelete() };
-			std::size_t numStateZonesDeleted = 0;
 
-			for (auto& mapSegment : mMapSegmentArr)
-			{
-				for (auto& stateZone : mapSegment)
-				{
-					if (std::ranges::find(stateZonesToDeleteSpan, &stateZone) != stateZonesToDeleteSpan.end())
-					{
-						stateZone.IsDeleted = true;
-						++numStateZonesDeleted;
-					}
-				}
-			}
-
-			assert(numStateZonesDeleted == stateZonesToDeleteSpan.size());
+			for (const auto stateZonePtr : stateZonesToDeleteSpan)
+				stateZonePtr->IsDeleted = true;
 		}
 
 		void ResourceStateZoneMap::AddStateDecayBarrier()

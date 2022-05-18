@@ -975,6 +975,9 @@
     <ClCompile Include="src\ConsoleFormat.ixx">
       <Filter>Module Files\Win32</Filter>
     </ClCompile>
+    <ClCompile Include="src\GPUExecutionModuleResourceMap.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Compilation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

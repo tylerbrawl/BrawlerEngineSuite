@@ -30,43 +30,17 @@ namespace
 	ResourceUsageInfo GetResourceUsageInfoForRenderPasses(const Brawler::D3D12::I_GPUResource& resource, const Brawler::D3D12::GPUExecutionModule& executionModule)
 	{
 		ResourceUsageInfo usageInfo{
-			.ResourceStateZones{},
+			.ResourceStateZones{ executionModule.GetResourceStateZones<QueueType>(resource) },
 			.ContainsNonNullZone = false
 		};
 
-		for (const auto& renderPass : executionModule.GetRenderPassSpan<QueueType>())
+		for (const auto& stateZone : usageInfo.ResourceStateZones)
 		{
-			bool resourceUsedInPass = false;
-			
-			for (const auto& dependency : renderPass->GetResourceDependencies())
+			if (!stateZone.IsNull())
 			{
-				if (dependency.ResourcePtr == &resource)
-				{
-					usageInfo.ResourceStateZones.push_back(Brawler::D3D12::ResourceStateZone{
-						.RequiredState{dependency.RequiredState},
-						.EntranceRenderPass{renderPass.get()},
-						.QueueType = QueueType,
-						.ExecutionModule = &executionModule,
-						.IsImplicitTransition = false,
-						.IsDeleted = false
-					});
-
-					resourceUsedInPass = true;
-					usageInfo.ContainsNonNullZone = true;
-
-					break;
-				}
+				usageInfo.ContainsNonNullZone = true;
+				break;
 			}
-
-			if (!resourceUsedInPass)
-				usageInfo.ResourceStateZones.push_back(Brawler::D3D12::ResourceStateZone{
-					.RequiredState{},
-					.EntranceRenderPass{renderPass.get()},
-					.QueueType = QueueType,
-					.ExecutionModule = &executionModule,
-					.IsImplicitTransition = false,
-					.IsDeleted = false
-				});
 		}
 
 		return usageInfo;
@@ -148,7 +122,8 @@ namespace Brawler
 			mResourcePtr(&resource),
 			mCurrResourceState(resource.GetCurrentResourceState()),
 			mEventManager(),
-			mResourceAlwaysDecays(DoesResourceAlwaysDecay(resource))
+			mResourceAlwaysDecays(DoesResourceAlwaysDecay(resource)),
+			mCheckIrrelevantExecutionModules(true)
 		{
 #ifdef _DEBUG
 			const D3D12_HEAP_TYPE resourceHeapType{ resource.GetHeapType() };
@@ -175,9 +150,24 @@ namespace Brawler
 
 		void GPUResourceUsageAnalyzer::TrackResourceUsageInExecutionModule(const GPUExecutionModule& executionModule, ResourceStateZoneMap& stateZoneMap)
 		{
+			// For the sake of performance, we do not want to always search every GPUExecutionModule instance.
+			// We perform a quick conservative check to see if we need to based on whether or not the
+			// previous GPUExecutionModule we contained had any non-null ResourceStateZones. If this is not
+			// the case, then we can assume that either that GPUExecutionModule or a GPUExecutionModule containing
+			// render passes which are executed before it on the GPU timeline is being used for a split barrier.
+			//
+			// This check is conservative. It is guaranteed that if it passes, then we wouldn't have been able
+			// to make use of any additional null ResourceStateZones from the GPUExecutionModule. However, if the
+			// check fails, it does not guarantee that the GPUExecutionModule will result in the creation of
+			// any non-null ResourceStateZones.
+			if (!executionModule.IsResourceUsed(*mResourcePtr) && !mCheckIrrelevantExecutionModules)
+				return;
+
 			const ResourceUsageInfo directQueueUsageInfo{ GetResourceUsageInfoForRenderPasses<GPUCommandQueueType::DIRECT>(*mResourcePtr, executionModule) };
 			const ResourceUsageInfo computeQueueUsageInfo{ GetResourceUsageInfoForRenderPasses<GPUCommandQueueType::COMPUTE>(*mResourcePtr, executionModule) };
 			const ResourceUsageInfo copyQueueUsageInfo{ GetResourceUsageInfoForRenderPasses<GPUCommandQueueType::COPY>(*mResourcePtr, executionModule) };
+
+			mCheckIrrelevantExecutionModules = (directQueueUsageInfo.ContainsNonNullZone || computeQueueUsageInfo.ContainsNonNullZone || copyQueueUsageInfo.ContainsNonNullZone);
 
 			assert(!copyQueueUsageInfo.ContainsNonNullZone || (!directQueueUsageInfo.ContainsNonNullZone && !computeQueueUsageInfo.ContainsNonNullZone) && "ERROR: An attempt was made to use a resource simultaneously in both the copy queue and the direct and/or compute queue(s)!");
 
@@ -216,7 +206,7 @@ namespace Brawler
 					// If a resource is used in none of the queues, then we should choose the most
 					// capable queue which is used in the GPUExecutionModule. This will allow us
 					// to potentially add more split barriers.
-					
+
 					auto nonEmptyResult = std::ranges::find_if(usageInfoArr, [] (const ResourceUsageInfo* const usageInfo) { return (!usageInfo->ResourceStateZones.empty()); });
 					assert(nonEmptyResult != usageInfoArr.end() && "ERROR: An empty GPUExecutionModule was created!");
 

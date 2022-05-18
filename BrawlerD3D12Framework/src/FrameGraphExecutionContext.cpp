@@ -166,8 +166,10 @@ namespace Brawler
 			// D3D12_HEAP_TYPE_READBACK heaps are never to transition out of their initial state.
 			std::unordered_map<I_GPUResource*, GPUResourceEventManager> resourceEventManagerMap{};
 
-			for (const auto& executionModule : mExecutionModuleArr)
+			for (auto& executionModule : mExecutionModuleArr)
 			{
+				executionModule.PrepareForResourceStateTracking();
+				
 				const Brawler::SortedVector<I_GPUResource*> moduleResourceDependencies{ executionModule.GetResourceDependencies() };
 
 				moduleResourceDependencies.ForEach([&resourceEventManagerMap] (I_GPUResource* const& resourceDependency)
@@ -181,10 +183,7 @@ namespace Brawler
 
 			// Resource tracking can be a long-running task, especially since the algorithm currently
 			// does it on a per-resource basis. We want to multithread this as much as possible.
-			//
-			// (NOTE: We use (std::thread::hardware_concurrency() - 1) because one thread is busy allocating
-			// GPU memory for the transient resources in the FrameGraph.)
-			const std::uint32_t numJobsToCreate = std::max<std::uint32_t>((std::thread::hardware_concurrency() - 1), 1);
+			const std::uint32_t numJobsToCreate = std::thread::hardware_concurrency();
 			const std::size_t numResourcesPerJob = static_cast<std::size_t>(std::ceilf(static_cast<float>(resourceEventManagerMap.size()) / static_cast<float>(numJobsToCreate)));
 
 			Brawler::JobGroup resourceTrackingJobGroup{};

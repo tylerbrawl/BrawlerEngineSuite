@@ -46,6 +46,7 @@ export namespace Brawler
 			D3D12_RESOURCE_STATES mCurrResourceState;
 			GPUResourceEventManager mEventManager;
 			bool mResourceAlwaysDecays;
+			bool mCheckIrrelevantExecutionModules;
 		};
 	}
 }

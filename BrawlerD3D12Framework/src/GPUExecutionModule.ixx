@@ -11,6 +11,8 @@ import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.SortedVector;
 import Brawler.CompositeEnum;
 import Brawler.D3D12.GPUCommandListRecorder;
+import Brawler.D3D12.GPUExecutionModuleResourceMap;
+import Brawler.D3D12.ResourceStateZone;
 
 export namespace Brawler
 {
@@ -33,6 +35,7 @@ export namespace Brawler
 			{
 				std::vector<std::unique_ptr<I_RenderPass<QueueType>>> RenderPassArr;
 				std::vector<std::unique_ptr<GPUCommandListRecorder<QueueType>>> CmdRecorderArr;
+				GPUExecutionModuleResourceMap<QueueType> ResourceMap;
 			};
 
 		public:
@@ -49,6 +52,14 @@ export namespace Brawler
 			std::size_t GetRenderPassCount() const;
 			Brawler::CompositeEnum<GPUCommandQueueType> GetUsedQueues() const;
 
+			void PrepareForResourceStateTracking();
+			
+			template <GPUCommandQueueType QueueType>
+				requires (QueueType != GPUCommandQueueType::COUNT_OR_ERROR)
+			std::vector<ResourceStateZone> GetResourceStateZones(const I_GPUResource& resource) const;
+
+			bool IsResourceUsed(const I_GPUResource& resource) const;
+
 			template <GPUCommandQueueType QueueType>
 				requires (QueueType != GPUCommandQueueType::COUNT_OR_ERROR)
 			std::span<const std::unique_ptr<I_RenderPass<QueueType>>> GetRenderPassSpan() const;
@@ -62,6 +73,9 @@ export namespace Brawler
 		private:
 			template <GPUCommandQueueType QueueType>
 			RenderPassContainer<QueueType>& GetRenderPassContainer();
+
+			template <GPUCommandQueueType QueueType>
+			const RenderPassContainer<QueueType>& GetRenderPassContainer() const;
 
 			template <GPUCommandQueueType QueueType>
 			void CreateCommandListRecorders();
@@ -83,6 +97,31 @@ namespace Brawler
 {
 	namespace D3D12
 	{
+		template <GPUCommandQueueType QueueType>
+		const GPUExecutionModule::RenderPassContainer<QueueType>& GPUExecutionModule::GetRenderPassContainer() const
+		{
+			if constexpr (QueueType == GPUCommandQueueType::DIRECT)
+				return mDirectPassContainer;
+
+			else if constexpr (QueueType == GPUCommandQueueType::COMPUTE)
+				return mComputePassContainer;
+
+			else
+				return mCopyPassContainer;
+		}
+		
+		template <GPUCommandQueueType QueueType>
+			requires (QueueType != GPUCommandQueueType::COUNT_OR_ERROR)
+		std::vector<ResourceStateZone> GPUExecutionModule::GetResourceStateZones(const I_GPUResource& resource) const
+		{
+			std::vector<ResourceStateZone> stateZoneArr{ GetRenderPassContainer<QueueType>().ResourceMap.GetResourceStateZones(resource) };
+
+			for (auto& stateZone : stateZoneArr)
+				stateZone.ExecutionModule = this;
+
+			return stateZoneArr;
+		}
+
 		template <GPUCommandQueueType QueueType>
 			requires (QueueType != GPUCommandQueueType::COUNT_OR_ERROR)
 		std::span<const std::unique_ptr<I_RenderPass<QueueType>>> GPUExecutionModule::GetRenderPassSpan() const
