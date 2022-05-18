@@ -4,7 +4,7 @@ module;
 
 export module Brawler.D3D12.BindlessSRVSentinel;
 
-export namespace Brawler
+namespace Brawler
 {
 	namespace D3D12
 	{

@@ -71,6 +71,8 @@ export namespace Brawler
 
 			void ResetPerFrameDescriptorHeapIndex();
 
+			Brawler::D3D12DescriptorHeap& GetD3D12DescriptorHeap() const;
+
 			__forceinline CD3DX12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(const std::uint32_t offsetInDescriptors = 0) const;
 			__forceinline CD3DX12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(const std::uint32_t offsetInDescriptors = 0) const;
 

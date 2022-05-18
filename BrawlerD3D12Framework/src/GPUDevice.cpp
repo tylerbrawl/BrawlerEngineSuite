@@ -204,6 +204,8 @@ namespace Brawler
 		void GPUDevice::InitializeD3D12Device()
 		{
 			// Enable the debug layer in Debug builds.
+
+			/*
 			if constexpr (Util::General::IsDebugModeEnabled()) 
 			{
 				Microsoft::WRL::ComPtr<ID3D12Debug> debugController{};
@@ -215,6 +217,7 @@ namespace Brawler
 				latestDebugController->EnableDebugLayer();
 				latestDebugController->SetEnableGPUBasedValidation(true);
 			}
+			*/
 
 			// Initialize the DXGI factory.
 			{
@@ -264,19 +267,30 @@ namespace Brawler
 			}
 
 			// In Debug builds, edit the Debug Layer messages and breakpoints.
+
+			/*
 			if constexpr (Util::General::IsDebugModeEnabled())
 			{
 				// Add D3D12 Debug Layer warnings which you wish to ignore here V. You better have a good reason for
 				// doing so, though, and you should document it well.
 
-				static std::array<D3D12_MESSAGE_ID, 1> ignoredD3D12DebugLayerMessageArr{
+				static std::array<D3D12_MESSAGE_ID, 2> ignoredD3D12DebugLayerMessageArr{
 					// Disable error messages for invalid alignments from ID3D12Device::GetResourceAllocationInfo2().
 					// We already check if an alignment value is invalid when calling that function, and revert
 					// to standard (non-small) alignment when this happens. As a result, this error message becomes
 					// redundant. (In fact, I'm not entirely sure why this is even an error message in the debug
 					// layer in the first place, considering that the function returns an error value if the small
 					// alignment cannot be used, anyways.)
-					D3D12_MESSAGE_ID::D3D12_MESSAGE_ID_CREATERESOURCE_INVALIDALIGNMENT
+					D3D12_MESSAGE_ID::D3D12_MESSAGE_ID_CREATERESOURCE_INVALIDALIGNMENT,
+
+					// Disable warnings for multiple buffer resources having the same GPU virtual address. This is
+					// a natural consequence of the means by which we alias transient resources.
+					//
+					// I'm not entirely sure why this warning exists. The idea is probably to ensure that the
+					// developer is aware that buffers which share GPU memory cannot be used simultaneously in
+					// different states, but the FrameGraph system of the Brawler Engine guarantees that this does
+					// not happen.
+					D3D12_MESSAGE_ID::D3D12_MESSAGE_ID_HEAP_ADDRESS_RANGE_INTERSECTS_MULTIPLE_BUFFERS
 				};
 
 				D3D12_INFO_QUEUE_FILTER infoQueueFilter{};
@@ -296,6 +310,7 @@ namespace Brawler
 				Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_ERROR, true));
 				Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_CORRUPTION, true));
 			}
+			*/
 		}
 
 		void GPUDevice::InitializeGPUVendor()

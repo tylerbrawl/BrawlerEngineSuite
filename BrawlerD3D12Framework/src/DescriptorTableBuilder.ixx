@@ -12,13 +12,6 @@ import Brawler.D3D12.I_BufferSubAllocation;
 import Brawler.D3D12.I_GPUResource;
 import Brawler.D3D12.UAVCounterSubAllocation;
 
-export namespace Brawler
-{
-	namespace D3D12
-	{
-	}
-}
-
 namespace Brawler
 {
 	namespace D3D12
@@ -71,6 +64,7 @@ export namespace Brawler
 			using DescriptorInfoVariant = std::variant<std::monostate, CBVInfo, SRVInfo, UAVInfo>;
 
 		public:
+			DescriptorTableBuilder() = delete;
 			explicit DescriptorTableBuilder(const std::uint32_t tableSizeInDescriptors);
 
 			DescriptorTableBuilder(const DescriptorTableBuilder& rhs) = delete;

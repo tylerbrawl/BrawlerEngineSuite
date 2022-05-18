@@ -74,38 +74,41 @@ namespace Brawler
 			// Now we can create a CPU job for each GPUExecutionModule to submit that
 			// module's jobs to the GPU. We do this asynchronously so that the calling thread
 			// can proceed to prepare for the next frame.
-			Brawler::JobGroup executionModuleSubmitGroup{};
-			executionModuleSubmitGroup.Reserve(mExecutionModuleArr.size());
-
-			struct GPUExecutionModuleRecordInfo
+			if (mExecutionModuleArr.size() > 0) [[likely]]
 			{
-				GPUExecutionModule* ExecutionModulePtr;
-				GPUExecutionModuleRecordContext RecordContext;
-			};
+				Brawler::JobGroup executionModuleSubmitGroup{};
+				executionModuleSubmitGroup.Reserve(mExecutionModuleArr.size());
 
-			GPUExecutionModuleRecordInfo recordInfo{
-				.ExecutionModulePtr = nullptr,
-				.RecordContext{
-					.AliasTracker = &mAliasTracker,
-					.EventManager = &mEventManager,
-					.SubmitPoint = nullptr
-				}
-			};
-
-			for (std::size_t i = 0; i < mExecutionModuleArr.size(); ++i)
-			{
-				recordInfo.ExecutionModulePtr = &(mExecutionModuleArr[i]);
-				recordInfo.RecordContext.SubmitPoint = &(submitPointSpan[i]);
-
-				// We need to capture this structure by value, since we are executing these
-				// jobs fully asynchronously.
-				executionModuleSubmitGroup.AddJob([recordInfo] ()
+				struct GPUExecutionModuleRecordInfo
 				{
-					recordInfo.ExecutionModulePtr->SubmitCommandListsForRenderPasses(recordInfo.RecordContext);
-				});
-			}
+					GPUExecutionModule* ExecutionModulePtr;
+					GPUExecutionModuleRecordContext RecordContext;
+				};
 
-			executionModuleSubmitGroup.ExecuteJobsAsync();
+				GPUExecutionModuleRecordInfo recordInfo{
+					.ExecutionModulePtr = nullptr,
+					.RecordContext{
+						.AliasTracker = &mAliasTracker,
+						.EventManager = &mEventManager,
+						.SubmitPoint = nullptr
+					}
+				};
+
+				for (std::size_t i = 0; i < mExecutionModuleArr.size(); ++i)
+				{
+					recordInfo.ExecutionModulePtr = &(mExecutionModuleArr[i]);
+					recordInfo.RecordContext.SubmitPoint = &(submitPointSpan[i]);
+
+					// We need to capture this structure by value, since we are executing these
+					// jobs fully asynchronously.
+					executionModuleSubmitGroup.AddJob([recordInfo] ()
+					{
+						recordInfo.ExecutionModulePtr->SubmitCommandListsForRenderPasses(recordInfo.RecordContext);
+					});
+				}
+
+				executionModuleSubmitGroup.ExecuteJobsAsync();
+			}
 		}
 		
 		void FrameGraphExecutionContext::CreateGPUExecutionModules(const std::span<FrameGraphBuilder> builderSpan)
@@ -155,7 +158,8 @@ namespace Brawler
 				}
 			}
 
-			mExecutionModuleArr.push_back(std::move(currExecutionModule));
+			if (currExecutionModule.GetRenderPassCount() > 0) [[likely]]
+				mExecutionModuleArr.push_back(std::move(currExecutionModule));
 		}
 
 		void FrameGraphExecutionContext::PerformGPUResourceAnalysis()

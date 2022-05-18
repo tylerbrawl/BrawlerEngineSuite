@@ -4,7 +4,6 @@ module;
 #include <mutex>
 #include <span>
 #include <cassert>
-#include <atomic>
 #include "DxDef.h"
 
 module Brawler.D3D12.BufferSubAllocationManager;
@@ -34,7 +33,7 @@ namespace Brawler
 			mBufferMemoryAllocator(),
 			mOwningBufferResourcePtr(&owningBufferResource),
 			mPendingWriteRequestArr(),
-			mActiveReservationCounter(0),
+			mActiveSuballocationArr(),
 			mCritSection()
 		{
 			mBufferMemoryAllocator.Initialize(sizeInBytes);
@@ -42,11 +41,10 @@ namespace Brawler
 
 		BufferSubAllocationManager::~BufferSubAllocationManager()
 		{
-			if constexpr (Util::General::IsDebugModeEnabled())
+			mActiveSubAllocationArr.ForEach([] (BufferSubAllocationReservation* const reservationPtr)
 			{
-				const std::uint64_t finalReservationCount = mActiveReservationCounter.fetch_sub(1, std::memory_order::relaxed);
-				assert(finalReservationCount == 0 && "ERROR: A BufferSubAllocationManager was destroyed before all of its BufferSubAllocationReservations could be returned to it!");
-			}
+
+			})
 		}
 
 		Brawler::D3D12Resource& BufferSubAllocationManager::GetBufferD3D12Resource() const

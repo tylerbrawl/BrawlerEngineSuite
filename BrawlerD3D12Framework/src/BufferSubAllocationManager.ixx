@@ -4,7 +4,6 @@ module;
 #include <mutex>
 #include <span>
 #include <cassert>
-#include <atomic>
 #include "DxDef.h"
 
 export module Brawler.D3D12.BufferSubAllocationManager;
@@ -12,6 +11,7 @@ import Brawler.D3D12.TLSFAllocator;
 import Util.General;
 import Brawler.OptionalRef;
 import Brawler.D3D12.TLSFAllocationRequestInfo;
+import Brawler.ThreadSafeVector;
 
 export namespace Brawler
 {
@@ -82,7 +82,7 @@ export namespace Brawler
 			TLSFAllocator mBufferMemoryAllocator;
 			BufferResource* mOwningBufferResourcePtr;
 			std::vector<DataWriteRequest> mPendingWriteRequestArr;
-			std::atomic<std::uint64_t> mActiveReservationCounter;
+			Brawler::ThreadSafeVector<BufferSubAllocationReservation*> mActiveSubAllocationArr;
 			mutable std::mutex mCritSection;
 		};
 	}

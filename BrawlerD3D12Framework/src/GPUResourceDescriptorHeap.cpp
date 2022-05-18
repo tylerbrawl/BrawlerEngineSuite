@@ -115,6 +115,12 @@ namespace Brawler
 			mPerFrameIndex.store(0, std::memory_order::relaxed);
 		}
 
+		Brawler::D3D12DescriptorHeap& GPUResourceDescriptorHeap::GetD3D12DescriptorHeap() const
+		{
+			assert(mHeap != nullptr && "ERROR: An attempt was made to get the ID3D12DescriptorHeap* of the GPUResourceDescriptorHeap before it could ever be created!");
+			return *(mHeap.Get());
+		}
+
 		DescriptorHandleInfo GPUResourceDescriptorHeap::CreatePerFrameDescriptorHeapReservation(const std::uint32_t numDescriptors)
 		{
 			// Reserve numDescriptors descriptors in the per-frame segment of the descriptor heap.

@@ -1,6 +1,7 @@
 module;
 #include <cassert>
 #include <functional>
+#include <array>
 #include <span>
 #include "DxDef.h"
 
@@ -14,6 +15,7 @@ import Brawler.D3D12.FrameGraphResourceDependency;
 import Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.D3D12.TextureSubResource;
 import Brawler.D3D12.I_BufferSubAllocation;
+export import Brawler.D3D12.GPUResourceDescriptorHeap;
 
 export namespace Brawler
 {
@@ -150,6 +152,13 @@ export namespace Brawler
 			/// </summary>
 			void ResetCommandList();
 
+			/// <summary>
+			/// Records commands which must be recorded after the command list is reset, e.g.,
+			/// setting the descriptor heaps. This function is called by 
+			/// GPUCommandContext::ResetCommandList().
+			/// </summary>
+			void PrepareCommandList() const;
+
 			void CloseCommandList();
 			void MarkAsUseful();
 
@@ -165,6 +174,7 @@ export namespace Brawler
 			bool ReadyForUse() const;
 
 			void SetGPUFence(const GPUFence& fence);
+
 			void ResourceBarrier(const std::span<const CD3DX12_RESOURCE_BARRIER> barrierSpan) const;
 
 			// ==================================================================
@@ -276,8 +286,25 @@ namespace Brawler
 			Util::General::CheckHRESULT(mCmdAllocator->Reset());
 			Util::General::CheckHRESULT(mCmdList->Reset(mCmdAllocator.Get(), nullptr));
 
+			PrepareCommandList();
+
 			// At the beginning of a command list, it has no commands recorded into it.
 			mHasCommands = false;
+		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::PrepareCommandList() const
+		{
+			// For command lists which will be sent to either the direct or the compute
+			// queue, we should set the descriptor heaps before recording any commands.
+			if constexpr (CmdListType != GPUCommandQueueType::COPY)
+			{
+				static const std::array<Brawler::D3D12DescriptorHeap*, 1> shaderVisibleDescriptorHeapArr{
+					&(Util::Engine::GetGPUResourceDescriptorHeap().GetD3D12DescriptorHeap())
+				};
+
+				mCmdList->SetDescriptorHeaps(static_cast<std::uint32_t>(shaderVisibleDescriptorHeapArr.size()), shaderVisibleDescriptorHeapArr.data());
+			}
 		}
 
 		template <GPUCommandQueueType CmdListType>

@@ -5,6 +5,7 @@ module;
 #include <variant>
 #include <unordered_map>
 #include <ranges>
+#include <array>
 #include <span>
 #include "DxDef.h"
 
