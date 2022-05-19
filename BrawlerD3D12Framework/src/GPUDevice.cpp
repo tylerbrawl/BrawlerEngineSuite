@@ -204,9 +204,7 @@ namespace Brawler
 		void GPUDevice::InitializeD3D12Device()
 		{
 			// Enable the debug layer in Debug builds.
-
-			/*
-			if constexpr (Util::General::IsDebugModeEnabled()) 
+			if constexpr (Util::D3D12::IsDebugLayerEnabled()) 
 			{
 				Microsoft::WRL::ComPtr<ID3D12Debug> debugController{};
 				Util::General::CheckHRESULT(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
@@ -267,9 +265,7 @@ namespace Brawler
 			}
 
 			// In Debug builds, edit the Debug Layer messages and breakpoints.
-
-			/*
-			if constexpr (Util::General::IsDebugModeEnabled())
+			if constexpr (Util::D3D12::IsDebugLayerEnabled())
 			{
 				// Add D3D12 Debug Layer warnings which you wish to ignore here V. You better have a good reason for
 				// doing so, though, and you should document it well.

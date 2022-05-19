@@ -51,6 +51,8 @@ export namespace Util
 		__forceinline constexpr D3D12_RESOURCE_STATES GetAlwaysPromotableResourceStatesMask();
 
 		Brawler::D3D12::GPUMemoryBudgetInfo GetGPUMemoryBudgetInfo();
+
+		consteval bool IsDebugLayerEnabled();
 	}
 }
 
@@ -181,6 +183,18 @@ namespace Util
 			Util::General::CheckHRESULT(Util::Engine::GetDXGIAdapter().QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP::DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &(budgetInfo.SystemMemoryInfo)));
 
 			return budgetInfo;
+		}
+
+		consteval bool IsDebugLayerEnabled()
+		{
+			// The NVIDIA debug layer driver sucks. It seems to shoot out debug layer errors and dereference nullptrs for no
+			// good reason. So, even if we are building for Debug mode, this setting can be toggled to either enable or
+			// disable the D3D12 debug layer.
+			//
+			// NOTE: The debug layer is never enabled in Release builds, even if this value is set to true.
+			constexpr bool ALLOW_D3D12_DEBUG_LAYER = true;
+
+			return (Util::General::IsDebugModeEnabled() && ALLOW_D3D12_DEBUG_LAYER);
 		}
 	}
 }
