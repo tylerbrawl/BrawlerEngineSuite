@@ -49,6 +49,9 @@ export namespace Brawler
 			void InitializeGPUCapabilities();
 			void InitializeDescriptorHandleIncrementSizeArray();
 
+			void CreateHardwareD3D12Device();
+			void CreateWARPD3D12Device();
+
 		private:
 			Microsoft::WRL::ComPtr<Brawler::DXGIFactory> mDXGIFactory;
 			Microsoft::WRL::ComPtr<Brawler::DXGIAdapter> mDXGIAdapter;

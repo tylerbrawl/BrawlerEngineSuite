@@ -3,6 +3,7 @@ module;
 
 export module Util.Engine;
 import Brawler.D3D12.BindlessSRVAllocation;
+import Brawler.D3D12.GPUVendor;
 
 export namespace Brawler
 {
@@ -27,6 +28,8 @@ export namespace Util
 		Brawler::D3D12::PersistentGPUResourceManager& GetPersistentGPUResourceManager();
 
 		Brawler::D3D12::GPUResidencyManager& GetGPUResidencyManager();
+
+		Brawler::D3D12::GPUVendor GetGPUVendor();
 
 		/// <summary>
 		/// Gets the "current" frame number for the calling thread. The returned value changes depending on

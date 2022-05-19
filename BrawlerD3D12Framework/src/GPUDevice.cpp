@@ -7,10 +7,13 @@ module;
 module Brawler.D3D12.GPUDevice;
 import Brawler.CompositeEnum;
 import Util.General;
+import Util.D3D12;
 
 namespace
 {
 	static constexpr D3D_FEATURE_LEVEL MINIMUM_D3D_FEATURE_LEVEL = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0;
+	
+	static constexpr bool ALLOW_WARP_DEVICE = true;
 	
 	bool VerifyD3D12DeviceFeatureSupport(const Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice)
 	{
@@ -215,7 +218,6 @@ namespace Brawler
 				latestDebugController->EnableDebugLayer();
 				latestDebugController->SetEnableGPUBasedValidation(true);
 			}
-			*/
 
 			// Initialize the DXGI factory.
 			{
@@ -229,39 +231,12 @@ namespace Brawler
 				Util::General::CheckHRESULT(dxgiFactory.As(&mDXGIFactory));
 			}
 
-			// Get the best possible DXGI adapter and use it to create the D3D12 device.
+			// Create the D3D12 device.
 			{
-				Microsoft::WRL::ComPtr<IDXGIAdapter> bestAdapter{};
-				std::uint32_t currIndex = 0;
-
-				while (mD3dDevice == nullptr)
-				{
-					HRESULT hr = mDXGIFactory->EnumAdapterByGpuPreference(
-						currIndex++,
-						DXGI_GPU_PREFERENCE::DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
-						IID_PPV_ARGS(&bestAdapter)
-					);
-
-					// Terminate the program if we could not find a valid adapter.
-					if (hr == DXGI_ERROR_NOT_FOUND) [[unlikely]]
-						throw std::runtime_error{ "ERROR: None of the DXGI adapters present on the system could be created!" };
-
-					Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice{};
-					hr = D3D12CreateDevice(bestAdapter.Get(), MINIMUM_D3D_FEATURE_LEVEL, IID_PPV_ARGS(&d3dDevice));
-
-					// If we could not create a D3D12Device with this DXGIAdapter, then move on to
-					// the next one.
-					if (hr != S_OK) [[unlikely]]
-						continue;
-
-					// If this device does not support all of our required features, then move on
-					// to the next one.
-					if (!VerifyD3D12DeviceFeatureSupport(d3dDevice)) [[unlikely]]
-						continue;
-
-					Util::General::CheckHRESULT(bestAdapter.As(&mDXGIAdapter));
-					Util::General::CheckHRESULT(d3dDevice.As(&mD3dDevice));
-				}
+				if constexpr (Util::General::IsDebugModeEnabled() && ALLOW_WARP_DEVICE)
+					CreateWARPD3D12Device();
+				else
+					CreateHardwareD3D12Device();
 			}
 
 			// In Debug builds, edit the Debug Layer messages and breakpoints.
@@ -306,7 +281,6 @@ namespace Brawler
 				Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_ERROR, true));
 				Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_CORRUPTION, true));
 			}
-			*/
 		}
 
 		void GPUDevice::InitializeGPUVendor()
@@ -417,6 +391,58 @@ namespace Brawler
 		{
 			for (std::size_t i = 0; i < static_cast<std::size_t>(D3D12_DESCRIPTOR_HEAP_TYPE::D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES); ++i)
 				mHandleIncrementSizeArr[i] = mD3dDevice->GetDescriptorHandleIncrementSize(static_cast<D3D12_DESCRIPTOR_HEAP_TYPE>(i));
+		}
+
+		void GPUDevice::CreateHardwareD3D12Device()
+		{
+			// Get the best possible DXGI adapter and use it to create the D3D12 device.
+			
+			Microsoft::WRL::ComPtr<IDXGIAdapter> bestAdapter{};
+			std::uint32_t currIndex = 0;
+
+			while (mD3dDevice == nullptr)
+			{
+				HRESULT hr = mDXGIFactory->EnumAdapterByGpuPreference(
+					currIndex++,
+					DXGI_GPU_PREFERENCE::DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
+					IID_PPV_ARGS(&bestAdapter)
+				);
+
+				// Terminate the program if we could not find a valid adapter.
+				if (hr == DXGI_ERROR_NOT_FOUND) [[unlikely]]
+					throw std::runtime_error{ "ERROR: None of the DXGI adapters present on the system could be created!" };
+
+				Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice{};
+				hr = D3D12CreateDevice(bestAdapter.Get(), MINIMUM_D3D_FEATURE_LEVEL, IID_PPV_ARGS(&d3dDevice));
+
+				// If we could not create a D3D12Device with this DXGIAdapter, then move on to
+				// the next one.
+				if (hr != S_OK) [[unlikely]]
+					continue;
+
+				// If this device does not support all of our required features, then move on
+				// to the next one.
+				if (!VerifyD3D12DeviceFeatureSupport(d3dDevice)) [[unlikely]]
+					continue;
+
+				Util::General::CheckHRESULT(bestAdapter.As(&mDXGIAdapter));
+				Util::General::CheckHRESULT(d3dDevice.As(&mD3dDevice));
+			}
+		}
+
+		void GPUDevice::CreateWARPD3D12Device()
+		{
+			Microsoft::WRL::ComPtr<IDXGIAdapter> warpAdapter{};
+			Util::General::CheckHRESULT(mDXGIFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
+
+			Microsoft::WRL::ComPtr<ID3D12Device> warpD3dDevice{};
+			Util::General::CheckHRESULT(D3D12CreateDevice(warpAdapter.Get(), MINIMUM_D3D_FEATURE_LEVEL, IID_PPV_ARGS(&warpD3dDevice)));
+
+			if (!VerifyD3D12DeviceFeatureSupport(warpD3dDevice)) [[unlikely]]
+				throw std::runtime_error{ "ERROR: The WARP device could not support all of the required D3D12 features!" };
+
+			Util::General::CheckHRESULT(warpAdapter.As(&mDXGIAdapter));
+			Util::General::CheckHRESULT(warpD3dDevice.As(&mD3dDevice));
 		}
 	}
 }

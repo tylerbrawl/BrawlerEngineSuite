@@ -7,6 +7,7 @@ module;
 
 module Brawler.D3D12.I_BufferSubAllocation;
 import Brawler.D3D12.BufferSubAllocationManager;
+import Brawler.D3D12.BufferSubAllocationReservation;
 
 namespace Brawler
 {
@@ -14,32 +15,32 @@ namespace Brawler
 	{
 		std::size_t I_BufferSubAllocation::GetOffsetFromBufferStart() const
 		{
-			assert(mReservation != nullptr);
-			return mReservation->GetOffsetFromBufferStart();
+			assert(HasReservation());
+			return mHReservation->GetOffsetFromBufferStart();
 		}
 
 		Brawler::D3D12Resource& I_BufferSubAllocation::GetD3D12Resource() const
 		{
-			assert(mReservation != nullptr);
-			return mReservation->GetBufferSubAllocationManager().GetBufferD3D12Resource();
+			assert(HasReservation());
+			return mHReservation->GetBufferSubAllocationManager().GetBufferD3D12Resource();
 		}
 
 		BufferResource& I_BufferSubAllocation::GetBufferResource()
 		{
-			assert(mReservation != nullptr);
-			return mReservation->GetBufferSubAllocationManager().GetBufferResource();
+			assert(HasReservation());
+			return mHReservation->GetBufferSubAllocationManager().GetBufferResource();
 		}
 
 		const BufferResource& I_BufferSubAllocation::GetBufferResource() const
 		{
-			assert(mReservation != nullptr);
-			return mReservation->GetBufferSubAllocationManager().GetBufferResource();
+			assert(HasReservation());
+			return mHReservation->GetBufferSubAllocationManager().GetBufferResource();
 		}
 
 		D3D12_GPU_VIRTUAL_ADDRESS I_BufferSubAllocation::GetGPUVirtualAddress() const
 		{
-			assert(mReservation != nullptr);
-			return (mReservation->GetBufferSubAllocationManager().GetBufferGPUVirtualAddress() + mReservation->GetOffsetFromBufferStart());
+			assert(HasReservation());
+			return (mHReservation->GetBufferSubAllocationManager().GetBufferGPUVirtualAddress() + mHReservation->GetOffsetFromBufferStart());
 		}
 
 		bool I_BufferSubAllocation::IsReservationCompatible(const BufferSubAllocationReservation& reservation) const
@@ -50,17 +51,17 @@ namespace Brawler
 			return ((reservation.GetOffsetFromBufferStart() % GetRequiredDataPlacementAlignment() == 0) && (reservation.GetReservationSize() >= GetSubAllocationSize()));
 		}
 
-		void I_BufferSubAllocation::AssignReservation(std::unique_ptr<BufferSubAllocationReservation>&& reservation)
+		void I_BufferSubAllocation::AssignReservation(BufferSubAllocationReservationHandle&& hReservation)
 		{
-			assert(IsReservationCompatible(*reservation) && "ERROR: An attempt was made to assign an incompatible BufferSubAllocationReservation to a (derived) BaseBufferSubAllocation object!");
-			mReservation = std::move(reservation);
+			assert(IsReservationCompatible(*hReservation) && "ERROR: An attempt was made to assign an incompatible BufferSubAllocationReservation to a (derived) BaseBufferSubAllocation object!");
+			mHReservation = std::move(hReservation);
 
 			OnReservationAssigned();
 		}
 
-		std::unique_ptr<BufferSubAllocationReservation> I_BufferSubAllocation::RevokeReservation()
+		BufferSubAllocationReservationHandle I_BufferSubAllocation::RevokeReservation()
 		{
-			return std::move(mReservation);
+			return std::move(mHReservation);
 		}
 
 		void I_BufferSubAllocation::OnReservationAssigned()
@@ -68,13 +69,13 @@ namespace Brawler
 
 		bool I_BufferSubAllocation::HasReservation() const
 		{
-			return (mReservation != nullptr);
+			return (mHReservation.IsReservationValid());
 		}
 
 		BufferSubAllocationManager& I_BufferSubAllocation::GetOwningManager() const
 		{
-			assert(mReservation != nullptr);
-			return mReservation->GetBufferSubAllocationManager();
+			assert(HasReservation());
+			return mHReservation->GetBufferSubAllocationManager();
 		}
 
 		void I_BufferSubAllocation::WriteToBufferIMPL(const std::span<const std::byte> srcDataByteSpan, const std::size_t subAllocationOffsetInBytes) const

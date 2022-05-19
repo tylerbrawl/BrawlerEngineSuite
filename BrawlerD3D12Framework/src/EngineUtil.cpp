@@ -54,6 +54,13 @@ namespace Util
 			return residencyManager;
 		}
 
+		Brawler::D3D12::GPUVendor GetGPUVendor()
+		{
+			static const Brawler::D3D12::GPUVendor vendor{ GetGPUDevice().GetGPUVendor() };
+
+			return vendor;
+		}
+
 		std::uint64_t GetCurrentFrameNumber()
 		{
 			const Brawler::ThreadLocalResources& threadLocalResources{ Util::Threading::GetThreadLocalResources() };

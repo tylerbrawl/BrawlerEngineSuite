@@ -11,6 +11,7 @@ import Brawler.D3D12.TLSFAllocator;
 import Util.General;
 import Brawler.OptionalRef;
 import Brawler.D3D12.TLSFAllocationRequestInfo;
+import Brawler.D3D12.BufferSubAllocationReservation;
 import Brawler.ThreadSafeVector;
 
 export namespace Brawler
@@ -18,7 +19,6 @@ export namespace Brawler
 	namespace D3D12
 	{
 		class I_BufferSubAllocation;
-		class BufferSubAllocationReservation;
 		class BufferResource;
 	}
 }
@@ -49,7 +49,6 @@ export namespace Brawler
 
 		public:
 			BufferSubAllocationManager(BufferResource& owningBufferResource, const std::size_t sizeInBytes);
-			~BufferSubAllocationManager();
 
 			BufferSubAllocationManager(const BufferSubAllocationManager& rhs) = delete;
 			BufferSubAllocationManager& operator=(const BufferSubAllocationManager& rhs) = delete;
@@ -82,7 +81,7 @@ export namespace Brawler
 			TLSFAllocator mBufferMemoryAllocator;
 			BufferResource* mOwningBufferResourcePtr;
 			std::vector<DataWriteRequest> mPendingWriteRequestArr;
-			Brawler::ThreadSafeVector<BufferSubAllocationReservation*> mActiveSubAllocationArr;
+			Brawler::ThreadSafeVector<std::unique_ptr<BufferSubAllocationReservation>> mReservationPtrArr;
 			mutable std::mutex mCritSection;
 		};
 	}

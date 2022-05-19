@@ -1,5 +1,6 @@
 module;
-#include <cstddef>
+#include <memory>
+#include <atomic>
 #include <cassert>
 
 module Brawler.D3D12.BufferSubAllocationReservation;
@@ -10,6 +11,12 @@ namespace Brawler
 {
 	namespace D3D12
 	{
+		BufferSubAllocationReservation::BufferSubAllocationReservation() :
+			mOwningManagerPtr(nullptr),
+			mMemoryBlockPtr(nullptr),
+			mIsValidPtr(std::make_shared<std::atomic<bool>>(false))
+		{}
+		
 		BufferSubAllocationReservation::~BufferSubAllocationReservation()
 		{
 			ReturnReservation();
@@ -17,7 +24,8 @@ namespace Brawler
 
 		BufferSubAllocationReservation::BufferSubAllocationReservation(BufferSubAllocationReservation&& rhs) noexcept :
 			mOwningManagerPtr(rhs.mOwningManagerPtr),
-			mMemoryBlockPtr(rhs.mMemoryBlockPtr)
+			mMemoryBlockPtr(rhs.mMemoryBlockPtr),
+			mIsValidPtr(std::move(rhs.mIsValidPtr))
 		{
 			rhs.mOwningManagerPtr = nullptr;
 			rhs.mMemoryBlockPtr = nullptr;
@@ -32,6 +40,8 @@ namespace Brawler
 
 			mMemoryBlockPtr = rhs.mMemoryBlockPtr;
 			rhs.mMemoryBlockPtr = nullptr;
+
+			mIsValidPtr = std::move(rhs.mIsValidPtr);
 
 			return *this;
 		}
@@ -54,6 +64,30 @@ namespace Brawler
 			return mMemoryBlockPtr->GetHeapOffset();
 		}
 
+		BufferSubAllocationReservationHandle BufferSubAllocationReservation::CreateHandle()
+		{
+			assert(mIsValidPtr != nullptr);
+			return BufferSubAllocationReservationHandle{ *this, mIsValidPtr };
+		}
+
+		void BufferSubAllocationReservation::UpdateValidity()
+		{
+			assert(mIsValidPtr != nullptr);
+			
+			const bool isValid = (mOwningManagerPtr != nullptr && mMemoryBlockPtr != nullptr);
+			mIsValidPtr->store(isValid, std::memory_order::relaxed);
+		}
+
+		void BufferSubAllocationReservation::MarkForDestruction()
+		{
+			mReadyForDestruction.store(true, std::memory_order::relaxed);
+		}
+
+		bool BufferSubAllocationReservation::ReadyForDestruction() const
+		{
+			return mReadyForDestruction.load(std::memory_order::relaxed);
+		}
+
 		void BufferSubAllocationReservation::ReturnReservation()
 		{
 			if (mOwningManagerPtr != nullptr && mMemoryBlockPtr != nullptr) [[likely]]
@@ -62,12 +96,15 @@ namespace Brawler
 
 				mOwningManagerPtr = nullptr;
 				mMemoryBlockPtr = nullptr;
+
+				UpdateValidity();
 			}
 		}
 
 		void BufferSubAllocationReservation::SetOwningManager(BufferSubAllocationManager& owningManager)
 		{
 			mOwningManagerPtr = &owningManager;
+			UpdateValidity();
 		}
 
 		TLSFMemoryBlock& BufferSubAllocationReservation::GetTLSFMemoryBlock() const
@@ -79,6 +116,7 @@ namespace Brawler
 		void BufferSubAllocationReservation::SetTLSFMemoryBlock(TLSFMemoryBlock& memoryBlock)
 		{
 			mMemoryBlockPtr = &memoryBlock;
+			UpdateValidity();
 		}
 	}
 }

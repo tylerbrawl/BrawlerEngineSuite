@@ -8,9 +8,9 @@ module;
 
 module Brawler.D3D12.BufferSubAllocationManager;
 import Brawler.D3D12.I_BufferSubAllocation;
-import Brawler.D3D12.BufferSubAllocationReservation;
 import Brawler.D3D12.BufferResource;
 import Util.General;
+import Brawler.D3D12.BufferSubAllocationReservationHandle;
 
 namespace
 {
@@ -33,18 +33,10 @@ namespace Brawler
 			mBufferMemoryAllocator(),
 			mOwningBufferResourcePtr(&owningBufferResource),
 			mPendingWriteRequestArr(),
-			mActiveSuballocationArr(),
+			mReservationPtrArr(),
 			mCritSection()
 		{
 			mBufferMemoryAllocator.Initialize(sizeInBytes);
-		}
-
-		BufferSubAllocationManager::~BufferSubAllocationManager()
-		{
-			mActiveSubAllocationArr.ForEach([] (BufferSubAllocationReservation* const reservationPtr)
-			{
-
-			})
 		}
 
 		Brawler::D3D12Resource& BufferSubAllocationManager::GetBufferD3D12Resource() const
@@ -76,7 +68,6 @@ namespace Brawler
 			assert(&(reservation.GetBufferSubAllocationManager()) == this);
 
 			mBufferMemoryAllocator.DeleteAllocation(reservation.GetTLSFMemoryBlock());
-			mActiveReservationCounter.fetch_sub(1, std::memory_order::relaxed);
 		}
 
 		void BufferSubAllocationManager::WriteToBuffer(const std::span<const std::byte> srcDataByteSpan, const std::size_t bufferOffset)
@@ -179,6 +170,19 @@ namespace Brawler
 
 		bool BufferSubAllocationManager::AssignReservationToSubAllocation(I_BufferSubAllocation& subAllocation)
 		{
+			// First, try to return any BufferSubAllocationReservation instances which are
+			// ready for destruction.
+			mReservationPtrArr.EraseIf([this] (const std::unique_ptr<BufferSubAllocationReservation>& reservationPtr)
+			{
+				if (reservationPtr->ReadyForDestruction()) [[unlikely]]
+				{
+					DeleteSubAllocation(*reservationPtr);
+					return true;
+				}
+
+				return false;
+			});
+			
 			const TLSFAllocationRequestInfo allocationRequest{
 				.SizeInBytes = subAllocation.GetSubAllocationSize(),
 				.Alignment = subAllocation.GetRequiredDataPlacementAlignment()
@@ -188,13 +192,13 @@ namespace Brawler
 			if (!subAllocationMemoryBlock.HasValue()) [[unlikely]]
 				return false;
 
-			mActiveReservationCounter.fetch_add(1, std::memory_order::relaxed);
-
 			std::unique_ptr<BufferSubAllocationReservation> reservationPtr{ std::make_unique<BufferSubAllocationReservation>() };
 			reservationPtr->SetOwningManager(*this);
 			reservationPtr->SetTLSFMemoryBlock(*subAllocationMemoryBlock);
 
-			subAllocation.AssignReservation(std::move(reservationPtr));
+			subAllocation.AssignReservation(reservationPtr->CreateHandle());
+			mReservationPtrArr.PushBack(std::move(reservationPtr));
+
 			return true;
 		}
 
@@ -202,7 +206,7 @@ namespace Brawler
 		{
 			std::scoped_lock<std::mutex> lock{ mCritSection };
 
-			if (mPendingWriteRequestArr.empty())
+			if (mPendingWriteRequestArr.empty()) [[likely]]
 				return;
 
 			// We split the implementation of this into two paths, depending on whether or

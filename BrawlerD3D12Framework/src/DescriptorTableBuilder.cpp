@@ -8,6 +8,9 @@ module Brawler.D3D12.DescriptorTableBuilder;
 import Brawler.D3D12.GPUResourceDescriptorHeap;
 import Util.Engine;
 import Util.General;
+import Util.D3D12;
+import Brawler.D3D12.GPUVendor;
+import Brawler.Timer;
 
 namespace Brawler
 {
@@ -54,6 +57,29 @@ namespace Brawler
 
 		void DescriptorTableBuilder::CreateDescriptorTable()
 		{
+			if constexpr (Util::D3D12::IsDebugLayerEnabled())
+			{
+				// The NVIDIA debug layer sucks. It appears to have a very nasty bug where if you call
+				// ID3D12Device::CreateDescriptorHeap() and ID3D12Device::Create*View() too close together, then
+				// it will at best fire a false positive debug layer error (Execution Error #646:
+				// INVALID_DESCRIPTOR_HANDLE) and at worst dereference a nullptr.
+				//
+				// To work around this, we do a busy wait before creating the descriptor table when the
+				// debug layer is enabled, but only on NVIDIA devices.
+
+				// Although my primary development computer uses an NVIDIA GPU, since this is an open-source
+				// project, I don't feel comfortable with using the [[likely]] attribute here.
+				if (Util::Engine::GetGPUVendor() == GPUVendor::NVIDIA)
+				{
+					Brawler::Timer busyWaitTimer{};
+					busyWaitTimer.Start();
+
+					static constexpr float MAGIC_WAIT_TIME_IN_MS = 200.0f;
+
+					while (busyWaitTimer.GetElapsedTimeInMicroseconds() < MAGIC_WAIT_TIME_IN_MS);
+				}
+			}
+			
 			// First, create the descriptors within the non-shader-visible heap.
 			std::uint32_t currIndex = 0;
 			for (const auto& descriptorInfo : mDescriptorInfoArr)

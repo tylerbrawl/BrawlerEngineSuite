@@ -4,13 +4,14 @@ module;
 #include "DxDef.h"
 
 export module Brawler.D3D12.I_BufferSubAllocation;
-export import Brawler.D3D12.BufferSubAllocationReservation;
+export import Brawler.D3D12.BufferSubAllocationReservationHandle;
 
 export namespace Brawler
 {
 	namespace D3D12
 	{
 		class BufferResource;
+		class BufferSubAllocationManager;
 	}
 }
 
@@ -55,8 +56,8 @@ export namespace Brawler
 
 			bool IsReservationCompatible(const BufferSubAllocationReservation& reservation) const;
 
-			void AssignReservation(std::unique_ptr<BufferSubAllocationReservation>&& reservation);
-			std::unique_ptr<BufferSubAllocationReservation> RevokeReservation();
+			void AssignReservation(BufferSubAllocationReservationHandle&& hReservation);
+			BufferSubAllocationReservationHandle RevokeReservation();
 
 		protected:
 			/// <summary>
@@ -166,7 +167,7 @@ export namespace Brawler
 			void ReadFromBufferIMPL(const std::span<std::byte> destDataByteSpan, const std::size_t subAllocationOffsetInBytes) const;
 
 		private:
-			std::unique_ptr<BufferSubAllocationReservation> mReservation;
+			BufferSubAllocationReservationHandle mHReservation;
 		};
 	}
 }
