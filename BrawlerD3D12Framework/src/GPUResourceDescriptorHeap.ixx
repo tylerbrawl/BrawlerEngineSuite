@@ -4,12 +4,14 @@ module;
 #include <mutex>
 #include <cassert>
 #include <memory>
+#include <array>
 #include "DxDef.h"
 
 export module Brawler.D3D12.GPUResourceDescriptorHeap;
 import Brawler.D3D12.PerFrameDescriptorTable;
 import Brawler.D3D12.DescriptorHandleInfo;
 import Brawler.D3D12.BindlessSRVSentinel;
+import Util.Engine;
 
 export namespace Brawler
 {
@@ -84,7 +86,7 @@ export namespace Brawler
 		private:
 			Microsoft::WRL::ComPtr<Brawler::D3D12DescriptorHeap> mHeap;
 			BindlessIndexInfo mBindlessIndexQueue;
-			std::atomic<std::uint32_t> mPerFrameIndex;
+			std::array<std::atomic<std::uint32_t>, Util::Engine::MAX_FRAMES_IN_FLIGHT> mPerFrameIndexArr;
 			std::uint32_t mDescriptorHandleIncrementSize;
 		};
 	}

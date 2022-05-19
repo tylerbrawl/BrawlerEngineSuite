@@ -64,7 +64,10 @@ export namespace Util
 		/// wrong per-frame descriptor heap segment as the result of a race condition.
 		/// 
 		/// On the other hand, Util::Engine::GetTrueFrameNumber() might be more useful for constructing 
-		/// low-level engine components.
+		/// low-level engine components. As a general rule of thumb, if the goal is to make sure that some
+		/// object can still be used and deciding this involves checking frame numbers, then getting the
+		/// "true" frame number is probably the best choice. Of course, this can vary on a case-by-case
+		/// basis, and the developer should make their best judgment as to which needs to be used.
 		/// </summary>
 		/// <returns>
 		/// The function returns the "true" frame number, which is guaranteed to be the same across all

@@ -95,10 +95,11 @@ namespace Brawler
 
 		void Renderer::AdvanceFrame()
 		{
-			// Execute tasks which must be done after every frame.
-			{
-				mDevice.GetGPUResourceDescriptorHeap().ResetPerFrameDescriptorHeapIndex();
-			}
+			// Execute tasks which must be done after every frame, noting that it is possible that
+			// commands for the frame MAX_FRAMES_IN_FLIGHT behind the new value of mCurrFrameNum
+			// might still be recording on other threads. (If an action is sensitive to this condition,
+			// then it might be best to instead add it to FrameGraph::ResetFrameGraph(), after
+			// FrameGraph::WaitForPreviousFrameGraphExecution() is called.)
 
 			++mCurrFrameNum;
 		}

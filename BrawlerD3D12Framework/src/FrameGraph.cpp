@@ -20,6 +20,7 @@ import Brawler.SortedVector;
 import Brawler.D3D12.PersistentGPUResourceManager;
 import Brawler.D3D12.GPUResidencyManager;
 import Brawler.D3D12.GPUFence;
+import Brawler.D3D12.GPUResourceDescriptorHeap;
 
 namespace
 {
@@ -179,6 +180,11 @@ namespace Brawler
 			// has fully executed on the GPU.
 			WaitForPreviousFrameGraphExecution();
 			
+			// All of the commands from the previous frame represented by this FrameGraph
+			// instance have been executed on the GPU. It is now safe to perform various
+			// clean-up actions as necessary.
+
+			Util::Engine::GetGPUResourceDescriptorHeap().ResetPerFrameDescriptorHeapIndex();
 			mBlackboard.ClearBlackboard();
 			mTransientResourceManager.DeleteTransientResources();
 			mFenceCollection.Reset();
