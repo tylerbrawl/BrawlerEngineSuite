@@ -20,5 +20,6 @@ export namespace Brawler
 		std::function<void()> mCallback;
 		std::shared_ptr<JobCounter> mCounterPtr;
 		JobPriority mPriority;
+		std::uint64_t mCachedFrameNumber;
 	};
 }

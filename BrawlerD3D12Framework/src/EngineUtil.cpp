@@ -4,6 +4,8 @@ module;
 module Util.Engine;
 import Brawler.D3D12.Renderer;
 import Brawler.D3D12.GPUDevice;
+import Util.Threading;
+import Brawler.ThreadLocalResources;
 
 namespace Brawler
 {
@@ -53,6 +55,16 @@ namespace Util
 		}
 
 		std::uint64_t GetCurrentFrameNumber()
+		{
+			const Brawler::ThreadLocalResources& threadLocalResources{ Util::Threading::GetThreadLocalResources() };
+
+			if (threadLocalResources.HasCachedFrameNumber()) [[likely]]
+				return threadLocalResources.GetCachedFrameNumber();
+
+			return GetTrueFrameNumber();
+		}
+
+		std::uint64_t GetTrueFrameNumber()
 		{
 			return GetRenderer().GetCurrentFrameNumber();
 		}

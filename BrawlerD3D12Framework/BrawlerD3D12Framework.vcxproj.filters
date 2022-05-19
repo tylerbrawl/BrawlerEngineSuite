@@ -978,6 +978,9 @@
     <ClCompile Include="src\GPUExecutionModuleResourceMap.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\Compilation</Filter>
     </ClCompile>
+    <ClCompile Include="src\ThreadLocalResources.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

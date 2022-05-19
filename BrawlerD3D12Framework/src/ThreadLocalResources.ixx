@@ -1,18 +1,30 @@
 module;
-#include <array>
+#include <optional>
 
 export module Brawler.ThreadLocalResources;
-import Brawler.ThreadSafeQueue;
-import Brawler.JobPriority;
-import Brawler.Job;
-import Util.General;
 
 export namespace Brawler
 {
-	// Add data which each WorkerThread should keep its own version of to this structure.
+	// Add data which each WorkerThread should keep its own version of to this class.
 
-	struct ThreadLocalResources
+	class ThreadLocalResources
 	{
-		// This struct is currently empty.
+	public:
+		ThreadLocalResources() = default;
+
+		ThreadLocalResources(const ThreadLocalResources& rhs) = delete;
+		ThreadLocalResources& operator=(const ThreadLocalResources& rhs) = delete;
+
+		ThreadLocalResources(ThreadLocalResources&& rhs) noexcept = default;
+		ThreadLocalResources& operator=(ThreadLocalResources&& rhs) noexcept = default;
+
+		void SetCachedFrameNumber(const std::uint64_t frameNumber);
+		void ResetCachedFrameNumber();
+
+		bool HasCachedFrameNumber() const;
+		std::uint64_t GetCachedFrameNumber() const;
+
+	private:		
+		std::optional<std::uint64_t> mCachedFrameNumber;
 	};
 }

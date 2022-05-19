@@ -351,6 +351,7 @@
     <ClCompile Include="src\TextureCopyBufferSubAllocation.ixx" />
     <ClCompile Include="src\TextureSubResource.cpp" />
     <ClCompile Include="src\TextureSubResource.ixx" />
+    <ClCompile Include="src\ThreadLocalResources.cpp" />
     <ClCompile Include="src\TLSFAllocator.cpp" />
     <ClCompile Include="src\TLSFAllocator.ixx" />
     <ClCompile Include="src\TLSFAllocationRequestInfo.ixx" />
