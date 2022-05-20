@@ -8,12 +8,18 @@ namespace Brawler
 {
 	void ThreadLocalResources::SetCachedFrameNumber(const std::uint64_t frameNumber)
 	{
-		mCachedFrameNumber = frameNumber;
+		if (!mCachedFrameNumber.has_value())
+			mCachedFrameNumber = frameNumber;
+
+		++mFrameNumberCacheCount;
 	}
 
 	void ThreadLocalResources::ResetCachedFrameNumber()
 	{
-		mCachedFrameNumber.reset();
+		assert(mFrameNumberCacheCount >= 0 && "ERROR: An attempt was made to reset a thread's cached frame number before it was ever given one!");
+		
+		if(--mFrameNumberCacheCount == 0)
+			mCachedFrameNumber.reset();
 	}
 
 	bool ThreadLocalResources::HasCachedFrameNumber() const

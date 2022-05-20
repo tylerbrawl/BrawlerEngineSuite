@@ -13,7 +13,7 @@ namespace
 {
 	static constexpr D3D_FEATURE_LEVEL MINIMUM_D3D_FEATURE_LEVEL = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0;
 	
-	static constexpr bool ALLOW_WARP_DEVICE = true;
+	static constexpr bool ALLOW_WARP_DEVICE = false;
 	
 	bool VerifyD3D12DeviceFeatureSupport(const Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice)
 	{

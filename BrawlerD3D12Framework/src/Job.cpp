@@ -23,7 +23,7 @@ namespace Brawler
 		//
 		// Besides, if the user really wants the actual frame number when the job gets executed,
 		// then they can just call Util::Engine::GetTrueFrameNumber() themselves.
-		mCachedFrameNumber(Util::Engine::GetTrueFrameNumber())
+		mCachedFrameNumber(Util::Engine::GetCurrentFrameNumber())
 	{}
 
 	void Job::Execute()

@@ -24,6 +24,7 @@ namespace Brawler
 	using D3D12Resource = ID3D12Resource2;
 	using D3D12CommandQueue = ID3D12CommandQueue;
 	using D3D12GraphicsCommandList = ID3D12GraphicsCommandList6;
+	using D3D12DebugCommandList = ID3D12DebugCommandList2;
 	using D3D12CommandAllocator = ID3D12CommandAllocator;
 	using D3D12Fence = ID3D12Fence1;
 	using D3D12DescriptorHeap = ID3D12DescriptorHeap;

@@ -467,6 +467,7 @@ namespace Brawler
 		mTableBuilderInfo.Error1UAVTableBuilder.CreateUnorderedAccessView(0, mResourceInfo.Error1BufferSubAllocation.CreateUnorderedAccessViewForDescriptorTable());
 		mTableBuilderInfo.Error2SRVTableBuilder.CreateShaderResourceView(0, mResourceInfo.Error2BufferSubAllocation.CreateShaderResourceViewForDescriptorTable());
 		mTableBuilderInfo.Error2UAVTableBuilder.CreateUnorderedAccessView(0, mResourceInfo.Error2BufferSubAllocation.CreateUnorderedAccessViewForDescriptorTable());
+		mTableBuilderInfo.OutputTableBuilder.CreateUnorderedAccessView(0, mResourceInfo.OutputBufferSubAllocation.CreateUnorderedAccessViewForDescriptorTable());
 	}
 
 	D3D12::RenderPassBundle BC7ImageCompressor::CreateResourceUploadRenderPassBundle()
@@ -760,7 +761,7 @@ namespace Brawler
 					.Resources{ mResourceInfo },
 					.DescriptorTableBuilders{ mTableBuilderInfo },
 					.ThreadGroupCount = std::max<std::uint32_t>(((numBlocksInCurrBatch + 3) / 4), 1)
-					});
+				});
 
 				encodeBlockPass.SetRenderPassCommands([] (D3D12::DirectContext& context, const CompressionPassInfo& passInfo)
 				{
@@ -768,14 +769,7 @@ namespace Brawler
 
 					resourceBinder.BindDescriptorTable<RootParams::SOURCE_TEXTURE_SRV_TABLE>(passInfo.DescriptorTableBuilders.SourceTextureTableBuilder.GetDescriptorTable());
 					resourceBinder.BindDescriptorTable<RootParams::INPUT_BUFFER_SRV_TABLE>(passInfo.DescriptorTableBuilders.Error2SRVTableBuilder.GetDescriptorTable());
-
-					{
-						D3D12::DescriptorTableBuilder outputTableBuilder{ 1 };
-						outputTableBuilder.CreateUnorderedAccessView(0, passInfo.Resources.OutputBufferSubAllocation.CreateUnorderedAccessViewForDescriptorTable());
-
-						resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(outputTableBuilder.GetDescriptorTable());
-					}
-
+					resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(passInfo.DescriptorTableBuilders.OutputTableBuilder.GetDescriptorTable());
 					resourceBinder.BindRootCBV<RootParams::COMPRESSION_SETTINGS_CBV>(passInfo.Resources.ConstantBufferSubAllocation.CreateRootConstantBufferView());
 					resourceBinder.BindRoot32BitConstants<RootParams::MODE_ID_AND_START_BLOCK_NUM_ROOT_CONSTANTS>(passInfo.RootConstants);
 
@@ -817,6 +811,8 @@ namespace Brawler
 
 		readbackPass.SetRenderPassCommands([] (D3D12::CopyContext& context, const ReadbackPassInfo& passInfo)
 		{
+			context.AssertResourceState(passInfo.BufferCopySrc.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON);
+			
 			context.CopyBufferToBuffer(passInfo.BufferCopyDest, passInfo.BufferCopySrc);
 		});
 

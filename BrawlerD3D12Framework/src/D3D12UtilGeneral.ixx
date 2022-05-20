@@ -192,7 +192,7 @@ namespace Util
 			// disable the D3D12 debug layer.
 			//
 			// NOTE: The debug layer is never enabled in Release builds, even if this value is set to true.
-			constexpr bool ALLOW_D3D12_DEBUG_LAYER = true;
+			constexpr bool ALLOW_D3D12_DEBUG_LAYER = false;
 
 			return (Util::General::IsDebugModeEnabled() && ALLOW_D3D12_DEBUG_LAYER);
 		}

@@ -24,7 +24,7 @@ namespace Brawler
 			// [500000, 999999]).
 			//
 			// The base index for descriptors allocated on even frames is BINDLESS_SRVS_PARTITION_SIZE.
-			// The base index for descriptors allocated on odd frames is (PER_FRAME_DESCRIPTORS_PARTITION_SIZE)
+			// The base index for descriptors allocated on odd frames is (PER_FRAME_DESCRIPTORS_PARTITION_SIZE / 2)
 			// indices after that.
 			//
 			// We could implement this with a branch, but this is probably more performant. (It

@@ -51,7 +51,9 @@ namespace Brawler
 			mAliasTracker = std::move(aliasTracker);
 			
 			CreateGPUExecutionModules(builderSpan);
-			PerformGPUResourceAnalysis();
+
+			if (mExecutionModuleArr.size() > 0) [[likely]]
+				PerformGPUResourceAnalysis();
 		}
 
 		void FrameGraphExecutionContext::SubmitFrameGraph(FrameGraphFenceCollection& fenceCollection)
@@ -137,7 +139,7 @@ namespace Brawler
 					return false;
 
 				// We only want to combine RenderPassBundles which contain only direct RenderPasses.
-				if (executionModule.GetUsedQueues() != bundle.GetUsedQueues() || bundle.GetUsedQueues() != GPUCommandQueueType::DIRECT)
+				if (executionModule.GetUsedQueues() != bundle.GetUsedQueues() || bundle.GetUsedQueues().CountOneBits() != 1)
 					return false;
 
 				const std::size_t moduleSizeAfterBundle = executionModule.GetRenderPassCount() + bundle.GetTotalRenderPassCount();

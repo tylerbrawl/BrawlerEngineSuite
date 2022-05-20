@@ -9,6 +9,7 @@ export module Brawler.D3D12.GPUCommandContext;
 import Brawler.D3D12.GPUCommandQueueType;
 import Util.Engine;
 import Util.General;
+import Util.D3D12;
 import Brawler.D3D12.GPUResourceAccessManager;
 import Brawler.D3D12.GPUFence;
 import Brawler.D3D12.FrameGraphResourceDependency;
@@ -182,6 +183,8 @@ export namespace Brawler
 			// ==================================================================
 
 		public:
+			void AssertResourceState(const I_GPUResource& resource, const D3D12_RESOURCE_STATES expectedState) const;
+
 			void CopyBufferToTexture(const TextureSubResource& destTexture, const TextureCopyBufferSubAllocation& srcSubAllocation) const;
 			void CopyTextureToBuffer(const TextureCopyBufferSubAllocation& destSubAllocation, const TextureSubResource& srcTexture) const;
 
@@ -346,6 +349,20 @@ namespace Brawler
 		// ==================================================================
 
 		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::AssertResourceState(const I_GPUResource& resource, const D3D12_RESOURCE_STATES expectedState) const
+		{
+			if constexpr (Util::D3D12::IsDebugLayerEnabled())
+			{
+				assert(Util::D3D12::IsResourceStateValid(expectedState) && "ERROR: An attempt was made to check if a resource is in a given state using GPUCommandContext::AssertResourceState(), but the provided resource state was invalid!");
+
+				Microsoft::WRL::ComPtr<Brawler::D3D12DebugCommandList> debugCmdList{};
+				Util::General::CheckHRESULT(mCmdList.As(&debugCmdList));
+
+				assert(debugCmdList->AssertResourceState(&(resource.GetD3D12Resource()), D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, static_cast<std::uint32_t>(expectedState)) && "ERROR: A D3D12 resource state assertion failed! (See GPUCommandContext::AssertResourceState().)");
+			}
+		}
+
+		template <GPUCommandQueueType CmdListType>
 		void GPUCommandContext<CmdListType>::CopyBufferToTexture(const TextureSubResource& destTexture, const TextureCopyBufferSubAllocation& srcSubAllocation) const
 		{
 			assert(IsResourceAccessValid(destTexture.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination texture resource in a call to GPUCommandContext::CopyBufferToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
@@ -386,6 +403,8 @@ namespace Brawler
 		template <GPUCommandQueueType CmdListType>
 		void GPUCommandContext<CmdListType>::CopyBufferToBuffer(const I_BufferSubAllocation& destSubAllocation, const I_BufferSubAllocation& srcSubAllocation) const
 		{
+			//Util::General::DebugBreak();
+
 			assert(IsResourceAccessValid(destSubAllocation.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination buffer resource in a call to GPUCommandContext::CopyBufferToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
 			assert(IsResourceAccessValid(srcSubAllocation.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source buffer resource in a call to GPUCommandContext::CopyBufferToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
 

@@ -26,5 +26,6 @@ export namespace Brawler
 
 	private:		
 		std::optional<std::uint64_t> mCachedFrameNumber;
+		std::uint64_t mFrameNumberCacheCount;
 	};
 }

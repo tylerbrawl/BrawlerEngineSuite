@@ -84,13 +84,15 @@ export namespace Brawler
 			D3D12::DescriptorTableBuilder Error1UAVTableBuilder;
 			D3D12::DescriptorTableBuilder Error2SRVTableBuilder;
 			D3D12::DescriptorTableBuilder Error2UAVTableBuilder;
+			D3D12::DescriptorTableBuilder OutputTableBuilder;
 
 			DescriptorTableBuilderInfo() :
 				SourceTextureTableBuilder(1),
 				Error1SRVTableBuilder(1),
 				Error1UAVTableBuilder(1),
 				Error2SRVTableBuilder(1),
-				Error2UAVTableBuilder(1)
+				Error2UAVTableBuilder(1),
+				OutputTableBuilder(1)
 			{}
 		};
 

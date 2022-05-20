@@ -167,13 +167,15 @@ namespace Brawler
 			const ResourceUsageInfo computeQueueUsageInfo{ GetResourceUsageInfoForRenderPasses<GPUCommandQueueType::COMPUTE>(*mResourcePtr, executionModule) };
 			const ResourceUsageInfo copyQueueUsageInfo{ GetResourceUsageInfoForRenderPasses<GPUCommandQueueType::COPY>(*mResourcePtr, executionModule) };
 
-			mCheckIrrelevantExecutionModules = (directQueueUsageInfo.ContainsNonNullZone || computeQueueUsageInfo.ContainsNonNullZone || copyQueueUsageInfo.ContainsNonNullZone);
+			const bool resourceUsedInAnyQueue = (directQueueUsageInfo.ContainsNonNullZone || computeQueueUsageInfo.ContainsNonNullZone || copyQueueUsageInfo.ContainsNonNullZone);
+			mCheckIrrelevantExecutionModules = resourceUsedInAnyQueue;
 
 			assert(!copyQueueUsageInfo.ContainsNonNullZone || (!directQueueUsageInfo.ContainsNonNullZone && !computeQueueUsageInfo.ContainsNonNullZone) && "ERROR: An attempt was made to use a resource simultaneously in both the copy queue and the direct and/or compute queue(s)!");
 
 			// We don't allow a resource to be used in both the copy queue and the direct and/or 
 			// compute queue(s) simultaneously. So, if we want to check if the resource is used in 
 			// multiple queues, we just need to check the direct and compute case.
+			
 			const bool resourceUsedInMultipleQueues = (directQueueUsageInfo.ContainsNonNullZone && computeQueueUsageInfo.ContainsNonNullZone);
 
 			const std::array<const ResourceUsageInfo*, 3> usageInfoArr{

@@ -54,7 +54,7 @@ namespace Brawler
 
 		void GPUFence::WaitOnGPUTimeline(Brawler::D3D12CommandQueue& cmdQueue) const
 		{
-			cmdQueue.Wait(mFence.Get(), mCurrSignalValue);
+			Util::General::CheckHRESULT(cmdQueue.Wait(mFence.Get(), mCurrSignalValue));
 		}
 
 		std::uint64_t GPUFence::GetLastSignalValue() const
