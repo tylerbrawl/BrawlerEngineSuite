@@ -190,6 +190,15 @@ namespace Util
 			// The NVIDIA debug layer driver sucks. It seems to shoot out debug layer errors and dereference nullptrs for no
 			// good reason. So, even if we are building for Debug mode, this setting can be toggled to either enable or
 			// disable the D3D12 debug layer.
+			// 
+			// Honestly, I have a really shaky relationship with this debug layer. As of writing this, I just tried out
+			// PIX's debug layer, and it seems to be leaps and bounds ahead of this buggy mess. My current recommendation
+			// is to just capture a frame with PIX and use its debug layer offline, setting ALLOW_D3D12_DEBUG_LAYER to be
+			// false.
+			// 
+			// (It's honestly incredibly discomforting that the PIX and NVIDIA debug layers produce different results.
+			// After the jank which I've dealt with using the NVIDIA debug layer, I'm inclined to trust the PIX debug layer
+			// messages more, but who really knows which is better?)
 			//
 			// NOTE: The debug layer is never enabled in Release builds, even if this value is set to true.
 			constexpr bool ALLOW_D3D12_DEBUG_LAYER = false;
