@@ -11,7 +11,7 @@ import Util.Coroutine;
 
 namespace Brawler
 {
-	WorkerThread::WorkerThread(WorkerThreadPool& threadPool) :
+	WorkerThread::WorkerThread(WorkerThreadPool& threadPool, const std::uint32_t threadIndex) :
 		mThread(),
 		mPool(&threadPool),
 		mResources(),
@@ -19,6 +19,7 @@ namespace Brawler
 	{
 		std::atomic<bool> isThreadInitialized = false;
 
+		mResources.SetThreadIndex(threadIndex);
 		mThread = std::thread{ [this, &isThreadInitialized, &threadPool]()
 		{
 			Initialize();

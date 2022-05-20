@@ -29,7 +29,11 @@ namespace Brawler
 		// their own core automatically.
 		for (std::uint32_t i = 0; i < numWorkerThreads; ++i)
 		{
-			mThreadArr.push_back(std::make_unique<Brawler::WorkerThread>(*this));
+			// We start counting the thread indices here from 1 because index 0 is reserved for
+			// the main thread.
+			const std::uint32_t currThreadIndex = (i + 1);
+			
+			mThreadArr.push_back(std::make_unique<Brawler::WorkerThread>(*this, currThreadIndex));
 			mThreadMap[mThreadArr[i]->GetThreadID()] = mThreadArr[i].get();
 		}
 	}

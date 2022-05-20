@@ -3,11 +3,13 @@ module;
 #include <memory>
 #include <array>
 #include <cassert>
+#include "DxDef.h"
 
 export module Brawler.D3D12.FrameGraphManager;
 import Brawler.D3D12.FrameGraph;
 import Util.Engine;
 import Brawler.D3D12.I_RenderModule;
+import Brawler.D3D12.GPUCommandQueueType;
 
 // No RTTI? No problem!
 namespace Brawler
@@ -54,6 +56,8 @@ export namespace Brawler
 			template <typename T>
 				requires std::derived_from<T, I_RenderModule>
 			const T& GetRenderModule() const;
+
+			Brawler::D3D12CommandAllocator& GetD3D12CommandAllocator(const GPUCommandQueueType queueType);
 
 		private:
 			FrameGraph& GetCurrentFrameGraph();

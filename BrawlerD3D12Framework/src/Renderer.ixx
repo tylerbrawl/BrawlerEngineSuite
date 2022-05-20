@@ -36,6 +36,9 @@ export namespace Brawler
 			PersistentGPUResourceManager& GetPersistentGPUResourceManager();
 			const PersistentGPUResourceManager& GetPersistentGPUResourceManager() const;
 
+			FrameGraphManager& GetFrameGraphManager();
+			const FrameGraphManager& GetFrameGraphManager() const;
+
 			template <typename T, typename... Args>
 				requires std::derived_from<T, I_RenderModule>
 			void AddRenderModule(Args&&... args);

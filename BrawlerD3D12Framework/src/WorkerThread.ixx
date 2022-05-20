@@ -17,7 +17,7 @@ export namespace Brawler
 		friend ThreadLocalResources& Util::Threading::GetThreadLocalResources();
 
 	public:
-		explicit WorkerThread(WorkerThreadPool& threadPool);
+		WorkerThread(WorkerThreadPool& threadPool, const std::uint32_t threadIndex);
 
 		WorkerThread(const WorkerThread& rhs) = delete;
 		WorkerThread& operator=(const WorkerThread& rhs) = delete;

@@ -233,7 +233,6 @@ namespace Brawler
 		void GPUCommandListRecorder<QueueType>::RecordCommandList()
 		{
 			assert(mContext != nullptr && "ERROR: A GPUCommandListRecorder was never assigned any I_RenderPass instances to record into an ID3D12GraphicsCommandList!");
-			assert(mContext->ReadyForUse() && "ERROR: A GPUCommandListRecorder was given a context which was not ready to have commands recorded into it!");
 
 			mContext->ResetCommandList();
 

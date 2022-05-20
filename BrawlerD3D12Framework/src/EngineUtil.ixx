@@ -4,6 +4,7 @@ module;
 export module Util.Engine;
 import Brawler.D3D12.BindlessSRVAllocation;
 import Brawler.D3D12.GPUVendor;
+import Brawler.D3D12.GPUCommandQueueType;
 
 export namespace Brawler
 {
@@ -83,6 +84,20 @@ export namespace Util
 		
 		Brawler::D3D12Device& GetD3D12Device();
 		Brawler::DXGIAdapter& GetDXGIAdapter();
+
+		/// <summary>
+		/// Gets the ID3D12CommandAllocator instance for the calling thread. Since command allocators
+		/// are *NOT* free-threaded, each thread in the system is assigned its own set of command
+		/// allocators. Specifically, each thread is given Util::Engine::MAX_FRAMES_IN_FLIGHT
+		/// ID3D12CommandAllocator instances for each of the three primary queues (DIRECT, COMPUTE,
+		/// and COPY).
+		/// 
+		/// *NOTE*: This function *IS* thread safe.
+		/// </summary>
+		/// <returns>
+		/// The function returns the ID3D12CommandAllocator instance for the calling thread.
+		/// </returns>
+		Brawler::D3D12CommandAllocator& GetD3D12CommandAllocator(const Brawler::D3D12::GPUCommandQueueType queueType);
 
 		const Brawler::D3D12::GPUCapabilities& GetGPUCapabilities();
 	}

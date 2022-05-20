@@ -252,6 +252,8 @@
     <ClCompile Include="src\BindlessSRVSentinel.ixx" />
     <ClCompile Include="src\BufferSubAllocationReservationHandle.cpp" />
     <ClCompile Include="src\BufferSubAllocationReservationHandle.ixx" />
+    <ClCompile Include="src\CommandAllocatorStorage.cpp" />
+    <ClCompile Include="src\CommandAllocatorStorage.ixx" />
     <ClCompile Include="src\ConsoleFormat.ixx" />
     <ClCompile Include="src\ConstantBufferView.ixx" />
     <ClCompile Include="src\D3D12UtilFormats.ixx" />

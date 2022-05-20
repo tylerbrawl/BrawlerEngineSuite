@@ -85,6 +85,16 @@ namespace Brawler
 			return mPersistentResourceManager;
 		}
 
+		FrameGraphManager& Renderer::GetFrameGraphManager()
+		{
+			return mFrameGraphManager;
+		}
+
+		const FrameGraphManager& Renderer::GetFrameGraphManager() const
+		{
+			return mFrameGraphManager;
+		}
+
 		void Renderer::ProcessFrame()
 		{
 			// Execute tasks which must be done during each frame, before Renderer::AdvanceFrame()

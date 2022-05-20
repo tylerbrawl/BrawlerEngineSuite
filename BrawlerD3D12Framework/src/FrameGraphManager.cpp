@@ -3,6 +3,7 @@ module;
 #include <memory>
 #include <vector>
 #include <array>
+#include "DxDef.h"
 
 module Brawler.D3D12.FrameGraphManager;
 
@@ -20,6 +21,11 @@ namespace Brawler
 		{
 			FrameGraph& currFrameGraph{ GetCurrentFrameGraph() };
 			currFrameGraph.ProcessCurrentFrame(std::span<const std::unique_ptr<I_RenderModule>>{ mRenderModuleArr });
+		}
+
+		Brawler::D3D12CommandAllocator& FrameGraphManager::GetD3D12CommandAllocator(const GPUCommandQueueType queueType)
+		{
+			return GetCurrentFrameGraph().GetD3D12CommandAllocator(queueType);
 		}
 
 		FrameGraph& FrameGraphManager::GetCurrentFrameGraph()

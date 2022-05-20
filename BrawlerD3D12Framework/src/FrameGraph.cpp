@@ -126,6 +126,7 @@ namespace Brawler
 		{
 			mFenceCollection.Initialize();
 			mTransientResourceManager.Initialize();
+			mCmdAllocatorStorage.Initialize();
 		}
 
 		void FrameGraph::ProcessCurrentFrame(const std::span<const std::unique_ptr<I_RenderModule>> renderModuleSpan)
@@ -142,6 +143,11 @@ namespace Brawler
 		const FrameGraphBlackboard& FrameGraph::GetBlackboard() const
 		{
 			return mBlackboard;
+		}
+
+		Brawler::D3D12CommandAllocator& FrameGraph::GetD3D12CommandAllocator(const GPUCommandQueueType queueType)
+		{
+			return mCmdAllocatorStorage.GetD3D12CommandAllocator(queueType);
 		}
 
 		void FrameGraph::GenerateFrameGraph(const std::span<const std::unique_ptr<I_RenderModule>> renderModuleSpan)
@@ -188,6 +194,7 @@ namespace Brawler
 			mBlackboard.ClearBlackboard();
 			mTransientResourceManager.DeleteTransientResources();
 			mFenceCollection.Reset();
+			mCmdAllocatorStorage.ResetCommandAllocators();
 		}
 
 		std::vector<FrameGraphBuilder> FrameGraph::CreateFrameGraphBuilders(const std::span<const std::unique_ptr<I_RenderModule>> renderModuleSpan)

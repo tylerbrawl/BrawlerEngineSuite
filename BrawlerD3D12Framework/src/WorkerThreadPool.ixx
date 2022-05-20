@@ -35,7 +35,10 @@ export namespace Brawler
 			explicit MainThreadInfo(std::thread::id threadID) :
 				ThreadID(threadID),
 				Resources()
-			{}
+			{
+				// The main thread will always have thread index 0.
+				Resources.SetThreadIndex(0);
+			}
 		};
 
 	private:

@@ -10,6 +10,8 @@ import Brawler.D3D12.FrameGraphBlackboard;
 import Brawler.D3D12.TransientGPUResourceManager;
 import Brawler.D3D12.FrameGraphExecutionContext;
 import Brawler.D3D12.FrameGraphFenceCollection;
+import Brawler.D3D12.CommandAllocatorStorage;
+import Brawler.D3D12.GPUCommandQueueType;
 
 namespace Brawler
 {
@@ -41,6 +43,8 @@ export namespace Brawler
 			FrameGraphBlackboard& GetBlackboard();
 			const FrameGraphBlackboard& GetBlackboard() const;
 
+			Brawler::D3D12CommandAllocator& GetD3D12CommandAllocator(const GPUCommandQueueType queueType);
+
 		private:
 			void GenerateFrameGraph(const std::span<const std::unique_ptr<I_RenderModule>> renderModuleSpan);
 			void SubmitFrameGraph();
@@ -56,6 +60,7 @@ export namespace Brawler
 			TransientGPUResourceManager mTransientResourceManager;
 			FrameGraphBlackboard mBlackboard;
 			FrameGraphExecutionContext mExecutionContext;
+			CommandAllocatorStorage mCmdAllocatorStorage;
 		};
 	}
 }

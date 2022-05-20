@@ -99,7 +99,7 @@ export namespace Brawler
 			GPUCommandContext();
 
 		public:
-			virtual ~GPUCommandContext();
+			virtual ~GPUCommandContext() = default;
 
 			GPUCommandContext(const GPUCommandContext& rhs) = delete;
 			GPUCommandContext& operator=(const GPUCommandContext& rhs) = delete;
@@ -163,19 +163,6 @@ export namespace Brawler
 			void CloseCommandList();
 			void MarkAsUseful();
 
-			/// <summary>
-			/// Checks if this GPUCommandContext can be used to record other commands. This
-			/// function will return true only if the GPU has finished executing all of the
-			/// previous commands.
-			/// </summary>
-			/// <returns>
-			/// The function returns true if the GPU has finished executing all of the commands
-			/// of this GPUCommandContext and false otherwise.
-			/// </returns>
-			bool ReadyForUse() const;
-
-			void SetGPUFence(const GPUFence& fence);
-
 			void ResourceBarrier(const std::span<const CD3DX12_RESOURCE_BARRIER> barrierSpan) const;
 
 			// ==================================================================
@@ -191,11 +178,8 @@ export namespace Brawler
 			void CopyBufferToBuffer(const I_BufferSubAllocation& destSubAllocation, const I_BufferSubAllocation& srcSubAllocation) const;
 
 		private:
-			Microsoft::WRL::ComPtr<Brawler::D3D12CommandAllocator> mCmdAllocator;
 			Microsoft::WRL::ComPtr<Brawler::D3D12GraphicsCommandList> mCmdList;
 			GPUResourceAccessManager mResourceAccessManager;
-			const GPUFence* mFencePtr;
-			std::uint64_t mRequiredFenceValue;
 			bool mHasCommands;
 		};
 	}
@@ -209,22 +193,11 @@ namespace Brawler
 	{
 		template <GPUCommandQueueType CmdListType>
 		GPUCommandContext<CmdListType>::GPUCommandContext() :
-			mCmdAllocator(nullptr),
 			mCmdList(nullptr),
 			mResourceAccessManager(),
-			mFencePtr(nullptr),
-			mRequiredFenceValue(0),
 			mHasCommands(false)
 		{
 			Brawler::D3D12Device& d3dDevice{ Util::Engine::GetD3D12Device() };
-
-			{
-				// Create the command allocator.
-				Util::General::CheckHRESULT(d3dDevice.CreateCommandAllocator(
-					GPUCommandContextInfo<CmdListType>::D3D_CMD_LIST_TYPE,
-					IID_PPV_ARGS(&mCmdAllocator)
-				));
-			}
 
 			{
 				// Create the command list in the closed state.
@@ -238,12 +211,6 @@ namespace Brawler
 
 				Util::General::CheckHRESULT(cmdList.As(&mCmdList));
 			}
-		}
-
-		template <GPUCommandQueueType CmdListType>
-		GPUCommandContext<CmdListType>::~GPUCommandContext()
-		{
-			assert(ReadyForUse() && "ERROR: A command context was destroyed before the GPU could execute all of its commands!");
 		}
 
 		template <GPUCommandQueueType CmdListType>
@@ -283,11 +250,8 @@ namespace Brawler
 		template <GPUCommandQueueType CmdListType>
 		void GPUCommandContext<CmdListType>::ResetCommandList()
 		{
-			assert(ReadyForUse() && "ERROR: An attempt was made to record commands into a command context, but the GPU was not finished executing all of its previous commands!");
-
 			// Reset the command list so that we can record commands into it.
-			Util::General::CheckHRESULT(mCmdAllocator->Reset());
-			Util::General::CheckHRESULT(mCmdList->Reset(mCmdAllocator.Get(), nullptr));
+			Util::General::CheckHRESULT(mCmdList->Reset(&(Util::Engine::GetD3D12CommandAllocator(CmdListType)), nullptr));
 
 			PrepareCommandList();
 
@@ -322,19 +286,6 @@ namespace Brawler
 		void GPUCommandContext<CmdListType>::MarkAsUseful()
 		{
 			mHasCommands = true;
-		}
-
-		template <GPUCommandQueueType CmdListType>
-		bool GPUCommandContext<CmdListType>::ReadyForUse() const
-		{
-			return (mFencePtr == nullptr || mFencePtr->HasFenceCompletedValue(mRequiredFenceValue));
-		}
-
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::SetGPUFence(const GPUFence& fence)
-		{
-			mFencePtr = &fence;
-			mRequiredFenceValue = fence.GetLastSignalValue();
 		}
 
 		template <GPUCommandQueueType CmdListType>

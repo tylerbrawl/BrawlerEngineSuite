@@ -44,6 +44,8 @@ namespace Brawler
 
 		void GPUCommandManager::Initialize()
 		{
+			mCmdContextVaultPtr = std::make_unique<GPUCommandContextVault>();
+			
 			mDirectCmdQueue.Initialize();
 			mComputeCmdQueue.Initialize();
 			mCopyCmdQueue.Initialize();
@@ -141,7 +143,7 @@ namespace Brawler
 			const auto returnCmdContextsLambda = [this]<GPUCommandQueueType QueueType>(GPUCommandContextGroup& cmdContextGroup)
 			{
 				for (auto&& cmdContext : cmdContextGroup.GetGPUCommandContexts<QueueType>())
-					mCmdContextVault.ReturnCommandContext<QueueType>(std::move(cmdContext));
+					mCmdContextVaultPtr->ReturnCommandContext<QueueType>(std::move(cmdContext));
 			};
 
 			returnCmdContextsLambda.operator()<GPUCommandQueueType::DIRECT>(cmdContextGroup);
@@ -151,7 +153,8 @@ namespace Brawler
 
 		GPUCommandContextVault& GPUCommandManager::GetGPUCommandContextVault()
 		{
-			return mCmdContextVault;
+			assert(mCmdContextVaultPtr != nullptr);
+			return *mCmdContextVaultPtr;
 		}
 
 		void GPUCommandManager::DrainGPUCommandContextSinks(std::size_t beginSinkIndex)

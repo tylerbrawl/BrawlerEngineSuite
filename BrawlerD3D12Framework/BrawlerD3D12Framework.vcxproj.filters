@@ -987,6 +987,12 @@
     <ClCompile Include="src\BufferSubAllocationReservationHandle.cpp">
       <Filter>Source Files\GPU Resources\Buffer Resource Types</Filter>
     </ClCompile>
+    <ClCompile Include="src\CommandAllocatorStorage.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandAllocatorStorage.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

@@ -32,4 +32,14 @@ namespace Brawler
 		assert(HasCachedFrameNumber() && "ERROR: An attempt was made to get a thread's cached frame number, but it did not have one!");
 		return *mCachedFrameNumber;
 	}
+
+	void ThreadLocalResources::SetThreadIndex(const std::uint32_t index)
+	{
+		mThreadIndex = index;
+	}
+
+	std::uint32_t ThreadLocalResources::GetThreadIndex() const
+	{
+		return mThreadIndex;
+	}
 }

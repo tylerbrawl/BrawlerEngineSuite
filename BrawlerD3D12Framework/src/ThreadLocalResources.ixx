@@ -24,8 +24,12 @@ export namespace Brawler
 		bool HasCachedFrameNumber() const;
 		std::uint64_t GetCachedFrameNumber() const;
 
+		void SetThreadIndex(const std::uint32_t index);
+		std::uint32_t GetThreadIndex() const;
+
 	private:		
 		std::optional<std::uint64_t> mCachedFrameNumber;
 		std::uint64_t mFrameNumberCacheCount;
+		std::uint32_t mThreadIndex;
 	};
 }

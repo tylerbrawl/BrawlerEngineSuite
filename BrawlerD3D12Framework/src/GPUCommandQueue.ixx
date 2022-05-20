@@ -136,11 +136,6 @@ namespace Brawler
 			// Execute the command lists, and then signal the fence on the GPU timeline.
 			mCmdQueue->ExecuteCommandLists(static_cast<std::uint32_t>(cmdListArr.size()), cmdListArr.data());
 			mFence.SignalOnGPUTimeline(*(mCmdQueue.Get()));
-
-			// Set all of the provided contexts to wait until the GPU has finished these commands
-			// before they can be used again.
-			for (auto& cmdContext : cmdContextSpan)
-				cmdContext->SetGPUFence(mFence);
 		}
 
 		template <GPUCommandQueueType QueueType>
