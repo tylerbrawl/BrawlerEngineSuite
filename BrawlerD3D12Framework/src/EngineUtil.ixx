@@ -15,6 +15,7 @@ export namespace Brawler
 		class GPUCommandManager;
 		class PersistentGPUResourceManager;
 		class GPUResidencyManager;
+		class GPUDevice;
 	}
 }
 
@@ -24,12 +25,11 @@ export namespace Util
 	{
 		constexpr std::size_t MAX_FRAMES_IN_FLIGHT = 2;
 
+		Brawler::D3D12::GPUDevice& GetGPUDevice();
+
 		Brawler::D3D12::GPUCommandManager& GetGPUCommandManager();
-
 		Brawler::D3D12::PersistentGPUResourceManager& GetPersistentGPUResourceManager();
-
 		Brawler::D3D12::GPUResidencyManager& GetGPUResidencyManager();
-
 		Brawler::D3D12::GPUVendor GetGPUVendor();
 
 		/// <summary>

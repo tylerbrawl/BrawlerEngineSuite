@@ -30,6 +30,8 @@ namespace Brawler
 	using D3D12DescriptorHeap = ID3D12DescriptorHeap;
 	using D3D12RootSignature = ID3D12RootSignature;
 	using D3D12PipelineState = ID3D12PipelineState;
+	
+	using D3D12Debug = ID3D12Debug3;
 
 	using DXGIAdapter = IDXGIAdapter4;
 	using DXGIFactory = IDXGIFactory7;

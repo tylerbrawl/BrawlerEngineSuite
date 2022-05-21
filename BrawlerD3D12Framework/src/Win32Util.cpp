@@ -2,6 +2,8 @@ module;
 #include <string>
 #include <iostream>
 #include <stdexcept>
+#include <cassert>
+#include <format>
 #include <io.h>
 #include <fcntl.h>
 #include "DxDef.h"
@@ -51,6 +53,28 @@ namespace Util
 		{
 			EnableConsoleFormatting();
 			InitializeCOM();
+		}
+
+		void WriteDebugMessage(const std::string_view msg)
+		{
+			if constexpr (Util::General::IsDebugModeEnabled())
+				WriteDebugMessage(Util::General::StringToWString(msg));
+		}
+
+		void WriteDebugMessage(const std::wstring_view msg)
+		{
+			if constexpr (Util::General::IsDebugModeEnabled())
+			{
+				// std::wstring_view is not guaranteed to be null-terminated. If it isn't, then we
+				// create a temporary std::wstring containing only the viewed characters and output that.
+				if (msg[msg.size()] == L'\0') [[likely]]
+					OutputDebugString(msg.data());
+				else
+				{
+					const std::wstring terminatedMsg{ msg };
+					OutputDebugString(terminatedMsg.c_str());
+				}
+			}
 		}
 
 		void WriteFormattedConsoleMessage(const std::string_view msg, const Brawler::Win32::ConsoleFormat format)

@@ -2,12 +2,14 @@ module;
 #include <cassert>
 #include <stdexcept>
 #include <array>
+#include <string_view>
 #include "DxDef.h"
 
 module Brawler.D3D12.GPUDevice;
 import Brawler.CompositeEnum;
 import Util.General;
 import Util.D3D12;
+import Util.Win32;
 
 namespace
 {
@@ -139,6 +141,54 @@ namespace Brawler
 {
 	namespace D3D12
 	{
+		bool TryEnableD3D12DebugLayer() 
+		{
+			// If we get to this point, then the Debug Layer must be allowed for this build. So, we
+			// will make a best effort to enable it here.
+
+			// PIX does not play nicely with the D3D12 Debug Layer. If we detect that PIX is trying
+			// to capture the application, then we will not enable the Debug Layer. (I am not aware
+			// of a way to detect PIX timing captures, but this should work for GPU captures.)
+			{
+				static constexpr std::wstring_view PIX_CAPTURER_DLL_NAME{ L"WinPixGpuCapturer.dll" };
+
+				HMODULE hPixCapturerModule = nullptr;
+				const bool getPixModuleResult = GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, PIX_CAPTURER_DLL_NAME.data(), &hPixCapturerModule);
+
+				// If we found the PIX capturer module, then do not load the D3D12 Debug Layer.
+				if (getPixModuleResult) [[unlikely]]
+				{
+					Util::Win32::WriteDebugMessage(L"WARNING: The D3D12 Debug Layer was set to be enabled (see DebugLayerEnabler<Util::General::BuildMode::DEBUG>::IsDebugLayerAllowed()), but PIX is attempting to perform a GPU capture. Thus, the request to enable the D3D12 Debug Layer has been ignored. If you wish, you may use PIX's Debug Layer after the capture has completed.");
+					return false;
+				}
+			}
+
+			{
+				Microsoft::WRL::ComPtr<ID3D12Debug> oldDebugController{};
+				HRESULT hr = D3D12GetDebugInterface(IID_PPV_ARGS(&oldDebugController));
+
+				if (FAILED(hr)) [[unlikely]]
+					return false;
+
+				Microsoft::WRL::ComPtr<Brawler::D3D12Debug> latestDebugController{};
+				hr = oldDebugController.As(&latestDebugController);
+
+				if (FAILED(hr)) [[unlikely]]
+					return false;
+
+				latestDebugController->EnableDebugLayer();
+				latestDebugController->SetEnableGPUBasedValidation(true);
+			}
+
+			return true;
+		}
+	}
+}
+
+namespace Brawler
+{
+	namespace D3D12
+	{
 		void GPUDevice::Initialize()
 		{
 			InitializeD3D12Device();
@@ -204,20 +254,19 @@ namespace Brawler
 			return mDeviceCapabilities;
 		}
 
+		bool GPUDevice::IsDebugLayerEnabled() const
+		{
+			if constexpr (!CurrentDebugLayerEnabler::IsDebugLayerAllowed())
+				return false;
+			else
+				return CurrentDebugLayerEnabler::IsDebugLayerEnabled();
+		}
+
 		void GPUDevice::InitializeD3D12Device()
 		{
 			// Enable the debug layer in Debug builds.
-			if constexpr (Util::D3D12::IsDebugLayerEnabled()) 
-			{
-				Microsoft::WRL::ComPtr<ID3D12Debug> debugController{};
-				Util::General::CheckHRESULT(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
-
-				Microsoft::WRL::ComPtr<ID3D12Debug3> latestDebugController{};
-				Util::General::CheckHRESULT(debugController.As(&latestDebugController));
-
-				latestDebugController->EnableDebugLayer();
-				latestDebugController->SetEnableGPUBasedValidation(true);
-			}
+			if constexpr (CurrentDebugLayerEnabler::IsDebugLayerAllowed())
+				CurrentDebugLayerEnabler::TryEnableDebugLayer();
 
 			// Initialize the DXGI factory.
 			{
@@ -240,46 +289,49 @@ namespace Brawler
 			}
 
 			// In Debug builds, edit the Debug Layer messages and breakpoints.
-			if constexpr (Util::D3D12::IsDebugLayerEnabled())
+			if constexpr (CurrentDebugLayerEnabler::IsDebugLayerAllowed())
 			{
-				// Add D3D12 Debug Layer warnings which you wish to ignore here V. You better have a good reason for
-				// doing so, though, and you should document it well.
+				if (CurrentDebugLayerEnabler::IsDebugLayerEnabled())
+				{
+					// Add D3D12 Debug Layer warnings which you wish to ignore here V. You better have a good reason for
+					// doing so, though, and you should document it well.
 
-				static std::array<D3D12_MESSAGE_ID, 2> ignoredD3D12DebugLayerMessageArr{
-					// Disable error messages for invalid alignments from ID3D12Device::GetResourceAllocationInfo2().
-					// We already check if an alignment value is invalid when calling that function, and revert
-					// to standard (non-small) alignment when this happens. As a result, this error message becomes
-					// redundant. (In fact, I'm not entirely sure why this is even an error message in the debug
-					// layer in the first place, considering that the function returns an error value if the small
-					// alignment cannot be used, anyways.)
-					D3D12_MESSAGE_ID::D3D12_MESSAGE_ID_CREATERESOURCE_INVALIDALIGNMENT,
+					static std::array<D3D12_MESSAGE_ID, 2> ignoredD3D12DebugLayerMessageArr{
+						// Disable error messages for invalid alignments from ID3D12Device::GetResourceAllocationInfo2().
+						// We already check if an alignment value is invalid when calling that function, and revert
+						// to standard (non-small) alignment when this happens. As a result, this error message becomes
+						// redundant. (In fact, I'm not entirely sure why this is even an error message in the debug
+						// layer in the first place, considering that the function returns an error value if the small
+						// alignment cannot be used, anyways.)
+						D3D12_MESSAGE_ID::D3D12_MESSAGE_ID_CREATERESOURCE_INVALIDALIGNMENT,
 
-					// Disable warnings for multiple buffer resources having the same GPU virtual address. This is
-					// a natural consequence of the means by which we alias transient resources.
-					//
-					// I'm not entirely sure why this warning exists. The idea is probably to ensure that the
-					// developer is aware that buffers which share GPU memory cannot be used simultaneously in
-					// different states, but the FrameGraph system of the Brawler Engine guarantees that this does
-					// not happen.
-					D3D12_MESSAGE_ID::D3D12_MESSAGE_ID_HEAP_ADDRESS_RANGE_INTERSECTS_MULTIPLE_BUFFERS
-				};
+						// Disable warnings for multiple buffer resources having the same GPU virtual address. This is
+						// a natural consequence of the means by which we alias transient resources.
+						//
+						// I'm not entirely sure why this warning exists. The idea is probably to ensure that the
+						// developer is aware that buffers which share GPU memory cannot be used simultaneously in
+						// different states, but the FrameGraph system of the Brawler Engine guarantees that this does
+						// not happen.
+						D3D12_MESSAGE_ID::D3D12_MESSAGE_ID_HEAP_ADDRESS_RANGE_INTERSECTS_MULTIPLE_BUFFERS
+					};
 
-				D3D12_INFO_QUEUE_FILTER infoQueueFilter{};
-				infoQueueFilter.DenyList.NumIDs = static_cast<std::uint32_t>(ignoredD3D12DebugLayerMessageArr.size());
+					D3D12_INFO_QUEUE_FILTER infoQueueFilter{};
+					infoQueueFilter.DenyList.NumIDs = static_cast<std::uint32_t>(ignoredD3D12DebugLayerMessageArr.size());
 
-				// Some genius made pIDList a non-const D3D12_MESSAGE_ID*, so ignoredD3D12DebugLayerMessageArr can't
-				// be constexpr.
-				infoQueueFilter.DenyList.pIDList = ignoredD3D12DebugLayerMessageArr.data();
+					// Some genius made pIDList a non-const D3D12_MESSAGE_ID*, so ignoredD3D12DebugLayerMessageArr can't
+					// be constexpr.
+					infoQueueFilter.DenyList.pIDList = ignoredD3D12DebugLayerMessageArr.data();
 
-				Microsoft::WRL::ComPtr<ID3D12InfoQueue> d3dInfoQueue{};
-				Util::General::CheckHRESULT(mD3dDevice.As(&d3dInfoQueue));
+					Microsoft::WRL::ComPtr<ID3D12InfoQueue> d3dInfoQueue{};
+					Util::General::CheckHRESULT(mD3dDevice.As(&d3dInfoQueue));
 
-				Util::General::CheckHRESULT(d3dInfoQueue->AddStorageFilterEntries(&infoQueueFilter));
+					Util::General::CheckHRESULT(d3dInfoQueue->AddStorageFilterEntries(&infoQueueFilter));
 
-				// Do a debug break on any D3D12 error messages with a severity >= D3D12_MESSAGE_SEVERITY_WARNING.
-				Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_WARNING, true));
-				Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_ERROR, true));
-				Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_CORRUPTION, true));
+					// Do a debug break on any D3D12 error messages with a severity >= D3D12_MESSAGE_SEVERITY_WARNING.
+					Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_WARNING, true));
+					Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_ERROR, true));
+					Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_CORRUPTION, true));
+				}
 			}
 		}
 

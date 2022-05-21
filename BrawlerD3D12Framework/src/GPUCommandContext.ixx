@@ -302,7 +302,7 @@ namespace Brawler
 		template <GPUCommandQueueType CmdListType>
 		void GPUCommandContext<CmdListType>::AssertResourceState(const I_GPUResource& resource, const D3D12_RESOURCE_STATES expectedState) const
 		{
-			if constexpr (Util::D3D12::IsDebugLayerEnabled())
+			if (Util::D3D12::IsDebugLayerEnabled())
 			{
 				assert(Util::D3D12::IsResourceStateValid(expectedState) && "ERROR: An attempt was made to check if a resource is in a given state using GPUCommandContext::AssertResourceState(), but the provided resource state was invalid!");
 

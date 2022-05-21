@@ -23,19 +23,19 @@ namespace
 
 		return renderer;
 	}
-
-	Brawler::D3D12::GPUDevice& GetGPUDevice()
-	{
-		thread_local Brawler::D3D12::GPUDevice& gpuDevice{ GetRenderer().GetGPUDevice() };
-
-		return gpuDevice;
-	}
 }
 
 namespace Util
 {
 	namespace Engine
 	{
+		Brawler::D3D12::GPUDevice& GetGPUDevice()
+		{
+			thread_local Brawler::D3D12::GPUDevice& gpuDevice{ GetRenderer().GetGPUDevice() };
+
+			return gpuDevice;
+		}
+		
 		Brawler::D3D12::GPUCommandManager& GetGPUCommandManager()
 		{
 			thread_local Brawler::D3D12::GPUCommandManager& cmdManager{ GetRenderer().GetGPUCommandManager() };
