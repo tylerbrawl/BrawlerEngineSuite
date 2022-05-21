@@ -2,6 +2,7 @@ module;
 #include <cassert>
 #include <optional>
 #include <variant>
+#include <mutex>
 #include "DxDef.h"
 
 module Brawler.D3D12.DescriptorTableBuilder;
@@ -20,7 +21,8 @@ namespace Brawler
 			mStagingHeap(nullptr),
 			mDescriptorTable(),
 			mDescriptorInfoArr(),
-			mNumDescriptors(tableSizeInDescriptors)
+			mNumDescriptors(tableSizeInDescriptors),
+			mTableCreationCritSection()
 		{
 			// Create the non-shader-visible descriptor heap for staging the descriptors.
 			const D3D12_DESCRIPTOR_HEAP_DESC heapDesc{
@@ -35,10 +37,73 @@ namespace Brawler
 			mDescriptorInfoArr.resize(tableSizeInDescriptors);
 		}
 
+		DescriptorTableBuilder::DescriptorTableBuilder(DescriptorTableBuilder&& rhs) noexcept :
+			mStagingHeap(nullptr),
+			mDescriptorTable(),
+			mDescriptorInfoArr(),
+			mNumDescriptors(rhs.mNumDescriptors),
+			mTableCreationCritSection()
+		{
+			const std::scoped_lock<std::mutex> lock{ rhs.mTableCreationCritSection };
+
+			mStagingHeap = std::move(rhs.mStagingHeap);
+
+			mDescriptorTable = std::move(rhs.mDescriptorTable);
+			rhs.mDescriptorTable.reset();
+
+			mDescriptorInfoArr = std::move(rhs.mDescriptorInfoArr);
+
+			rhs.mNumDescriptors = 0;
+		}
+
+		DescriptorTableBuilder& DescriptorTableBuilder::operator=(DescriptorTableBuilder&& rhs) noexcept
+		{
+			const std::scoped_lock<std::mutex, std::mutex> lock{ mTableCreationCritSection, rhs.mTableCreationCritSection };
+
+			mStagingHeap = std::move(rhs.mStagingHeap);
+
+			mDescriptorTable = std::move(rhs.mDescriptorTable);
+			rhs.mDescriptorTable.reset();
+
+			mDescriptorInfoArr = std::move(rhs.mDescriptorInfoArr);
+
+			mNumDescriptors = rhs.mNumDescriptors;
+			rhs.mNumDescriptors = 0;
+
+			return *this;
+		}
+
 		PerFrameDescriptorTable DescriptorTableBuilder::GetDescriptorTable()
 		{
 			// Create a new per-frame descriptor table if we do not have one for the
 			// current frame.
+			//
+			// Even with the std::mutex, there is a condition we need to consider.
+			// Suppose that thread A is creating a PerFrameDescriptorTable for frame N,
+			// while thread B is creating a PerFrameDescriptorTable for frame (N + 1).
+			// This might happen, for instance, if thread A gets suspended long enough
+			// for thread B to call DescriptorTableBuilder::GetDescriptorTable() while
+			// recording a RenderPass before thread A ever has a chance to.
+			//
+			// Should we be worried about this? The answer is ultimately no, I believe.
+			// If thread B gets here first, then CreateDescriptorTable() will create
+			// a descriptor table in the per-frame descriptor segment of the
+			// GPUResourceDescriptorHeap for frame (N + 1). Thread A will then find that
+			// mDescriptorTable->IsDescriptorTableValid() returns true because frame (N + 1)
+			// is later than what Util::Engine::GetCurrentFrameNumber() would return for
+			// that thread (i.e., frame N).
+			//
+			// So, thread A would end up using the descriptor table for frame (N + 1).
+			// This isn't a bad thing, however, because the GPU will still be able to
+			// use the descriptor table as usual. Since descriptors are created immediately
+			// on the CPU timeline, we know that even though the descriptors are meant for
+			// frame (N + 1), they will still be usable on the GPU timeline for frame N.
+			//
+			// Thus, we conclude that this race condition is benign. (In practice, it is
+			// unlikely to happen, anyways. Still, it is important to consider these types of
+			// things to ensure correctness.)
+			const std::scoped_lock<std::mutex> lock{ mTableCreationCritSection };
+
 			if (!mDescriptorTable.has_value() || !mDescriptorTable->IsDescriptorTableValid())
 				CreateDescriptorTable();
 			
@@ -57,6 +122,10 @@ namespace Brawler
 
 		void DescriptorTableBuilder::CreateDescriptorTable()
 		{
+			// *LOCKED*
+			//
+			// This function is called from a locked context.
+			
 			// First, create the descriptors within the non-shader-visible heap.
 			std::uint32_t currIndex = 0;
 			for (const auto& descriptorInfo : mDescriptorInfoArr)
@@ -104,6 +173,10 @@ namespace Brawler
 
 		void DescriptorTableBuilder::CreateConstantBufferView(const std::uint32_t index, const CBVInfo& cbvInfo)
 		{
+			// *LOCKED*
+			//
+			// This function is called from a locked context.
+			
 			const D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc{
 				.BufferLocation = cbvInfo.BufferSubAllocationPtr->GetGPUVirtualAddress() + cbvInfo.OffsetFromSubAllocationStart,
 				.SizeInBytes = static_cast<std::uint32_t>(cbvInfo.BufferSubAllocationPtr->GetSubAllocationSize())
@@ -114,11 +187,19 @@ namespace Brawler
 
 		void DescriptorTableBuilder::CreateShaderResourceView(const std::uint32_t index, const SRVInfo& srvInfo)
 		{
+			// *LOCKED*
+			//
+			// This function is called from a locked context.
+			
 			Util::Engine::GetD3D12Device().CreateShaderResourceView(&(srvInfo.GPUResourcePtr->GetD3D12Resource()), &(srvInfo.SRVDesc), GetCPUDescriptorHandle(index));
 		}
 
 		void DescriptorTableBuilder::CreateUnorderedAccessView(const std::uint32_t index, const UAVInfo& uavInfo)
 		{
+			// *LOCKED*
+			//
+			// This function is called from a locked context.
+			
 			Brawler::D3D12Resource* const d3dCounterResourcePtr = (uavInfo.UAVCounter.HasValue() ? &(uavInfo.UAVCounter->GetD3D12Resource()) : nullptr);
 
 			Util::Engine::GetD3D12Device().CreateUnorderedAccessView(

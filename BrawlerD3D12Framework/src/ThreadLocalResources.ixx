@@ -1,5 +1,6 @@
 module;
-#include <optional>
+#include <stack>
+#include <vector>
 
 export module Brawler.ThreadLocalResources;
 
@@ -28,8 +29,7 @@ export namespace Brawler
 		std::uint32_t GetThreadIndex() const;
 
 	private:		
-		std::optional<std::uint64_t> mCachedFrameNumber;
-		std::uint64_t mFrameNumberCacheCount;
+		std::stack<std::uint64_t> mCachedFrameNumberStack;
 		std::uint32_t mThreadIndex;
 	};
 }

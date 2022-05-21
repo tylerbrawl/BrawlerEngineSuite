@@ -16,7 +16,7 @@ namespace Brawler
 
 		bool PerFrameDescriptorTable::IsDescriptorTableValid() const
 		{
-			return (mCreationFrameNum == Util::Engine::GetCurrentFrameNumber());
+			return (mCreationFrameNum >= Util::Engine::GetCurrentFrameNumber());
 		}
 	}
 }

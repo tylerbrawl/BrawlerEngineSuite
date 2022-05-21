@@ -2,6 +2,7 @@ module;
 #include <variant>
 #include <optional>
 #include <cassert>
+#include <mutex>
 #include "DxDef.h"
 
 export module Brawler.D3D12.DescriptorTableBuilder;
@@ -70,8 +71,8 @@ export namespace Brawler
 			DescriptorTableBuilder(const DescriptorTableBuilder& rhs) = delete;
 			DescriptorTableBuilder& operator=(const DescriptorTableBuilder& rhs) = delete;
 
-			DescriptorTableBuilder(DescriptorTableBuilder&& rhs) noexcept = default;
-			DescriptorTableBuilder& operator=(DescriptorTableBuilder&& rhs) noexcept = default;
+			DescriptorTableBuilder(DescriptorTableBuilder&& rhs) noexcept;
+			DescriptorTableBuilder& operator=(DescriptorTableBuilder&& rhs) noexcept;
 
 			template <typename DataElementType>
 			void CreateConstantBufferView(const std::uint32_t index, const ConstantBufferView<DataElementType> cbv);
@@ -143,6 +144,7 @@ export namespace Brawler
 			std::optional<PerFrameDescriptorTable> mDescriptorTable;
 			std::vector<DescriptorInfoVariant> mDescriptorInfoArr;
 			std::uint32_t mNumDescriptors;
+			mutable std::mutex mTableCreationCritSection;
 		};
 	}
 }
@@ -158,6 +160,8 @@ namespace Brawler
 		{
 			assert(!mDescriptorTable.has_value() && "ERROR: DescriptorTableBuilder::CreateConstantBufferView() was called after DescriptorTableBuilder::GetDescriptorTable()!");
 			assert(index < mDescriptorInfoArr.size());
+
+			const std::scoped_lock<std::mutex> lock{ mTableCreationCritSection };
 			
 			mDescriptorInfoArr[index] = CBVInfo{
 				.BufferSubAllocationPtr{ &(cbv.GetBufferSubAllocation()) },
@@ -171,6 +175,8 @@ namespace Brawler
 			assert(!mDescriptorTable.has_value() && "ERROR: DescriptorTableBuilder::CreateShaderResourceView() was called after DescriptorTableBuilder::GetDescriptorTable()!");
 			assert(index < mDescriptorInfoArr.size());
 
+			const std::scoped_lock<std::mutex> lock{ mTableCreationCritSection };
+
 			mDescriptorInfoArr[index] = SRVInfo{
 				.GPUResourcePtr{ &(srv.GetGPUResource()) },
 				.SRVDesc{ srv.CreateSRVDescription() }
@@ -182,6 +188,8 @@ namespace Brawler
 		{
 			assert(!mDescriptorTable.has_value() && "ERROR: DescriptorTableBuilder::CreateUnorderedAccessView() was called after DescriptorTableBuilder::GetDescriptorTable()!");
 			assert(index < mDescriptorInfoArr.size());
+
+			const std::scoped_lock<std::mutex> lock{ mTableCreationCritSection };
 
 			mDescriptorInfoArr[index] = UAVInfo{
 				.GPUResourcePtr{ &(uav.GetGPUResource()) },
