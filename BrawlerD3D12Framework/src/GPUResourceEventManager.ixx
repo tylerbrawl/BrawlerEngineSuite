@@ -5,8 +5,8 @@ module;
 #include <optional>
 #include <cassert>
 
-export module Brawler.D3D12.GPUResourceStateManagement:GPUResourceEventManager;
-import :GPUResourceEvent;
+export module Brawler.D3D12.GPUResourceEventManager;
+import Brawler.D3D12.GPUResourceEvent;
 import Brawler.D3D12.GPUCommandQueueType;
 
 export namespace Brawler

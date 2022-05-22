@@ -5,19 +5,11 @@ module;
 #include <unordered_map>
 #include "DxDef.h"
 
-export module Brawler.D3D12.GPUResourceStateManagement:GPUResourceUsageAnalyzer;
-import :GPUResourceEventManager;
+export module Brawler.D3D12.GPUResourceUsageAnalyzer;
+import Brawler.D3D12.GPUResourceEventManager;
 import Brawler.D3D12.GPUCommandQueueType;
-
-export namespace Brawler
-{
-	namespace D3D12
-	{
-		class I_GPUResource;
-		class GPUExecutionModule;
-		class ResourceStateZoneMap;
-	}
-}
+import Brawler.D3D12.GPUResourceStateTracker;
+import Brawler.D3D12.I_GPUResource;
 
 export namespace Brawler
 {
@@ -39,14 +31,8 @@ export namespace Brawler
 			GPUResourceEventManager ExtractGPUResourceEventManager();
 
 		private:
-			void TrackResourceUsageInExecutionModule(const GPUExecutionModule& executionModule, ResourceStateZoneMap& stateZoneMap);
-
-		private:
 			I_GPUResource* mResourcePtr;
-			D3D12_RESOURCE_STATES mCurrResourceState;
-			GPUResourceEventManager mEventManager;
-			bool mResourceAlwaysDecays;
-			bool mCheckIrrelevantExecutionModules;
+			GPUResourceStateTracker mStateTracker;
 		};
 	}
 }

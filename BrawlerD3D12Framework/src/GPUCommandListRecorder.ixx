@@ -20,7 +20,8 @@ import Brawler.D3D12.I_RenderPass;
 import Brawler.D3D12.I_GPUResource;
 import Brawler.D3D12.AliasedGPUMemoryManager;
 import Brawler.D3D12.FrameGraphResourceDependency;
-import Brawler.D3D12.GPUResourceStateManagement;
+import Brawler.D3D12.GPUResourceEvent;
+import Brawler.D3D12.GPUResourceEventManager;
 
 export namespace Brawler
 {

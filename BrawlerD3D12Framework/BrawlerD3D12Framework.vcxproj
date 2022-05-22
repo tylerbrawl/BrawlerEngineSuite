@@ -258,6 +258,7 @@
     <ClCompile Include="src\ConstantBufferView.ixx" />
     <ClCompile Include="src\D3D12UtilFormats.ixx" />
     <ClCompile Include="src\D3D12UtilGeneral.ixx" />
+    <ClCompile Include="src\ExplicitBarrierGPUResourceStateTrackerState.ixx" />
     <ClCompile Include="src\FormattedConsoleMessageBuilder.ixx" />
     <ClCompile Include="src\FrameGraphManager.cpp" />
     <ClCompile Include="src\FrameGraphManager.ixx" />
@@ -265,12 +266,15 @@
     <ClCompile Include="src\GPUResourceBinding.ixx" />
     <ClCompile Include="src\GPUResourceBindlessSRVManager.cpp" />
     <ClCompile Include="src\GPUResourceBindlessSRVManager.ixx" />
+    <ClCompile Include="src\GPUResourceStateBarrierMerger.cpp" />
+    <ClCompile Include="src\GPUResourceStateBarrierMerger.ixx" />
+    <ClCompile Include="src\GPUResourceStateTracker.cpp" />
+    <ClCompile Include="src\GPUResourceStateTracker.ixx" />
+    <ClCompile Include="src\GPUResourceStateTrackerStateID.ixx" />
+    <ClCompile Include="src\GPUResourceStateTrackingContext.ixx" />
     <ClCompile Include="src\GPUResourceViews.ixx" />
+    <ClCompile Include="src\ImplicitBarrierGPUResourceStateTrackerState.ixx" />
     <ClCompile Include="src\I_BufferSubAllocation.cpp" />
-    <ClCompile Include="src\BaseGPUResourceStateTrackerState.cpp" />
-    <ClCompile Include="src\BaseGPUResourceStateTrackerState.ixx" />
-    <ClCompile Include="src\BaseResourceStateZoneOptimizerState.ixx" />
-    <ClCompile Include="src\BaseResourceStateZoneOptimizerState.cpp" />
     <ClCompile Include="src\BufferResource.cpp" />
     <ClCompile Include="src\BufferResource.ixx" />
     <ClCompile Include="src\BufferResourceInitializationInfo.ixx" />
@@ -316,8 +320,8 @@
     <ClCompile Include="src\GPUResourceAllocation.ixx" />
     <ClCompile Include="src\GPUResourceAllocationHandle.cpp" />
     <ClCompile Include="src\GPUResourceAllocationHandle.ixx" />
-    <ClCompile Include="src\GPUResourceBarrierTypeSelectorState.ixx" />
     <ClCompile Include="src\GPUResourceCreationType.ixx" />
+    <ClCompile Include="src\I_GPUResourceStateTrackerState.ixx" />
     <ClCompile Include="src\PipelineEnums.ixx" />
     <ClCompile Include="src\PipelineType.ixx" />
     <ClCompile Include="src\PSODatabase.cpp" />
@@ -389,7 +393,6 @@
     <ClCompile Include="src\FrameGraphBlackboardComponentMap.ixx" />
     <ClCompile Include="src\FrameGraphBuilder.cpp" />
     <ClCompile Include="src\FrameGraphBuilder.ixx" />
-    <ClCompile Include="src\FrameGraphCompilation.ixx" />
     <ClCompile Include="src\FrameGraphExecutionContext.cpp" />
     <ClCompile Include="src\FrameGraphExecutionContext.ixx" />
     <ClCompile Include="src\FrameGraphInjection.ixx" />
@@ -426,25 +429,16 @@
     <ClCompile Include="src\GPUResourceHeapPool.ixx" />
     <ClCompile Include="src\GPUResourceInitializationInfo.ixx" />
     <ClCompile Include="src\GPUResourceLifetimeType.ixx" />
-    <ClCompile Include="src\GPUResourceSpecialInitializationState.ixx" />
-    <ClCompile Include="src\GPUResourceStateManagement.ixx" />
-    <ClCompile Include="src\GPUResourceStateTracker.cpp" />
-    <ClCompile Include="src\GPUResourceStateTracker.ixx" />
-    <ClCompile Include="src\GPUResourceStateTrackerStateID.ixx" />
     <ClCompile Include="src\GPUResourceStateTrackerStateTraits.ixx" />
     <ClCompile Include="src\GPUResourceUsageAnalyzer.cpp" />
     <ClCompile Include="src\GPUResourceUsageAnalyzer.ixx" />
     <ClCompile Include="src\GPUResourceUsageTracker.cpp" />
     <ClCompile Include="src\GPUResourceUsageTracker.ixx" />
     <ClCompile Include="src\GPUVendor.ixx" />
-    <ClCompile Include="src\IgnoreResourceStateZoneOptimizerState.cpp" />
-    <ClCompile Include="src\IgnoreResourceStateZoneOptimizerState.ixx" />
-    <ClCompile Include="src\ImmediateGPUResourceBarrierState.ixx" />
     <ClCompile Include="src\I_DescriptorTable.cpp" />
     <ClCompile Include="src\I_DescriptorTable.ixx" />
     <ClCompile Include="src\I_FreeGPUResidencyState.ixx" />
     <ClCompile Include="src\I_GPUResourceHeapManager.ixx" />
-    <ClCompile Include="src\I_GPUResourceStateTrackerState.ixx" />
     <ClCompile Include="src\I_PageableGPUObject.cpp" />
     <ClCompile Include="src\I_PageableGPUObject.ixx" />
     <ClCompile Include="src\I_RenderModule.cpp" />
@@ -452,7 +446,6 @@
     <ClCompile Include="src\I_GPUResource.cpp" />
     <ClCompile Include="src\I_GPUResource.ixx" />
     <ClCompile Include="src\I_RenderPass.ixx" />
-    <ClCompile Include="src\I_ResourceStateZoneOptimizerState.ixx" />
     <ClCompile Include="src\Job.cpp" />
     <ClCompile Include="src\Job.ixx" />
     <ClCompile Include="src\JobCounter.cpp" />
@@ -482,8 +475,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\ReadResourceStateZoneOptimizerState.cpp" />
-    <ClCompile Include="src\ReadResourceStateZoneOptimizerState.ixx" />
     <ClCompile Include="src\ReflectionUtil.ixx" />
     <ClCompile Include="src\Renderer.ixx" />
     <ClCompile Include="src\RenderPass.ixx" />
@@ -500,12 +491,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\ResourceStateZone.ixx" />
-    <ClCompile Include="src\ResourceStateZoneMap.cpp" />
-    <ClCompile Include="src\ResourceStateZoneMap.ixx" />
-    <ClCompile Include="src\ResourceStateZoneOptimizer.cpp" />
-    <ClCompile Include="src\ResourceStateZoneOptimizer.ixx" />
-    <ClCompile Include="src\ResourceStateZoneOptimizerStateID.ixx" />
-    <ClCompile Include="src\ResourceStateZoneOptimizerStateTraits.ixx" />
     <ClCompile Include="src\RootSignatureDatabase.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
@@ -521,7 +506,6 @@
     <ClCompile Include="src\ScopedGPUResourceMapping.ixx" />
     <ClCompile Include="src\ScopedSharedLock.ixx" />
     <ClCompile Include="src\SortedVector.ixx" />
-    <ClCompile Include="src\SplitGPUResourceBarrierState.ixx" />
     <ClCompile Include="src\ThreadingUtil.cpp" />
     <ClCompile Include="src\ThreadingUtil.ixx" />
     <ClCompile Include="src\ThreadLocalResources.ixx" />

@@ -2,7 +2,7 @@ module;
 #include <variant>
 #include "DxDef.h"
 
-export module Brawler.D3D12.GPUResourceStateManagement:GPUResourceEvent;
+export module Brawler.D3D12.GPUResourceEvent;
 
 export namespace Brawler
 {

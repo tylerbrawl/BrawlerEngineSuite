@@ -1,21 +1,16 @@
 module;
-#include <optional>
 #include "DxDef.h"
 
 export module Brawler.D3D12.GPUResourceStateTracker;
-import Brawler.D3D12.GPUResourceStateManagement;
-import Brawler.D3D12.GPUResourceStateTrackerStateID;
+import Brawler.D3D12.GPUResourceEventManager;
 import Brawler.PolymorphicAdapter;
 export import Brawler.GPUResourceStateTrackerStateTraits;
 import Brawler.D3D12.I_GPUResourceStateTrackerState;
-
-export namespace Brawler
-{
-	namespace D3D12
-	{
-		class I_GPUResource;
-	}
-}
+import Brawler.D3D12.GPUResourceStateTrackerStateID;
+import Brawler.D3D12.GPUResourceStateBarrierMerger;
+import Brawler.D3D12.GPUCommandQueueType;
+export import Brawler.D3D12.GPUExecutionModule;
+import Brawler.D3D12.I_GPUResource;
 
 export namespace Brawler
 {
@@ -23,11 +18,9 @@ export namespace Brawler
 	{
 		class GPUResourceStateTracker
 		{
-		private:
-			friend class BaseGPUResourceStateTrackerState;
-
 		public:
-			explicit GPUResourceStateTracker(I_GPUResource& resource);
+			GPUResourceStateTracker() = delete;
+			explicit GPUResourceStateTracker(I_GPUResource& trackedResource);
 
 			GPUResourceStateTracker(const GPUResourceStateTracker& rhs) = delete;
 			GPUResourceStateTracker& operator=(const GPUResourceStateTracker& rhs) = delete;
@@ -35,22 +28,20 @@ export namespace Brawler
 			GPUResourceStateTracker(GPUResourceStateTracker&& rhs) noexcept = default;
 			GPUResourceStateTracker& operator=(GPUResourceStateTracker&& rhs) noexcept = default;
 
-			void AddNextResourceStateZone(const ResourceStateZone& stateZone);
-			void OnStateDecayBarrier();
-
+			void TrackGPUExecutionModule(const GPUExecutionModule& executionModule);
 			GPUResourceEventManager FinalizeStateTracking();
 
 		private:
-			void RequestTrackerStateChange(const GPUResourceStateTrackerStateID stateID);
+			template <GPUCommandQueueType QueueType>
+			void TrackRenderPass(const GPUExecutionModule& executionModule, const I_RenderPass<QueueType>& renderPass);
 
-			void AddGPUResourceEventForResourceStateZone(const ResourceStateZone& stateZone, GPUResourceEvent&& resourceEvent);
-			void ChangeTrackerState();
+			void ChangeState(const GPUResourceStateTrackerStateID stateID);
 
 		private:
 			I_GPUResource* mResourcePtr;
 			GPUResourceEventManager mEventManager;
-			Brawler::PolymorphicAdapter<I_GPUResourceStateTrackerState> mCurrState;
-			std::optional<GPUResourceStateTrackerStateID> mNextStateID;
+			GPUResourceStateBarrierMerger mBarrierMerger;
+			Brawler::PolymorphicAdapter<I_GPUResourceStateTrackerState> mStateAdapter;
 		};
 	}
 }

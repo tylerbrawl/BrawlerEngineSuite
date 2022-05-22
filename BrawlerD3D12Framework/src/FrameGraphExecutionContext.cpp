@@ -20,6 +20,7 @@ import Brawler.D3D12.RenderPass;
 import Util.Engine;
 import Brawler.D3D12.GPUCommandManager;
 import Brawler.D3D12.GPUExecutionModuleRecordContext;
+import Brawler.D3D12.GPUResourceUsageAnalyzer;
 
 namespace
 {

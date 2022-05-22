@@ -5,7 +5,7 @@ module;
 #include <utility>
 #include <optional>
 
-export module Brawler.D3D12.FrameGraphCompilation:GPUExecutionModule;
+export module Brawler.D3D12.GPUExecutionModule;
 import Brawler.D3D12.I_RenderPass;
 import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.SortedVector;
@@ -59,6 +59,9 @@ export namespace Brawler
 			std::vector<ResourceStateZone> GetResourceStateZones(const I_GPUResource& resource) const;
 
 			bool IsResourceUsed(const I_GPUResource& resource) const;
+
+			template <GPUCommandQueueType QueueType>
+			bool IsResourceUsedInQueue(const I_GPUResource& resource) const;
 
 			template <GPUCommandQueueType QueueType>
 				requires (QueueType != GPUCommandQueueType::COUNT_OR_ERROR)
@@ -120,6 +123,12 @@ namespace Brawler
 				stateZone.ExecutionModule = this;
 
 			return stateZoneArr;
+		}
+
+		template <GPUCommandQueueType QueueType>
+		bool GPUExecutionModule::IsResourceUsedInQueue(const I_GPUResource& resource) const
+		{
+			return GetRenderPassContainer<QueueType>().ResourceMap.DoesResourceHaveDependentRenderPasses(resource);
 		}
 
 		template <GPUCommandQueueType QueueType>
