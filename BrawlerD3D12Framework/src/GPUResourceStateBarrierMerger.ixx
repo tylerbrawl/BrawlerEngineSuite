@@ -32,6 +32,7 @@ export namespace Brawler
 				GPUCommandQueueType QueueType;
 
 				void AddGPUResourceEventToEventManager(GPUResourceEventManager& eventManager, GPUResourceEvent&& resourceEvent) const;
+				bool HasSameRenderPass(const RenderPassInfo& otherPassInfo) const;
 			};
 
 		public:

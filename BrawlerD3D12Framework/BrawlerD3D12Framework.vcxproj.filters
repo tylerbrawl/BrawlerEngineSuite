@@ -939,6 +939,9 @@
     <ClCompile Include="src\ExplicitBarrierGPUResourceStateTrackerState.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
     </ClCompile>
+    <ClCompile Include="src\BarrierMergerStateContainer.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

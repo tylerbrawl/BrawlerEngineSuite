@@ -248,6 +248,7 @@
     <ClCompile Include="src\AliasedGPUMemoryManager.cpp" />
     <ClCompile Include="src\AliasedGPUMemoryManager.ixx" />
     <ClCompile Include="src\AsyncGPUResourceBuilder.ixx" />
+    <ClCompile Include="src\BarrierMergerStateContainer.ixx" />
     <ClCompile Include="src\BindlessSRVSentinel.cpp" />
     <ClCompile Include="src\BindlessSRVSentinel.ixx" />
     <ClCompile Include="src\BufferSubAllocationReservationHandle.cpp" />

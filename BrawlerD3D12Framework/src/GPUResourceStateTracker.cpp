@@ -57,6 +57,18 @@ namespace Brawler
 
 				if (executionModule.IsResourceUsedInQueue<QueueType>(*mResourcePtr)) [[unlikely]]
 				{
+					// Resources used in the COPY queue must start out in the COMMON state.
+					// I am pretty sure that the D3D12 API disallows using resources in both a COPY
+					// queue and a different queue simultaneously, so the Brawler Engine definitely
+					// does not allow it.
+					if constexpr (QueueType == GPUCommandQueueType::COPY)
+					{
+						assert(!renderPassSpan.empty());
+						assert(!executionModule.IsResourceUsedInQueue<GPUCommandQueueType::DIRECT>(*mResourcePtr) && !executionModule.IsResourceUsedInQueue<GPUCommandQueueType::COMPUTE>(*mResourcePtr) && "ERROR: The D3D12 API disallows the simultaneous use of a resource in both the COPY queue and a queue of a different type!");
+						
+						mBarrierMerger.AddExplicitStateTransition(*(renderPassSpan[0]), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON);
+					}
+					
 					for (const auto& renderPassPtr : renderPassSpan)
 						TrackRenderPass(executionModule, *renderPassPtr);
 				}
@@ -88,7 +100,7 @@ namespace Brawler
 				return state.WillResourceStateDecay(context);
 			}))
 			{
-				mBarrierMerger.ErasePotentialSplitBarrierBeginRenderPasses();
+				mBarrierMerger.CommitExistingExplicitStateTransition();
 				mResourcePtr->SetCurrentResourceState(D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON);
 				mStateAdapter = ImplicitBarrierGPUResourceStateTrackerState{};
 			}

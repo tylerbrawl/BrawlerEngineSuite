@@ -35,6 +35,30 @@ namespace Brawler
 			}
 		}
 
+		bool GPUResourceStateBarrierMerger::RenderPassInfo::HasSameRenderPass(const GPUResourceStateBarrierMerger::RenderPassInfo& otherPassInfo) const
+		{
+			if (QueueType != otherPassInfo.QueueType)
+				return false;
+
+			switch (QueueType)
+			{
+			case GPUCommandQueueType::DIRECT:
+				return (std::get<0>(RenderPass) == std::get<0>(otherPassInfo.RenderPass));
+
+			case GPUCommandQueueType::COMPUTE:
+				return (std::get<1>(RenderPass) == std::get<1>(otherPassInfo.RenderPass));
+
+			case GPUCommandQueueType::COPY:
+				return (std::get<2>(RenderPass) == std::get<2>(otherPassInfo.RenderPass));
+
+			default:
+				assert(false);
+				std::unreachable();
+
+				return false;
+			}
+		}
+
 		GPUResourceStateBarrierMerger::GPUResourceStateBarrierMerger(I_GPUResource& resource, GPUResourceEventManager& eventManager) :
 			mResourcePtr(&resource),
 			mEventManagerPtr(&eventManager),
@@ -55,6 +79,11 @@ namespace Brawler
 				.BeforeState{mResourcePtr->GetCurrentResourceState()},
 				.AfterState{mNextState}
 			};
+
+			if (transitionCheckInfo.BeforeState == transitionCheckInfo.AfterState || 
+				((transitionCheckInfo.BeforeState & transitionCheckInfo.AfterState) == transitionCheckInfo.AfterState && transitionCheckInfo.AfterState != D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON)) [[unlikely]]
+				return;
+
 			bool isSplitBarrier = false;
 
 			for (const auto& renderPassInfo : mPotentialBeginBarrierPassArr)
@@ -62,7 +91,7 @@ namespace Brawler
 				if (renderPassInfo.has_value())
 				{
 					transitionCheckInfo.QueueType = renderPassInfo->QueueType;
-					if (Util::D3D12::CanQueuePerformResourceTransition(transitionCheckInfo))
+					if (Util::D3D12::CanQueuePerformResourceTransition(transitionCheckInfo) && !renderPassInfo->HasSameRenderPass(*mEndBarrierPass))
 					{
 						renderPassInfo->AddGPUResourceEventToEventManager(*mEventManagerPtr, GPUResourceEvent{
 							.GPUResource = mResourcePtr,
