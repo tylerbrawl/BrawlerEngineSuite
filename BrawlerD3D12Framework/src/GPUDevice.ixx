@@ -23,6 +23,14 @@ namespace Brawler
 			{
 				return false;
 			}
+
+			static consteval void TryEnableDebugLayer()
+			{}
+
+			static consteval bool IsDebugLayerEnabled()
+			{
+				return false;
+			}
 		};
 
 		bool TryEnableD3D12DebugLayer();
@@ -49,7 +57,7 @@ namespace Brawler
 				// messages more, but who really knows which is better?)
 				//
 				// NOTE: The debug layer is never enabled in Release builds, even if this value is set to true.
-				constexpr bool ALLOW_D3D12_DEBUG_LAYER = true;
+				constexpr bool ALLOW_D3D12_DEBUG_LAYER = false;
 
 				return ALLOW_D3D12_DEBUG_LAYER;
 			}

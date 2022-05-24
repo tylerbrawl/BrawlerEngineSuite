@@ -56,10 +56,14 @@ export namespace Brawler
 			/// </returns>
 			bool DoImplicitReadStateTransitionsAllowStateDecay() const;
 
+			bool IsImplicitTransitionPossible(const D3D12_RESOURCE_STATES requiredState) const;
+
 			bool HasExplicitStateTransition() const;
 
 			D3D12_RESOURCE_STATES GetBeforeState() const;
 			D3D12_RESOURCE_STATES GetAfterState() const;
+
+			void UpdateGPUResourceState();
 
 			void SwapStates();
 			void DecayResourceState();
@@ -93,11 +97,11 @@ namespace Brawler
 
 		bool BarrierMergerStateContainer::CanAfterStateBeCombined(const D3D12_RESOURCE_STATES requiredState) const
 		{
-			if (!mAfterState.has_value() || (mAllowImplicitTransitions && Util::D3D12::IsImplicitStateTransitionPossible(*mResourcePtr, mBeforeState | requiredState)))
+			if (!mAfterState.has_value() || IsImplicitTransitionPossible(requiredState))
 				return true;
 
-			if (requiredState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON)
-				return (*mAfterState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON);
+			if (*mAfterState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON || requiredState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON)
+				return (*mAfterState == requiredState);
 
 			return Util::D3D12::IsResourceStateValid(*mAfterState | requiredState);
 		}
@@ -107,7 +111,7 @@ namespace Brawler
 			assert(CanAfterStateBeCombined(requiredState) && "ERROR: The state provided to BarrierMergerStateContainer::UpdateAfterState() cannot be combined with the current after state!");
 			
 			// First, try to make an implicit transition.
-			if (mAllowImplicitTransitions && Util::D3D12::IsImplicitStateTransitionPossible(*mResourcePtr, mBeforeState | requiredState))
+			if (IsImplicitTransitionPossible(requiredState))
 			{
 				mBeforeState |= requiredState;
 				return;
@@ -128,9 +132,14 @@ namespace Brawler
 			return (mAllowImplicitTransitions && (Util::D3D12::IsValidReadState(mBeforeState) || mBeforeState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON));
 		}
 
+		bool BarrierMergerStateContainer::IsImplicitTransitionPossible(const D3D12_RESOURCE_STATES requiredState) const
+		{
+			return (mAllowImplicitTransitions && Util::D3D12::IsImplicitStateTransitionPossible(*mResourcePtr, mBeforeState | requiredState));
+		}
+
 		bool BarrierMergerStateContainer::HasExplicitStateTransition() const
 		{
-			return mAfterState.has_value();
+			return (mAfterState.has_value() && *mAfterState != mBeforeState);
 		}
 
 		D3D12_RESOURCE_STATES BarrierMergerStateContainer::GetBeforeState() const
@@ -144,11 +153,16 @@ namespace Brawler
 			return *mAfterState;
 		}
 
+		void BarrierMergerStateContainer::UpdateGPUResourceState()
+		{
+			mResourcePtr->SetCurrentResourceState(mBeforeState);
+		}
+
 		void BarrierMergerStateContainer::SwapStates()
 		{
 			if (mAfterState.has_value()) [[likely]]
 			{
-				mBeforeState = mAfterState;
+				mBeforeState = *mAfterState;
 				mAfterState.reset();
 
 				if (mBeforeState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON)

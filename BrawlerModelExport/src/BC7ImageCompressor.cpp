@@ -533,7 +533,7 @@ namespace Brawler
 				context.CopyBufferToTexture(copyInfo.CopyDestTexture, copyInfo.CopySrcSubAllocation);
 			});
 
-			uploadResourcesBundle.AddCopyRenderPass(std::move(textureCopyRenderPass));
+			uploadResourcesBundle.AddRenderPass(std::move(textureCopyRenderPass));
 		}
 
 		{
@@ -573,7 +573,7 @@ namespace Brawler
 				context.CopyBufferToBuffer(copyInfo.DestConstantBufferSubAllocation, copyInfo.ConstantBufferUploadSubAllocation);
 			});
 
-			uploadResourcesBundle.AddCopyRenderPass(std::move(cbCopyRenderPass));
+			uploadResourcesBundle.AddRenderPass(std::move(cbCopyRenderPass));
 		}
 
 		return uploadResourcesBundle;
@@ -657,7 +657,7 @@ namespace Brawler
 					);
 				});
 
-				compressionBundle.AddDirectRenderPass(std::move(mode0Pass));
+				compressionBundle.AddRenderPass(std::move(mode0Pass));
 			}
 
 			{
@@ -724,7 +724,7 @@ namespace Brawler
 						);
 					});
 
-					compressionBundle.AddDirectRenderPass(std::move(compressionPass));
+					compressionBundle.AddRenderPass(std::move(compressionPass));
 				};
 
 				// Mode 1
@@ -780,7 +780,7 @@ namespace Brawler
 					);
 				});
 
-				compressionBundle.AddDirectRenderPass(std::move(encodeBlockPass));
+				compressionBundle.AddRenderPass(std::move(encodeBlockPass));
 			}
 
 			startBlockID += numBlocksInCurrBatch;
@@ -811,13 +811,21 @@ namespace Brawler
 
 		readbackPass.SetRenderPassCommands([] (D3D12::CopyContext& context, const ReadbackPassInfo& passInfo)
 		{
-			context.AssertResourceState(passInfo.BufferCopySrc.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON);
+			// The NVIDIA Debug Layer is shooting out a false positive error for the underlying CopyBufferRegion()
+			// call. I know that it is a false positive because it complains about passInfo.BufferCopySrc.GetBufferResource()
+			// still being in the UNORDERED_ACCESS state, but a call to GPUCommandContext::DebugResourceBarrier()
+			// transitioning the resource from UNORDERED_ACCESS to COPY_SOURCE reveals that it was actually already in the
+			// COPY_SOURCE state, as we expect. (NOTE: If you want to test the resource barrier yourself, you will
+			// need to change this to a DIRECT RenderPass, because the COPY queue does not normally support this
+			// transition.)
+			//
+			// My disappointment is immeasurable, and my day is ruined.
 			
 			context.CopyBufferToBuffer(passInfo.BufferCopyDest, passInfo.BufferCopySrc);
 		});
 
 		D3D12::RenderPassBundle readbackPassBundle{};
-		readbackPassBundle.AddCopyRenderPass(std::move(readbackPass));
+		readbackPassBundle.AddRenderPass(std::move(readbackPass));
 
 		return readbackPassBundle;
 	}

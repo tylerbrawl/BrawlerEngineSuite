@@ -177,7 +177,14 @@ namespace Brawler
 					return false;
 
 				latestDebugController->EnableDebugLayer();
-				latestDebugController->SetEnableGPUBasedValidation(true);
+
+				// They weren't kidding when they said that GPU-based validation slows down your
+				// program significantly. Enable this at your own risk. Honestly, you're probably
+				// better off just using GPU-based validation on a PIX capture, going to sleep, and
+				// then looking at the results when you wake up.
+				static constexpr bool ENABLE_GPU_BASED_VALIDATION = false;
+
+				latestDebugController->SetEnableGPUBasedValidation(ENABLE_GPU_BASED_VALIDATION);
 			}
 
 			return true;

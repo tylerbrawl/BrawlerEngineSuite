@@ -3,10 +3,6 @@ module;
 
 export module Brawler.D3D12.GPUResourceStateTracker;
 import Brawler.D3D12.GPUResourceEventManager;
-import Brawler.PolymorphicAdapter;
-export import Brawler.GPUResourceStateTrackerStateTraits;
-import Brawler.D3D12.I_GPUResourceStateTrackerState;
-import Brawler.D3D12.GPUResourceStateTrackerStateID;
 import Brawler.D3D12.GPUResourceStateBarrierMerger;
 import Brawler.D3D12.GPUCommandQueueType;
 export import Brawler.D3D12.GPUExecutionModule;
@@ -32,16 +28,11 @@ export namespace Brawler
 			GPUResourceEventManager FinalizeStateTracking();
 
 		private:
-			template <GPUCommandQueueType QueueType>
-			void TrackRenderPass(const GPUExecutionModule& executionModule, const I_RenderPass<QueueType>& renderPass);
-
-			void ChangeState(const GPUResourceStateTrackerStateID stateID);
+			void CheckForResourceStateDecay(const GPUExecutionModule& executionModule);
 
 		private:
-			I_GPUResource* mResourcePtr;
-			GPUResourceEventManager mEventManager;
 			GPUResourceStateBarrierMerger mBarrierMerger;
-			Brawler::PolymorphicAdapter<I_GPUResourceStateTrackerState> mStateAdapter;
+			bool mResourceAlwaysDecays;
 		};
 	}
 }

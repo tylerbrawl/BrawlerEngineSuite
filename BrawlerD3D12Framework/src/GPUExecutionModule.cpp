@@ -138,6 +138,22 @@ namespace Brawler
 				mCopyPassContainer.ResourceMap.DoesResourceHaveDependentRenderPasses(resource));
 		}
 
+		Brawler::CompositeEnum<GPUCommandQueueType> GPUExecutionModule::GetQueuesUsingResource(const I_GPUResource& resource) const
+		{
+			Brawler::CompositeEnum<GPUCommandQueueType> queuesUsingResource{};
+
+			if (IsResourceUsedInQueue<GPUCommandQueueType::DIRECT>(resource))
+				queuesUsingResource |= GPUCommandQueueType::DIRECT;
+
+			if (IsResourceUsedInQueue<GPUCommandQueueType::COMPUTE>(resource))
+				queuesUsingResource |= GPUCommandQueueType::COMPUTE;
+
+			if (IsResourceUsedInQueue<GPUCommandQueueType::COPY>(resource))
+				queuesUsingResource |= GPUCommandQueueType::COPY;
+
+			return queuesUsingResource;
+		}
+
 		Brawler::SortedVector<I_GPUResource*> GPUExecutionModule::GetResourceDependencies() const
 		{
 			Brawler::SortedVector<I_GPUResource*> resourceDependencySet{};

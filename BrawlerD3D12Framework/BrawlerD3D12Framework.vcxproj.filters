@@ -495,12 +495,6 @@
     <ClCompile Include="src\RTVDSVHandle.ixx">
       <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
     </ClCompile>
-    <ClCompile Include="src\GPUExecutionModule.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\Compilation</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUExecutionModule.cpp">
-      <Filter>Source Files\GPU Work Submission\Frame Graph\Compilation</Filter>
-    </ClCompile>
     <ClCompile Include="src\FrameGraphInjection.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\Compilation</Filter>
     </ClCompile>
@@ -941,6 +935,12 @@
     </ClCompile>
     <ClCompile Include="src\BarrierMergerStateContainer.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUExecutionModule.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUExecutionModule.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Execution</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

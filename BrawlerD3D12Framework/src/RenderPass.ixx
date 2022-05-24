@@ -94,7 +94,7 @@ export namespace Brawler
 			std::span<const FrameGraphResourceDependency> GetResourceDependencies() const override;
 
 			void SetRenderPassName(const std::string_view name);
-			const std::string_view GetRenderPassName() const;
+			const std::string_view GetRenderPassName() const override;
 
 		private:
 			std::optional<typename CallbackInfo<QueueType, InputDataType>::CallbackType> mCmdRecordCallback;

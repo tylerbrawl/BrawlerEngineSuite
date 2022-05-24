@@ -2,148 +2,152 @@ module;
 #include <variant>
 #include <optional>
 #include <array>
+#include <ranges>
+#include <cassert>
 #include "DxDef.h"
 
 module Brawler.D3D12.GPUResourceStateBarrierMerger;
-import Brawler.D3D12.I_GPUResource;
+import Util.D3D12;
 
 namespace Brawler
 {
 	namespace D3D12
 	{
-		void GPUResourceStateBarrierMerger::RenderPassInfo::AddGPUResourceEventToEventManager(GPUResourceEventManager& eventManager, GPUResourceEvent&& resourceEvent) const
-		{
-			switch (QueueType)
-			{
-			case GPUCommandQueueType::DIRECT:
-			{
-				eventManager.AddGPUResourceEvent(*(std::get<0>(RenderPass)), std::move(resourceEvent));
-				break;
-			}
-
-			case GPUCommandQueueType::COMPUTE:
-			{
-				eventManager.AddGPUResourceEvent(*(std::get<1>(RenderPass)), std::move(resourceEvent));
-				break;
-			}
-
-			case GPUCommandQueueType::COPY:
-			{
-				eventManager.AddGPUResourceEvent(*(std::get<2>(RenderPass)), std::move(resourceEvent));
-				break;
-			}
-			}
-		}
-
-		bool GPUResourceStateBarrierMerger::RenderPassInfo::HasSameRenderPass(const GPUResourceStateBarrierMerger::RenderPassInfo& otherPassInfo) const
-		{
-			if (QueueType != otherPassInfo.QueueType)
-				return false;
-
-			switch (QueueType)
-			{
-			case GPUCommandQueueType::DIRECT:
-				return (std::get<0>(RenderPass) == std::get<0>(otherPassInfo.RenderPass));
-
-			case GPUCommandQueueType::COMPUTE:
-				return (std::get<1>(RenderPass) == std::get<1>(otherPassInfo.RenderPass));
-
-			case GPUCommandQueueType::COPY:
-				return (std::get<2>(RenderPass) == std::get<2>(otherPassInfo.RenderPass));
-
-			default:
-				assert(false);
-				std::unreachable();
-
-				return false;
-			}
-		}
-
-		GPUResourceStateBarrierMerger::GPUResourceStateBarrierMerger(I_GPUResource& resource, GPUResourceEventManager& eventManager) :
-			mResourcePtr(&resource),
-			mEventManagerPtr(&eventManager),
-			mNextState(),
-			mPotentialBeginBarrierPassArr(),
-			mEndBarrierPass()
+		GPUResourceStateBarrierMerger::GPUResourceStateBarrierMerger(I_GPUResource& resource) :
+			mStateContainer(resource),
+			mEventManager(),
+			mBeginBarrierPassArr(),
+			mEndBarrierPass(),
+			mWasLastStateForUAV(false)
 		{}
 
-		void GPUResourceStateBarrierMerger::CommitExistingExplicitStateTransition()
+		I_GPUResource& GPUResourceStateBarrierMerger::GetGPUResource()
 		{
-			if (!mEndBarrierPass.has_value())
+			return mStateContainer.GetGPUResource();
+		}
+		
+		bool GPUResourceStateBarrierMerger::DoImplicitReadStateTransitionsAllowStateDecay() const
+		{
+			return mStateContainer.DoImplicitReadStateTransitionsAllowStateDecay();
+		}
+
+		void GPUResourceStateBarrierMerger::DecayResourceState()
+		{
+			CommitExistingExplicitResourceTransition();
+			EraseBarrierPasses();
+
+			mStateContainer.DecayResourceState();
+		}
+
+		GPUResourceEventManager GPUResourceStateBarrierMerger::FinalizeStateTracking()
+		{
+			CommitExistingExplicitResourceTransition();
+			mStateContainer.UpdateGPUResourceState();
+
+			return std::move(mEventManager);
+		}
+
+		void GPUResourceStateBarrierMerger::AddPotentialBeginBarrierRenderPass(GPUResourceStateBarrierMerger::RenderPassVariant passVariant)
+		{
+			const I_GPUResource& resource{ mStateContainer.GetGPUResource() };
+
+			if (mEndBarrierPass.has_value() || resource.RequiresSpecialInitialization())
 				return;
 			
-			// Try to find the earliest render pass whose queue can handle a begin split
-			// barrier transition.
-			Util::D3D12::ResourceTransitionCheckInfo transitionCheckInfo{
-				.QueueType{},
-				.BeforeState{mResourcePtr->GetCurrentResourceState()},
-				.AfterState{mNextState}
-			};
+			// Try to add the first of each type of queue.
+			for (auto& existingVariant : mBeginBarrierPassArr)
+			{
+				if (!existingVariant.has_value())
+				{
+					existingVariant = std::move(passVariant);
+					break;
+				}
 
-			if (transitionCheckInfo.BeforeState == transitionCheckInfo.AfterState || 
-				((transitionCheckInfo.BeforeState & transitionCheckInfo.AfterState) == transitionCheckInfo.AfterState && transitionCheckInfo.AfterState != D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON)) [[unlikely]]
+				else if (existingVariant->index() == passVariant.index())
+					return;
+			}
+		}
+
+		void GPUResourceStateBarrierMerger::CommitExistingExplicitResourceTransition()
+		{
+			if (!mStateContainer.HasExplicitStateTransition())
 				return;
 
-			bool isSplitBarrier = false;
+			I_GPUResource& resource{ mStateContainer.GetGPUResource() };
+			
+			Util::D3D12::ResourceTransitionCheckInfo transitionCheckInfo{
+				.QueueType{},
+				.BeforeState = mStateContainer.GetBeforeState(),
+				.AfterState = mStateContainer.GetAfterState()
+			};
 
-			for (const auto& renderPassInfo : mPotentialBeginBarrierPassArr)
+			bool shouldSubmitTransitionBarrier = false;
+
+			if (transitionCheckInfo.BeforeState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON || transitionCheckInfo.AfterState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON)
+				shouldSubmitTransitionBarrier = (transitionCheckInfo.BeforeState != transitionCheckInfo.AfterState);
+			else
+				shouldSubmitTransitionBarrier = ((transitionCheckInfo.BeforeState & transitionCheckInfo.AfterState) != transitionCheckInfo.AfterState);
+
+			if (shouldSubmitTransitionBarrier)
 			{
-				if (renderPassInfo.has_value())
-				{
-					transitionCheckInfo.QueueType = renderPassInfo->QueueType;
-					if (Util::D3D12::CanQueuePerformResourceTransition(transitionCheckInfo) && !renderPassInfo->HasSameRenderPass(*mEndBarrierPass))
-					{
-						renderPassInfo->AddGPUResourceEventToEventManager(*mEventManagerPtr, GPUResourceEvent{
-							.GPUResource = mResourcePtr,
-							.Event{ResourceTransitionEvent{
-								.BeforeState = transitionCheckInfo.BeforeState,
-								.AfterState = transitionCheckInfo.AfterState,
-								.Flags = D3D12_RESOURCE_BARRIER_FLAGS::D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY
-							}},
-							.EventID = GPUResourceEventID::RESOURCE_TRANSITION
-						});
-						isSplitBarrier = true;
+				bool usingSplitBarrier = false;
 
-						break;
+				static constexpr bool ENABLE_SPLIT_BARRIERS = true;
+
+				if constexpr (ENABLE_SPLIT_BARRIERS)
+				{
+					for (const auto& beginBarrierPassVariant : mBeginBarrierPassArr | std::views::filter([this] (const std::optional<RenderPassVariant>& passVariant) { return passVariant.has_value(); }))
+					{
+						transitionCheckInfo.QueueType = static_cast<GPUCommandQueueType>(beginBarrierPassVariant->index());
+
+						if (Util::D3D12::CanQueuePerformResourceTransition(transitionCheckInfo))
+						{
+							std::visit([this, &transitionCheckInfo] (const auto renderPassPtr)
+							{
+								mEventManager.AddGPUResourceEvent(*renderPassPtr, GPUResourceEvent{
+									.GPUResource{ std::addressof(mStateContainer.GetGPUResource()) },
+									.Event{ ResourceTransitionEvent{
+										.BeforeState{ transitionCheckInfo.BeforeState },
+										.AfterState{ transitionCheckInfo.AfterState },
+										.Flags{ D3D12_RESOURCE_BARRIER_FLAGS::D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY }
+									} },
+									.EventID = GPUResourceEventID::RESOURCE_TRANSITION
+									});
+							}, *beginBarrierPassVariant);
+
+							usingSplitBarrier = true;
+							break;
+						}
 					}
 				}
+
+				assert(mEndBarrierPass.has_value());
+
+				std::visit([this, &transitionCheckInfo, usingSplitBarrier] (const auto renderPassPtr)
+				{
+					mEventManager.AddGPUResourceEvent(*renderPassPtr, GPUResourceEvent{
+						.GPUResource{ std::addressof(mStateContainer.GetGPUResource()) },
+						.Event{ResourceTransitionEvent{
+							.BeforeState{ transitionCheckInfo.BeforeState },
+							.AfterState{ transitionCheckInfo.AfterState },
+							.Flags{ (usingSplitBarrier ? D3D12_RESOURCE_BARRIER_FLAGS::D3D12_RESOURCE_BARRIER_FLAG_END_ONLY : D3D12_RESOURCE_BARRIER_FLAGS::D3D12_RESOURCE_BARRIER_FLAG_NONE) }
+						} },
+						.EventID = GPUResourceEventID::RESOURCE_TRANSITION
+						});
+				}, *mEndBarrierPass);
+
+				mStateContainer.SwapStates();
 			}
 
-			mEndBarrierPass->AddGPUResourceEventToEventManager(*mEventManagerPtr, GPUResourceEvent{
-				.GPUResource = mResourcePtr,
-				.Event{ResourceTransitionEvent{
-					.BeforeState = transitionCheckInfo.BeforeState,
-					.AfterState = transitionCheckInfo.AfterState,
-					.Flags = (isSplitBarrier ? D3D12_RESOURCE_BARRIER_FLAGS::D3D12_RESOURCE_BARRIER_FLAG_END_ONLY : D3D12_RESOURCE_BARRIER_FLAGS::D3D12_RESOURCE_BARRIER_FLAG_NONE)
-				}},
-				.EventID = GPUResourceEventID::RESOURCE_TRANSITION
-			});
+			EraseBarrierPasses();
+		}
 
-			ErasePotentialSplitBarrierBeginRenderPasses();
-			mResourcePtr->SetCurrentResourceState(mNextState);
-			mNextState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON;
+		void GPUResourceStateBarrierMerger::EraseBarrierPasses()
+		{
+			for (auto& beginPassVariant : mBeginBarrierPassArr)
+				beginPassVariant.reset();
+
 			mEndBarrierPass.reset();
-		}
-
-		void GPUResourceStateBarrierMerger::ErasePotentialSplitBarrierBeginRenderPasses()
-		{
-			for (auto& renderPassInfo : mPotentialBeginBarrierPassArr)
-				renderPassInfo.reset();
-		}
-
-		bool GPUResourceStateBarrierMerger::ResourceNeedsSpecialInitialization() const
-		{
-			return mResourcePtr->RequiresSpecialInitialization();
-		}
-
-		void GPUResourceStateBarrierMerger::MarkSpecialInitializationAsCompleted()
-		{
-			mResourcePtr->MarkSpecialInitializationAsCompleted();
-		}
-
-		D3D12_RESOURCE_STATES GPUResourceStateBarrierMerger::GetCurrentResourceState() const
-		{
-			return mResourcePtr->GetCurrentResourceState();
 		}
 	}
 }

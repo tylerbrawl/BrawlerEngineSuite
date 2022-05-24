@@ -59,6 +59,7 @@ export namespace Brawler
 			std::vector<ResourceStateZone> GetResourceStateZones(const I_GPUResource& resource) const;
 
 			bool IsResourceUsed(const I_GPUResource& resource) const;
+			Brawler::CompositeEnum<GPUCommandQueueType> GetQueuesUsingResource(const I_GPUResource& resource) const;
 
 			template <GPUCommandQueueType QueueType>
 			bool IsResourceUsedInQueue(const I_GPUResource& resource) const;

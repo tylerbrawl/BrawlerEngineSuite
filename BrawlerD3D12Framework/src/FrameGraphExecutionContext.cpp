@@ -140,7 +140,7 @@ namespace Brawler
 					return false;
 
 				// We only want to combine RenderPassBundles which contain only direct RenderPasses.
-				if (executionModule.GetUsedQueues() != bundle.GetUsedQueues() || bundle.GetUsedQueues().CountOneBits() != 1)
+				if (executionModule.GetUsedQueues() != bundle.GetUsedQueues() || bundle.GetUsedQueues() != GPUCommandQueueType::DIRECT)
 					return false;
 
 				const std::size_t moduleSizeAfterBundle = executionModule.GetRenderPassCount() + bundle.GetTotalRenderPassCount();

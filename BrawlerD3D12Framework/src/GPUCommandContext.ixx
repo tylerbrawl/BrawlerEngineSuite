@@ -177,6 +177,8 @@ export namespace Brawler
 
 			void CopyBufferToBuffer(const I_BufferSubAllocation& destSubAllocation, const I_BufferSubAllocation& srcSubAllocation) const;
 
+			void DebugResourceBarrier(const I_GPUResource& resource, const D3D12_RESOURCE_STATES beforeState, const D3D12_RESOURCE_STATES afterState) const;
+
 		private:
 			Microsoft::WRL::ComPtr<Brawler::D3D12GraphicsCommandList> mCmdList;
 			GPUResourceAccessManager mResourceAccessManager;
@@ -368,6 +370,16 @@ namespace Brawler
 				srcSubAllocation.GetOffsetFromBufferStart(),
 				srcSubAllocation.GetSubAllocationSize()
 			);
+		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::DebugResourceBarrier(const I_GPUResource& resource, const D3D12_RESOURCE_STATES beforeState, const D3D12_RESOURCE_STATES afterState) const
+		{
+			if constexpr (Util::General::IsDebugModeEnabled())
+			{
+				const CD3DX12_RESOURCE_BARRIER transitionBarrier{ CD3DX12_RESOURCE_BARRIER::Transition(&(resource.GetD3D12Resource()), beforeState, afterState) };
+				mCmdList->ResourceBarrier(1, &transitionBarrier);
+			}
 		}
 	}
 }
