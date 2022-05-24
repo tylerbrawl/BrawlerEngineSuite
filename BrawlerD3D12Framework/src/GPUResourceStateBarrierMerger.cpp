@@ -92,8 +92,11 @@ namespace Brawler
 			{
 				bool usingSplitBarrier = false;
 
-				for (const auto& beginBarrierPassVariant : mBeginBarrierPassArr | std::views::take_while([this] (const std::optional<RenderPassVariant>& passVariant) { return passVariant.has_value(); }))
+				for (const auto& beginBarrierPassVariant : mBeginBarrierPassArr)
 				{
+					if (!beginBarrierPassVariant.has_value())
+						break;
+					
 					transitionCheckInfo.QueueType = static_cast<GPUCommandQueueType>(beginBarrierPassVariant->index());
 
 					if (Util::D3D12::CanQueuePerformResourceTransition(transitionCheckInfo))
