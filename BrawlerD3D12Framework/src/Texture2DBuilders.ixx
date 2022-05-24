@@ -309,8 +309,12 @@ namespace Brawler
 		template <BuilderType Type>
 		constexpr D3D12_RESOURCE_STATES Texture2DBuilderIMPL<Type>::GetInitialResourceState() const
 		{
-			assert(mInitialResourceState.has_value() && "ERROR: A Texture2DBuilder for a Texture2D which is neither a render target nor a depth/stencil texture was never assigned an initial resource state!");
-			return *mInitialResourceState;
+			// Simultaneous-access textures are implicitly promoted from the COMMON state on their 
+			// first use. So, it makes sense to start them in the COMMON state.
+			const bool isSimultaneousAccess = ((mResourceDesc.Flags & D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS) != 0);
+			assert((mInitialResourceState.has_value() || isSimultaneousAccess) && "ERROR: A Texture2DBuilder for a Texture2D which is not a render target, a depth/stencil texture, or a simultaneous-access texture was never assigned an initial resource state!");
+
+			return (isSimultaneousAccess ? D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON : *mInitialResourceState);
 		}
 
 		template <BuilderType Type>

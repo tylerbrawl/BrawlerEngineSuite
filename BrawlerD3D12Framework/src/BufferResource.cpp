@@ -45,12 +45,25 @@ namespace
 		Brawler::D3D12_RESOURCE_DESC bufferDesc{ REQUIRED_BUFFER_DESC };
 		bufferDesc.Width = initInfo.SizeInBytes;
 
+		// Buffers created in DEFAULT heaps are implicitly promoted on their first use. Thus, it makes
+		// sense to start them in the COMMON state. Indeed, PIX shows that regardless of what initial
+		// state you provide for a buffer during resource creation, its initial state is always set to
+		// the COMMON state internally.
+		D3D12_RESOURCE_STATES initialResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON;
+
 		if (initInfo.HeapType != D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_DEFAULT)
+		{
 			bufferDesc.Flags = D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_NONE;
+
+			if (initInfo.HeapType == D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_UPLOAD)
+				initialResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_GENERIC_READ;
+			else
+				initialResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST;
+		}
 
 		return Brawler::D3D12::GPUResourceInitializationInfo{
 			.ResourceDesc{std::move(bufferDesc)},
-			.InitialResourceState = initInfo.InitialResourceState,
+			.InitialResourceState = initialResourceState,
 			.HeapType = initInfo.HeapType
 		};
 	}

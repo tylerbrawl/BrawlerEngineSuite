@@ -366,7 +366,6 @@ namespace Brawler
 
 		D3D12::BufferResourceInitializationInfo bufferInitInfo{
 			.SizeInBytes = (numTotalBlocks * sizeof(BufferBC7)),
-			.InitialResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
 			.HeapType = D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_DEFAULT
 		};
 
@@ -383,14 +382,12 @@ namespace Brawler
 
 		// Constants Buffer
 		bufferInitInfo.SizeInBytes = sizeof(ConstantsBC7);
-		bufferInitInfo.InitialResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST;
 
 		mResourceInfo.ConstantBufferSubAllocation = INITIALIZE_SUB_ALLOCATION_LAMBDA.operator() < D3D12::ConstantBufferSubAllocation<ConstantsBC7> > (frameGraphBuilder, bufferInitInfo);
 
 		// We can, however, create the two sub-allocations from an upload heap buffer from within the
 		// same BufferResource.
 		{
-
 			const D3D12::TextureSubResource srcTextureSubResource{ mResourceInfo.SourceTexturePtr->GetSubResource() };
 			std::uint64_t requiredSizeForTextureCopy = 0;
 
@@ -411,7 +408,6 @@ namespace Brawler
 				// the required space.
 				.SizeInBytes = (Util::Math::AlignToPowerOfTwo(requiredSizeForTextureCopy, sizeof(ConstantsBC7)) + sizeof(ConstantsBC7)),
 
-				.InitialResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_GENERIC_READ,
 				.HeapType = D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_UPLOAD
 			}) };
 
