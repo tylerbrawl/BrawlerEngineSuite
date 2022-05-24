@@ -942,6 +942,12 @@
     <ClCompile Include="src\GPUExecutionModule.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\Execution</Filter>
     </ClCompile>
+    <ClCompile Include="src\GPUResourceEventCollection.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FastUnorderedMap.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

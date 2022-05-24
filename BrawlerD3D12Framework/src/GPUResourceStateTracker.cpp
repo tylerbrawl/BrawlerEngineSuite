@@ -84,7 +84,7 @@ namespace Brawler
 			CheckForResourceStateDecay(executionModule);
 		}
 
-		GPUResourceEventManager GPUResourceStateTracker::FinalizeStateTracking()
+		GPUResourceEventCollection GPUResourceStateTracker::FinalizeStateTracking()
 		{
 			return mBarrierMerger.FinalizeStateTracking();
 		}

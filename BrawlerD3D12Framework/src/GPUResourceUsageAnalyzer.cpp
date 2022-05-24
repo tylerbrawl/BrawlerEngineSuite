@@ -4,7 +4,6 @@ module;
 #include "DxDef.h"
 
 module Brawler.D3D12.GPUResourceUsageAnalyzer;
-import Brawler.D3D12.GPUResourceStateTracker;
 
 namespace Brawler
 {
@@ -26,7 +25,7 @@ namespace Brawler
 				mStateTracker.TrackGPUExecutionModule(executionModule);
 		}
 
-		GPUResourceEventManager GPUResourceUsageAnalyzer::ExtractGPUResourceEventManager()
+		GPUResourceEventCollection GPUResourceUsageAnalyzer::ExtractGPUResourceEventCollection()
 		{
 			return mStateTracker.FinalizeStateTracking();
 		}

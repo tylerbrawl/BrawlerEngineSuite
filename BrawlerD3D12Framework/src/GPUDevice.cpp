@@ -141,7 +141,28 @@ namespace Brawler
 {
 	namespace D3D12
 	{
-		bool TryEnableD3D12DebugLayer() 
+		consteval bool DebugModeDebugLayerEnabler::IsDebugLayerAllowed()
+		{
+			// The NVIDIA debug layer driver sucks. It seems to shoot out debug layer errors and dereference nullptrs for no
+			// good reason. So, even if we are building for Debug mode, this setting can be toggled to either enable or
+			// disable the D3D12 debug layer.
+			// 
+			// Honestly, I have a really shaky relationship with this debug layer. As of writing this, I just tried out
+			// PIX's debug layer, and it seems to be leaps and bounds ahead of this buggy mess. My current recommendation
+			// is to just capture a frame with PIX and use its debug layer offline, setting ALLOW_D3D12_DEBUG_LAYER to be
+			// false.
+			// 
+			// (It's honestly incredibly discomforting that the PIX and NVIDIA debug layers produce different results.
+			// After the jank which I've dealt with using the NVIDIA debug layer, I'm inclined to trust the PIX debug layer
+			// messages more, but who really knows which is better?)
+			//
+			// NOTE: The debug layer is never enabled in Release builds, even if this value is set to true.
+			constexpr bool ALLOW_D3D12_DEBUG_LAYER = false;
+
+			return ALLOW_D3D12_DEBUG_LAYER;
+		}
+
+		void DebugModeDebugLayerEnabler::TryEnableDebugLayer()
 		{
 			// If we get to this point, then the Debug Layer must be allowed for this build. So, we
 			// will make a best effort to enable it here.
@@ -159,7 +180,7 @@ namespace Brawler
 				if (getPixModuleResult) [[unlikely]]
 				{
 					Util::Win32::WriteDebugMessage(L"WARNING: The D3D12 Debug Layer was set to be enabled (see DebugLayerEnabler<Util::General::BuildMode::DEBUG>::IsDebugLayerAllowed()), but PIX is attempting to perform a GPU capture. Thus, the request to enable the D3D12 Debug Layer has been ignored. If you wish, you may use PIX's Debug Layer after the capture has completed.");
-					return false;
+					mIsDebugLayerEnabled = false;
 				}
 			}
 
@@ -168,13 +189,13 @@ namespace Brawler
 				HRESULT hr = D3D12GetDebugInterface(IID_PPV_ARGS(&oldDebugController));
 
 				if (FAILED(hr)) [[unlikely]]
-					return false;
+					mIsDebugLayerEnabled = false;
 
 				Microsoft::WRL::ComPtr<Brawler::D3D12Debug> latestDebugController{};
 				hr = oldDebugController.As(&latestDebugController);
 
 				if (FAILED(hr)) [[unlikely]]
-					return false;
+					mIsDebugLayerEnabled = false;
 
 				latestDebugController->EnableDebugLayer();
 
@@ -187,7 +208,12 @@ namespace Brawler
 				latestDebugController->SetEnableGPUBasedValidation(ENABLE_GPU_BASED_VALIDATION);
 			}
 
-			return true;
+			mIsDebugLayerEnabled = true;
+		}
+
+		bool DebugModeDebugLayerEnabler::IsDebugLayerEnabled() const
+		{
+			return mIsDebugLayerEnabled;
 		}
 	}
 }

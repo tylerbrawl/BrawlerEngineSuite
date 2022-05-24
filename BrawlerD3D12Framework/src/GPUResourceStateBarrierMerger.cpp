@@ -15,7 +15,7 @@ namespace Brawler
 	{
 		GPUResourceStateBarrierMerger::GPUResourceStateBarrierMerger(I_GPUResource& resource) :
 			mStateContainer(resource),
-			mEventManager(),
+			mEventCollection(),
 			mBeginBarrierPassArr(),
 			mEndBarrierPass(),
 			mWasLastStateForUAV(false)
@@ -39,12 +39,12 @@ namespace Brawler
 			mStateContainer.DecayResourceState();
 		}
 
-		GPUResourceEventManager GPUResourceStateBarrierMerger::FinalizeStateTracking()
+		GPUResourceEventCollection GPUResourceStateBarrierMerger::FinalizeStateTracking()
 		{
 			CommitExistingExplicitResourceTransition();
 			mStateContainer.UpdateGPUResourceState();
 
-			return std::move(mEventManager);
+			return std::move(mEventCollection);
 		}
 
 		void GPUResourceStateBarrierMerger::AddPotentialBeginBarrierRenderPass(GPUResourceStateBarrierMerger::RenderPassVariant passVariant)
@@ -92,32 +92,27 @@ namespace Brawler
 			{
 				bool usingSplitBarrier = false;
 
-				static constexpr bool ENABLE_SPLIT_BARRIERS = true;
-
-				if constexpr (ENABLE_SPLIT_BARRIERS)
+				for (const auto& beginBarrierPassVariant : mBeginBarrierPassArr | std::views::take_while([this] (const std::optional<RenderPassVariant>& passVariant) { return passVariant.has_value(); }))
 				{
-					for (const auto& beginBarrierPassVariant : mBeginBarrierPassArr | std::views::filter([this] (const std::optional<RenderPassVariant>& passVariant) { return passVariant.has_value(); }))
+					transitionCheckInfo.QueueType = static_cast<GPUCommandQueueType>(beginBarrierPassVariant->index());
+
+					if (Util::D3D12::CanQueuePerformResourceTransition(transitionCheckInfo))
 					{
-						transitionCheckInfo.QueueType = static_cast<GPUCommandQueueType>(beginBarrierPassVariant->index());
-
-						if (Util::D3D12::CanQueuePerformResourceTransition(transitionCheckInfo))
+						std::visit([this, &transitionCheckInfo] (const auto renderPassPtr)
 						{
-							std::visit([this, &transitionCheckInfo] (const auto renderPassPtr)
-							{
-								mEventManager.AddGPUResourceEvent(*renderPassPtr, GPUResourceEvent{
-									.GPUResource{ std::addressof(mStateContainer.GetGPUResource()) },
-									.Event{ ResourceTransitionEvent{
-										.BeforeState{ transitionCheckInfo.BeforeState },
-										.AfterState{ transitionCheckInfo.AfterState },
-										.Flags{ D3D12_RESOURCE_BARRIER_FLAGS::D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY }
-									} },
-									.EventID = GPUResourceEventID::RESOURCE_TRANSITION
-									});
-							}, *beginBarrierPassVariant);
+							mEventCollection.AddGPUResourceEvent(*renderPassPtr, GPUResourceEvent{
+								.GPUResource{ std::addressof(mStateContainer.GetGPUResource()) },
+								.Event{ ResourceTransitionEvent{
+									.BeforeState{ transitionCheckInfo.BeforeState },
+									.AfterState{ transitionCheckInfo.AfterState },
+									.Flags{ D3D12_RESOURCE_BARRIER_FLAGS::D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY }
+								} },
+								.EventID = GPUResourceEventID::RESOURCE_TRANSITION
+								});
+						}, *beginBarrierPassVariant);
 
-							usingSplitBarrier = true;
-							break;
-						}
+						usingSplitBarrier = true;
+						break;
 					}
 				}
 
@@ -125,7 +120,7 @@ namespace Brawler
 
 				std::visit([this, &transitionCheckInfo, usingSplitBarrier] (const auto renderPassPtr)
 				{
-					mEventManager.AddGPUResourceEvent(*renderPassPtr, GPUResourceEvent{
+					mEventCollection.AddGPUResourceEvent(*renderPassPtr, GPUResourceEvent{
 						.GPUResource{ std::addressof(mStateContainer.GetGPUResource()) },
 						.Event{ResourceTransitionEvent{
 							.BeforeState{ transitionCheckInfo.BeforeState },

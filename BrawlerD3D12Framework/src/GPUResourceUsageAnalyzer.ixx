@@ -6,7 +6,7 @@ module;
 #include "DxDef.h"
 
 export module Brawler.D3D12.GPUResourceUsageAnalyzer;
-import Brawler.D3D12.GPUResourceEventManager;
+import Brawler.D3D12.GPUResourceEventCollection;
 import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.D3D12.GPUResourceStateTracker;
 import Brawler.D3D12.I_GPUResource;
@@ -28,7 +28,7 @@ export namespace Brawler
 
 			void TraverseFrameGraph(const std::span<const GPUExecutionModule> executionModuleSpan);
 
-			GPUResourceEventManager ExtractGPUResourceEventManager();
+			GPUResourceEventCollection ExtractGPUResourceEventCollection();
 
 		private:
 			I_GPUResource* mResourcePtr;

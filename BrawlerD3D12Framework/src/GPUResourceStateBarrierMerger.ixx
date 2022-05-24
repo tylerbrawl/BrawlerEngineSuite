@@ -7,7 +7,7 @@ module;
 
 export module Brawler.D3D12.GPUResourceStateBarrierMerger;
 import :BarrierMergerStateContainer;
-import Brawler.D3D12.GPUResourceEventManager;
+import Brawler.D3D12.GPUResourceEventCollection;
 import Brawler.D3D12.GPUResourceEvent;
 import Brawler.D3D12.I_GPUResource;
 import Brawler.D3D12.GPUCommandQueueType;
@@ -41,7 +41,7 @@ export namespace Brawler
 			bool DoImplicitReadStateTransitionsAllowStateDecay() const;
 			void DecayResourceState();
 
-			GPUResourceEventManager FinalizeStateTracking();
+			GPUResourceEventCollection FinalizeStateTracking();
 
 			template <GPUCommandQueueType QueueType>
 			void AddPotentialBeginBarrierRenderPass(const I_RenderPass<QueueType>& renderPass);
@@ -60,7 +60,7 @@ export namespace Brawler
 
 		private:
 			BarrierMergerStateContainer mStateContainer;
-			GPUResourceEventManager mEventManager;
+			GPUResourceEventCollection mEventCollection;
 			std::array<std::optional<RenderPassVariant>, 3> mBeginBarrierPassArr;
 			std::optional<RenderPassVariant> mEndBarrierPass;
 			bool mWasLastStateForUAV;
@@ -106,9 +106,6 @@ namespace Brawler
 		template <GPUCommandQueueType QueueType>
 		void GPUResourceStateBarrierMerger::HandleResourceDependency(const I_RenderPass<QueueType>& renderPass, const D3D12_RESOURCE_STATES requiredState)
 		{
-			if (renderPass.GetRenderPassName() == "BC7 Image Compressor - Mode 1 Pass (BC7_TRY_MODE_137)" && requiredState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
-				int breakHere = -1;
-			
 			CheckForOtherGPUResourceEvents(renderPass, requiredState);
 
 			// First, try to merge the existing resource state.
@@ -136,7 +133,7 @@ namespace Brawler
 
 			if (resource.RequiresSpecialInitialization()) [[unlikely]]
 			{
-				mEventManager.AddGPUResourceEvent(renderPass, GPUResourceEvent{
+				mEventCollection.AddGPUResourceEvent(renderPass, GPUResourceEvent{
 					.GPUResource{std::addressof(resource)},
 					.Event{ResourceInitializationEvent{}},
 					.EventID = GPUResourceEventID::RESOURCE_INITIALIZATION
@@ -150,7 +147,7 @@ namespace Brawler
 			if (thisStateIsForUAV)
 			{
 				if (mWasLastStateForUAV)
-					mEventManager.AddGPUResourceEvent(renderPass, GPUResourceEvent{
+					mEventCollection.AddGPUResourceEvent(renderPass, GPUResourceEvent{
 						.GPUResource{std::addressof(resource)},
 						.Event{UAVBarrierEvent{}},
 						.EventID = GPUResourceEventID::UAV_BARRIER

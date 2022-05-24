@@ -251,6 +251,7 @@
     <ClCompile Include="src\BarrierMergerStateContainer.ixx" />
     <ClCompile Include="src\BindlessSRVSentinel.cpp" />
     <ClCompile Include="src\BindlessSRVSentinel.ixx" />
+    <ClCompile Include="src\FastUnorderedMap.ixx" />
     <ClCompile Include="src\BufferSubAllocationReservationHandle.cpp" />
     <ClCompile Include="src\BufferSubAllocationReservationHandle.ixx" />
     <ClCompile Include="src\CommandAllocatorStorage.cpp" />
@@ -271,6 +272,7 @@
     <ClCompile Include="src\GPUResourceBinding.ixx" />
     <ClCompile Include="src\GPUResourceBindlessSRVManager.cpp" />
     <ClCompile Include="src\GPUResourceBindlessSRVManager.ixx" />
+    <ClCompile Include="src\GPUResourceEventCollection.ixx" />
     <ClCompile Include="src\GPUResourceStateBarrierMerger.cpp" />
     <ClCompile Include="src\GPUResourceStateBarrierMerger.ixx" />
     <ClCompile Include="src\GPUResourceStateTracker.cpp" />

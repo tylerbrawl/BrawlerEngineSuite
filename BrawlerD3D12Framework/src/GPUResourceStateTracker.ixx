@@ -2,7 +2,7 @@ module;
 #include "DxDef.h"
 
 export module Brawler.D3D12.GPUResourceStateTracker;
-import Brawler.D3D12.GPUResourceEventManager;
+import Brawler.D3D12.GPUResourceEventCollection;
 import Brawler.D3D12.GPUResourceStateBarrierMerger;
 import Brawler.D3D12.GPUCommandQueueType;
 export import Brawler.D3D12.GPUExecutionModule;
@@ -25,7 +25,7 @@ export namespace Brawler
 			GPUResourceStateTracker& operator=(GPUResourceStateTracker&& rhs) noexcept = default;
 
 			void TrackGPUExecutionModule(const GPUExecutionModule& executionModule);
-			GPUResourceEventManager FinalizeStateTracking();
+			GPUResourceEventCollection FinalizeStateTracking();
 
 		private:
 			void CheckForResourceStateDecay(const GPUExecutionModule& executionModule);
