@@ -23,6 +23,14 @@ namespace Brawler
 			{
 				return false;
 			}
+
+			static consteval void TryEnableDebugLayer()
+			{}
+
+			static consteval bool IsDebugLayerEnabled()
+			{
+				return false;
+			}
 		};
 
 		bool TryEnableD3D12DebugLayer();
