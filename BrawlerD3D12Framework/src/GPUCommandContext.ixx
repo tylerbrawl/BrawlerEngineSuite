@@ -158,8 +158,12 @@ export namespace Brawler
 			/// setting the descriptor heaps. This function is called by 
 			/// GPUCommandContext::ResetCommandList().
 			/// </summary>
-			void PrepareCommandList() const;
+			void PrepareCommandList();
 
+		protected:
+			virtual void PrepareCommandListIMPL();
+
+		private:
 			void CloseCommandList();
 			void MarkAsUseful();
 
@@ -262,7 +266,7 @@ namespace Brawler
 		}
 
 		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::PrepareCommandList() const
+		void GPUCommandContext<CmdListType>::PrepareCommandList()
 		{
 			// For command lists which will be sent to either the direct or the compute
 			// queue, we should set the descriptor heaps before recording any commands.
@@ -274,7 +278,13 @@ namespace Brawler
 
 				mCmdList->SetDescriptorHeaps(static_cast<std::uint32_t>(shaderVisibleDescriptorHeapArr.size()), shaderVisibleDescriptorHeapArr.data());
 			}
+
+			PrepareCommandListIMPL();
 		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::PrepareCommandListIMPL()
+		{}
 
 		template <GPUCommandQueueType CmdListType>
 		void GPUCommandContext<CmdListType>::CloseCommandList()

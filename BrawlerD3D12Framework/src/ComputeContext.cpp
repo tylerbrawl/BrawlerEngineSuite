@@ -1,5 +1,6 @@
 module;
 #include <cassert>
+#include <optional>
 #include "DxDef.h"
 
 module Brawler.D3D12.ComputeContext;
@@ -11,6 +12,11 @@ namespace Brawler
 		void ComputeContext::RecordCommandListIMPL(const std::function<void(ComputeContext&)>& recordJob)
 		{
 			recordJob(*this);
+		}
+
+		void ComputeContext::PrepareCommandListIMPL()
+		{
+			mCurrPSOID.reset();
 		}
 
 		void ComputeContext::Dispatch(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY, const std::uint32_t numThreadGroupsZ) const
