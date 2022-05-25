@@ -113,6 +113,9 @@ namespace Brawler
 		// TODO: Create the equivalent GPU implementation. It should run much faster than
 		// a CPU version. For now, however, during the first update, we can just initialize
 		// all of the packed data.
+		//
+		// TODO 2: Do we actually need a GPU implementation? We seem to be bottlenecked on
+		// the GPU already by texture compression.
 
 		if (mPackedVertices.empty()) [[unlikely]]
 			InitializePackedData();
@@ -123,6 +126,9 @@ namespace Brawler
 		// TODO: Create the equivalent GPU implementation. It should run much faster than
 		// a CPU version. However, since we know that all of the data was prepared by the
 		// time this function gets called, we can go ahead and return true.
+		//
+		// TODO 2: Do we actually need a GPU implementation? We seem to be bottlenecked on
+		// the GPU already by texture compression.
 
 		return true;
 	}
@@ -133,6 +139,9 @@ namespace Brawler
 		{
 			// TODO: Create the equivalent GPU implementation. It should run much faster than
 			// a CPU version.
+			//
+			// TODO 2: Do we actually need a GPU implementation? We seem to be bottlenecked on
+			// the GPU already by texture compression.
 
 			const TangentFrame tangentFrame{ CreateTangentFrame(DirectX::XMLoadFloat3(&(unpackedVertex.Normal)), DirectX::XMLoadFloat3(&(unpackedVertex.Tangent))) };
 

@@ -657,7 +657,16 @@ namespace Brawler
 			}
 
 			{
-				const auto createRenderPassMode13702Lambda = [this, startBlockID, numBlocksInCurrBatch, &compressionBundle] <Brawler::PSOs::PSOID PSOIdentifier, std::uint32_t ModeID> (const std::string_view renderPassName)
+				// We can't make std::string_view a template parameter, so we'll just have to do this.
+				constexpr std::array<std::string_view, 5> RENDER_PASS_NAME_ARRAY{
+					"BC7 Image Compressor - Mode 1 Pass (BC7_TRY_MODE_137)",
+					"BC7 Image Compressor - Mode 3 Pass (BC7_TRY_MODE_137)",
+					"BC7 Image Compressor - Mode 7 Pass (BC7_TRY_MODE_137)",
+					"BC7 Image Compressor - Mode 0 Pass (BC7_TRY_MODE_02)",
+					"BC7 Image Compressor - Mode 2 Pass (BC7_TRY_MODE_02)"
+				};
+
+				const auto createRenderPassMode13702Lambda = [this, startBlockID, numBlocksInCurrBatch, &compressionBundle, &RENDER_PASS_NAME_ARRAY] <Brawler::PSOs::PSOID PSOIdentifier, std::uint32_t ModeID, std::size_t RenderPassNameIndex> ()
 				{
 					enum class ErrorBindingMode
 					{
@@ -668,7 +677,9 @@ namespace Brawler
 					static constexpr ErrorBindingMode CURRENT_ERROR_BINDING_MODE = ((ModeID == 1 || ModeID == 7 || ModeID == 2) ? ErrorBindingMode::ERROR1_SRV_ERROR2_UAV : ErrorBindingMode::ERROR1_UAV_ERROR2_SRV);
 
 					D3D12::RenderPass<D3D12::GPUCommandQueueType::DIRECT, CompressionPassInfo> compressionPass{};
-					compressionPass.SetRenderPassName(renderPassName);
+
+					constexpr std::string_view RENDER_PASS_NAME{ RENDER_PASS_NAME_ARRAY[RenderPassNameIndex] };
+					compressionPass.SetRenderPassName(RENDER_PASS_NAME);
 
 					compressionPass.AddResourceDependency(*(mResourceInfo.SourceTexturePtr), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 					compressionPass.AddResourceDependency(mResourceInfo.ConstantBufferSubAllocation.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -724,19 +735,19 @@ namespace Brawler
 				};
 
 				// Mode 1
-				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 1>("BC7 Image Compressor - Mode 1 Pass (BC7_TRY_MODE_137)");
+				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 1, 0>();
 
 				// Mode 3
-				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 3>("BC7 Image Compressor - Mode 3 Pass (BC7_TRY_MODE_137)");
+				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 3, 1>();
 
 				// Mode 7
-				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 7>("BC7 Image Compressor - Mode 7 Pass (BC7_TRY_MODE_137)");
+				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 7, 2>();
 
 				// Mode 0
-				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 0>("BC7 Image Compressor - Mode 0 Pass (BC7_TRY_MODE_02)");
+				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 0, 3>();
 
 				// Mode 2
-				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 2>("BC7 Image Compressor - Mode 2 Pass (BC7_TRY_MODE_02)");
+				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 2, 4>();
 			}
 
 			// Encode Block

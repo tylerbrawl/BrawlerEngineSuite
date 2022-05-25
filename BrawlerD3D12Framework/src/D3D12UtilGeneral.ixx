@@ -25,14 +25,37 @@ export namespace Util
 	}
 }
 
-namespace Util
+export namespace Util
 {
 	namespace D3D12
 	{
-		// Okay... Who's the idiot who forgot to make PIX_COLOR constexpr in the PIX header?
-		__forceinline constexpr std::int32_t CalculatePIXColor(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b)
+		using PIXEventColor_T = std::int32_t;
+		
+		/// <summary>
+		/// Given a red, green, and blue value, each as a single byte, this function returns a PIXEventColor_T
+		/// which encodes the corresponding color in a format which PIX can interpret. This is used to set the
+		/// displayed color of an event in PIX.
+		/// 
+		/// The returned value is actually the same as that of the PIX_COLOR function found in the pix3.h
+		/// header file. The only real difference between that function and this one is that
+		/// Util::D3D12::CalculatePIXColor() is constexpr, whereas PIX_COLOR, for some unholy reason, is not.
+		/// </summary>
+		/// <param name="r">
+		/// - The red component of the event color, represented as a single byte.
+		/// </param>
+		/// <param name="g">
+		/// - The green component of the event color, represented as a single byte.
+		/// </param>
+		/// <param name="b">
+		/// - The blue component of the event color, represented as a single byte.
+		/// </param>
+		/// <returns>
+		/// The function returns a PIXEventColor_T which encodes the corresponding color in a format which PIX 
+		/// can interpret. This is used to set the displayed color of an event in PIX.
+		/// </returns>
+		__forceinline constexpr PIXEventColor_T CalculatePIXColor(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b)
 		{
-			std::int32_t colorValue = 0xFF000000;
+			PIXEventColor_T colorValue = 0xFF000000;
 
 			colorValue |= (static_cast<std::uint32_t>(r) << 16);
 			colorValue |= (static_cast<std::uint32_t>(g) << 8);
@@ -40,15 +63,9 @@ namespace Util
 
 			return colorValue;
 		}
-	}
-}
 
-export namespace Util
-{
-	namespace D3D12
-	{
-		constexpr std::int32_t PIX_EVENT_COLOR_CPU_ONLY = CalculatePIXColor(0x00, 0x00, 0xFF);
-		constexpr std::int32_t PIX_EVENT_COLOR_CPU_GPU = CalculatePIXColor(0x00, 0xFF, 0x00);
+		constexpr PIXEventColor_T PIX_EVENT_COLOR_CPU_ONLY = CalculatePIXColor(0x00, 0x00, 0xFF);
+		constexpr PIXEventColor_T PIX_EVENT_COLOR_CPU_GPU = CalculatePIXColor(0x00, 0xFF, 0x00);
 		
 		/// <summary>
 		/// This function can be used to check if a particular resource state is valid.
