@@ -139,6 +139,8 @@ namespace
 
 		// Create the sync point.
 		Brawler::D3D12::RenderPass<Brawler::D3D12::GPUCommandQueueType::DIRECT> syncPointPass{};
+		syncPointPass.SetRenderPassName("[Brawler Engine Internal Sync Point]");
+		syncPointPass.SetPIXEventColor(Util::D3D12::CalculatePIXColor(0xFF, 0x00, 0x00));
 
 		for (const auto& [resourcePtr, resourceInfo] : resourceStateMap)
 			syncPointPass.AddResourceDependency(*resourcePtr, resourceInfo.CombinedState);

@@ -366,7 +366,6 @@ namespace Brawler
 
 		D3D12::BufferResourceInitializationInfo bufferInitInfo{
 			.SizeInBytes = (numTotalBlocks * sizeof(BufferBC7)),
-			.InitialResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
 			.HeapType = D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_DEFAULT
 		};
 
@@ -383,14 +382,12 @@ namespace Brawler
 
 		// Constants Buffer
 		bufferInitInfo.SizeInBytes = sizeof(ConstantsBC7);
-		bufferInitInfo.InitialResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST;
 
 		mResourceInfo.ConstantBufferSubAllocation = INITIALIZE_SUB_ALLOCATION_LAMBDA.operator() < D3D12::ConstantBufferSubAllocation<ConstantsBC7> > (frameGraphBuilder, bufferInitInfo);
 
 		// We can, however, create the two sub-allocations from an upload heap buffer from within the
 		// same BufferResource.
 		{
-
 			const D3D12::TextureSubResource srcTextureSubResource{ mResourceInfo.SourceTexturePtr->GetSubResource() };
 			std::uint64_t requiredSizeForTextureCopy = 0;
 
@@ -411,7 +408,6 @@ namespace Brawler
 				// the required space.
 				.SizeInBytes = (Util::Math::AlignToPowerOfTwo(requiredSizeForTextureCopy, sizeof(ConstantsBC7)) + sizeof(ConstantsBC7)),
 
-				.InitialResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_GENERIC_READ,
 				.HeapType = D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_UPLOAD
 			}) };
 
@@ -533,7 +529,7 @@ namespace Brawler
 				context.CopyBufferToTexture(copyInfo.CopyDestTexture, copyInfo.CopySrcSubAllocation);
 			});
 
-			uploadResourcesBundle.AddCopyRenderPass(std::move(textureCopyRenderPass));
+			uploadResourcesBundle.AddRenderPass(std::move(textureCopyRenderPass));
 		}
 
 		{
@@ -573,7 +569,7 @@ namespace Brawler
 				context.CopyBufferToBuffer(copyInfo.DestConstantBufferSubAllocation, copyInfo.ConstantBufferUploadSubAllocation);
 			});
 
-			uploadResourcesBundle.AddCopyRenderPass(std::move(cbCopyRenderPass));
+			uploadResourcesBundle.AddRenderPass(std::move(cbCopyRenderPass));
 		}
 
 		return uploadResourcesBundle;
@@ -657,11 +653,20 @@ namespace Brawler
 					);
 				});
 
-				compressionBundle.AddDirectRenderPass(std::move(mode0Pass));
+				compressionBundle.AddRenderPass(std::move(mode0Pass));
 			}
 
 			{
-				const auto createRenderPassMode13702Lambda = [this, startBlockID, numBlocksInCurrBatch, &compressionBundle] <Brawler::PSOs::PSOID PSOIdentifier, std::uint32_t ModeID> (const std::string_view renderPassName)
+				// We can't make std::string_view a template parameter, so we'll just have to do this.
+				constexpr std::array<std::string_view, 5> RENDER_PASS_NAME_ARRAY{
+					"BC7 Image Compressor - Mode 1 Pass (BC7_TRY_MODE_137)",
+					"BC7 Image Compressor - Mode 3 Pass (BC7_TRY_MODE_137)",
+					"BC7 Image Compressor - Mode 7 Pass (BC7_TRY_MODE_137)",
+					"BC7 Image Compressor - Mode 0 Pass (BC7_TRY_MODE_02)",
+					"BC7 Image Compressor - Mode 2 Pass (BC7_TRY_MODE_02)"
+				};
+
+				const auto createRenderPassMode13702Lambda = [this, startBlockID, numBlocksInCurrBatch, &compressionBundle, &RENDER_PASS_NAME_ARRAY] <Brawler::PSOs::PSOID PSOIdentifier, std::uint32_t ModeID, std::size_t RenderPassNameIndex> ()
 				{
 					enum class ErrorBindingMode
 					{
@@ -672,7 +677,9 @@ namespace Brawler
 					static constexpr ErrorBindingMode CURRENT_ERROR_BINDING_MODE = ((ModeID == 1 || ModeID == 7 || ModeID == 2) ? ErrorBindingMode::ERROR1_SRV_ERROR2_UAV : ErrorBindingMode::ERROR1_UAV_ERROR2_SRV);
 
 					D3D12::RenderPass<D3D12::GPUCommandQueueType::DIRECT, CompressionPassInfo> compressionPass{};
-					compressionPass.SetRenderPassName(renderPassName);
+
+					constexpr std::string_view RENDER_PASS_NAME{ RENDER_PASS_NAME_ARRAY[RenderPassNameIndex] };
+					compressionPass.SetRenderPassName(RENDER_PASS_NAME);
 
 					compressionPass.AddResourceDependency(*(mResourceInfo.SourceTexturePtr), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 					compressionPass.AddResourceDependency(mResourceInfo.ConstantBufferSubAllocation.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -724,23 +731,23 @@ namespace Brawler
 						);
 					});
 
-					compressionBundle.AddDirectRenderPass(std::move(compressionPass));
+					compressionBundle.AddRenderPass(std::move(compressionPass));
 				};
 
 				// Mode 1
-				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 1>("BC7 Image Compressor - Mode 1 Pass (BC7_TRY_MODE_137)");
+				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 1, 0>();
 
 				// Mode 3
-				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 3>("BC7 Image Compressor - Mode 3 Pass (BC7_TRY_MODE_137)");
+				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 3, 1>();
 
 				// Mode 7
-				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 7>("BC7 Image Compressor - Mode 7 Pass (BC7_TRY_MODE_137)");
+				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_137, 7, 2>();
 
 				// Mode 0
-				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 0>("BC7 Image Compressor - Mode 0 Pass (BC7_TRY_MODE_02)");
+				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 0, 3>();
 
 				// Mode 2
-				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 2>("BC7 Image Compressor - Mode 2 Pass (BC7_TRY_MODE_02)");
+				createRenderPassMode13702Lambda.operator()<Brawler::PSOs::PSOID::BC7_TRY_MODE_02, 2, 4>();
 			}
 
 			// Encode Block
@@ -780,7 +787,7 @@ namespace Brawler
 					);
 				});
 
-				compressionBundle.AddDirectRenderPass(std::move(encodeBlockPass));
+				compressionBundle.AddRenderPass(std::move(encodeBlockPass));
 			}
 
 			startBlockID += numBlocksInCurrBatch;
@@ -811,13 +818,21 @@ namespace Brawler
 
 		readbackPass.SetRenderPassCommands([] (D3D12::CopyContext& context, const ReadbackPassInfo& passInfo)
 		{
-			context.AssertResourceState(passInfo.BufferCopySrc.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON);
+			// The NVIDIA Debug Layer is shooting out a false positive error for the underlying CopyBufferRegion()
+			// call. I know that it is a false positive because it complains about passInfo.BufferCopySrc.GetBufferResource()
+			// still being in the UNORDERED_ACCESS state, but a call to GPUCommandContext::DebugResourceBarrier()
+			// transitioning the resource from UNORDERED_ACCESS to COPY_SOURCE reveals that it was actually already in the
+			// COPY_SOURCE state, as we expect. (NOTE: If you want to test the resource barrier yourself, you will
+			// need to change this to a DIRECT RenderPass, because the COPY queue does not normally support this
+			// transition.)
+			//
+			// My disappointment is immeasurable, and my day is ruined.
 			
 			context.CopyBufferToBuffer(passInfo.BufferCopyDest, passInfo.BufferCopySrc);
 		});
 
 		D3D12::RenderPassBundle readbackPassBundle{};
-		readbackPassBundle.AddCopyRenderPass(std::move(readbackPass));
+		readbackPassBundle.AddRenderPass(std::move(readbackPass));
 
 		return readbackPassBundle;
 	}

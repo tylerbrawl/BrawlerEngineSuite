@@ -65,6 +65,9 @@ export namespace Brawler
 			template <typename InputDataType>
 			void AddCopyRenderPass(RenderPass<GPUCommandQueueType::COPY, InputDataType>&& copyPass);
 
+			template <GPUCommandQueueType QueueType, typename InputDataType>
+			void AddRenderPass(RenderPass<QueueType, InputDataType>&& renderPass);
+
 			template <GPUCommandQueueType QueueType>
 				requires (QueueType != GPUCommandQueueType::COUNT_OR_ERROR)
 			std::size_t GetRenderPassCount() const;
@@ -144,6 +147,19 @@ namespace Brawler
 			AddResourceDependenciesForRenderPass(copyPass);
 			
 			mCopyPassArr.push_back(std::make_unique<RenderPass<GPUCommandQueueType::COPY, InputDataType>>(std::move(copyPass)));
+		}
+
+		template <GPUCommandQueueType QueueType, typename InputDataType>
+		void RenderPassBundle::AddRenderPass(RenderPass<QueueType, InputDataType>&& renderPass)
+		{
+			if constexpr (QueueType == GPUCommandQueueType::DIRECT)
+				AddDirectRenderPass(std::move(renderPass));
+
+			else if constexpr (QueueType == GPUCommandQueueType::COMPUTE)
+				AddComputeRenderPass(std::move(renderPass));
+
+			else if constexpr (QueueType == GPUCommandQueueType::COPY)
+				AddCopyRenderPass(std::move(renderPass));
 		}
 
 		template <GPUCommandQueueType QueueType>

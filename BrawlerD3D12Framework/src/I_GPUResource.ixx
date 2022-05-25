@@ -19,7 +19,7 @@ namespace Brawler
 	namespace D3D12
 	{
 		class GPUResourceStateTracker;
-		class GPUResourceSpecialInitializationState;
+		class GPUResourceStateBarrierMerger;
 		class FrameGraphBuilder;
 	}
 }
@@ -32,7 +32,7 @@ export namespace Brawler
 		{
 		private:
 			friend class GPUResourceStateTracker;
-			friend class GPUResourceSpecialInitializationState;
+			friend class GPUResourceStateBarrierMerger;
 			friend class FrameGraphBuilder;
 
 		protected:

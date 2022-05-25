@@ -15,6 +15,7 @@ import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.D3D12.GPUCommandQueueContextType;
 import Brawler.D3D12.GPUCommandContexts;
 import Util.D3D12;
+import Util.General;
 
 namespace Brawler
 {
@@ -37,12 +38,84 @@ namespace Brawler
 	}
 }
 
+namespace Brawler
+{
+	namespace D3D12
+	{
+		class ReleaseModeRenderPassNameContainer
+		{
+		public:
+			ReleaseModeRenderPassNameContainer() = default;
+
+			static constexpr void SetRenderPassName(const std::string_view name)
+			{}
+
+			static consteval std::string_view GetRenderPassName()
+			{
+				return std::string_view{};
+			}
+
+			static constexpr void SetPIXEventColor(const Util::D3D12::PIXEventColor_T eventColor)
+			{}
+
+			static consteval Util::D3D12::PIXEventColor_T GetPIXEventColor()
+			{
+				return Util::D3D12::PIXEventColor_T{};
+			}
+		};
+
+		class DebugModeRenderPassNameContainer
+		{
+		public:
+			DebugModeRenderPassNameContainer() = default;
+
+			void SetRenderPassName(const std::string_view name)
+			{
+				mRenderPassName = name;
+			}
+
+			const std::string_view GetRenderPassName() const
+			{
+				return mRenderPassName;
+			}
+
+			void SetPIXEventColor(const Util::D3D12::PIXEventColor_T eventColor)
+			{
+				mEventColor = eventColor;
+			}
+
+			Util::D3D12::PIXEventColor_T GetPIXEventColor() const
+			{
+				return (mEventColor.has_value() ? *mEventColor : Util::D3D12::PIX_EVENT_COLOR_CPU_GPU);
+			}
+
+		private:
+			std::string_view mRenderPassName;
+			std::optional<Util::D3D12::PIXEventColor_T> mEventColor;
+		};
+
+		template <Util::General::BuildMode BuildMode>
+		struct RenderPassNameContainerSelector
+		{
+			using ContainerType = DebugModeRenderPassNameContainer;
+		};
+
+		template <>
+		struct RenderPassNameContainerSelector<Util::General::BuildMode::RELEASE>
+		{
+			using ContainerType = ReleaseModeRenderPassNameContainer;
+		};
+
+		using CurrentRenderPassNameContainer = typename RenderPassNameContainerSelector<Util::General::GetBuildMode()>::ContainerType;
+	}
+}
+
 export namespace Brawler
 {
 	namespace D3D12
 	{
 		template <GPUCommandQueueType QueueType, typename InputDataType = EmptyInput>
-		class RenderPass final : public I_RenderPass<QueueType>
+		class RenderPass final : public I_RenderPass<QueueType>, private CurrentRenderPassNameContainer
 		{
 		public:
 			RenderPass() = default;
@@ -94,16 +167,15 @@ export namespace Brawler
 			std::span<const FrameGraphResourceDependency> GetResourceDependencies() const override;
 
 			void SetRenderPassName(const std::string_view name);
-			const std::string_view GetRenderPassName() const;
+			const std::string_view GetRenderPassName() const override;
+
+			void SetPIXEventColor(const Util::D3D12::PIXEventColor_T eventColor);
+			Util::D3D12::PIXEventColor_T GetPIXEventColor() const;
 
 		private:
 			std::optional<typename CallbackInfo<QueueType, InputDataType>::CallbackType> mCmdRecordCallback;
 			std::optional<InputDataType> mInputData;
 			std::vector<FrameGraphResourceDependency> mResourceDependencyArr;
-
-#ifdef _DEBUG
-			std::string_view mRenderPassName;
-#endif
 		};
 	}
 }
@@ -195,19 +267,25 @@ namespace Brawler
 		template <GPUCommandQueueType QueueType, typename InputDataType>
 		void RenderPass<QueueType, InputDataType>::SetRenderPassName(const std::string_view name)
 		{
-#ifdef _DEBUG
-			mRenderPassName = name;
-#endif
+			CurrentRenderPassNameContainer::SetRenderPassName(name);
 		}
 
 		template <GPUCommandQueueType QueueType, typename InputDataType>
 		const std::string_view RenderPass<QueueType, InputDataType>::GetRenderPassName() const
 		{
-#ifdef _DEBUG
-			return mRenderPassName;
-#else
-			return std::string_view{};
-#endif
+			return CurrentRenderPassNameContainer::GetRenderPassName();
+		}
+
+		template <GPUCommandQueueType QueueType, typename InputDataType>
+		void RenderPass<QueueType, InputDataType>::SetPIXEventColor(const Util::D3D12::PIXEventColor_T eventColor)
+		{
+			CurrentRenderPassNameContainer::SetPIXEventColor(eventColor);
+		}
+
+		template <GPUCommandQueueType QueueType, typename InputDataType>
+		Util::D3D12::PIXEventColor_T RenderPass<QueueType, InputDataType>::GetPIXEventColor() const
+		{
+			return CurrentRenderPassNameContainer::GetPIXEventColor();
 		}
 	}
 }

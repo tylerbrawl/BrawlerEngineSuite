@@ -4,8 +4,8 @@ module;
 
 export module Brawler.D3D12.FrameGraphExecutionContext;
 import Brawler.D3D12.TransientGPUResourceAliasTracker;
-import Brawler.D3D12.FrameGraphCompilation;
-import Brawler.D3D12.GPUResourceStateManagement;
+import Brawler.D3D12.GPUExecutionModule;
+import Brawler.D3D12.GPUResourceEventManager;
 import Brawler.D3D12.FrameGraphFenceCollection;
 
 export namespace Brawler

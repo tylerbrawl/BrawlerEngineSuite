@@ -14,6 +14,17 @@
 #include <directx/d3dx12.h>
 #include <dxgi1_6.h>
 #include <comdef.h>
+#include <Shlobj.h>
+
+#if defined(_DEBUG) || defined(__RELEASE_WITH_DEBUGGING__)
+#pragma push_macro("USE_PIX")
+
+#define USE_PIX
+#include "pix3.h"
+#undef USE_PIX
+
+#pragma pop_macro("USE_PIX")
+#endif
 
 namespace Brawler
 {

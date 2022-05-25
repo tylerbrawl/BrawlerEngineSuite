@@ -8,10 +8,8 @@ export namespace Brawler
 	{
 		enum class GPUResourceStateTrackerStateID
 		{
-			GPU_RESOURCE_SPECIAL_INITIALIZATION,
-			BARRIER_TYPE_SELECTOR,
-			IMMEDIATE_BARRIER,
-			SPLIT_BARRIER,
+			EXPLICIT_BARRIER,
+			IMPLICIT_BARRIER,
 
 			COUNT_OR_ERROR
 		};

@@ -158,8 +158,12 @@ export namespace Brawler
 			/// setting the descriptor heaps. This function is called by 
 			/// GPUCommandContext::ResetCommandList().
 			/// </summary>
-			void PrepareCommandList() const;
+			void PrepareCommandList();
 
+		protected:
+			virtual void PrepareCommandListIMPL();
+
+		private:
 			void CloseCommandList();
 			void MarkAsUseful();
 
@@ -176,6 +180,8 @@ export namespace Brawler
 			void CopyTextureToBuffer(const TextureCopyBufferSubAllocation& destSubAllocation, const TextureSubResource& srcTexture) const;
 
 			void CopyBufferToBuffer(const I_BufferSubAllocation& destSubAllocation, const I_BufferSubAllocation& srcSubAllocation) const;
+
+			void DebugResourceBarrier(const I_GPUResource& resource, const D3D12_RESOURCE_STATES beforeState, const D3D12_RESOURCE_STATES afterState) const;
 
 		private:
 			Microsoft::WRL::ComPtr<Brawler::D3D12GraphicsCommandList> mCmdList;
@@ -260,7 +266,7 @@ namespace Brawler
 		}
 
 		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::PrepareCommandList() const
+		void GPUCommandContext<CmdListType>::PrepareCommandList()
 		{
 			// For command lists which will be sent to either the direct or the compute
 			// queue, we should set the descriptor heaps before recording any commands.
@@ -272,7 +278,13 @@ namespace Brawler
 
 				mCmdList->SetDescriptorHeaps(static_cast<std::uint32_t>(shaderVisibleDescriptorHeapArr.size()), shaderVisibleDescriptorHeapArr.data());
 			}
+
+			PrepareCommandListIMPL();
 		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::PrepareCommandListIMPL()
+		{}
 
 		template <GPUCommandQueueType CmdListType>
 		void GPUCommandContext<CmdListType>::CloseCommandList()
@@ -368,6 +380,16 @@ namespace Brawler
 				srcSubAllocation.GetOffsetFromBufferStart(),
 				srcSubAllocation.GetSubAllocationSize()
 			);
+		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::DebugResourceBarrier(const I_GPUResource& resource, const D3D12_RESOURCE_STATES beforeState, const D3D12_RESOURCE_STATES afterState) const
+		{
+			if constexpr (Util::General::IsDebugModeEnabled())
+			{
+				const CD3DX12_RESOURCE_BARRIER transitionBarrier{ CD3DX12_RESOURCE_BARRIER::Transition(&(resource.GetD3D12Resource()), beforeState, afterState) };
+				mCmdList->ResourceBarrier(1, &transitionBarrier);
+			}
 		}
 	}
 }

@@ -5,7 +5,7 @@ module;
 #include <cassert>
 #include <optional>
 
-module Brawler.D3D12.FrameGraphCompilation:GPUExecutionModule;
+module Brawler.D3D12.GPUExecutionModule;
 import Brawler.D3D12.RenderPassBundle;
 import Util.Engine;
 import Brawler.D3D12.GPUExecutionModuleRecordContext;
@@ -136,6 +136,22 @@ namespace Brawler
 		{
 			return (mDirectPassContainer.ResourceMap.DoesResourceHaveDependentRenderPasses(resource) || mComputePassContainer.ResourceMap.DoesResourceHaveDependentRenderPasses(resource) ||
 				mCopyPassContainer.ResourceMap.DoesResourceHaveDependentRenderPasses(resource));
+		}
+
+		Brawler::CompositeEnum<GPUCommandQueueType> GPUExecutionModule::GetQueuesUsingResource(const I_GPUResource& resource) const
+		{
+			Brawler::CompositeEnum<GPUCommandQueueType> queuesUsingResource{};
+
+			if (IsResourceUsedInQueue<GPUCommandQueueType::DIRECT>(resource))
+				queuesUsingResource |= GPUCommandQueueType::DIRECT;
+
+			if (IsResourceUsedInQueue<GPUCommandQueueType::COMPUTE>(resource))
+				queuesUsingResource |= GPUCommandQueueType::COMPUTE;
+
+			if (IsResourceUsedInQueue<GPUCommandQueueType::COPY>(resource))
+				queuesUsingResource |= GPUCommandQueueType::COPY;
+
+			return queuesUsingResource;
 		}
 
 		Brawler::SortedVector<I_GPUResource*> GPUExecutionModule::GetResourceDependencies() const

@@ -29,6 +29,44 @@ export namespace Util
 {
 	namespace D3D12
 	{
+		using PIXEventColor_T = std::int32_t;
+		
+		/// <summary>
+		/// Given a red, green, and blue value, each as a single byte, this function returns a PIXEventColor_T
+		/// which encodes the corresponding color in a format which PIX can interpret. This is used to set the
+		/// displayed color of an event in PIX.
+		/// 
+		/// The returned value is actually the same as that of the PIX_COLOR function found in the pix3.h
+		/// header file. The only real difference between that function and this one is that
+		/// Util::D3D12::CalculatePIXColor() is constexpr, whereas PIX_COLOR, for some unholy reason, is not.
+		/// </summary>
+		/// <param name="r">
+		/// - The red component of the event color, represented as a single byte.
+		/// </param>
+		/// <param name="g">
+		/// - The green component of the event color, represented as a single byte.
+		/// </param>
+		/// <param name="b">
+		/// - The blue component of the event color, represented as a single byte.
+		/// </param>
+		/// <returns>
+		/// The function returns a PIXEventColor_T which encodes the corresponding color in a format which PIX 
+		/// can interpret. This is used to set the displayed color of an event in PIX.
+		/// </returns>
+		__forceinline constexpr PIXEventColor_T CalculatePIXColor(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b)
+		{
+			PIXEventColor_T colorValue = 0xFF000000;
+
+			colorValue |= (static_cast<std::uint32_t>(r) << 16);
+			colorValue |= (static_cast<std::uint32_t>(g) << 8);
+			colorValue |= static_cast<std::uint32_t>(b);
+
+			return colorValue;
+		}
+
+		constexpr PIXEventColor_T PIX_EVENT_COLOR_CPU_ONLY = CalculatePIXColor(0x00, 0x00, 0xFF);
+		constexpr PIXEventColor_T PIX_EVENT_COLOR_CPU_GPU = CalculatePIXColor(0x00, 0xFF, 0x00);
+		
 		/// <summary>
 		/// This function can be used to check if a particular resource state is valid.
 		/// </summary>
@@ -54,6 +92,7 @@ export namespace Util
 		Brawler::D3D12::GPUMemoryBudgetInfo GetGPUMemoryBudgetInfo();
 
 		bool IsDebugLayerEnabled();
+		consteval bool IsPIXRuntimeSupportEnabled();
 	}
 }
 
@@ -197,6 +236,21 @@ namespace Util
 				static const bool isDebugLayerEnabled = Util::Engine::GetGPUDevice().IsDebugLayerEnabled();
 				return isDebugLayerEnabled;
 			}
+		}
+
+		consteval bool IsPIXRuntimeSupportEnabled()
+		{
+			// The PIX_EVENTS_ARE_TURNED_ON macro is defined by PIX if it is able to enable PIX events.
+			// This macro is not defined in Release builds, but it *IS* defined in Release with Debugging
+			// builds.
+
+			constexpr bool ENABLE_PIX_RUNTIME_SUPPORT = true;
+
+#ifdef PIX_EVENTS_ARE_TURNED_ON
+			return ENABLE_PIX_RUNTIME_SUPPORT;
+#else
+			return false;
+#endif
 		}
 	}
 }

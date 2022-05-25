@@ -38,6 +38,11 @@ namespace Brawler
 			recordJob(*this);
 		}
 
+		void DirectContext::PrepareCommandListIMPL()
+		{
+			mCurrPSOID.reset();
+		}
+
 		void DirectContext::Dispatch(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY, const std::uint32_t numThreadGroupsZ) const
 		{
 			assert(numThreadGroupsX <= D3D12_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION && "ERROR: Too many thread groups were dispatched in the X-dimension in a call to DirectContext::Dispatch()!");

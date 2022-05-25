@@ -5,10 +5,8 @@ export module Brawler.GPUResourceStateTrackerStateTraits;
 import Brawler.PolymorphismInfo;
 import Brawler.D3D12.GPUResourceStateTrackerStateID;
 import Brawler.D3D12.I_GPUResourceStateTrackerState;
-import Brawler.D3D12.GPUResourceSpecialInitializationState;
-import Brawler.D3D12.GPUResourceBarrierTypeSelectorState;
-import Brawler.D3D12.ImmediateGPUResourceBarrierState;
-import Brawler.D3D12.SplitGPUResourceBarrierState;
+import Brawler.D3D12.ExplicitBarrierGPUResourceStateTrackerState;
+import Brawler.D3D12.ImplicitBarrierGPUResourceStateTrackerState;
 
 namespace Brawler
 {
@@ -25,19 +23,11 @@ namespace Brawler
 	};
 
 	template <>
-	struct StateMap<D3D12::GPUResourceStateTrackerStateID::GPU_RESOURCE_SPECIAL_INITIALIZATION> : public StateMapInstantiation<D3D12::GPUResourceSpecialInitializationState>
+	struct StateMap<D3D12::GPUResourceStateTrackerStateID::EXPLICIT_BARRIER> : public StateMapInstantiation<D3D12::ExplicitBarrierGPUResourceStateTrackerState>
 	{};
 
 	template <>
-	struct StateMap<D3D12::GPUResourceStateTrackerStateID::BARRIER_TYPE_SELECTOR> : public StateMapInstantiation<D3D12::GPUResourceBarrierTypeSelectorState>
-	{};
-
-	template <>
-	struct StateMap<D3D12::GPUResourceStateTrackerStateID::IMMEDIATE_BARRIER> : public StateMapInstantiation<D3D12::ImmediateGPUResourceBarrierState>
-	{};
-
-	template <>
-	struct StateMap<D3D12::GPUResourceStateTrackerStateID::SPLIT_BARRIER> : public StateMapInstantiation<D3D12::SplitGPUResourceBarrierState>
+	struct StateMap<D3D12::GPUResourceStateTrackerStateID::IMPLICIT_BARRIER> : public StateMapInstantiation<D3D12::ImplicitBarrierGPUResourceStateTrackerState>
 	{};
 
 	template <D3D12::GPUResourceStateTrackerStateID StateID>

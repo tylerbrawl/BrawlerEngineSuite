@@ -55,6 +55,17 @@ namespace Brawler
 
 			// It is not valid for a texture to be both a render target and a depth/stencil texture.
 			assert(Util::Math::CountOneBits(std::to_underlying(mInitInfo.ResourceDesc.Flags & (D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL))) <= 1 && "ERROR: It is not valid for a resource to be both a render target and a depth/stencil texture!");
+
+			// Buffers and simultaneous-access textures created in a DEFAULT heap are implicitly promoted on
+			// their first use on the GPU. This implies that they actually start in the COMMON state in this
+			// case. (This doesn't seem to be mentioned anywhere on the MSDN, of course. PIX points this
+			// out as a warning.)
+			{
+				const bool implicitlyPromotedOnFirstUse = (mInitInfo.ResourceDesc.Dimension == D3D12_RESOURCE_DIMENSION::D3D12_RESOURCE_DIMENSION_BUFFER || (mInitInfo.ResourceDesc.Flags & D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS) != 0);
+
+				if (implicitlyPromotedOnFirstUse && mInitInfo.HeapType == D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_DEFAULT)
+					assert(mInitInfo.InitialResourceState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON && "ERROR: Buffers and simultaneous-access textures are implicitly promoted on their first use on the GPU during a call to ExecuteCommandLists() (including the first call to this function, before the resource has ever been used). Thus, to ensure optimal barrier creation, resources of either of these types should start in the D3D12_RESOURCE_STATE_COMMON state!");
+			}
 #endif // _DEBUG
 		}
 

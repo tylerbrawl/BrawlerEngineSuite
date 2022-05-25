@@ -100,12 +100,6 @@
     <Filter Include="Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management">
       <UniqueIdentifier>{245bbd2f-176a-4788-b242-f229bda560e6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization">
-      <UniqueIdentifier>{51064746-0420-4fd0-9f26-6482539d8290}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization">
-      <UniqueIdentifier>{5e676e5b-eb66-4f91-a828-003f66655fb8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker">
       <UniqueIdentifier>{e27690c9-9feb-412b-be7f-a10c0dde1dfa}</UniqueIdentifier>
     </Filter>
@@ -198,6 +192,9 @@
     </Filter>
     <Filter Include="Source Files\Pipeline State Management">
       <UniqueIdentifier>{be4d8c03-2eaa-485e-bdd0-436284c8606c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Win32">
+      <UniqueIdentifier>{14c10506-731b-4aa9-889c-f7283dfcfe8f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -501,15 +498,6 @@
     <ClCompile Include="src\RTVDSVHandle.ixx">
       <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
     </ClCompile>
-    <ClCompile Include="src\GPUExecutionModule.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\Compilation</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUExecutionModule.cpp">
-      <Filter>Source Files\GPU Work Submission\Frame Graph\Compilation</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FrameGraphCompilation.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\Compilation</Filter>
-    </ClCompile>
     <ClCompile Include="src\FrameGraphInjection.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\Compilation</Filter>
     </ClCompile>
@@ -528,16 +516,10 @@
     <ClCompile Include="src\TransientGPUResourceAliasTracker.cpp">
       <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
     </ClCompile>
-    <ClCompile Include="src\GPUResourceStateManagement.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
-    </ClCompile>
     <ClCompile Include="src\GPUResourceUsageAnalyzer.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
     </ClCompile>
     <ClCompile Include="src\ResourceStateZone.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ResourceStateZoneMap.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
     </ClCompile>
     <ClCompile Include="src\GPUResourceUsageAnalyzer.cpp">
@@ -548,57 +530,6 @@
     </ClCompile>
     <ClCompile Include="src\GPUResourceEventManager.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ResourceStateZoneOptimizer.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\I_ResourceStateZoneOptimizerState.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ResourceStateZoneOptimizer.cpp">
-      <Filter>Source Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ReadResourceStateZoneOptimizerState.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ResourceStateZoneOptimizerStateID.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ReadResourceStateZoneOptimizerState.cpp">
-      <Filter>Source Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\IgnoreResourceStateZoneOptimizerState.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\IgnoreResourceStateZoneOptimizerState.cpp">
-      <Filter>Source Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUResourceStateTracker.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUResourceStateTracker.cpp">
-      <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUResourceSpecialInitializationState.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BaseGPUResourceStateTrackerState.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUResourceStateTrackerStateID.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUResourceBarrierTypeSelectorState.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ImmediateGPUResourceBarrierState.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\SplitGPUResourceBarrierState.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BaseGPUResourceStateTrackerState.cpp">
-      <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
     </ClCompile>
     <ClCompile Include="src\GPUCommandListRecorder.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\Execution</Filter>
@@ -768,23 +699,8 @@
     <ClCompile Include="src\Timer.cpp">
       <Filter>Source Files\Profiling</Filter>
     </ClCompile>
-    <ClCompile Include="src\ResourceStateZoneOptimizerStateTraits.ixx">
-      <Filter>Module Files\Polymorphism Traits</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BaseResourceStateZoneOptimizerState.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BaseResourceStateZoneOptimizerState.cpp">
-      <Filter>Source Files\GPU Work Submission\Frame Graph\Resource State Zone Optimization</Filter>
-    </ClCompile>
     <ClCompile Include="src\GPUResourceStateTrackerStateTraits.ixx">
       <Filter>Module Files\Polymorphism Traits</Filter>
-    </ClCompile>
-    <ClCompile Include="src\I_GPUResourceStateTrackerState.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ResourceStateZoneMap.cpp">
-      <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
     </ClCompile>
     <ClCompile Include="src\GPUVendor.ixx">
       <Filter>Module Files\D3D12</Filter>
@@ -993,10 +909,64 @@
     <ClCompile Include="src\CommandAllocatorStorage.cpp">
       <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
     </ClCompile>
+    <ClCompile Include="src\GPUResourceStateTracker.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceStateTracker.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_GPUResourceStateTrackerState.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceStateTrackingContext.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceStateBarrierMerger.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ImplicitBarrierGPUResourceStateTrackerState.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceStateBarrierMerger.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceStateTrackerStateID.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ExplicitBarrierGPUResourceStateTrackerState.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BarrierMergerStateContainer.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUExecutionModule.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUExecutionModule.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceEventCollection.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FastUnorderedMap.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DLLManager.ixx">
+      <Filter>Module Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SafeModule.ixx">
+      <Filter>Module Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DLLManager.cpp">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

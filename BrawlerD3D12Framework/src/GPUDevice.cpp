@@ -3,6 +3,8 @@ module;
 #include <stdexcept>
 #include <array>
 #include <string_view>
+#include <optional>
+#include <format>
 #include "DxDef.h"
 
 module Brawler.D3D12.GPUDevice;
@@ -10,6 +12,8 @@ import Brawler.CompositeEnum;
 import Util.General;
 import Util.D3D12;
 import Util.Win32;
+import Brawler.Win32.DLLManager;
+import Brawler.Win32.SafeModule;
 
 namespace
 {
@@ -135,13 +139,67 @@ case TypedUAVFormat::formatName:		\
 
 		supportCheckLambda.operator()<Brawler::D3D12::TypedUAVFormat::R16G16B16A16_UNORM>(d3dDevice, deviceCapabilities);
 	}
+
+	// #including pix3.h is causing compile times in Release builds to become miserably slow. (I'm talking, like,
+	// hours for a single module interface unit here.) I blame C++20 modules and the MSVC's support for them.
+	//
+	// So, if PIX isn't included, then we'll just define what we need here ourselves to allow the program to
+	// compile.
+
+#ifndef PIX_EVENTS_ARE_TURNED_ON
+	static __forceinline HMODULE PIXLoadLatestWinPixGpuCapturerLibrary()
+	{}
+#endif // !ARE_PIX_EVENTS_TURNED_ON
+
+	void VerifyPIXCapturerLoaded()
+	{
+		if constexpr (Util::D3D12::IsPIXRuntimeSupportEnabled())
+		{
+			// First, check to see if the capturer DLL was already loaded. This will be the case if the
+			// application is launched directly from PIX.
+			const std::optional<HMODULE> hPIXModule{ Brawler::Win32::DLLManager::GetInstance().GetExistingModule(L"WinPixGpuCapturer.dll") };
+
+			// If that failed, then we need to load it ourselves. PIX provides a helper function to do
+			// just that.
+			if (!hPIXModule.has_value())
+			{
+				Brawler::Win32::SafeModule pixModule{ PIXLoadLatestWinPixGpuCapturerLibrary() };
+
+				if (pixModule == nullptr) [[unlikely]]
+					throw std::runtime_error{ std::format("ERROR: PIX failed to load the WinPixGpuCapturer.dll file at runtime with the following error: {}", Util::General::WStringToString(Util::Win32::GetLastErrorString())) };
+
+				Brawler::Win32::DLLManager::GetInstance().RegisterModule(std::move(pixModule));
+			}
+		}
+	}
 }
 
 namespace Brawler
 {
 	namespace D3D12
 	{
-		bool TryEnableD3D12DebugLayer() 
+		consteval bool DebugModeDebugLayerEnabler::IsDebugLayerAllowed()
+		{
+			// The NVIDIA debug layer driver sucks. It seems to shoot out debug layer errors and dereference nullptrs for no
+			// good reason. So, even if we are building for Debug mode, this setting can be toggled to either enable or
+			// disable the D3D12 debug layer.
+			// 
+			// Honestly, I have a really shaky relationship with this debug layer. As of writing this, I just tried out
+			// PIX's debug layer, and it seems to be leaps and bounds ahead of this buggy mess. My current recommendation
+			// is to just capture a frame with PIX and use its debug layer offline, setting ALLOW_D3D12_DEBUG_LAYER to be
+			// false.
+			// 
+			// (It's honestly incredibly discomforting that the PIX and NVIDIA debug layers produce different results.
+			// After the jank which I've dealt with using the NVIDIA debug layer, I'm inclined to trust the PIX debug layer
+			// messages more, but who really knows which is better?)
+			//
+			// NOTE: The debug layer is never enabled in Release builds, even if this value is set to true.
+			constexpr bool ALLOW_D3D12_DEBUG_LAYER = false;
+
+			return ALLOW_D3D12_DEBUG_LAYER;
+		}
+
+		void DebugModeDebugLayerEnabler::TryEnableDebugLayer()
 		{
 			// If we get to this point, then the Debug Layer must be allowed for this build. So, we
 			// will make a best effort to enable it here.
@@ -159,7 +217,7 @@ namespace Brawler
 				if (getPixModuleResult) [[unlikely]]
 				{
 					Util::Win32::WriteDebugMessage(L"WARNING: The D3D12 Debug Layer was set to be enabled (see DebugLayerEnabler<Util::General::BuildMode::DEBUG>::IsDebugLayerAllowed()), but PIX is attempting to perform a GPU capture. Thus, the request to enable the D3D12 Debug Layer has been ignored. If you wish, you may use PIX's Debug Layer after the capture has completed.");
-					return false;
+					mIsDebugLayerEnabled = false;
 				}
 			}
 
@@ -168,19 +226,31 @@ namespace Brawler
 				HRESULT hr = D3D12GetDebugInterface(IID_PPV_ARGS(&oldDebugController));
 
 				if (FAILED(hr)) [[unlikely]]
-					return false;
+					mIsDebugLayerEnabled = false;
 
 				Microsoft::WRL::ComPtr<Brawler::D3D12Debug> latestDebugController{};
 				hr = oldDebugController.As(&latestDebugController);
 
 				if (FAILED(hr)) [[unlikely]]
-					return false;
+					mIsDebugLayerEnabled = false;
 
 				latestDebugController->EnableDebugLayer();
-				latestDebugController->SetEnableGPUBasedValidation(true);
+
+				// They weren't kidding when they said that GPU-based validation slows down your
+				// program significantly. Enable this at your own risk. Honestly, you're probably
+				// better off just using GPU-based validation on a PIX capture, going to sleep, and
+				// then looking at the results when you wake up.
+				static constexpr bool ENABLE_GPU_BASED_VALIDATION = false;
+
+				latestDebugController->SetEnableGPUBasedValidation(ENABLE_GPU_BASED_VALIDATION);
 			}
 
-			return true;
+			mIsDebugLayerEnabled = true;
+		}
+
+		bool DebugModeDebugLayerEnabler::IsDebugLayerEnabled() const
+		{
+			return mIsDebugLayerEnabled;
 		}
 	}
 }
@@ -264,6 +334,10 @@ namespace Brawler
 
 		void GPUDevice::InitializeD3D12Device()
 		{
+			// Enable PIX captures in Debug and Release with Debugging builds.
+			if constexpr (Util::D3D12::IsPIXRuntimeSupportEnabled())
+				VerifyPIXCapturerLoaded();
+			
 			// Enable the debug layer in Debug builds.
 			if constexpr (CurrentDebugLayerEnabler::IsDebugLayerAllowed())
 				CurrentDebugLayerEnabler::TryEnableDebugLayer();

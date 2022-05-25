@@ -194,7 +194,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>__D3D12_FRAMEWORK__;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__D3D12_FRAMEWORK__;NDEBUG;_CONSOLE;_HAS_STATIC_RTTI=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -248,8 +248,12 @@
     <ClCompile Include="src\AliasedGPUMemoryManager.cpp" />
     <ClCompile Include="src\AliasedGPUMemoryManager.ixx" />
     <ClCompile Include="src\AsyncGPUResourceBuilder.ixx" />
+    <ClCompile Include="src\BarrierMergerStateContainer.ixx" />
     <ClCompile Include="src\BindlessSRVSentinel.cpp" />
     <ClCompile Include="src\BindlessSRVSentinel.ixx" />
+    <ClCompile Include="src\DLLManager.cpp" />
+    <ClCompile Include="src\DLLManager.ixx" />
+    <ClCompile Include="src\FastUnorderedMap.ixx" />
     <ClCompile Include="src\BufferSubAllocationReservationHandle.cpp" />
     <ClCompile Include="src\BufferSubAllocationReservationHandle.ixx" />
     <ClCompile Include="src\CommandAllocatorStorage.cpp" />
@@ -258,6 +262,11 @@
     <ClCompile Include="src\ConstantBufferView.ixx" />
     <ClCompile Include="src\D3D12UtilFormats.ixx" />
     <ClCompile Include="src\D3D12UtilGeneral.ixx" />
+    <ClCompile Include="src\ExplicitBarrierGPUResourceStateTrackerState.ixx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\FormattedConsoleMessageBuilder.ixx" />
     <ClCompile Include="src\FrameGraphManager.cpp" />
     <ClCompile Include="src\FrameGraphManager.ixx" />
@@ -265,12 +274,20 @@
     <ClCompile Include="src\GPUResourceBinding.ixx" />
     <ClCompile Include="src\GPUResourceBindlessSRVManager.cpp" />
     <ClCompile Include="src\GPUResourceBindlessSRVManager.ixx" />
+    <ClCompile Include="src\GPUResourceEventCollection.ixx" />
+    <ClCompile Include="src\GPUResourceStateBarrierMerger.cpp" />
+    <ClCompile Include="src\GPUResourceStateBarrierMerger.ixx" />
+    <ClCompile Include="src\GPUResourceStateTracker.cpp" />
+    <ClCompile Include="src\GPUResourceStateTracker.ixx" />
+    <ClCompile Include="src\GPUResourceStateTrackerStateID.ixx" />
+    <ClCompile Include="src\GPUResourceStateTrackingContext.ixx" />
     <ClCompile Include="src\GPUResourceViews.ixx" />
+    <ClCompile Include="src\ImplicitBarrierGPUResourceStateTrackerState.ixx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\I_BufferSubAllocation.cpp" />
-    <ClCompile Include="src\BaseGPUResourceStateTrackerState.cpp" />
-    <ClCompile Include="src\BaseGPUResourceStateTrackerState.ixx" />
-    <ClCompile Include="src\BaseResourceStateZoneOptimizerState.ixx" />
-    <ClCompile Include="src\BaseResourceStateZoneOptimizerState.cpp" />
     <ClCompile Include="src\BufferResource.cpp" />
     <ClCompile Include="src\BufferResource.ixx" />
     <ClCompile Include="src\BufferResourceInitializationInfo.ixx" />
@@ -316,8 +333,12 @@
     <ClCompile Include="src\GPUResourceAllocation.ixx" />
     <ClCompile Include="src\GPUResourceAllocationHandle.cpp" />
     <ClCompile Include="src\GPUResourceAllocationHandle.ixx" />
-    <ClCompile Include="src\GPUResourceBarrierTypeSelectorState.ixx" />
     <ClCompile Include="src\GPUResourceCreationType.ixx" />
+    <ClCompile Include="src\I_GPUResourceStateTrackerState.ixx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\PipelineEnums.ixx" />
     <ClCompile Include="src\PipelineType.ixx" />
     <ClCompile Include="src\PSODatabase.cpp" />
@@ -336,6 +357,7 @@
     <ClCompile Include="src\RootParameterCache.ixx" />
     <ClCompile Include="src\RootParameterType.ixx" />
     <ClCompile Include="src\RootSignatureDatabase.cpp" />
+    <ClCompile Include="src\SafeModule.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinitionBase.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_ENCODE_BLOCK.ixx" />
@@ -389,7 +411,6 @@
     <ClCompile Include="src\FrameGraphBlackboardComponentMap.ixx" />
     <ClCompile Include="src\FrameGraphBuilder.cpp" />
     <ClCompile Include="src\FrameGraphBuilder.ixx" />
-    <ClCompile Include="src\FrameGraphCompilation.ixx" />
     <ClCompile Include="src\FrameGraphExecutionContext.cpp" />
     <ClCompile Include="src\FrameGraphExecutionContext.ixx" />
     <ClCompile Include="src\FrameGraphInjection.ixx" />
@@ -426,25 +447,20 @@
     <ClCompile Include="src\GPUResourceHeapPool.ixx" />
     <ClCompile Include="src\GPUResourceInitializationInfo.ixx" />
     <ClCompile Include="src\GPUResourceLifetimeType.ixx" />
-    <ClCompile Include="src\GPUResourceSpecialInitializationState.ixx" />
-    <ClCompile Include="src\GPUResourceStateManagement.ixx" />
-    <ClCompile Include="src\GPUResourceStateTracker.cpp" />
-    <ClCompile Include="src\GPUResourceStateTracker.ixx" />
-    <ClCompile Include="src\GPUResourceStateTrackerStateID.ixx" />
-    <ClCompile Include="src\GPUResourceStateTrackerStateTraits.ixx" />
+    <ClCompile Include="src\GPUResourceStateTrackerStateTraits.ixx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\GPUResourceUsageAnalyzer.cpp" />
     <ClCompile Include="src\GPUResourceUsageAnalyzer.ixx" />
     <ClCompile Include="src\GPUResourceUsageTracker.cpp" />
     <ClCompile Include="src\GPUResourceUsageTracker.ixx" />
     <ClCompile Include="src\GPUVendor.ixx" />
-    <ClCompile Include="src\IgnoreResourceStateZoneOptimizerState.cpp" />
-    <ClCompile Include="src\IgnoreResourceStateZoneOptimizerState.ixx" />
-    <ClCompile Include="src\ImmediateGPUResourceBarrierState.ixx" />
     <ClCompile Include="src\I_DescriptorTable.cpp" />
     <ClCompile Include="src\I_DescriptorTable.ixx" />
     <ClCompile Include="src\I_FreeGPUResidencyState.ixx" />
     <ClCompile Include="src\I_GPUResourceHeapManager.ixx" />
-    <ClCompile Include="src\I_GPUResourceStateTrackerState.ixx" />
     <ClCompile Include="src\I_PageableGPUObject.cpp" />
     <ClCompile Include="src\I_PageableGPUObject.ixx" />
     <ClCompile Include="src\I_RenderModule.cpp" />
@@ -452,7 +468,6 @@
     <ClCompile Include="src\I_GPUResource.cpp" />
     <ClCompile Include="src\I_GPUResource.ixx" />
     <ClCompile Include="src\I_RenderPass.ixx" />
-    <ClCompile Include="src\I_ResourceStateZoneOptimizerState.ixx" />
     <ClCompile Include="src\Job.cpp" />
     <ClCompile Include="src\Job.ixx" />
     <ClCompile Include="src\JobCounter.cpp" />
@@ -482,8 +497,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\ReadResourceStateZoneOptimizerState.cpp" />
-    <ClCompile Include="src\ReadResourceStateZoneOptimizerState.ixx" />
     <ClCompile Include="src\ReflectionUtil.ixx" />
     <ClCompile Include="src\Renderer.ixx" />
     <ClCompile Include="src\RenderPass.ixx" />
@@ -500,12 +513,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\ResourceStateZone.ixx" />
-    <ClCompile Include="src\ResourceStateZoneMap.cpp" />
-    <ClCompile Include="src\ResourceStateZoneMap.ixx" />
-    <ClCompile Include="src\ResourceStateZoneOptimizer.cpp" />
-    <ClCompile Include="src\ResourceStateZoneOptimizer.ixx" />
-    <ClCompile Include="src\ResourceStateZoneOptimizerStateID.ixx" />
-    <ClCompile Include="src\ResourceStateZoneOptimizerStateTraits.ixx" />
     <ClCompile Include="src\RootSignatureDatabase.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
@@ -521,7 +528,6 @@
     <ClCompile Include="src\ScopedGPUResourceMapping.ixx" />
     <ClCompile Include="src\ScopedSharedLock.ixx" />
     <ClCompile Include="src\SortedVector.ixx" />
-    <ClCompile Include="src\SplitGPUResourceBarrierState.ixx" />
     <ClCompile Include="src\ThreadingUtil.cpp" />
     <ClCompile Include="src\ThreadingUtil.ixx" />
     <ClCompile Include="src\ThreadLocalResources.ixx" />
@@ -550,7 +556,17 @@
   <ItemGroup>
     <ClInclude Include="src\DxDef.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets" Condition="Exists('..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets'))" />
+  </Target>
 </Project>
