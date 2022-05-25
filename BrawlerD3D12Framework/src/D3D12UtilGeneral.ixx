@@ -25,10 +25,31 @@ export namespace Util
 	}
 }
 
+namespace Util
+{
+	namespace D3D12
+	{
+		// Okay... Who's the idiot who forgot to make PIX_COLOR constexpr in the PIX header?
+		__forceinline constexpr std::int32_t CalculatePIXColor(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b)
+		{
+			std::int32_t colorValue = 0xFF000000;
+
+			colorValue |= (static_cast<std::uint32_t>(r) << 16);
+			colorValue |= (static_cast<std::uint32_t>(g) << 8);
+			colorValue |= static_cast<std::uint32_t>(b);
+
+			return colorValue;
+		}
+	}
+}
+
 export namespace Util
 {
 	namespace D3D12
 	{
+		constexpr std::int32_t PIX_EVENT_COLOR_CPU_ONLY = CalculatePIXColor(0x00, 0x00, 0xFF);
+		constexpr std::int32_t PIX_EVENT_COLOR_CPU_GPU = CalculatePIXColor(0x00, 0xFF, 0x00);
+		
 		/// <summary>
 		/// This function can be used to check if a particular resource state is valid.
 		/// </summary>
@@ -54,6 +75,7 @@ export namespace Util
 		Brawler::D3D12::GPUMemoryBudgetInfo GetGPUMemoryBudgetInfo();
 
 		bool IsDebugLayerEnabled();
+		consteval bool IsPIXRuntimeSupportEnabled();
 	}
 }
 
@@ -197,6 +219,21 @@ namespace Util
 				static const bool isDebugLayerEnabled = Util::Engine::GetGPUDevice().IsDebugLayerEnabled();
 				return isDebugLayerEnabled;
 			}
+		}
+
+		consteval bool IsPIXRuntimeSupportEnabled()
+		{
+			// The PIX_EVENTS_ARE_TURNED_ON macro is defined by PIX if it is able to enable PIX events.
+			// This macro is not defined in Release builds, but it *IS* defined in Release with Debugging
+			// builds.
+
+			constexpr bool ENABLE_PIX_RUNTIME_SUPPORT = true;
+
+#ifdef PIX_EVENTS_ARE_TURNED_ON
+			return ENABLE_PIX_RUNTIME_SUPPORT;
+#else
+			return false;
+#endif
 		}
 	}
 }

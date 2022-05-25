@@ -251,6 +251,8 @@
     <ClCompile Include="src\BarrierMergerStateContainer.ixx" />
     <ClCompile Include="src\BindlessSRVSentinel.cpp" />
     <ClCompile Include="src\BindlessSRVSentinel.ixx" />
+    <ClCompile Include="src\DLLManager.cpp" />
+    <ClCompile Include="src\DLLManager.ixx" />
     <ClCompile Include="src\FastUnorderedMap.ixx" />
     <ClCompile Include="src\BufferSubAllocationReservationHandle.cpp" />
     <ClCompile Include="src\BufferSubAllocationReservationHandle.ixx" />
@@ -355,6 +357,7 @@
     <ClCompile Include="src\RootParameterCache.ixx" />
     <ClCompile Include="src\RootParameterType.ixx" />
     <ClCompile Include="src\RootSignatureDatabase.cpp" />
+    <ClCompile Include="src\SafeModule.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinitionBase.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_ENCODE_BLOCK.ixx" />
@@ -553,7 +556,17 @@
   <ItemGroup>
     <ClInclude Include="src\DxDef.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets" Condition="Exists('..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets'))" />
+  </Target>
 </Project>

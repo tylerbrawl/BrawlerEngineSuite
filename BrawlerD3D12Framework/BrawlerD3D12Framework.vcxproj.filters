@@ -193,6 +193,9 @@
     <Filter Include="Source Files\Pipeline State Management">
       <UniqueIdentifier>{be4d8c03-2eaa-485e-bdd0-436284c8606c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Win32">
+      <UniqueIdentifier>{14c10506-731b-4aa9-889c-f7283dfcfe8f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GeneralUtil.ixx">
@@ -948,10 +951,22 @@
     <ClCompile Include="src\FastUnorderedMap.ixx">
       <Filter>Module Files\Convenience Types</Filter>
     </ClCompile>
+    <ClCompile Include="src\DLLManager.ixx">
+      <Filter>Module Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SafeModule.ixx">
+      <Filter>Module Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DLLManager.cpp">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

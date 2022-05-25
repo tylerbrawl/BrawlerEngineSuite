@@ -3,6 +3,8 @@ module;
 #include <stdexcept>
 #include <array>
 #include <string_view>
+#include <optional>
+#include <format>
 #include "DxDef.h"
 
 module Brawler.D3D12.GPUDevice;
@@ -10,6 +12,8 @@ import Brawler.CompositeEnum;
 import Util.General;
 import Util.D3D12;
 import Util.Win32;
+import Brawler.Win32.DLLManager;
+import Brawler.Win32.SafeModule;
 
 namespace
 {
@@ -134,6 +138,39 @@ case TypedUAVFormat::formatName:		\
 		};
 
 		supportCheckLambda.operator()<Brawler::D3D12::TypedUAVFormat::R16G16B16A16_UNORM>(d3dDevice, deviceCapabilities);
+	}
+
+	// #including pix3.h is causing compile times in Release builds to become miserably slow. (I'm talking, like,
+	// hours for a single module interface unit here.) I blame C++20 modules and the MSVC's support for them.
+	//
+	// So, if PIX isn't included, then we'll just define what we need here ourselves to allow the program to
+	// compile.
+
+#ifndef PIX_EVENTS_ARE_TURNED_ON
+	static __forceinline HMODULE PIXLoadLatestWinPixGpuCapturerLibrary()
+	{}
+#endif // !ARE_PIX_EVENTS_TURNED_ON
+
+	void VerifyPIXCapturerLoaded()
+	{
+		if constexpr (Util::D3D12::IsPIXRuntimeSupportEnabled())
+		{
+			// First, check to see if the capturer DLL was already loaded. This will be the case if the
+			// application is launched directly from PIX.
+			const std::optional<HMODULE> hPIXModule{ Brawler::Win32::DLLManager::GetInstance().GetExistingModule(L"WinPixGpuCapturer.dll") };
+
+			// If that failed, then we need to load it ourselves. PIX provides a helper function to do
+			// just that.
+			if (!hPIXModule.has_value())
+			{
+				Brawler::Win32::SafeModule pixModule{ PIXLoadLatestWinPixGpuCapturerLibrary() };
+
+				if (pixModule == nullptr) [[unlikely]]
+					throw std::runtime_error{ std::format("ERROR: PIX failed to load the WinPixGpuCapturer.dll file at runtime with the following error: {}", Util::General::WStringToString(Util::Win32::GetLastErrorString())) };
+
+				Brawler::Win32::DLLManager::GetInstance().RegisterModule(std::move(pixModule));
+			}
+		}
 	}
 }
 
@@ -297,6 +334,10 @@ namespace Brawler
 
 		void GPUDevice::InitializeD3D12Device()
 		{
+			// Enable PIX captures in Debug and Release with Debugging builds.
+			if constexpr (Util::D3D12::IsPIXRuntimeSupportEnabled())
+				VerifyPIXCapturerLoaded();
+			
 			// Enable the debug layer in Debug builds.
 			if constexpr (CurrentDebugLayerEnabler::IsDebugLayerAllowed())
 				CurrentDebugLayerEnabler::TryEnableDebugLayer();

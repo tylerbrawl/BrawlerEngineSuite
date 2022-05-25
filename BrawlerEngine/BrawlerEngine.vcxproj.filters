@@ -720,5 +720,6 @@
     <None Include="src\NormalPacking.hlsli">
       <Filter>Shader Files\Compression</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
