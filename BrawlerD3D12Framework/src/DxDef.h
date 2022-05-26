@@ -16,6 +16,8 @@
 #include <comdef.h>
 #include <Shlobj.h>
 
+#include "dstorage.h"
+
 #if defined(_DEBUG) || defined(__RELEASE_WITH_DEBUGGING__)
 #pragma push_macro("USE_PIX")
 

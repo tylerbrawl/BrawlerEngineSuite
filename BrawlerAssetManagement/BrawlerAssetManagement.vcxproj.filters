@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Module Files">
+      <UniqueIdentifier>{087cbe22-8e10-46ed-9875-e0f42bf84e04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Utilities">
+      <UniqueIdentifier>{a004081d-377e-4cd9-82a0-a58e0630bb43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utilities">
+      <UniqueIdentifier>{352040ee-9832-464a-b05f-3c674ffd4052}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Asset Management">
+      <UniqueIdentifier>{56ca5760-d22f-4ee3-9073-e6aa5f4c4d47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Asset Dependencies">
+      <UniqueIdentifier>{f8af0b38-3a4c-40cb-ae6a-82ab0d8f2abc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Asset Dependencies">
+      <UniqueIdentifier>{d5df1e8d-97a3-4eb0-851c-1abc2229b5e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\File I/O">
+      <UniqueIdentifier>{83fcc275-1c17-4a57-82f9-a070e0490bcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\File I/O\Asset I/O Requests">
+      <UniqueIdentifier>{cf35ee1b-e31a-499a-a940-8e4174764f65}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\DirectStorageUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DirectStorageUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetManager.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetDependency.ixx">
+      <Filter>Module Files\Asset Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetDependency.cpp">
+      <Filter>Source Files\Asset Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FilePathHash.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_AssetLoader.ixx">
+      <Filter>Module Files\Asset Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetIORequest.ixx">
+      <Filter>Module Files\File I/O\Asset I/O Requests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_AssetIORequestBuilder.ixx">
+      <Filter>Module Files\File I/O\Asset I/O Requests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DirectStorageAssetIORequestBuilder.ixx">
+      <Filter>Module Files\File I/O\Asset I/O Requests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SerializedStruct.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>

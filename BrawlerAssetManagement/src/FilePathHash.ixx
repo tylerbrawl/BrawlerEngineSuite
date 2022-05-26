@@ -12,7 +12,7 @@ namespace
 
 		std::uint64_t hash = 5381;
 
-		for (const auto& c : filePath)
+		for (const auto c : filePath)
 			hash = (((hash << 5) + hash) ^ c);
 
 		return hash;
@@ -20,12 +20,12 @@ namespace
 
 	static constexpr std::string_view HEX_CHARACTER_STRING = "0123456789ABCDEF";
 
-	std::string GetByteHexString(const std::uint8_t byte)
+	constexpr std::string GetByteHexString(const std::uint8_t byte)
 	{
 		// Performance Tip: For the MSVC STL, *NEVER* use std::stringstream in
 		// multi-threaded applications, even if it is just for std::hex(). If you
 		// do, then benchmark your application to check for critical section contention.
-		
+
 		std::string hexStr{};
 
 		hexStr += HEX_CHARACTER_STRING[byte >> 4];
@@ -56,11 +56,11 @@ export namespace Brawler
 
 		// In cases where a file path hash is read directly from a binary file, this
 		// constructor can instead be used.
-		explicit FilePathHash(const std::uint64_t pathHash);
+		constexpr explicit FilePathHash(const std::uint64_t pathHash);
 
-		std::uint64_t GetHash() const;
-		operator std::uint64_t() const;
-		std::string GetHashString() const;
+		constexpr std::uint64_t GetHash() const;
+		constexpr operator std::uint64_t() const;
+		constexpr std::string GetHashString() const;
 
 	private:
 		std::uint64_t mHash;
@@ -75,21 +75,21 @@ namespace Brawler
 		mHash(CreateFilePathHash(filePath))
 	{}
 
-	FilePathHash::FilePathHash(const std::uint64_t pathHash) :
+	constexpr FilePathHash::FilePathHash(const std::uint64_t pathHash) :
 		mHash(pathHash)
 	{}
 
-	std::uint64_t FilePathHash::GetHash() const
+	constexpr std::uint64_t FilePathHash::GetHash() const
 	{
 		return mHash;
 	}
 
-	FilePathHash::operator std::uint64_t() const
+	constexpr FilePathHash::operator std::uint64_t() const
 	{
 		return mHash;
 	}
 
-	std::string FilePathHash::GetHashString() const
+	constexpr std::string FilePathHash::GetHashString() const
 	{
 		// We know this is just 8, but still...
 		static constexpr std::size_t BYTE_COUNT = sizeof(mHash) / sizeof(std::uint8_t);
