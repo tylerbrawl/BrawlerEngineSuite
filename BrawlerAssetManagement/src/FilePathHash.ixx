@@ -92,7 +92,7 @@ namespace Brawler
 	constexpr std::string FilePathHash::GetHashString() const
 	{
 		// We know this is just 8, but still...
-		static constexpr std::size_t BYTE_COUNT = sizeof(mHash) / sizeof(std::uint8_t);
+		constexpr std::size_t BYTE_COUNT = sizeof(mHash) / sizeof(std::uint8_t);
 		std::string hashStr{};
 
 		for (std::size_t i = 0; i < BYTE_COUNT; ++i)

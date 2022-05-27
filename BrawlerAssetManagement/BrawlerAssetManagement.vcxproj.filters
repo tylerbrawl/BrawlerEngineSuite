@@ -34,8 +34,29 @@
     <Filter Include="Module Files\File I/O">
       <UniqueIdentifier>{83fcc275-1c17-4a57-82f9-a070e0490bcf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module Files\File I/O\Asset I/O Requests">
+    <Filter Include="Source Files\Asset Management">
+      <UniqueIdentifier>{12a691cd-2c95-49a8-b63f-806b9185aff3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File I/O">
+      <UniqueIdentifier>{040cc01a-80de-4dac-979a-b6ccf8edd6ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Asset Management\Asset I/O Requests">
       <UniqueIdentifier>{cf35ee1b-e31a-499a-a940-8e4174764f65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Asset Management\Asset I/O Requests">
+      <UniqueIdentifier>{ded3105e-2c14-4bd4-9c5b-a6e2c3c79415}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Asset Management\Asset I/O Request Handlers">
+      <UniqueIdentifier>{1d58d1e0-0a84-4faf-8f90-e477c2f4437e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Asset Management\Asset I/O Request Handlers">
+      <UniqueIdentifier>{916a8e02-4778-479a-b33a-29baf241f740}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Asset Management\Asset I/O Request Handlers\DirectStorage">
+      <UniqueIdentifier>{5fd29c99-8721-42fe-9f39-7398766254be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Asset Management\Asset I/O Request Handlers\DirectStorage">
+      <UniqueIdentifier>{d79680fd-65fb-4029-964c-7ac4db15b53f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -57,20 +78,74 @@
     <ClCompile Include="src\FilePathHash.ixx">
       <Filter>Module Files\File I/O</Filter>
     </ClCompile>
-    <ClCompile Include="src\I_AssetLoader.ixx">
+    <ClCompile Include="src\I_AssetResolver.ixx">
       <Filter>Module Files\Asset Dependencies</Filter>
     </ClCompile>
     <ClCompile Include="src\AssetIORequest.ixx">
-      <Filter>Module Files\File I/O\Asset I/O Requests</Filter>
+      <Filter>Module Files\Asset Management\Asset I/O Requests</Filter>
     </ClCompile>
     <ClCompile Include="src\I_AssetIORequestBuilder.ixx">
-      <Filter>Module Files\File I/O\Asset I/O Requests</Filter>
+      <Filter>Module Files\Asset Management\Asset I/O Requests</Filter>
     </ClCompile>
     <ClCompile Include="src\DirectStorageAssetIORequestBuilder.ixx">
-      <Filter>Module Files\File I/O\Asset I/O Requests</Filter>
+      <Filter>Module Files\Asset Management\Asset I/O Requests</Filter>
     </ClCompile>
     <ClCompile Include="src\SerializedStruct.ixx">
       <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BPKArchiveReader.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BPKArchiveReader.cpp">
+      <Filter>Source Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MappedFileView.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileAccessMode.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileMapper.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileMapper.cpp">
+      <Filter>Source Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DirectStorageAssetIORequestBuilder.cpp">
+      <Filter>Source Files\Asset Management\Asset I/O Requests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetRequestEventHandle.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetRequestEventHandle.cpp">
+      <Filter>Source Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetLoadingMode.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetManager.cpp">
+      <Filter>Source Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EnqueuedAssetDependency.ixx">
+      <Filter>Module Files\Asset Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_AssetIORequestHandler.ixx">
+      <Filter>Module Files\Asset Management\Asset I/O Request Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32AssetIORequestHandler.ixx">
+      <Filter>Module Files\Asset Management\Asset I/O Request Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_AssetIORequestBuilder.cpp">
+      <Filter>Source Files\Asset Management\Asset I/O Requests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DirectStorageAssetIORequestHandler.ixx">
+      <Filter>Module Files\Asset Management\Asset I/O Request Handlers\DirectStorage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DirectStorageAssetIORequestHandler.cpp">
+      <Filter>Source Files\Asset Management\Asset I/O Request Handlers\DirectStorage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DirectStorageQueue.ixx">
+      <Filter>Module Files\Asset Management\Asset I/O Request Handlers\DirectStorage</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

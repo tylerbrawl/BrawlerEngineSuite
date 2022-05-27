@@ -1151,17 +1151,43 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\AssetDependency.cpp" />
-    <ClCompile Include="src\AssetDependency.ixx" />
+    <ClCompile Include="src\AssetDependency.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\AssetDependency.ixx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\AssetIORequest.ixx" />
+    <ClCompile Include="src\AssetLoadingMode.ixx" />
+    <ClCompile Include="src\AssetManager.cpp" />
+    <ClCompile Include="src\AssetRequestEventHandle.cpp" />
+    <ClCompile Include="src\AssetRequestEventHandle.ixx" />
+    <ClCompile Include="src\BPKArchiveReader.cpp" />
+    <ClCompile Include="src\BPKArchiveReader.ixx" />
+    <ClCompile Include="src\DirectStorageAssetIORequestBuilder.cpp" />
     <ClCompile Include="src\DirectStorageAssetIORequestBuilder.ixx" />
+    <ClCompile Include="src\DirectStorageAssetIORequestHandler.cpp" />
+    <ClCompile Include="src\DirectStorageAssetIORequestHandler.ixx" />
+    <ClCompile Include="src\DirectStorageQueue.ixx" />
+    <ClCompile Include="src\EnqueuedAssetDependency.ixx" />
+    <ClCompile Include="src\FileAccessMode.ixx" />
+    <ClCompile Include="src\FileMapper.cpp" />
+    <ClCompile Include="src\FileMapper.ixx" />
+    <ClCompile Include="src\I_AssetIORequestBuilder.cpp" />
     <ClCompile Include="src\I_AssetIORequestBuilder.ixx" />
     <ClCompile Include="src\DirectStorageUtil.cpp" />
     <ClCompile Include="src\DirectStorageUtil.ixx" />
     <ClCompile Include="src\AssetManager.ixx" />
     <ClCompile Include="src\FilePathHash.ixx" />
-    <ClCompile Include="src\I_AssetLoader.ixx" />
+    <ClCompile Include="src\I_AssetIORequestHandler.ixx" />
+    <ClCompile Include="src\I_AssetResolver.ixx" />
+    <ClCompile Include="src\MappedFileView.ixx" />
     <ClCompile Include="src\SerializedStruct.ixx" />
+    <ClCompile Include="src\Win32AssetIORequestHandler.ixx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

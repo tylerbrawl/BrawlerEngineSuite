@@ -486,12 +486,8 @@ namespace IMPL
 	{
 		T dataInstance{};
 		auto fieldsTuple{ TupleCreator<T, ::Util::Reflection::GetFieldCount<T>()>::CreateFieldsTuple(dataInstance) };
-		
-		// Rather than use std::get to retrieve a value from the fieldsTuple, we create a new
-		// instance of the relevant field type. We do this to avoid undefined behavior. (See the
-		// comment above for more details.)
-		using ElementType = std::remove_cv_t<std::tuple_element_t<Index, decltype(fieldsTuple)>>;
-		return ElementType{};
+
+		return std::get<Index>(fieldsTuple);
 	}
 }
 
@@ -515,7 +511,7 @@ export namespace Util
 		constexpr auto& GetFieldReference(T& data)
 		{
 			auto dataFieldsTuple{ IMPL::TupleCreator<T, Util::Reflection::GetFieldCount<T>()>::CreateFieldsTuple(data) };
-			return std::get<Index>(data);
+			return std::get<Index>(dataFieldsTuple);
 		}
 
 		template <typename T, std::size_t Index>
@@ -523,7 +519,7 @@ export namespace Util
 		constexpr const auto& GetFieldReference(const T& data)
 		{
 			const auto dataFieldsTuple{ IMPL::TupleCreator<T, Util::Reflection::GetFieldCount<T>()>::CreateFieldsTuple(data) };
-			return std::get<Index>(data);
+			return std::get<Index>(dataFieldsTuple);
 		}
 	}
 }

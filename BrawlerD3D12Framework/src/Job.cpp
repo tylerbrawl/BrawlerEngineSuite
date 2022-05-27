@@ -8,6 +8,7 @@ import Brawler.JobPriority;
 import Util.Engine;
 import Util.Threading;
 import Brawler.ThreadLocalResources;
+import Brawler.DelayedJobSubmitter;
 
 namespace Brawler
 {
@@ -30,6 +31,9 @@ namespace Brawler
 	{
 		ThreadLocalResources& threadLocalResources{ Util::Threading::GetThreadLocalResources() };
 		threadLocalResources.SetCachedFrameNumber(mCachedFrameNumber);
+
+		// Try to submit any delayed CPU jobs belonging to this thread.
+		Util::Threading::GetThreadLocalResources().GetDelayedJobSubmitter().CheckForDelayedJobSubmissions();
 		
 		try
 		{
@@ -45,7 +49,15 @@ namespace Brawler
 			threadLocalResources.ResetCachedFrameNumber();
 			
 			if (mCounterPtr != nullptr)
+			{
 				mCounterPtr->DecrementCounter();
+
+				// We don't want this thread to exit until all of the other CPU jobs associated
+				// with this counter have completed; otherwise, we risk stack unwinding wreaking
+				// havoc on the memory accessed by other threads. So, we wait here until the
+				// counter reaches zero to leave.
+				while (!mCounterPtr->IsFinished());
+			}
 
 			std::rethrow_exception(std::current_exception());
 		}

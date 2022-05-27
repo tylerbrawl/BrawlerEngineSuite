@@ -251,6 +251,10 @@
     <ClCompile Include="src\BarrierMergerStateContainer.ixx" />
     <ClCompile Include="src\BindlessSRVSentinel.cpp" />
     <ClCompile Include="src\BindlessSRVSentinel.ixx" />
+    <ClCompile Include="src\DelayedJobGroup.cpp" />
+    <ClCompile Include="src\DelayedJobGroup.ixx" />
+    <ClCompile Include="src\DelayedJobSubmitter.cpp" />
+    <ClCompile Include="src\DelayedJobSubmitter.ixx" />
     <ClCompile Include="src\DLLManager.cpp" />
     <ClCompile Include="src\DLLManager.ixx" />
     <ClCompile Include="src\FastUnorderedMap.ixx" />

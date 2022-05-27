@@ -6,6 +6,16 @@ module Brawler.ThreadLocalResources;
 
 namespace Brawler
 {
+	DelayedJobSubmitter& ThreadLocalResources::GetDelayedJobSubmitter()
+	{
+		return mDelayedJobSubmitter;
+	}
+
+	const DelayedJobSubmitter& ThreadLocalResources::GetDelayedJobSubmitter() const
+	{
+		return mDelayedJobSubmitter;
+	}
+
 	void ThreadLocalResources::SetCachedFrameNumber(const std::uint64_t frameNumber)
 	{
 		mCachedFrameNumberStack.push(frameNumber);

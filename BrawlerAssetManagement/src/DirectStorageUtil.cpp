@@ -51,6 +51,9 @@ namespace Util
 				directStorageFactory->SetDebugFlags(static_cast<std::uint32_t>(DIRECT_STORAGE_DEBUG_LAYER_FLAGS));
 			}
 
+			if constexpr (STAGING_BUFFER_SIZE_IN_BYTES != std::to_underlying(DSTORAGE_STAGING_BUFFER_SIZE::DSTORAGE_STAGING_BUFFER_SIZE_32MB))
+				Util::General::CheckHRESULT(directStorageFactory->SetStagingBufferSize(STAGING_BUFFER_SIZE_IN_BYTES));
+
 			return std::optional<Microsoft::WRL::ComPtr<IDStorageFactory>>{ std::move(directStorageFactory) };
 		}
 	}
