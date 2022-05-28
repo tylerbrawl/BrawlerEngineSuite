@@ -74,7 +74,7 @@ namespace Brawler
 			std::scoped_lock<std::mutex> lock{ mCritSection };
 
 			if (mFileMappingObjectMap.contains(canonicalPath))
-				return *(mFileMappingObjectMap.at(canonicalPath));
+				return mFileMappingObjectMap.at(canonicalPath).get();
 
 			Win32::SafeHandle hFileMappingObject{ CreateFileMappingObject(canonicalPath) };
 			hMappingObject = hFileMappingObject.get();

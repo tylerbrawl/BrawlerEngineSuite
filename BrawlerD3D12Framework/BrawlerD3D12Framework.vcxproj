@@ -251,6 +251,7 @@
     <ClCompile Include="src\BarrierMergerStateContainer.ixx" />
     <ClCompile Include="src\BindlessSRVSentinel.cpp" />
     <ClCompile Include="src\BindlessSRVSentinel.ixx" />
+    <ClCompile Include="src\CustomEventHandle.ixx" />
     <ClCompile Include="src\DelayedJobGroup.cpp" />
     <ClCompile Include="src\DelayedJobGroup.ixx" />
     <ClCompile Include="src\DelayedJobSubmitter.cpp" />
@@ -271,6 +272,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\Finally.ixx" />
     <ClCompile Include="src\FormattedConsoleMessageBuilder.ixx" />
     <ClCompile Include="src\FrameGraphManager.cpp" />
     <ClCompile Include="src\FrameGraphManager.ixx" />
@@ -338,6 +340,8 @@
     <ClCompile Include="src\GPUResourceAllocationHandle.cpp" />
     <ClCompile Include="src\GPUResourceAllocationHandle.ixx" />
     <ClCompile Include="src\GPUResourceCreationType.ixx" />
+    <ClCompile Include="src\I_EventHandle.cpp" />
+    <ClCompile Include="src\I_EventHandle.ixx" />
     <ClCompile Include="src\I_GPUResourceStateTrackerState.ixx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
@@ -550,6 +554,8 @@
     <ClCompile Include="src\UAVCounterSubAllocation.cpp" />
     <ClCompile Include="src\UAVCounterSubAllocation.ixx" />
     <ClCompile Include="src\UnorderedAccessView.ixx" />
+    <ClCompile Include="src\Win32EventHandle.cpp" />
+    <ClCompile Include="src\Win32EventHandle.ixx" />
     <ClCompile Include="src\Win32Util.cpp" />
     <ClCompile Include="src\Win32Util.ixx" />
     <ClCompile Include="src\WorkerThread.cpp" />

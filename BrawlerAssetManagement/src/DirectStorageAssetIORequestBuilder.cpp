@@ -5,7 +5,7 @@ module;
 #include <DxDef.h>
 
 module Brawler.AssetManagement.DirectStorageAssetIORequestBuilder;
-import Brawler.BPKArchiveReader;
+import Brawler.AssetManagement.BPKArchiveReader;
 import Brawler.D3D12.BufferResource;
 import Util.DirectStorage;
 import Util.General;
@@ -67,7 +67,7 @@ namespace Brawler
 				.Options{std::move(requestOptions)},
 				.Source{ std::move(requestSrc) },
 				.Destination{ std::move(requestDest) },
-				.UncompressedSize = tocEntry.UncompressedSizeInBytes,
+				.UncompressedSize = static_cast<std::uint32_t>(tocEntry.UncompressedSizeInBytes),
 				.CancellationTag{},
 				.Name{ nullptr }
 			});

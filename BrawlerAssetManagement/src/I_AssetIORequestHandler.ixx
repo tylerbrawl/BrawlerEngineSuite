@@ -46,6 +46,24 @@ export namespace Brawler
 			///   at least the AssetRequestEventHandle instance for Step 2.
 			/// </param>
 			virtual void PrepareAssetIORequests(std::unique_ptr<EnqueuedAssetDependency>&& enqueuedDependency) = 0;
+
+			/// <summary>
+			/// Asset I/O requests are handled in a two-step process:
+			/// 
+			///   1. Asset dependency resolver callbacks which were specified in an AssetDependency instance
+			///      are called with an I_AssetIORequestBuilder instance constructed by the current 
+			///		 I_AssetIORequestHandler instance. The request handler uses the builder to construct API-specific 
+			///		 asset load requests and prepares them for execution.
+			/// 
+			///   2. Asset data loading is handled by a selection of threads. Once all of the asset data for
+			///      an AssetDependency instance has been loaded, the corresponding AssetRequestEventHandle
+			///      instance is signalled.
+			/// 
+			/// This function is called immediately after Step 1 has been completed. It is called only on a single
+			/// thread.
+			/// </summary>
+			virtual void PostPrepareAssetIORequests()
+			{}
 		};
 	}
 }

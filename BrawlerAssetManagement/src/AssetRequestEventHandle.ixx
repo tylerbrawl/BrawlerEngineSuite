@@ -4,11 +4,12 @@ module;
 
 export module Brawler.AssetManagement.AssetRequestEventHandle;
 
-export namespace Brawler
+namespace Brawler
 {
 	namespace AssetManagement
 	{
 		class AssetManager;
+		class AssetRequestEventNotifier;
 	}
 }
 
@@ -20,6 +21,7 @@ export namespace Brawler
 		{
 		private:
 			friend class AssetManager;
+			friend class AssetRequestEventNotifier;
 
 		private:
 			AssetRequestEventHandle();

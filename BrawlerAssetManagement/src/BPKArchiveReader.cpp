@@ -12,6 +12,7 @@ module Brawler.AssetManagement.BPKArchiveReader;
 import Brawler.FilePathHash;
 import Brawler.FileAccessMode;
 import Brawler.SerializedStruct;
+import Brawler.FileMapper;
 
 namespace
 {
@@ -144,7 +145,7 @@ namespace
 
 		std::vector<BPKTableOfContentsEntry> tocEntryArr{};
 
-		if constexpr (IsInherentlySerializable<T>)
+		if constexpr (Brawler::IsInherentlySerializable<BPKTableOfContentsEntry>)
 		{
 			// Rather than sequentially reading each individual ToC entry, we can just read the entire ToC at once.
 			// This can be significantly faster.
@@ -156,16 +157,16 @@ namespace
 		{
 			// To ensure correct deserialization, we need to first copy the data into serializable versions of
 			// BPKTableOfContentsEntry.
-			std::vector<SerializedStruct<BPKTableOfContentsEntry>> serializedTOCEntryArr{};
+			std::vector<Brawler::SerializedStruct<BPKTableOfContentsEntry>> serializedTOCEntryArr{};
 			serializedTOCEntryArr.resize(numTOCEntries);
 
 			bpkFileStream.read(reinterpret_cast<char*>(serializedTOCEntryArr.data()), versionedHeader->TableOfContentsSizeInBytes);
 
 			// Now, we need to individually de-serialize each entry.
-			tocEntryArr.reserve(numTOCEntries)
+			tocEntryArr.reserve(numTOCEntries);
 
 			for (const auto& serializedTOCEntry : serializedTOCEntryArr)
-				tocEntryArr.push_back(DeserializeData(serializedTOCEntry));
+				tocEntryArr.push_back(Brawler::DeserializeData(serializedTOCEntry));
 		}
 
 		for (const auto& tocEntry : tocEntryArr)
@@ -227,7 +228,7 @@ namespace Brawler
 		{
 			const TOCEntry& tocEntry{ GetTableOfContentsEntry(pathHash) };
 			
-			const MappedFileView<FileAccessMode::READ_ONLY>  mappedView{ mHFileMappingObject, MappedFileView::ViewParams{
+			MappedFileView<FileAccessMode::READ_ONLY>  mappedView{ mHFileMappingObject, MappedFileView<FileAccessMode::READ_ONLY>::ViewParams{
 				.FileOffsetInBytes = tocEntry.FileOffsetInBytes,
 				.ViewSizeInBytes = tocEntry.CompressedSizeInBytes
 			} };
@@ -236,9 +237,9 @@ namespace Brawler
 			return mappedView;
 		}
 
-		const std::filesystem::path& BPKArchiveReader::GetBPKArchiveFilePath() const
+		const std::filesystem::path& BPKArchiveReader::GetBPKArchiveFilePath()
 		{
-			return 
+			return bpkArchivePath;
 		}
 	}
 }

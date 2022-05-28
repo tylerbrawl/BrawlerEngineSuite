@@ -26,7 +26,7 @@ namespace Brawler
 			// Perform a write-release to ensure that any changes which we made to asset
 			// data are propagated to other threads.
 			assert(mAssetRequestFinished != nullptr);
-			mAssetRequestFinished->store(std::memory_order::release);
+			mAssetRequestFinished->store(true, std::memory_order::release);
 		}
 	}
 }

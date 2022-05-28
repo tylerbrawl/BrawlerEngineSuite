@@ -3,7 +3,7 @@ module;
 #include <functional>
 
 export module Brawler.AssetManagement.AssetDependency;
-import Brawler.AssetManager.I_AssetIORequestBuilder;
+import Brawler.AssetManagement.I_AssetIORequestBuilder;
 import Brawler.JobPriority;
 
 export namespace Brawler
@@ -23,7 +23,7 @@ export namespace Brawler
 		private:
 			struct DependencyResolverInfo
 			{
-				std::move_only_function<void(I_AssetIORequestBuilder)> ResolverCallback;
+				std::move_only_function<void(I_AssetIORequestBuilder&)> ResolverCallback;
 				Brawler::JobPriority RequestPriority;
 			};
 
@@ -90,7 +90,7 @@ export namespace Brawler
 			/// </param>
 			void MergeAssetDependency(AssetDependency&& dependency);
 
-			void BuildAssetIORequests(I_AssetIORequestBuilder& requestBuilder) const;
+			void BuildAssetIORequests(I_AssetIORequestBuilder& requestBuilder);
 
 		private:
 			std::vector<DependencyResolverInfo> mDependencyResolverArr;

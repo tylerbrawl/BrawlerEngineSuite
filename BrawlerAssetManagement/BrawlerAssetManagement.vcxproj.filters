@@ -58,6 +58,15 @@
     <Filter Include="Source Files\Asset Management\Asset I/O Request Handlers\DirectStorage">
       <UniqueIdentifier>{d79680fd-65fb-4029-964c-7ac4db15b53f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\File I/O\ZStandard">
+      <UniqueIdentifier>{aa076c3a-f64e-4fcc-9d78-244be8667ecd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File I/O\ZStandard">
+      <UniqueIdentifier>{3949047f-85df-43ae-83f1-b1483d875d07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\File I/O\ZStandard\Context Types">
+      <UniqueIdentifier>{ea704b28-15d9-42f2-ae45-dcf53932f1c0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\DirectStorageUtil.ixx">
@@ -146,6 +155,48 @@
     </ClCompile>
     <ClCompile Include="src\DirectStorageQueue.ixx">
       <Filter>Module Files\Asset Management\Asset I/O Request Handlers\DirectStorage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DirectStorageQueue.cpp">
+      <Filter>Source Files\Asset Management\Asset I/O Request Handlers\DirectStorage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PendingDirectStorageRequest.ixx">
+      <Filter>Module Files\Asset Management\Asset I/O Request Handlers\DirectStorage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PendingDirectStorageRequest.cpp">
+      <Filter>Source Files\Asset Management\Asset I/O Request Handlers\DirectStorage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DirectStorageStatusArrayEntry.ixx">
+      <Filter>Module Files\Asset Management\Asset I/O Request Handlers\DirectStorage</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetRequestEventNotifier.ixx">
+      <Filter>Module Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssetLoadingMode.cpp">
+      <Filter>Source Files\Asset Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDDecompressionOperation.ixx">
+      <Filter>Module Files\File I/O\ZStandard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDDecompressionOperation.cpp">
+      <Filter>Source Files\File I/O\ZStandard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UnderlyingZSTDContextTypes.ixx">
+      <Filter>Module Files\File I/O\ZStandard\Context Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WrappedZSTDContext.ixx">
+      <Filter>Module Files\File I/O\ZStandard\Context Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDContext.ixx">
+      <Filter>Module Files\File I/O\ZStandard\Context Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDContextQueue.ixx">
+      <Filter>Module Files\File I/O\ZStandard\Context Types</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

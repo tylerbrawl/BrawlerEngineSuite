@@ -129,9 +129,9 @@ namespace Brawler
 	{
 		assert(hFileMappingObject != nullptr && hFileMappingObject != INVALID_HANDLE_VALUE && "ERROR: An invalid HANDLE value was specified when creating a MappedFileView!");
 
-		static constexpr std::uint32_t DESIRED_ACCESS = []<FileAccessMode AccessMode>()
+		static constexpr std::uint32_t DESIRED_ACCESS = []<FileAccessMode Mode>()
 		{
-			if constexpr (AccessMode == FileAccessMode::READ_ONLY)
+			if constexpr (Mode == FileAccessMode::READ_ONLY)
 				return FILE_MAP_READ;
 			else
 				return FILE_MAP_WRITE;

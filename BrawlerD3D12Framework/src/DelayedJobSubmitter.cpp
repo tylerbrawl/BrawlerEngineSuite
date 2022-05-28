@@ -19,7 +19,7 @@ namespace Brawler
 			// If the event has been signalled, then submit the jobs and erase the
 			// DelayedJobSubmissionInfo instance.
 
-			if (WaitForSingleObject(submissionInfo.HEvent.get(), 0) == WAIT_OBJECT_0)
+			if (submissionInfo.HEventPtr->IsEventCompleted())
 			{
 				for (auto&& job : submissionInfo.DelayedJobArr)
 					Brawler::GetWorkerThreadPool().DispatchJob(std::move(job));

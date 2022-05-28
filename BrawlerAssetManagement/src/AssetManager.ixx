@@ -8,14 +8,7 @@ import Brawler.AssetManagement.AssetLoadingMode;
 import Brawler.ThreadSafeQueue;
 import Brawler.AssetManagement.EnqueuedAssetDependency;
 import Brawler.AssetManagement.AssetRequestEventHandle;
-
-export namespace Brawler
-{
-	namespace AssetManagement
-	{
-		class AssetDependency;
-	}
-}
+import Brawler.AssetManagement.AssetDependency;
 
 namespace Brawler
 {

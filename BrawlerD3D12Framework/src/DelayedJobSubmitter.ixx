@@ -1,9 +1,10 @@
 module;
+#include <memory>
 #include <vector>
 
 export module Brawler.DelayedJobSubmitter;
 import Brawler.Job;
-import Brawler.Win32.SafeHandle;
+import Brawler.I_EventHandle;
 
 export namespace Brawler
 {
@@ -18,7 +19,7 @@ export namespace Brawler
 		struct DelayedJobSubmissionInfo
 		{
 			std::vector<Job> DelayedJobArr;
-			Win32::SafeHandle HEvent;
+			std::unique_ptr<I_EventHandle> HEventPtr;
 		};
 
 	private:

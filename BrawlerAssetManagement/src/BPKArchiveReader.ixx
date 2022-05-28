@@ -41,7 +41,7 @@ export namespace Brawler
 			};
 
 		private:
-			BPKArchiveReader() = default;
+			BPKArchiveReader();
 
 		public:
 			virtual ~BPKArchiveReader() = default;
@@ -57,7 +57,7 @@ export namespace Brawler
 			const TOCEntry& GetTableOfContentsEntry(const FilePathHash pathHash) const;
 			MappedFileView<FileAccessMode::READ_ONLY> CreateMappedFileViewForAsset(const FilePathHash pathHash) const;
 
-			const std::filesystem::path& GetBPKArchiveFilePath() const;
+			static const std::filesystem::path& GetBPKArchiveFilePath();
 
 		private:
 			/// <summary>

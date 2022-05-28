@@ -196,6 +196,12 @@
     <Filter Include="Source Files\Win32">
       <UniqueIdentifier>{14c10506-731b-4aa9-889c-f7283dfcfe8f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Threading\Event Handles">
+      <UniqueIdentifier>{50e64646-8481-492f-9213-f27d9620120d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Threading\Event Handles">
+      <UniqueIdentifier>{87a0c87f-fb04-4e67-b5c6-f3f45871a27a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GeneralUtil.ixx">
@@ -971,6 +977,24 @@
     </ClCompile>
     <ClCompile Include="src\DelayedJobGroup.cpp">
       <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_EventHandle.ixx">
+      <Filter>Module Files\Threading\Event Handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_EventHandle.cpp">
+      <Filter>Source Files\Threading\Event Handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32EventHandle.ixx">
+      <Filter>Module Files\Threading\Event Handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32EventHandle.cpp">
+      <Filter>Source Files\Threading\Event Handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Finally.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CustomEventHandle.ixx">
+      <Filter>Module Files\Threading\Event Handles</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

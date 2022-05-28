@@ -23,9 +23,9 @@ namespace Brawler
 			dependency.mDependencyResolverArr.clear();
 		}
 
-		void AssetDependency::BuildAssetIORequests(I_AssetIORequestBuilder& requestBuilder) const
+		void AssetDependency::BuildAssetIORequests(I_AssetIORequestBuilder& requestBuilder)
 		{
-			for (const auto& resolverInfo : mDependencyResolverArr)
+			for (auto& resolverInfo : mDependencyResolverArr)
 			{
 				// Set requestBuilder's current priority so that requests made in this call
 				// are properly prioritized.

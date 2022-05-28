@@ -1,7 +1,7 @@
 module;
 #include <vector>
 
-export module Brawler.AssetManager.I_AssetIORequestBuilder;
+export module Brawler.AssetManagement.I_AssetIORequestBuilder;
 import Brawler.FilePathHash;
 import Brawler.D3D12.I_BufferSubAllocation;
 import Brawler.JobPriority;

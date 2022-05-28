@@ -3,6 +3,7 @@ module;
 #include <memory>
 #include <optional>
 #include <cassert>
+#include <thread>
 #include <DxDef.h>
 
 module Brawler.AssetManagement.AssetManager;
@@ -40,8 +41,8 @@ namespace Brawler
 				
 				if (directStorageFactory.has_value()) [[likely]]
 					mRequestHandlerPtr = std::make_unique<DirectStorageAssetIORequestHandler>(std::move(*directStorageFactory));
-				else [[unlikely]]
-					mRequestHandlerPtr = std::make_unique<Win32AssetIORequestHandler>();
+				//else [[unlikely]]
+					//mRequestHandlerPtr = std::make_unique<Win32AssetIORequestHandler>();
 			}
 			else
 				mRequestHandlerPtr = std::make_unique<Win32AssetIORequestHandler>();
@@ -68,6 +69,7 @@ namespace Brawler
 
 		void AssetManager::SetAssetLoadingMode(const AssetLoadingMode loadingMode)
 		{
+			assert(loadingMode != AssetLoadingMode::COUNT_OR_ERROR && "ERROR: An invalid AssetLoadingMode value was specified in a call to AssetManager::SetAssetLoadingMode()!");
 			mCurrLoadingMode.store(loadingMode, std::memory_order::relaxed);
 		}
 

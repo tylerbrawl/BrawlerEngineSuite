@@ -1,11 +1,15 @@
 module;
 #include <memory>
 #include <array>
+#include <atomic>
 #include <DxDef.h>
 
 export module Brawler.AssetManagement.DirectStorageAssetIORequestHandler;
 import Brawler.AssetManagement.I_AssetIORequestHandler;
 import Brawler.AssetManagement.EnqueuedAssetDependency;
+import Brawler.AssetManagement.DirectStorageQueue;
+import Brawler.ThreadSafeVector;
+import Brawler.AssetManagement.PendingDirectStorageRequest;
 
 export namespace Brawler
 {
@@ -23,19 +27,27 @@ export namespace Brawler
 			DirectStorageAssetIORequestHandler& operator=(DirectStorageAssetIORequestHandler&& rhs) noexcept = default;
 
 			void PrepareAssetIORequests(std::unique_ptr<EnqueuedAssetDependency>&& enqueuedDependency) override;
+			void PostPrepareAssetIORequests() override;
+
+			IDStorageFactory& GetDirectStorageFactory();
+			const IDStorageFactory& GetDirectStorageFactory() const;
 
 		private:
 			void CreateBPKArchiveDirectStorageFile();
 			void CreateDecompressionEventQueue();
 			void CreateDirectStorageQueues();
-			void CreateStatusArray();
+
+			void ClearCompletedRequests();
+
+			void BeginCPUDecompression() const;
+			void ExecuteCPUDecompressionTasks(const std::shared_ptr<std::atomic<std::uint32_t>>& remainingThreadsCounter) const;
 
 		private:
 			Microsoft::WRL::ComPtr<IDStorageFactory> mDStorageFactory;
 			Microsoft::WRL::ComPtr<IDStorageFile> mBPKDStorageFile;
 			Microsoft::WRL::ComPtr<IDStorageCustomDecompressionQueue> mDecompressionEventQueue;
-			std::array<Microsoft::WRL::ComPtr<IDStorageQueue>, std::to_underlying(DSTORAGE_PRIORITY::DSTORAGE_PRIORITY_COUNT)> mDStorageQueueArr;
-			Microsoft::WRL::ComPtr<IDStorageStatusArray> mDStorageStatusArray;
+			std::array<DirectStorageQueue, std::to_underlying(DSTORAGE_PRIORITY::DSTORAGE_PRIORITY_COUNT)> mDirectStorageQueueArr;
+			Brawler::ThreadSafeVector<std::unique_ptr<PendingDirectStorageRequest>> mPendingRequestArr;
 		};
 	}
 }
