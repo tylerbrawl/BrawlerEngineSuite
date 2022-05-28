@@ -36,7 +36,7 @@ export namespace Brawler
 			///      instance is signalled.
 			/// 
 			/// Derived classes should fulfill Step 1's requirements in their implementation of
-			/// I_AssetIORequestHandler::PrepareAssetIORequests().
+			/// I_AssetIORequestHandler::PrepareAssetIORequest().
 			/// 
 			/// *NOTE*: The implementation *MUST* be thread safe.
 			/// </summary>
@@ -45,7 +45,7 @@ export namespace Brawler
 			///   to be resolved and the corresponding AssetRequestEventHandle. Derived classes will need to cache
 			///   at least the AssetRequestEventHandle instance for Step 2.
 			/// </param>
-			virtual void PrepareAssetIORequests(std::unique_ptr<EnqueuedAssetDependency>&& enqueuedDependency) = 0;
+			virtual void PrepareAssetIORequest(std::unique_ptr<EnqueuedAssetDependency>&& enqueuedDependency) = 0;
 
 			/// <summary>
 			/// Asset I/O requests are handled in a two-step process:
@@ -55,15 +55,22 @@ export namespace Brawler
 			///		 I_AssetIORequestHandler instance. The request handler uses the builder to construct API-specific 
 			///		 asset load requests and prepares them for execution.
 			/// 
-			///   2. Asset data loading is handled by a selection of threads. Once all of the asset data for
+			///   2. Asset data loading is handled by the current I_AssetIORequestHandler. Once all of the asset data for
 			///      an AssetDependency instance has been loaded, the corresponding AssetRequestEventHandle
 			///      instance is signalled.
 			/// 
-			/// This function is called immediately after Step 1 has been completed. It is called only on a single
-			/// thread.
+			/// Derived classes should fulfill Step 2's requirements in their implementation of
+			/// I_AssetIORequestHandler::SubmitAssetIORequests().
+			/// 
+			/// This function is called on a single thread because it is impossible for the AssetManager to determine
+			/// how many threads the I_AssetIORequestHandler instance will need. However, the expectation is that
+			/// said handler instance will create a number of CPU jobs corresponding to the current AssetLoadingMode.
+			/// 
+			/// Creating CPU jobs during this function may be unnecessary, though. For instance, the DirectStorage
+			/// API handles I/O requests on separate threads, so the DirectStorageAssetIORequestHandler only needs
+			/// a single thread during this function.
 			/// </summary>
-			virtual void PostPrepareAssetIORequests()
-			{}
+			virtual void SubmitAssetIORequests() = 0;
 		};
 	}
 }

@@ -28,6 +28,9 @@ namespace Brawler
 				if (!requestSpanForPriorityLevel.empty())
 					++mTotalStatusArrayEntryCount;
 			}
+
+			if (mTotalStatusArrayEntryCount == 0) [[unlikely]]
+				AssetRequestEventNotifier::MarkAssetRequestAsCompleted(mHAssetRequestEvent);
 		}
 
 		std::span<const DSTORAGE_REQUEST> PendingDirectStorageRequest::GetDStorageRequestSpan(const Brawler::JobPriority priority) const

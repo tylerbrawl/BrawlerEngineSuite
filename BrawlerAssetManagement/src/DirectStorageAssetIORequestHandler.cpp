@@ -119,7 +119,7 @@ namespace Brawler
 			delayedDecompressionGroup.SubmitDelayedJobs(Win32EventHandle{ std::move(hDirectStorageDecompressionEvent) });
 		}
 
-		void DirectStorageAssetIORequestHandler::PrepareAssetIORequests(std::unique_ptr<EnqueuedAssetDependency>&& enqueuedDependency)
+		void DirectStorageAssetIORequestHandler::PrepareAssetIORequest(std::unique_ptr<EnqueuedAssetDependency>&& enqueuedDependency)
 		{
 			// Let the asset dependency resolver callbacks in the AssetDependency tell us which assets need to
 			// be loaded.
@@ -134,13 +134,13 @@ namespace Brawler
 			mPendingRequestArr.PushBack(std::move(pendingRequestPtr));
 		}
 
-		void DirectStorageAssetIORequestHandler::PostPrepareAssetIORequests()
+		void DirectStorageAssetIORequestHandler::SubmitAssetIORequests()
 		{
 			// After we have created all of the DirectStorageAssetIORequestBuilder instances for
 			// this iteration of asset I/O request handling, we call IDStorageQueue::Submit() on each
 			// queue to have DirectStorage begin processing requests.
 
-			for (const auto& queue : mDirectStorageQueueArr)
+			for (auto& queue : mDirectStorageQueueArr)
 				queue.Submit();
 
 			ClearCompletedRequests();

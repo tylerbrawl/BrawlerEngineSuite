@@ -32,7 +32,7 @@ export namespace Brawler
 			DirectStorageQueue& operator=(DirectStorageQueue&& rhs) noexcept;
 
 			void EnqueueRequest(PendingDirectStorageRequest& directStorageRequest);
-			void Submit() const;
+			void Submit();
 
 		private:
 			void CreateDStorageQueue();
@@ -44,6 +44,7 @@ export namespace Brawler
 			Microsoft::WRL::ComPtr<IDStorageQueue> mDStorageQueue;
 			Brawler::JobPriority mQueuePriority;
 			std::uint32_t mCurrStatusArrayEntryIndex;
+			bool mHasRequestsToSubmit;
 			mutable std::mutex mSubmissionCritSection;
 		};
 	}

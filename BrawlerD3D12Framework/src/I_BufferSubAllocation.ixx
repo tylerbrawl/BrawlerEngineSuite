@@ -99,7 +99,7 @@ export namespace Brawler
 		protected:
 			BufferSubAllocationManager& GetOwningManager() const;
 
-		protected:
+		public:
 			/// <summary>
 			/// Writes the data provided in srcDataSpan to the BufferResource. The data is written at an offset
 			/// subAllocationOffsetInBytes away from the start of the *sub-allocation*, and NOT the start 

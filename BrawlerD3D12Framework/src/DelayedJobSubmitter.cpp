@@ -31,6 +31,11 @@ namespace Brawler
 		});
 	}
 
+	bool DelayedJobSubmitter::HasDelayedJobsToCheck() const
+	{
+		return !mSubmissionInfoArr.empty();
+	}
+
 	void DelayedJobSubmitter::AddDelayedJobSubmission(DelayedJobSubmissionInfo&& submissionInfo)
 	{
 		mSubmissionInfoArr.push_back(std::move(submissionInfo));

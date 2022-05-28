@@ -36,6 +36,20 @@ export namespace Brawler
 
 		void CheckForDelayedJobSubmissions();
 
+		/// <summary>
+		/// Describes whether or not this DelayedJobGroup instance has any delayed CPU jobs
+		/// which must be checked. 
+		/// 
+		/// This does *NOT* indicate that any contained delayed CPU jobs are actually ready 
+		/// for submission; it only means that there are some which may be ready for submission 
+		/// eventually.
+		/// </summary>
+		/// <returns>
+		/// The function returns true if this DelayedJobGroup instance has any delayed CPU jobs
+		/// which must be checked and false otherwise.
+		/// </returns>
+		bool HasDelayedJobsToCheck() const;
+
 	private:
 		void AddDelayedJobSubmission(DelayedJobSubmissionInfo&& submissionInfo);
 

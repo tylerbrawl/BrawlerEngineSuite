@@ -67,6 +67,12 @@
     <Filter Include="Module Files\File I/O\ZStandard\Context Types">
       <UniqueIdentifier>{ea704b28-15d9-42f2-ae45-dcf53932f1c0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Asset Management\Asset I/O Request Handlers\Win32">
+      <UniqueIdentifier>{1747f4a8-c68a-4102-9e8b-f343a95eba6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Asset Management\Asset I/O Request Handlers\Win32">
+      <UniqueIdentifier>{6ce13d08-ba2f-4213-912a-fbeb097a25ea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\DirectStorageUtil.ixx">
@@ -89,9 +95,6 @@
     </ClCompile>
     <ClCompile Include="src\I_AssetResolver.ixx">
       <Filter>Module Files\Asset Dependencies</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AssetIORequest.ixx">
-      <Filter>Module Files\Asset Management\Asset I/O Requests</Filter>
     </ClCompile>
     <ClCompile Include="src\I_AssetIORequestBuilder.ixx">
       <Filter>Module Files\Asset Management\Asset I/O Requests</Filter>
@@ -139,9 +142,6 @@
       <Filter>Module Files\Asset Dependencies</Filter>
     </ClCompile>
     <ClCompile Include="src\I_AssetIORequestHandler.ixx">
-      <Filter>Module Files\Asset Management\Asset I/O Request Handlers</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Win32AssetIORequestHandler.ixx">
       <Filter>Module Files\Asset Management\Asset I/O Request Handlers</Filter>
     </ClCompile>
     <ClCompile Include="src\I_AssetIORequestBuilder.cpp">
@@ -197,6 +197,30 @@
     </ClCompile>
     <ClCompile Include="src\ZSTDContextQueue.ixx">
       <Filter>Module Files\File I/O\ZStandard\Context Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32AssetIORequestHandler.ixx">
+      <Filter>Module Files\Asset Management\Asset I/O Request Handlers\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32AssetIORequestHandler.cpp">
+      <Filter>Source Files\Asset Management\Asset I/O Request Handlers\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32AssetIORequestBuilder.ixx">
+      <Filter>Module Files\Asset Management\Asset I/O Requests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32AssetIORequestBuilder.cpp">
+      <Filter>Source Files\Asset Management\Asset I/O Requests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32AssetIORequest.ixx">
+      <Filter>Module Files\Asset Management\Asset I/O Requests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32AssetIORequest.cpp">
+      <Filter>Source Files\Asset Management\Asset I/O Requests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32AssetIORequestTracker.ixx">
+      <Filter>Module Files\Asset Management\Asset I/O Requests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32AssetIORequestTracker.cpp">
+      <Filter>Source Files\Asset Management\Asset I/O Requests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

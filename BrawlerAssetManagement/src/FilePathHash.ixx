@@ -40,6 +40,8 @@ export namespace Brawler
 	class FilePathHash
 	{
 	public:
+		constexpr FilePathHash() = default;
+		
 		// By forcing the constructor which takes a std::wstring_view to be consteval, we
 		// ensure that the hash is computed at compile time. With proper usage, the file
 		// path string is completely absent at runtime, and isn't even present in the

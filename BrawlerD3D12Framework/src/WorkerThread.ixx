@@ -33,6 +33,9 @@ export namespace Brawler
 		void Initialize();
 		void ExecuteMainLoop();
 
+		bool IsWorkerThreadPoolWaitAcceptable() const;
+		void OnWorkerThreadPoolWaitDenied();
+
 	private:
 		std::thread mThread;
 		WorkerThreadPool* mPool;

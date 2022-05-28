@@ -85,6 +85,7 @@ namespace Brawler
 			mDStorageQueue(nullptr),
 			mQueuePriority(queuePriority),
 			mCurrStatusArrayEntryIndex(0),
+			mHasRequestsToSubmit(false),
 			mSubmissionCritSection()
 		{
 			CreateDStorageQueue();
@@ -97,6 +98,7 @@ namespace Brawler
 			mDStorageQueue(),
 			mQueuePriority(),
 			mCurrStatusArrayEntryIndex(),
+			mHasRequestsToSubmit(),
 			mSubmissionCritSection()
 		{
 			std::scoped_lock<std::mutex> lock{ rhs.mSubmissionCritSection };
@@ -109,6 +111,8 @@ namespace Brawler
 			mDStorageQueue = std::move(rhs.mDStorageQueue);
 
 			mCurrStatusArrayEntryIndex = rhs.mCurrStatusArrayEntryIndex;
+
+			mHasRequestsToSubmit = rhs.mHasRequestsToSubmit;
 
 			mQueuePriority = rhs.mQueuePriority;
 		}
@@ -125,6 +129,8 @@ namespace Brawler
 			mDStorageQueue = std::move(rhs.mDStorageQueue);
 
 			mCurrStatusArrayEntryIndex = rhs.mCurrStatusArrayEntryIndex;
+
+			mHasRequestsToSubmit = rhs.mHasRequestsToSubmit;
 
 			mQueuePriority = rhs.mQueuePriority;
 
@@ -164,6 +170,8 @@ namespace Brawler
 				mCurrStatusArrayEntryIndex = ((mCurrStatusArrayEntryIndex + 1) % Util::DirectStorage::DIRECT_STORAGE_QUEUE_CAPACITY);
 
 				mDStorageQueue->EnqueueStatus(mDStorageStatusArray.Get(), requestStatusArrayIndex);
+
+				mHasRequestsToSubmit = true;
 			}
 			
 			request.CreateRequestFinishedNotification(DirectStorageStatusArrayEntry{
@@ -173,7 +181,7 @@ namespace Brawler
 			});
 		}
 
-		void DirectStorageQueue::Submit() const
+		void DirectStorageQueue::Submit()
 		{
 			// The documentation for DirectStorage doesn't really say anything about thread safety.
 			// I find it hard to believe that they wouldn't make an API like this thread safe, though.
@@ -183,7 +191,11 @@ namespace Brawler
 
 			std::scoped_lock<std::mutex> lock{ mSubmissionCritSection };
 
-			mDStorageQueue->Submit();
+			if (mHasRequestsToSubmit)
+			{
+				mDStorageQueue->Submit();
+				mHasRequestsToSubmit = false;
+			}
 		}
 
 		void DirectStorageQueue::CreateDStorageQueue()
