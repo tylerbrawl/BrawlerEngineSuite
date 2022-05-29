@@ -102,7 +102,7 @@ namespace Brawler
 			// We expect .BCAINFO files to be small enough that reading all of their data at once
 			// is acceptable.
 			
-			assert(std::filesystem::equivalent(mBCAInfoFilePath.filename(), std::filesystem::path{ L".BCAINFO" }) && !std::filesystem::is_directory(mBCAInfoFilePath) && "ERROR: A BCAInfoParserContext was given a file path which did not correspond to a .BCAINFO file!");
+			assert(std::filesystem::equivalent(mBCAInfoFilePath, mBCAInfoFilePath.parent_path() / GetBCAInfoFilePath()) && !std::filesystem::is_directory(mBCAInfoFilePath) && "ERROR: A BCAInfoParserContext was given a file path which did not correspond to a .BCAINFO file!");
 
 			std::ifstream bcaInfoFileStream{ mBCAInfoFilePath, std::ios_base::in | std::ios_base::binary };
 

@@ -3,6 +3,7 @@ module;
 #include <filesystem>
 #include <ranges>
 #include <memory>
+#include <format>
 
 module Brawler.AssetCompiler;
 import Brawler.AppParams;
@@ -12,6 +13,9 @@ import Brawler.JobSystem;
 import Brawler.BCAArchive;
 import Brawler.BCALinker;
 import Util.Win32;
+import Brawler.BCAInfo;
+import Brawler.BCAInfoDatabase;
+import Brawler.BCAInfoParsing.BCAInfoParser;
 
 namespace Brawler
 {
@@ -70,7 +74,7 @@ namespace Brawler
 		// For every file in the data directory, ...
 		const auto fileFilter = [] (const std::filesystem::directory_entry& dirEntry) -> bool
 		{
-			return (std::filesystem::is_regular_file(dirEntry));
+			return !(std::filesystem::is_directory(dirEntry));
 		};
 
 		std::filesystem::recursive_directory_iterator dirItr{ context.RootDataDirectory };
@@ -80,15 +84,55 @@ namespace Brawler
 
 		dirItr = std::filesystem::recursive_directory_iterator{ context.RootDataDirectory };
 		for (const auto& fileDirectory : dirItr | std::views::filter(fileFilter))
+		{
 			// ... construct a Brawler::Job which is responsible for creating its
-			// corresponding .bca file.
-			bcaCreationJobGroup.AddJob([this, &context, fileDirectory] ()
-			{
-				std::unique_ptr<BCAArchive> bcaArchive{ std::make_unique<BCAArchive>(context, std::filesystem::path{ fileDirectory.path() }) };
-				bcaArchive->InitializeArchiveData();
+			// corresponding .bca file, unless the file is a .BCAINFO file. In that
+			// case, we use it to initialize BCAInfo structures for the other
+			// files.
+			std::filesystem::path filePath{ fileDirectory.path() };
 
-				mBCALinker.AddBCAArchive(std::move(bcaArchive));
-			});
+			std::filesystem::path parentPath{ filePath.parent_path() };
+
+			std::error_code errorCode{};
+			const bool isBCAInfoFile = std::filesystem::equivalent(filePath, std::filesystem::path{ parentPath / GetBCAInfoFilePath() }, errorCode);
+
+			if (errorCode) [[unlikely]]
+				throw std::runtime_error{ std::format("ERROR: The attempt to check if the file \"{}\" was a .BCAINFO file failed with the following error: {}", filePath.string(), errorCode.message()) };
+
+			if (isBCAInfoFile)
+			{
+				Util::Win32::WriteFormattedConsoleMessage(std::format(L".BCAINFO File Detected: \"{}\"", filePath.c_str()));
+				
+				// Register the .BCAINFO with the BCAInfoDatabase. We need to do this *BEFORE* any of the CPU jobs
+				// are submitted.
+				BCAInfoDatabase::GetInstance().RegisterBCAInfoFilePath(filePath);
+
+				bcaCreationJobGroup.AddJob([filePath] () mutable
+				{
+					BCAInfoParsing::BCAInfoParser bcaInfoParser{};
+
+					const bool parsingSuccessful = bcaInfoParser.ParseBCAInfoFile(std::move(filePath));
+					bcaInfoParser.UpdateBCAInfoDatabase();
+					
+					if(!parsingSuccessful) [[unlikely]]
+					{
+						bcaInfoParser.PrintErrorMessages();
+						throw std::runtime_error{ "" };
+					}
+				});
+			}
+			else
+			{
+				bcaCreationJobGroup.AddJob([this, &context, fileDirectory] ()
+				{
+					std::unique_ptr<BCAArchive> bcaArchive{ std::make_unique<BCAArchive>(context, std::filesystem::path{ fileDirectory.path() }) };
+					bcaArchive->InitializeArchiveData();
+
+					mBCALinker.AddBCAArchive(std::move(bcaArchive));
+				});
+			}
+		}
+			
 		
 		bcaCreationJobGroup.ExecuteJobs();
 	}

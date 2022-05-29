@@ -200,13 +200,6 @@ namespace Brawler
 {
 	namespace AssetManagement
 	{
-		bool BPKArchiveReader::TOCEntry::IsDataCompressed() const
-		{
-			// For now, all data in an archive is actually compressed. This may (will) change in
-			// the future.
-			return true;
-		}
-
 		BPKArchiveReader::BPKArchiveReader() :
 			mTableOfContents(CreateTableOfContents()),
 			mHFileMappingObject(Brawler::FileMapper::GetInstance().GetFileMappingObject(bpkArchivePath))

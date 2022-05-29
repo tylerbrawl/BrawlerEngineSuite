@@ -22,12 +22,12 @@ namespace Brawler
 		// We want to use the hash of the parent directory of the .BCAINFO file. That way, we
 		// can easily index mBCAInfoParentPathMap using the parent directories of asset file
 		// paths from BCAArchive instances.
-		assert(std::filesystem::equivalent(bcaInfoFilePath.filename(), BCA_INFO_FILE_PATH) && !std::filesystem::is_directory(bcaInfoFilePath) && "ERROR: A file path which did not refer to a .BCAINFO file was provided to BCAInfoDatabase::RegisterBCAInfoFilePath()!");
+		assert(bcaInfoFilePath.filename() == GetBCAInfoFilePath() && !std::filesystem::is_directory(bcaInfoFilePath) && "ERROR: A file path which did not refer to a .BCAINFO file was provided to BCAInfoDatabase::RegisterBCAInfoFilePath()!");
 
 		mBCAInfoParentPathMap.try_emplace(bcaInfoFilePath.parent_path());
 	}
 
-	void BCAInfoDatabase::UpdateBCAInfoForSourceAssets(const std::span<std::pair<std::filesystem::path, BCAInfo>> assetBCAInfoPairSpan)
+	void BCAInfoDatabase::UpdateBCAInfoForSourceAssets(const std::span<std::pair<const std::filesystem::path&, BCAInfo>> assetBCAInfoPairSpan)
 	{
 		if (assetBCAInfoPairSpan.empty()) [[unlikely]]
 			return;
@@ -77,6 +77,11 @@ namespace Brawler
 		// Go do something else while we wait for the BCAInfo data to be generated concurrently.
 		while (!subMap.ReadyFlag.load(std::memory_order::acquire))
 			Util::Coroutine::TryExecuteJob();
+
+		// If we still don't have the BCAInfo data, then there may have been an error during
+		// .BCAINFO parsing. In that case, we just return the default BCAInfo value.
+		if (!subMap.AssetPathMap.contains(assetFilePath)) [[unlikely]]
+			return DEFAULT_BCA_INFO_VALUE;
 
 		return subMap.AssetPathMap.at(assetFilePath);
 	}

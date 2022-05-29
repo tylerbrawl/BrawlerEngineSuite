@@ -6,6 +6,7 @@ module;
 export module Brawler.BCAArchive;
 import Brawler.BCAMetadata;
 import Brawler.ZSTDFrame;
+import Brawler.BCAInfo;
 
 export namespace Brawler
 {
@@ -54,8 +55,20 @@ export namespace Brawler
 		/// </returns>
 		const ZSTDFrame& GetCompressedAssetFrame() const;
 
+		/// <summary>
+		/// Use this function to retrieve the BCAInfo instance for the BCA archive file.
+		/// </summary>
+		/// <returns>
+		/// This function returns a const& to the BCAInfo instance for the BCA archive file.
+		/// </returns>
+		const BCAInfo& GetBCAInfo() const;
+
 	private:
 		void InitializeMetadata(const AssetCompilerContext& context);
+		void InitializeBCAInfo();
+
+		void InitializeArchiveDataWithCompression();
+		void InitializeArchiveDataWithoutCompression();
 
 		/// <summary>
 		/// Attempts to re-use an existing BCA archive from a previous compilation of the
@@ -107,5 +120,6 @@ export namespace Brawler
 		ZSTDFrame mCompressedAssetFrame;
 
 		BCAMetadata mMetadata;
+		const BCAInfo* mBCAInfoPtr;
 	};
 }

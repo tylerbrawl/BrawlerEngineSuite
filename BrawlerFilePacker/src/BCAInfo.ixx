@@ -16,9 +16,21 @@ export namespace Brawler
 	};
 
 	constexpr std::wstring_view BCA_INFO_FILE_NAME{ L".BCAINFO" };
-	const std::filesystem::path BCA_INFO_FILE_PATH{ BCA_INFO_FILE_NAME };
 
 	constexpr BCAInfo DEFAULT_BCA_INFO_VALUE{
 		.DoNotCompress = false
 	};
+}
+
+namespace Brawler
+{
+	static const std::filesystem::path BCA_INFO_FILE_PATH{ BCA_INFO_FILE_NAME.data() };
+}
+
+export namespace Brawler
+{
+	const std::filesystem::path& GetBCAInfoFilePath()
+	{
+		return BCA_INFO_FILE_PATH;
+	}
 }

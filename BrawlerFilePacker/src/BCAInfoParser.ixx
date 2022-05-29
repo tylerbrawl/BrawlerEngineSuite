@@ -25,6 +25,9 @@ export namespace Brawler
 
 			bool ParseBCAInfoFile(std::filesystem::path&& bcaInfoFilePath);
 
+			void UpdateBCAInfoDatabase() const;
+			void PrintErrorMessages() const;
+
 		private:
 			bool ParseSourceAssetInfoList();
 

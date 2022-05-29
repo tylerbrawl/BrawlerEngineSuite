@@ -3,6 +3,8 @@ module;
 #include <cassert>
 
 module Brawler.BCAInfoParsing.BCAInfoParser;
+import Brawler.BCAInfoDatabase;
+import Util.Win32;
 
 /*
 The context-free grammar (CFG) for .BCAINFO files is similar to the grammar of JSON files,
@@ -41,6 +43,22 @@ namespace Brawler
 			mParserContext = BCAInfoParserContext{ std::move(bcaInfoFilePath) };
 
 			return ParseSourceAssetInfoList();
+		}
+
+		void BCAInfoParser::UpdateBCAInfoDatabase() const
+		{
+			std::vector<std::pair<const std::filesystem::path&, BCAInfo>> assetFilePathBCAInfoPairArr{};
+
+			for (const auto& assetInfoParser : mAssetInfoParserArr)
+				assetFilePathBCAInfoPairArr.push_back(std::make_pair(std::cref(assetInfoParser.GetSourceAssetFilePath()), assetInfoParser.CreateBCAInfoForSourceAsset()));
+
+			BCAInfoDatabase::GetInstance().UpdateBCAInfoForSourceAssets(assetFilePathBCAInfoPairArr);
+		}
+
+		void BCAInfoParser::PrintErrorMessages() const
+		{
+			for (const auto& errorMsg : mParserContext.GetErrorStringSpan())
+				Util::Win32::WriteFormattedConsoleMessage(errorMsg, Util::Win32::ConsoleFormat::CRITICAL_FAILURE);
 		}
 
 		bool BCAInfoParser::ParseSourceAssetInfoList()

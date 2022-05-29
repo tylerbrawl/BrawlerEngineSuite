@@ -86,25 +86,17 @@ namespace Brawler
 			std::filesystem::path proposedCurrentFilePath{ bcaInfoParentDir / std::filesystem::path{fileNameStr} };
 			{
 				std::error_code errorCode{};
-				bool fileExistsInDirectory = false;
+				const bool fileExistsInDirectory = std::filesystem::exists(proposedCurrentFilePath, errorCode);
 
-				for (const auto& dirEntry : std::filesystem::directory_iterator{ bcaInfoParentDir })
+				if (errorCode) [[unlikely]]
 				{
-					fileExistsInDirectory = std::filesystem::equivalent(proposedCurrentFilePath, dirEntry.path(), errorCode);
-
-					if (errorCode) [[unlikely]]
-					{
-						parserContext.AddErrorString(std::format(
-							LR"(INTERNAL ASSET COMPILER ERROR: The attempt to verify whether or not the file "{}" exists in the directory "{}" failed with the following error: {})",
-							Util::General::StringToWString(fileNameStr),
-							bcaInfoParentDir.c_str(),
-							Util::General::StringToWString(errorCode.message())
-						));
-						return false;
-					}
-
-					if (fileExistsInDirectory)
-						break;
+					parserContext.AddErrorString(std::format(
+						LR"(INTERNAL ASSET COMPILER ERROR: The attempt to verify whether or not the file "{}" exists in the directory "{}" failed with the following error: {})",
+						Util::General::StringToWString(fileNameStr),
+						bcaInfoParentDir.c_str(),
+						Util::General::StringToWString(errorCode.message())
+					));
+					return false;
 				}
 
 				if (!fileExistsInDirectory) [[unlikely]]

@@ -24,10 +24,14 @@ export namespace Brawler
 				std::uint64_t FileOffsetInBytes;
 
 				/// <summary>
-				/// This is the size, in bytes, of the compressed data within the BPK file
-				/// archive.
+				/// If the data is compressed, then this is the size, in bytes, of the compressed
+				/// data represented by this ToC entry. Otherwise, if the data is *NOT* compressed,
+				/// then this value is zero (0).
 				/// 
-				/// TODO: Make this value 0 if the data is uncompressed.
+				/// Although it is possible to check if data is compressed manually by using
+				/// this field, it is strongly recommended that code instead checks for this
+				/// by calling BPKArchiveReader::TOCEntry::IsDataCompressed(). This will prevent
+				/// code from breaking if the specification ever changes.
 				/// </summary>
 				std::uint64_t CompressedSizeInBytes;
 
@@ -37,7 +41,15 @@ export namespace Brawler
 				/// </summary>
 				std::uint64_t UncompressedSizeInBytes;
 
-				bool IsDataCompressed() const;
+				/// <summary>
+				/// Determines whether or not the data represented by this ToC entry contained within
+				/// the BPK archive is compressed.
+				/// </summary>
+				/// <returns>
+				/// The function returns true if the associated data is compressed within the BPK
+				/// archive and false otherwise.
+				/// </returns>
+				__forceinline constexpr bool IsDataCompressed() const;
 			};
 
 		private:
@@ -68,5 +80,18 @@ export namespace Brawler
 
 			HANDLE mHFileMappingObject;
 		};
+	}
+}
+
+// -------------------------------------------------------------------------------------------------------------------------------
+
+namespace Brawler
+{
+	namespace AssetManagement
+	{
+		__forceinline constexpr bool BPKArchiveReader::TOCEntry::IsDataCompressed() const
+		{
+			return (CompressedSizeInBytes != 0);
+		}
 	}
 }

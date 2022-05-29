@@ -33,7 +33,7 @@ export namespace Brawler
 		static BCAInfoDatabase& GetInstance();
 
 		void RegisterBCAInfoFilePath(const std::filesystem::path& bcaInfoFilePath);
-		void UpdateBCAInfoForSourceAssets(const std::span<std::pair<std::filesystem::path, BCAInfo>> assetBCAInfoPairSpan);
+		void UpdateBCAInfoForSourceAssets(const std::span<std::pair<const std::filesystem::path&, BCAInfo>> assetBCAInfoPairSpan);
 
 		const BCAInfo& GetBCAInfoForSourceAsset(const std::filesystem::path& assetFilePath) const;
 
