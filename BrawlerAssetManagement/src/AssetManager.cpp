@@ -3,19 +3,22 @@ module;
 #include <memory>
 #include <optional>
 #include <cassert>
-#include <thread>
 #include <DxDef.h>
 
 module Brawler.AssetManagement.AssetManager;
 import Brawler.AssetManagement.DirectStorageAssetIORequestHandler;
 import Brawler.AssetManagement.Win32AssetIORequestHandler;
 import Util.DirectStorage;
+import Brawler.JobSystem;
+import Brawler.AssetManagement.EnqueuedAssetDependency;
 
 namespace
 {
 	// Use this to test Win32 file I/O on a system where the Brawler Engine would otherwise prefer to use
 	// DirectStorage.
 	static constexpr bool FORCE_WIN32_ASSET_REQUEST_HANDLER_USE = false;
+
+	static constexpr Brawler::AssetManagement::AssetLoadingMode DEFAULT_LOADING_MODE = AssetLoadingMode::MINIMAL_OVERHEAD;
 }
 
 namespace Brawler
@@ -24,8 +27,7 @@ namespace Brawler
 	{
 		AssetManager::AssetManager() :
 			mRequestHandlerPtr(nullptr),
-			mCurrLoadingMode(AssetLoadingMode::MINIMAL_OVERHEAD),
-			mDependencyQueue()
+			mCurrLoadingMode(DEFAULT_LOADING_MODE)
 		{
 			// Looking at the function signature for DStorageGetFactory(), we find that the function returns
 			// an HRESULT value. This implies that the function can, in fact, fail. However, the documentation
@@ -41,8 +43,8 @@ namespace Brawler
 				
 				if (directStorageFactory.has_value()) [[likely]]
 					mRequestHandlerPtr = std::make_unique<DirectStorageAssetIORequestHandler>(std::move(*directStorageFactory));
-				//else [[unlikely]]
-					//mRequestHandlerPtr = std::make_unique<Win32AssetIORequestHandler>();
+				else [[unlikely]]
+					mRequestHandlerPtr = std::make_unique<Win32AssetIORequestHandler>();
 			}
 			else
 				mRequestHandlerPtr = std::make_unique<Win32AssetIORequestHandler>();
@@ -56,15 +58,30 @@ namespace Brawler
 
 		AssetRequestEventHandle AssetManager::EnqueueAssetDependency(AssetDependency&& dependency)
 		{
-			// Create the event handle here. We'll need to copy it into the queue's unique_ptr.
+			// Create the event handle here. We'll need to copy it into the created CPU job.
 			AssetRequestEventHandle hRequestEvent{};
-			std::unique_ptr<EnqueuedAssetDependency> enqueuedDependencyPtr{ std::make_unique<EnqueuedAssetDependency>(std::move(dependency), hRequestEvent) };
 
-			// If we cannot enqueue the request, then we need to begin processing it now.
-			if (!mDependencyQueue.PushBack(std::move(enqueuedDependencyPtr))) [[unlikely]]
-				HandleEnqueuedAssetDependency(std::move(enqueuedDependencyPtr));
+			// If we want AssetManager::EnqueueAssetDependency() to return as quickly as possible, we can
+			// have the I_AssetIORequestHandler prepare the asset I/O request as a separate CPU job.
+			Brawler::JobGroup prepareAssetIORequestGroup{};
+			prepareAssetIORequestGroup.Reserve(1);
+
+			prepareAssetIORequestGroup.AddJob([this, hRequestEvent, assetDependency = std::move(dependency)] () mutable
+			{
+				mRequestHandlerPtr->PrepareAssetIORequest(EnqueuedAssetDependency{
+					.Dependency{ std::move(assetDependency) },
+					.HRequestEvent{ std::move(hRequestEvent) }
+				});
+			});
+			
+			prepareAssetIORequestGroup.ExecuteJobsAsync();
 
 			return hRequestEvent;
+		}
+
+		void AssetManager::SubmitAssetIORequests()
+		{
+			mRequestHandlerPtr->SubmitAssetIORequests();
 		}
 
 		void AssetManager::SetAssetLoadingMode(const AssetLoadingMode loadingMode)
@@ -76,11 +93,6 @@ namespace Brawler
 		AssetLoadingMode AssetManager::GetAssetLoadingMode() const
 		{
 			return mCurrLoadingMode.load(std::memory_order::relaxed);
-		}
-
-		void AssetManager::HandleEnqueuedAssetDependency(std::unique_ptr<EnqueuedAssetDependency>&& enqueuedDependency) const
-		{
-
 		}
 	}
 }

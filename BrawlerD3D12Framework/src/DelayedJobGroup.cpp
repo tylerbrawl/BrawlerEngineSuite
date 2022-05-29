@@ -11,7 +11,7 @@ namespace Brawler
 		mPriority(priority)
 	{}
 
-	void DelayedJobGroup::AddJob(std::function<void()>&& callback)
+	void DelayedJobGroup::AddJob(std::move_only_function<void()>&& callback)
 	{
 		mJobArr.push_back(Job{ std::move(callback), nullptr, mPriority });
 	}

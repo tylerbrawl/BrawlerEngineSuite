@@ -119,14 +119,14 @@ namespace Brawler
 			delayedDecompressionGroup.SubmitDelayedJobs(Win32EventHandle{ std::move(hDirectStorageDecompressionEvent) });
 		}
 
-		void DirectStorageAssetIORequestHandler::PrepareAssetIORequest(std::unique_ptr<EnqueuedAssetDependency>&& enqueuedDependency)
+		void DirectStorageAssetIORequestHandler::PrepareAssetIORequest(EnqueuedAssetDependency&& enqueuedDependency)
 		{
 			// Let the asset dependency resolver callbacks in the AssetDependency tell us which assets need to
 			// be loaded.
 			DirectStorageAssetIORequestBuilder requestBuilder{ *(mBPKDStorageFile.Get()) };
-			enqueuedDependency->Dependency.BuildAssetIORequests(requestBuilder);
+			enqueuedDependency.Dependency.BuildAssetIORequests(requestBuilder);
 
-			std::unique_ptr<PendingDirectStorageRequest> pendingRequestPtr{ std::make_unique<PendingDirectStorageRequest>(std::move(requestBuilder), std::move(enqueuedDependency->HRequestEvent)) };
+			std::unique_ptr<PendingDirectStorageRequest> pendingRequestPtr{ std::make_unique<PendingDirectStorageRequest>(std::move(requestBuilder), std::move(enqueuedDependency.HRequestEvent)) };
 
 			for (auto& queue : mDirectStorageQueueArr)
 				queue.EnqueueRequest(*pendingRequestPtr);

@@ -26,7 +26,7 @@ export namespace Brawler
 			DirectStorageAssetIORequestHandler(DirectStorageAssetIORequestHandler&& rhs) noexcept = default;
 			DirectStorageAssetIORequestHandler& operator=(DirectStorageAssetIORequestHandler&& rhs) noexcept = default;
 
-			void PrepareAssetIORequest(std::unique_ptr<EnqueuedAssetDependency>&& enqueuedDependency) override;
+			void PrepareAssetIORequest(EnqueuedAssetDependency&& enqueuedDependency) override;
 			void SubmitAssetIORequests() override;
 
 			IDStorageFactory& GetDirectStorageFactory();

@@ -25,10 +25,10 @@ namespace Brawler
 			CreateDelayedAssetLoadingJobForCurrentThread();
 		}
 		
-		void Win32AssetIORequestHandler::PrepareAssetIORequest(std::unique_ptr<EnqueuedAssetDependency>&& enqueuedDependency)
+		void Win32AssetIORequestHandler::PrepareAssetIORequest(EnqueuedAssetDependency&& enqueuedDependency)
 		{
-			std::unique_ptr<Win32AssetIORequestBuilder> requestBuilderPtr{ std::make_unique<Win32AssetIORequestBuilder>(std::move(enqueuedDependency->HRequestEvent)) };
-			enqueuedDependency->Dependency.BuildAssetIORequests(*requestBuilderPtr);
+			std::unique_ptr<Win32AssetIORequestBuilder> requestBuilderPtr{ std::make_unique<Win32AssetIORequestBuilder>(std::move(enqueuedDependency.HRequestEvent)) };
+			enqueuedDependency.Dependency.BuildAssetIORequests(*requestBuilderPtr);
 
 			requestBuilderPtr->Finalize();
 

@@ -1,6 +1,7 @@
 module;
 #include <memory>
 #include <cassert>
+#include <functional>
 
 module Brawler.Job;
 import Brawler.JobCounter;
@@ -12,7 +13,7 @@ import Brawler.DelayedJobSubmitter;
 
 namespace Brawler
 {
-	Job::Job(std::function<void()>&& callback, std::shared_ptr<JobCounter> counterPtr, JobPriority priority) :
+	Job::Job(std::move_only_function<void()>&& callback, std::shared_ptr<JobCounter> counterPtr, JobPriority priority) :
 		mCallback(std::move(callback)),
 		mCounterPtr(counterPtr),
 		mPriority(priority),

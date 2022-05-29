@@ -6,7 +6,6 @@ export module Brawler.AssetManagement.AssetManager;
 import Brawler.AssetManagement.I_AssetIORequestHandler;
 import Brawler.AssetManagement.AssetLoadingMode;
 import Brawler.ThreadSafeQueue;
-import Brawler.AssetManagement.EnqueuedAssetDependency;
 import Brawler.AssetManagement.AssetRequestEventHandle;
 import Brawler.AssetManagement.AssetDependency;
 
@@ -42,11 +41,10 @@ export namespace Brawler
 
 			AssetRequestEventHandle EnqueueAssetDependency(AssetDependency&& dependency);
 
+			void SubmitAssetIORequests();
+
 			void SetAssetLoadingMode(const AssetLoadingMode loadingMode);
 			AssetLoadingMode GetAssetLoadingMode() const;
-
-		private:
-			void HandleEnqueuedAssetDependency(std::unique_ptr<EnqueuedAssetDependency>&& enqueuedDependency) const;
 
 		private:
 			/// <summary>
@@ -62,7 +60,6 @@ export namespace Brawler
 			std::unique_ptr<I_AssetIORequestHandler> mRequestHandlerPtr;
 
 			std::atomic<AssetLoadingMode> mCurrLoadingMode;
-			Brawler::ThreadSafeQueue<std::unique_ptr<EnqueuedAssetDependency>, ENQUEUED_DEPENDENCY_QUEUE_SIZE> mDependencyQueue;
 		};
 	}
 }

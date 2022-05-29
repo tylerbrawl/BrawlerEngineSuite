@@ -46,9 +46,7 @@ export namespace Brawler
 			OPTIMIZE_FOR_LOADING,
 
 			/// <summary>
-			/// This mode functions differently from the other ones. Rather than having X threads
-			/// handle asset requests, when the time comes to ensure that asset requests are being
-			/// handled, the calling thread is blocked until ALL requests are handled.
+			/// std::thread::hardware_concurrency() threads are dedicated to handling asset requests.
 			/// 
 			/// This option should only be used when absolutely necessary, for obvious reasons.
 			/// </summary>

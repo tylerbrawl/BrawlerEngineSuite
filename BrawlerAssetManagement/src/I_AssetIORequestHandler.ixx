@@ -45,7 +45,7 @@ export namespace Brawler
 			///   to be resolved and the corresponding AssetRequestEventHandle. Derived classes will need to cache
 			///   at least the AssetRequestEventHandle instance for Step 2.
 			/// </param>
-			virtual void PrepareAssetIORequest(std::unique_ptr<EnqueuedAssetDependency>&& enqueuedDependency) = 0;
+			virtual void PrepareAssetIORequest(EnqueuedAssetDependency&& enqueuedDependency) = 0;
 
 			/// <summary>
 			/// Asset I/O requests are handled in a two-step process:

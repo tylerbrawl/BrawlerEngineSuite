@@ -21,5 +21,20 @@ export namespace Util
 		void WriteFormattedConsoleMessage(const std::wstring_view msg, const ConsoleFormat format = Util::Win32::ConsoleFormat::NORMAL);
 
 		void InitializeCOM();
+
+		__forceinline constexpr bool NT_SUCCESS(const NTSTATUS status);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------
+
+namespace Util
+{
+	namespace Win32
+	{
+		__forceinline constexpr bool NT_SUCCESS(const NTSTATUS status)
+		{
+			return (status <= 0x7FFFFFFF);
+		}
 	}
 }

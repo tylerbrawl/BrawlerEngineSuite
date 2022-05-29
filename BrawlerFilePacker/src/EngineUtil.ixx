@@ -14,7 +14,7 @@ export namespace Util
 {
 	namespace Engine
 	{
-		static constexpr std::size_t SHA_512_HASH_SIZE_IN_BYTES = 64;
+		constexpr std::size_t SHA_512_HASH_SIZE_IN_BYTES = 64;
 		
 		Brawler::HashProvider& GetHashProvider();
 		

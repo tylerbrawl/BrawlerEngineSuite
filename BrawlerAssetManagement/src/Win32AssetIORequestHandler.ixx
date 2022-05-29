@@ -35,7 +35,7 @@ export namespace Brawler
 			Win32AssetIORequestHandler(Win32AssetIORequestHandler&& rhs) noexcept = default;
 			Win32AssetIORequestHandler& operator=(Win32AssetIORequestHandler&& rhs) noexcept = default;
 
-			void PrepareAssetIORequest(std::unique_ptr<EnqueuedAssetDependency>&& enqueuedDependency) override;
+			void PrepareAssetIORequest(EnqueuedAssetDependency&& enqueuedDependency) override;
 			void SubmitAssetIORequests() override;
 
 		private:

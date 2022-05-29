@@ -231,8 +231,17 @@
     <ClCompile Include="src\AssetCompiler.cpp" />
     <ClCompile Include="src\AssetCompiler.ixx" />
     <ClCompile Include="src\AssetCompilerContext.ixx" />
+    <ClCompile Include="src\AttributeParser.cpp" />
+    <ClCompile Include="src\AttributeParser.ixx" />
     <ClCompile Include="src\BCAArchive.cpp" />
     <ClCompile Include="src\BCAArchive.ixx" />
+    <ClCompile Include="src\BCAInfo.ixx" />
+    <ClCompile Include="src\BCAInfoDatabase.cpp" />
+    <ClCompile Include="src\BCAInfoDatabase.ixx" />
+    <ClCompile Include="src\BCAInfoParser.cpp" />
+    <ClCompile Include="src\BCAInfoParser.ixx" />
+    <ClCompile Include="src\BCAInfoParserContext.cpp" />
+    <ClCompile Include="src\BCAInfoParserContext.ixx" />
     <ClCompile Include="src\BCALinker.cpp" />
     <ClCompile Include="src\BCALinker.ixx" />
     <ClCompile Include="src\BCAMetadata.ixx" />
@@ -264,6 +273,8 @@
     <ClCompile Include="src\SHA512Hash.ixx" />
     <ClCompile Include="src\SHA512Hasher.cpp" />
     <ClCompile Include="src\SHA512Hasher.ixx" />
+    <ClCompile Include="src\SourceAssetInfoParser.cpp" />
+    <ClCompile Include="src\SourceAssetInfoParser.ixx" />
     <ClCompile Include="src\StringHasher.ixx" />
     <ClCompile Include="src\ThreadingUtil.cpp" />
     <ClCompile Include="src\ThreadingUtil.ixx" />

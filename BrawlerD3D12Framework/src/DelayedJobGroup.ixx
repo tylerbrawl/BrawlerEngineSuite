@@ -39,7 +39,7 @@ export namespace Brawler
 		DelayedJobGroup(DelayedJobGroup&& rhs) noexcept = default;
 		DelayedJobGroup& operator=(DelayedJobGroup&& rhs) noexcept = default;
 
-		void AddJob(std::function<void()>&& callback);
+		void AddJob(std::move_only_function<void()>&& callback);
 		void Reserve(const std::size_t jobCount);
 
 		template <typename T>
