@@ -18,15 +18,9 @@ ConstantBuffer<MipMapGenerationInfo> MipMapConstants : register(b0, space0);
 
 static const uint THREADS_IN_GROUP = 16;
 
-// Since both NVIDIA and AMD are using 32 as their wave size (AMD switched to 32 with
-// RDNA, which is used in next-generation consoles), perhaps it is time for us to start
-// designing our shaders with this limitation in mind.
-[numthreads(4, 4, 1)]
+[numthreads(8, 8, 1)]
 void main(in const uint3 DTid : SV_DispatchThreadID, in const uint2 GTid : SV_GroupThreadID)
 {
-	// Get the number of lanes in a wave. We'll need this to avoid LDS.
-	const uint laneCount = WaveGetLaneCount();
-	
 	// Assuming that we are creating X * Y threads, where X and Y are the x- and y-dimensions
 	// of OutputMip1, we can do the following:
 	
@@ -45,8 +39,16 @@ void main(in const uint3 DTid : SV_DispatchThreadID, in const uint2 GTid : SV_Gr
 	
 	// According to the HLSL specifications, we are *NOT* allowed to make any assumptions
 	// about SV_GroupIndex or SV_GroupThreadID based on the value provided by a call to
-	// WaveGetLaneIndex(). (The source is at 
-	// https://microsoft.github.io/DirectX-Specs/d3d/HLSL_SM_6_6_Derivatives.html#2d-quads.)
+	// WaveGetLaneIndex(). In other words, the ID of a thread within a group is completely
+	// unrelated to its index within a wave.* (The source is at 
+	// https://microsoft.github.io/DirectX-Specs/d3d/HLSL_SM_6_6_Derivatives.html#2d-quads,
+	// but I don't know why I have to search the pits of Hell to find such crucial information.
+	// Shouldn't this be on the MSDN or something?)
+	//
+	// *Well, at least for now. Shader Model 6.6 will save us from this torment by actually
+	// defining a relationship between SV_GroupThreadID and WaveGetLaneIndex() if special
+	// values are used in the numthreads attribute. The source listed above contains more
+	// information.
 	//
 	// However, even with Shader Model 6.0, we *can* share values across nearby threads in
 	// a well-defined manner without using LDS by using quad intrinsics! Specifically, a
@@ -74,4 +76,7 @@ void main(in const uint3 DTid : SV_DispatchThreadID, in const uint2 GTid : SV_Gr
 	[branch]  // Coherent
 	if (MipMapConstants.OutputMipLevelsCount == 2)
         return;
+	
+	// TODO: Add support for further reduction. We should be able to support at least one more
+	// downsample within this shader easily.
 }
