@@ -22,8 +22,8 @@ import Brawler.ModelTextureBuilderCollection;
 namespace Brawler
 {
 	// Rather than use dynamic polymorphism to hold a vector of ModelTexture objects
-	// of different runtime types, we will create a std::tuple containing a vector
-	// for each recognized aiTextureType.
+	// of different runtime types, we will create a std::tuple containing a 
+	// ModelTextureLUT for each recognized aiTextureType.
 
 	using RecognizedTextureTypeLUTTuple = std::tuple<
 		ModelTextureLUT<aiTextureType::aiTextureType_DIFFUSE>

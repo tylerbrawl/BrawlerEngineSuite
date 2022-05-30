@@ -4,8 +4,8 @@ module;
 #include <assimp/scene.h>
 #include <cassert>
 #include <optional>
+#include <DxDef.h>
 #include <DirectXTex.h>
-#include "DxDef.h"
 
 export module Util.ModelTexture;
 import Brawler.TextureTypeMap;

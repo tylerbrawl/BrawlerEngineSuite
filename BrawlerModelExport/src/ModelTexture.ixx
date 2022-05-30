@@ -3,8 +3,8 @@ module;
 #include <filesystem>
 #include <memory>
 #include <assimp/material.h>
-#include <DirectXTex.h>
 #include <DxDef.h>
+#include <DirectXTex.h>
 
 export module Brawler.ModelTexture;
 import Brawler.FilePathHash;

@@ -1,7 +1,7 @@
 module;
 #include <assimp/scene.h>
+#include <DxDef.h>
 #include <DirectXTex.h>
-#include "DxDef.h"
 
 export module Brawler.BCTextureCompressionContext;
 import Brawler.TextureTypeMap;

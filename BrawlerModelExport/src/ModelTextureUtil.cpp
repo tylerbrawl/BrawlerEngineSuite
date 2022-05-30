@@ -3,8 +3,8 @@ module;
 #include <string>
 #include <filesystem>
 #include <fstream>
+#include <DxDef.h>
 #include <DirectXTex.h>
-#include "DxDef.h"
 
 module Util.ModelTexture;
 import Brawler.FileAttributes;

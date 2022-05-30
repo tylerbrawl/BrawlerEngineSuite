@@ -83,16 +83,14 @@ namespace Brawler
 		}
 		
 		mImporter.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType::aiPrimitiveType_LINE | aiPrimitiveType::aiPrimitiveType_POINT);
+		mImporter.SetPropertyFloat(AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, 0.01f);
 
 		mAIScenePtr = mImporter.ReadFile(
 			fbxFile.string(),
+			aiProcessPreset_TargetRealtime_MaxQuality |
 			aiProcess_ConvertToLeftHanded |
-			aiPostProcessSteps::aiProcess_CalcTangentSpace |
-			aiPostProcessSteps::aiProcess_RemoveRedundantMaterials |
-			aiPostProcessSteps::aiProcess_JoinIdenticalVertices |
-			aiPostProcessSteps::aiProcess_Triangulate |
-			aiPostProcessSteps::aiProcess_SortByPType |
-			aiPostProcessSteps::aiProcess_OptimizeMeshes |
+			aiPostProcessSteps::aiProcess_TransformUVCoords |
+			aiPostProcessSteps::aiProcess_GlobalScale |
 			aiPostProcessSteps::aiProcess_OptimizeGraph
 		);
 

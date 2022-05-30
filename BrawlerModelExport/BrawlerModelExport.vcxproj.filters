@@ -353,6 +353,9 @@
     <FxCompile Include="src\Shaders\BC7Encode.hlsl">
       <Filter>Shader Files</Filter>
     </FxCompile>
+    <FxCompile Include="src\Shaders\GenerateMipMaps.hlsl">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

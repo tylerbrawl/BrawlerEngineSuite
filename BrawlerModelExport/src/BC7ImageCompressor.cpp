@@ -6,8 +6,8 @@ module;
 #include <ranges>
 #include <optional>
 #include <string>
-#include <DirectXTex.h>
 #include <DxDef.h>
+#include <DirectXTex.h>
 
 module Brawler.BC7ImageCompressor;
 import Brawler.D3D12.Texture2D;

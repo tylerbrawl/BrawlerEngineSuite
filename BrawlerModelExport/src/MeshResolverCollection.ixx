@@ -1,6 +1,9 @@
 module;
 #include <vector>
 #include <memory>
+#include <variant>
+#include <cassert>
+#include <stdexcept>
 #include <assimp/mesh.h>
 
 export module Brawler.MeshResolverCollection;
@@ -12,9 +15,21 @@ import Brawler.ModelTextureBuilderCollection;
 
 namespace Brawler
 {
-	using MeshResolverArrayTuple = std::tuple<
-		std::vector<StaticMeshResolver>
+	using RecognizedMeshResolverTuple = std::tuple<
+		StaticMeshResolver
 	>;
+
+	template <typename T>
+	struct MeshResolverArrayTupleSolver
+	{};
+
+	template <typename... MeshResolverTypes>
+	struct MeshResolverArrayTupleSolver<std::tuple<MeshResolverTypes...>>
+	{
+		using VariantType = std::variant<std::monostate, std::vector<MeshResolverTypes>...>;
+	};
+	
+	using MeshResolverArrayVariant = typename MeshResolverArrayTupleSolver<RecognizedMeshResolverTuple>::VariantType;
 }
 
 export namespace Brawler
@@ -66,7 +81,7 @@ export namespace Brawler
 		void EmplaceMeshResolver(Args&&... args);
 
 	private:
-		MeshResolverArrayTuple mResolverArrTuple;
+		MeshResolverArrayVariant mResolverArrVariant;
 	};
 }
 
@@ -74,36 +89,45 @@ export namespace Brawler
 
 namespace Brawler
 {
-	template <std::size_t CurrIndex, typename TupleType, typename Callback>
-	void ForEachMeshResolverIMPL(std::add_lvalue_reference_t<TupleType> tuple, const Callback& callback)
-	{
-		if constexpr (CurrIndex != std::tuple_size_v<MeshResolverArrayTuple>)
-		{
-			for (auto& meshResolver : std::get<CurrIndex>(tuple))
-				callback(meshResolver);
-
-			ForEachMeshResolverIMPL<(CurrIndex + 1), TupleType>(tuple, callback);
-		}
-	}
-}
-
-namespace Brawler
-{
 	template <typename Callback>
 	void MeshResolverCollection::ForEachMeshResolver(const Callback& callback)
 	{
-		ForEachMeshResolverIMPL<0, MeshResolverArrayTuple>(mResolverArrTuple, callback);
+		std::visit([&callback] (auto& meshResolverArr)
+		{
+			if constexpr (!std::is_same_v<std::remove_reference_t<decltype(meshResolverArr)>, std::monostate>)
+			{
+				for (auto& meshResolver : meshResolverArr)
+					callback(meshResolver);
+			}
+		}, mResolverArrVariant);
 	}
 
 	template <typename Callback>
 	void MeshResolverCollection::ForEachMeshResolver(const Callback& callback) const
 	{
-		ForEachMeshResolverIMPL<0, const MeshResolverArrayTuple>(mResolverArrTuple, callback);
+		std::visit([&callback] (const auto& meshResolverArr)
+		{
+			if constexpr (!std::is_same_v<std::remove_cvref_t<decltype(meshResolverArr)>, std::monostate>)
+			{
+				for (const auto& meshResolver : meshResolverArr)
+					callback(meshResolver);
+			}
+		}, mResolverArrVariant);
 	}
 
 	template <typename MeshResolverType, typename... Args>
 	void MeshResolverCollection::EmplaceMeshResolver(Args&&... args)
 	{
-		std::get<std::vector<MeshResolverType>>(mResolverArrTuple).emplace_back(std::forward<Args>(args)...);
+		// The first MeshResolver to be created decides the type of this
+		// MeshResolverCollection.
+		if (mResolverArrVariant.index() == 0) [[unlikely]]
+			mResolverArrVariant = std::vector<MeshResolverType>{};
+
+		std::vector<MeshResolverType>* meshResolverArrPtr = std::get_if<std::vector<MeshResolverType>>(std::addressof(mResolverArrVariant));
+
+		if (meshResolverArrPtr != nullptr) [[likely]]
+			meshResolverArrPtr->emplace_back(std::forward<Args>(args)...);
+		else [[unlikely]]
+			throw std::runtime_error{ "ERROR: An LOD mesh which was considered to be of multiple different mesh formats was detected! (All meshes within an LOD mesh must be of the same mesh format, but different LOD meshes can have different mesh formats.)" };
 	}
 }
