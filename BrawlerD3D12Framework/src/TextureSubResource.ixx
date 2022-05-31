@@ -37,7 +37,7 @@ export namespace Brawler
 
 		public:
 			TextureSubResource() = default;
-			TextureSubResource(const Texture2D& texture2D, const std::uint32_t subResourceIndex);
+			TextureSubResource(Texture2D& texture2D, const std::uint32_t subResourceIndex);
 
 			TextureSubResource(const TextureSubResource& rhs) = default;
 			TextureSubResource& operator=(const TextureSubResource& rhs) = default;
@@ -45,6 +45,7 @@ export namespace Brawler
 			TextureSubResource(TextureSubResource&& rhs) noexcept = default;
 			TextureSubResource& operator=(TextureSubResource&& rhs) noexcept = default;
 
+			I_GPUResource& GetGPUResource();
 			const I_GPUResource& GetGPUResource() const;
 
 			Brawler::D3D12Resource& GetD3D12Resource() const;
@@ -53,7 +54,7 @@ export namespace Brawler
 			const Brawler::D3D12_RESOURCE_DESC& GetResourceDescription() const;
 
 		private:
-			const I_GPUResource* mResourcePtr;
+			I_GPUResource* mResourcePtr;
 			std::uint32_t mSubResourceIndex;
 		};
 	}

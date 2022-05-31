@@ -921,26 +921,11 @@
     <ClCompile Include="src\GPUResourceStateTracker.cpp">
       <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
     </ClCompile>
-    <ClCompile Include="src\I_GPUResourceStateTrackerState.ixx">
+    <ClCompile Include="src\GPUSubResourceStateBarrierMerger.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
     </ClCompile>
-    <ClCompile Include="src\GPUResourceStateTrackingContext.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUResourceStateBarrierMerger.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ImplicitBarrierGPUResourceStateTrackerState.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUResourceStateBarrierMerger.cpp">
+    <ClCompile Include="src\GPUSubResourceStateBarrierMerger.cpp">
       <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUResourceStateTrackerStateID.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ExplicitBarrierGPUResourceStateTrackerState.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
     </ClCompile>
     <ClCompile Include="src\BarrierMergerStateContainer.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
@@ -995,6 +980,21 @@
     </ClCompile>
     <ClCompile Include="src\CustomEventHandle.ixx">
       <Filter>Module Files\Threading\Event Handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSubResourceStateManager.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSubResourceStateManager.cpp">
+      <Filter>Source Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphSyncPointFactory.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphSyncPointFactory.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NZStringView.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

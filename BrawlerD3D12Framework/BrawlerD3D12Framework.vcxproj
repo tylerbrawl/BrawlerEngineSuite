@@ -267,32 +267,24 @@
     <ClCompile Include="src\ConstantBufferView.ixx" />
     <ClCompile Include="src\D3D12UtilFormats.ixx" />
     <ClCompile Include="src\D3D12UtilGeneral.ixx" />
-    <ClCompile Include="src\ExplicitBarrierGPUResourceStateTrackerState.ixx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="src\Finally.ixx" />
     <ClCompile Include="src\FormattedConsoleMessageBuilder.ixx" />
     <ClCompile Include="src\FrameGraphManager.cpp" />
     <ClCompile Include="src\FrameGraphManager.ixx" />
+    <ClCompile Include="src\FrameGraphSyncPointFactory.cpp" />
+    <ClCompile Include="src\FrameGraphSyncPointFactory.ixx" />
     <ClCompile Include="src\GPUExecutionModuleResourceMap.ixx" />
     <ClCompile Include="src\GPUResourceBinding.ixx" />
     <ClCompile Include="src\GPUResourceBindlessSRVManager.cpp" />
     <ClCompile Include="src\GPUResourceBindlessSRVManager.ixx" />
     <ClCompile Include="src\GPUResourceEventCollection.ixx" />
-    <ClCompile Include="src\GPUResourceStateBarrierMerger.cpp" />
-    <ClCompile Include="src\GPUResourceStateBarrierMerger.ixx" />
+    <ClCompile Include="src\GPUSubResourceStateBarrierMerger.cpp" />
+    <ClCompile Include="src\GPUSubResourceStateBarrierMerger.ixx" />
     <ClCompile Include="src\GPUResourceStateTracker.cpp" />
     <ClCompile Include="src\GPUResourceStateTracker.ixx" />
-    <ClCompile Include="src\GPUResourceStateTrackerStateID.ixx" />
-    <ClCompile Include="src\GPUResourceStateTrackingContext.ixx" />
     <ClCompile Include="src\GPUResourceViews.ixx" />
-    <ClCompile Include="src\ImplicitBarrierGPUResourceStateTrackerState.ixx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="src\GPUSubResourceStateManager.cpp" />
+    <ClCompile Include="src\GPUSubResourceStateManager.ixx" />
     <ClCompile Include="src\I_BufferSubAllocation.cpp" />
     <ClCompile Include="src\BufferResource.cpp" />
     <ClCompile Include="src\BufferResource.ixx" />
@@ -342,11 +334,7 @@
     <ClCompile Include="src\GPUResourceCreationType.ixx" />
     <ClCompile Include="src\I_EventHandle.cpp" />
     <ClCompile Include="src\I_EventHandle.ixx" />
-    <ClCompile Include="src\I_GPUResourceStateTrackerState.ixx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="src\NZStringView.ixx" />
     <ClCompile Include="src\PipelineEnums.ixx" />
     <ClCompile Include="src\PipelineType.ixx" />
     <ClCompile Include="src\PSODatabase.cpp" />

@@ -65,15 +65,8 @@ namespace Util
 		{
 			if constexpr (Util::General::IsDebugModeEnabled())
 			{
-				// std::wstring_view is not guaranteed to be null-terminated. If it isn't, then we
-				// create a temporary std::wstring containing only the viewed characters and output that.
-				if (msg[msg.size()] == L'\0') [[likely]]
-					OutputDebugString(msg.data());
-				else
-				{
-					const std::wstring terminatedMsg{ msg };
-					OutputDebugString(terminatedMsg.c_str());
-				}
+				const std::wstring formattedMsg{ std::format(L"{}\n", msg) };
+				OutputDebugString(formattedMsg.c_str());
 			}
 		}
 

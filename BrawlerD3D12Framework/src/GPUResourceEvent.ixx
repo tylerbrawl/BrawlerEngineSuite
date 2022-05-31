@@ -18,6 +18,7 @@ export namespace Brawler
 	{
 		struct ResourceTransitionEvent
 		{
+			std::uint32_t SubResourceIndex;
 			D3D12_RESOURCE_STATES BeforeState;
 			D3D12_RESOURCE_STATES AfterState;
 			D3D12_RESOURCE_BARRIER_FLAGS Flags;

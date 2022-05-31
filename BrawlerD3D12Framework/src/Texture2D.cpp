@@ -27,7 +27,7 @@ namespace Brawler
 			I_GPUResource(CreateInitializationInfoFromBuilder(builder))
 		{}
 
-		TextureSubResource Texture2D::GetSubResource(const std::uint32_t mipSlice) const
+		TextureSubResource Texture2D::GetSubResource(const std::uint32_t mipSlice)
 		{
 			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
 			

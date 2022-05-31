@@ -10,10 +10,16 @@ namespace Brawler
 {
 	namespace D3D12
 	{
-		TextureSubResource::TextureSubResource(const Texture2D& texture2D, const std::uint32_t subResourceIndex) :
+		TextureSubResource::TextureSubResource(Texture2D& texture2D, const std::uint32_t subResourceIndex) :
 			mResourcePtr(&texture2D),
 			mSubResourceIndex(subResourceIndex)
 		{}
+
+		I_GPUResource& TextureSubResource::GetGPUResource()
+		{
+			assert(mResourcePtr != nullptr);
+			return *mResourcePtr;
+		}
 
 		const I_GPUResource& TextureSubResource::GetGPUResource() const
 		{

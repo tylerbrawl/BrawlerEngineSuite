@@ -45,7 +45,7 @@ export namespace Brawler
 			/// The function returns a TextureSubResource instance which refers to the mip level
 			/// of this Texture2D indicated by mipSlice.
 			/// </returns>
-			TextureSubResource GetSubResource(const std::uint32_t mipSlice = 0) const;
+			TextureSubResource GetSubResource(const std::uint32_t mipSlice = 0);
 		};
 	}
 }

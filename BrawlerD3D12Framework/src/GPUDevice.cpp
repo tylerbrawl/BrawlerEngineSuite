@@ -207,6 +207,9 @@ namespace Brawler
 			// PIX does not play nicely with the D3D12 Debug Layer. If we detect that PIX is trying
 			// to capture the application, then we will not enable the Debug Layer. (I am not aware
 			// of a way to detect PIX timing captures, but this should work for GPU captures.)
+			static constexpr bool DISABLE_DEBUG_LAYER_WHEN_USING_PIX = false;
+
+			if constexpr (DISABLE_DEBUG_LAYER_WHEN_USING_PIX)
 			{
 				static constexpr std::wstring_view PIX_CAPTURER_DLL_NAME{ L"WinPixGpuCapturer.dll" };
 
@@ -218,6 +221,8 @@ namespace Brawler
 				{
 					Util::Win32::WriteDebugMessage(L"WARNING: The D3D12 Debug Layer was set to be enabled (see DebugLayerEnabler<Util::General::BuildMode::DEBUG>::IsDebugLayerAllowed()), but PIX is attempting to perform a GPU capture. Thus, the request to enable the D3D12 Debug Layer has been ignored. If you wish, you may use PIX's Debug Layer after the capture has completed.");
 					mIsDebugLayerEnabled = false;
+
+					return;
 				}
 			}
 

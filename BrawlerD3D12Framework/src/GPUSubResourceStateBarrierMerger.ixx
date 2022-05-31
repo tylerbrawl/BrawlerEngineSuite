@@ -5,7 +5,7 @@ module;
 #include <array>
 #include "DxDef.h"
 
-export module Brawler.D3D12.GPUResourceStateBarrierMerger;
+export module Brawler.D3D12.GPUSubResourceStateBarrierMerger;
 import :BarrierMergerStateContainer;
 import Brawler.D3D12.GPUResourceEventCollection;
 import Brawler.D3D12.GPUResourceEvent;
@@ -19,21 +19,22 @@ export namespace Brawler
 {
 	namespace D3D12
 	{
-		class GPUResourceStateBarrierMerger
+		class GPUSubResourceStateBarrierMerger
 		{
 		private:
 			using RenderPassVariant = std::variant<const I_RenderPass<GPUCommandQueueType::DIRECT>*, const I_RenderPass<GPUCommandQueueType::COMPUTE>*, const I_RenderPass<GPUCommandQueueType::COPY>*>;
 
 		public:
-			explicit GPUResourceStateBarrierMerger(I_GPUResource& resource);
+			GPUSubResourceStateBarrierMerger(I_GPUResource& resource, const std::uint32_t subResourceIndex);
 
-			GPUResourceStateBarrierMerger(const GPUResourceStateBarrierMerger& rhs) = delete;
-			GPUResourceStateBarrierMerger& operator=(const GPUResourceStateBarrierMerger& rhs) = delete;
+			GPUSubResourceStateBarrierMerger(const GPUSubResourceStateBarrierMerger& rhs) = delete;
+			GPUSubResourceStateBarrierMerger& operator=(const GPUSubResourceStateBarrierMerger& rhs) = delete;
 
-			GPUResourceStateBarrierMerger(GPUResourceStateBarrierMerger&& rhs) noexcept = default;
-			GPUResourceStateBarrierMerger& operator=(GPUResourceStateBarrierMerger&& rhs) noexcept = default;
+			GPUSubResourceStateBarrierMerger(GPUSubResourceStateBarrierMerger&& rhs) noexcept = default;
+			GPUSubResourceStateBarrierMerger& operator=(GPUSubResourceStateBarrierMerger&& rhs) noexcept = default;
 
 			I_GPUResource& GetGPUResource();
+			std::uint32_t GetSubResourceIndex() const;
 
 			template <GPUCommandQueueType QueueType>
 			void TrackRenderPass(const I_RenderPass<QueueType>& renderPass);
@@ -45,6 +46,8 @@ export namespace Brawler
 
 			template <GPUCommandQueueType QueueType>
 			void AddPotentialBeginBarrierRenderPass(const I_RenderPass<QueueType>& renderPass);
+
+			bool CanUseAdditionalBeginBarrierRenderPasses() const;
 
 		private:
 			void AddPotentialBeginBarrierRenderPass(RenderPassVariant passVariant);
@@ -75,16 +78,16 @@ namespace Brawler
 	namespace D3D12
 	{
 		template <GPUCommandQueueType QueueType>
-		void GPUResourceStateBarrierMerger::TrackRenderPass(const I_RenderPass<QueueType>& renderPass)
+		void GPUSubResourceStateBarrierMerger::TrackRenderPass(const I_RenderPass<QueueType>& renderPass)
 		{
 			const std::span<const FrameGraphResourceDependency> dependencySpan{ renderPass.GetResourceDependencies() };
 			I_GPUResource* const resourcePtr = std::addressof(mStateContainer.GetGPUResource());
 
-			const Brawler::OptionalRef<const FrameGraphResourceDependency> currDependency{ [resourcePtr, &dependencySpan]()
+			const Brawler::OptionalRef<const FrameGraphResourceDependency> currDependency{ [this, resourcePtr, &dependencySpan]()
 			{
 				for (const auto& dependency : dependencySpan)
 				{
-					if (dependency.ResourcePtr == resourcePtr)
+					if (dependency.ResourcePtr == resourcePtr && dependency.SubResourceIndex == GetSubResourceIndex())
 						return Brawler::OptionalRef<const FrameGraphResourceDependency>{ dependency };
 				}
 
@@ -98,13 +101,13 @@ namespace Brawler
 		}
 
 		template <GPUCommandQueueType QueueType>
-		void GPUResourceStateBarrierMerger::AddPotentialBeginBarrierRenderPass(const I_RenderPass<QueueType>& renderPass)
+		void GPUSubResourceStateBarrierMerger::AddPotentialBeginBarrierRenderPass(const I_RenderPass<QueueType>& renderPass)
 		{
 			AddPotentialBeginBarrierRenderPass(RenderPassVariant{ std::addressof(renderPass) });
 		}
 
 		template <GPUCommandQueueType QueueType>
-		void GPUResourceStateBarrierMerger::HandleResourceDependency(const I_RenderPass<QueueType>& renderPass, const D3D12_RESOURCE_STATES requiredState)
+		void GPUSubResourceStateBarrierMerger::HandleResourceDependency(const I_RenderPass<QueueType>& renderPass, const D3D12_RESOURCE_STATES requiredState)
 		{
 			CheckForOtherGPUResourceEvents(renderPass, requiredState);
 
@@ -127,10 +130,11 @@ namespace Brawler
 		}
 
 		template <GPUCommandQueueType QueueType>
-		void GPUResourceStateBarrierMerger::CheckForOtherGPUResourceEvents(const I_RenderPass<QueueType>& renderPass, const D3D12_RESOURCE_STATES requiredState)
+		void GPUSubResourceStateBarrierMerger::CheckForOtherGPUResourceEvents(const I_RenderPass<QueueType>& renderPass, const D3D12_RESOURCE_STATES requiredState)
 		{
 			I_GPUResource& resource{ mStateContainer.GetGPUResource() };
 
+			// Only the DIRECT queue is capable of performing special GPU resource initialization.
 			if (resource.RequiresSpecialInitialization()) [[unlikely]]
 			{
 				mEventCollection.AddGPUResourceEvent(renderPass, GPUResourceEvent{
@@ -141,17 +145,16 @@ namespace Brawler
 
 				resource.MarkSpecialInitializationAsCompleted();
 			}
-
+			
 			const bool thisStateIsForUAV = (requiredState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-			if (thisStateIsForUAV)
+			if (thisStateIsForUAV && mWasLastStateForUAV) [[unlikely]]
 			{
-				if (mWasLastStateForUAV)
-					mEventCollection.AddGPUResourceEvent(renderPass, GPUResourceEvent{
-						.GPUResource{std::addressof(resource)},
-						.Event{UAVBarrierEvent{}},
-						.EventID = GPUResourceEventID::UAV_BARRIER
-					});
+				mEventCollection.AddGPUResourceEvent(renderPass, GPUResourceEvent{
+					.GPUResource{std::addressof(resource)},
+					.Event{UAVBarrierEvent{}},
+					.EventID = GPUResourceEventID::UAV_BARRIER
+				});
 			}
 
 			mWasLastStateForUAV = thisStateIsForUAV;

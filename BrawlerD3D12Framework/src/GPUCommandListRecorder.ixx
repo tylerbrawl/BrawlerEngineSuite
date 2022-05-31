@@ -334,7 +334,7 @@ namespace Brawler
 						&(resourceEvent->GPUResource->GetD3D12Resource()),
 						transitionEvent.BeforeState,
 						transitionEvent.AfterState,
-						D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+						transitionEvent.SubResourceIndex,
 						transitionEvent.Flags
 					));
 
@@ -355,7 +355,8 @@ namespace Brawler
 
 				default:
 					assert(false);
-					__assume(false);
+					std::unreachable();
+
 					break;
 				}
 
@@ -391,7 +392,8 @@ namespace Brawler
 
 					default:
 						assert(false);
-						__assume(false);
+						std::unreachable();
+
 						break;
 					}
 

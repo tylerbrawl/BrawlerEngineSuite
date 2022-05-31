@@ -3,7 +3,7 @@ module;
 
 export module Brawler.D3D12.GPUResourceStateTracker;
 import Brawler.D3D12.GPUResourceEventCollection;
-import Brawler.D3D12.GPUResourceStateBarrierMerger;
+import Brawler.D3D12.GPUSubResourceStateBarrierMerger;
 import Brawler.D3D12.GPUCommandQueueType;
 export import Brawler.D3D12.GPUExecutionModule;
 import Brawler.D3D12.I_GPUResource;
@@ -28,10 +28,11 @@ export namespace Brawler
 			GPUResourceEventCollection FinalizeStateTracking();
 
 		private:
+			void TrackGPUExecutionModuleForSubResource(const GPUExecutionModule& executionModule, GPUSubResourceStateBarrierMerger& barrierMerger);
 			void CheckForResourceStateDecay(const GPUExecutionModule& executionModule);
 
 		private:
-			GPUResourceStateBarrierMerger mBarrierMerger;
+			std::vector<GPUSubResourceStateBarrierMerger> mBarrierMergerArr;
 			bool mResourceAlwaysDecays;
 		};
 	}

@@ -11,6 +11,7 @@ import Brawler.D3D12.FrameGraph;
 import Brawler.D3D12.TransientGPUResourceAliasTracker;
 import Brawler.CompositeEnum;
 import Util.D3D12;
+import Brawler.D3D12.FrameGraphSyncPointFactory;
 
 namespace
 {
@@ -42,113 +43,19 @@ namespace
 		if ((bundle.GetRenderPassCount<Brawler::D3D12::GPUCommandQueueType::COMPUTE>() + bundle.GetRenderPassCount<Brawler::D3D12::GPUCommandQueueType::COPY>()) == 0) [[likely]]
 			return std::optional<Brawler::D3D12::RenderPassBundle>{};
 
-		struct SharedResourceInfo
+		Brawler::D3D12::FrameGraphSyncPointFactory syncPointFactory{};
+
+		static constexpr auto ADD_RENDER_PASSES_LAMBDA = []<Brawler::D3D12::GPUCommandQueueType QueueType>(Brawler::D3D12::FrameGraphSyncPointFactory& syncPointFactory, const Brawler::D3D12::RenderPassBundle& bundle)
 		{
-			D3D12_RESOURCE_STATES CombinedState;
-			Brawler::CompositeEnum<Brawler::D3D12::GPUCommandQueueType> UsedQueues;
-
-			/*
-			There is a bit of a problem with allowing transitions to the COMMON state for
-			resources being used in multiple queues. Obviously, since the COMMON state allows a
-			resource to implicitly be transitioned to a write state, we can't allow it for resources
-			being used simultaneously across multiple queues.
-
-			However, there is no easy way to check for this, because the underlying value of the
-			COMMON state is 0. Let VALID_READ_STATE_SET be a valid read-only resource state.
-			Then, Util::D3D12::IsValidReadState(VALID_READ_STATE_SET | D3D12_RESOURCE_STATE_COMMON)
-			would return true. This still works out okay, actually, because
-			VALID_READ_STATE_SET | D3D12_RESOURCE_STATE_COMMON == VALID_READ_STATE_SET.
-
-			The problem is that since we assume that all of the states which a resource will be
-			in if it is being used simultaneously across queues are read-only states, and since
-			we can combine an arbitrary number of read-only states, we group all of these transitions
-			into one read-only state specified in the sync point preceding the current
-			GPUExecutionModule.
-
-			If the API user sets the resource dependency in one RenderPass as the COMMON state and
-			uses read states everywhere else, then after we combine all of the read states, the
-			COMMON state dependency is effectively lost. This is technically fine, since the API
-			user invoked undefined behavior by specifying the COMMON state in the first place.
-
-			However, we will still assert in Debug builds that they aren't doing this. (I'm a big
-			believer in Debug builds having an excess of error checking, anyways.)
-			*/
-#ifdef _DEBUG
-			bool UsesExplicitCommonStateTransition;
-#endif // _DEBUG
+			for (const auto& renderPassPtr : bundle.GetRenderPassSpan<QueueType>())
+				syncPointFactory.AddResourceDependenciesForRenderPass(*renderPassPtr);
 		};
 
-		std::unordered_map<Brawler::D3D12::I_GPUResource*, SharedResourceInfo> resourceStateMap{};
+		ADD_RENDER_PASSES_LAMBDA.operator()<Brawler::D3D12::GPUCommandQueueType::DIRECT>(syncPointFactory, bundle);
+		ADD_RENDER_PASSES_LAMBDA.operator()<Brawler::D3D12::GPUCommandQueueType::COMPUTE>(syncPointFactory, bundle);
+		ADD_RENDER_PASSES_LAMBDA.operator()<Brawler::D3D12::GPUCommandQueueType::COPY>(syncPointFactory, bundle);
 
-		const auto addDependenciesLambda = []<Brawler::D3D12::GPUCommandQueueType QueueType>(std::unordered_map<Brawler::D3D12::I_GPUResource*, SharedResourceInfo>& stateMap, const Brawler::D3D12::RenderPassBundle& bundle)
-		{
-			for (const auto& renderPass : bundle.GetRenderPassSpan<QueueType>())
-			{
-				for (const auto& dependency : renderPass->GetResourceDependencies())
-				{
-					stateMap[dependency.ResourcePtr].CombinedState |= dependency.RequiredState;
-					stateMap[dependency.ResourcePtr].UsedQueues |= QueueType;
-
-#ifdef _DEBUG
-					if (!stateMap[dependency.ResourcePtr].UsesExplicitCommonStateTransition)
-						stateMap[dependency.ResourcePtr].UsesExplicitCommonStateTransition = (dependency.RequiredState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON);
-#endif // _DEBUG
-				}
-			}
-		};
-
-		addDependenciesLambda.operator()<Brawler::D3D12::GPUCommandQueueType::DIRECT>(resourceStateMap, bundle);
-		addDependenciesLambda.operator()<Brawler::D3D12::GPUCommandQueueType::COMPUTE>(resourceStateMap, bundle);
-
-		// Erase all SharedResourceInfo instances from resourceStateMap which do not correspond to
-		// resources being used in both a direct and compute queue.
-		std::erase_if(resourceStateMap, [] (const auto& keyValuePair)
-		{
-			static constexpr Brawler::CompositeEnum<Brawler::D3D12::GPUCommandQueueType> IS_SHARED_ACROSS_VALID_QUEUES = Brawler::D3D12::GPUCommandQueueType::DIRECT | Brawler::D3D12::GPUCommandQueueType::COMPUTE;
-
-			const auto& [resourcePtr, resourceInfo] = keyValuePair;
-			return (resourceInfo.UsedQueues != IS_SHARED_ACROSS_VALID_QUEUES);
-		});
-
-		// We should make sure that combining the states results in a valid final resource state.
-		// If this is not the case, then the API user is illegally writing to a resource which
-		// is shared between queues.
-#ifdef _DEBUG
-		for (const auto& [resourcePtr, resourceInfo] : resourceStateMap)
-		{
-			assert(Util::D3D12::IsValidReadState(resourceInfo.CombinedState) && "ERROR: A resource was marked as a dependency across multiple queues within a single RenderPassBundle, but at least one of them attempted to request write access to the resource!");
-			assert(!resourceInfo.UsesExplicitCommonStateTransition && "ERROR: It is illegal to specify the D3D12_RESOURCE_STATE_COMMON state (or the D3D12_RESOURCE_STATE_PRESENT state) for a resource if the resource is being used simultaneously across multiple queues! (Doing so will invoke undefined behavior.)");
-		}
-#endif // _DEBUG
-
-		// Now, add any resources which are used in the copy queue. We need these resources to be
-		// in the D3D12_RESOURCE_STATE_COMMON state before we can make use of them there.
-		for (const auto& copyPass : bundle.GetRenderPassSpan<Brawler::D3D12::GPUCommandQueueType::COPY>())
-		{
-			for (const auto& dependency : copyPass->GetResourceDependencies())
-			{
-				resourceStateMap[dependency.ResourcePtr].CombinedState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON;
-				resourceStateMap[dependency.ResourcePtr].UsedQueues = Brawler::D3D12::GPUCommandQueueType::COPY;
-			}
-		}
-
-		// If we do not have any required resource transitions, then we do not necessarily
-		// need a sync point.
-		if (resourceStateMap.empty())
-			return std::optional<Brawler::D3D12::RenderPassBundle>{};
-
-		// Create the sync point.
-		Brawler::D3D12::RenderPass<Brawler::D3D12::GPUCommandQueueType::DIRECT> syncPointPass{};
-		syncPointPass.SetRenderPassName("[Brawler Engine Internal Sync Point]");
-		syncPointPass.SetPIXEventColor(Util::D3D12::CalculatePIXColor(0xFF, 0x00, 0x00));
-
-		for (const auto& [resourcePtr, resourceInfo] : resourceStateMap)
-			syncPointPass.AddResourceDependency(*resourcePtr, resourceInfo.CombinedState);
-
-		Brawler::D3D12::RenderPassBundle syncPointBundle{};
-		syncPointBundle.AddDirectRenderPass(std::move(syncPointPass));
-
-		return std::optional<Brawler::D3D12::RenderPassBundle>{ std::move(syncPointBundle) };
+		return syncPointFactory.CreateSyncPoint();
 	}
 }
 

@@ -180,8 +180,6 @@ namespace Brawler
 
 			for (auto& executionModule : mExecutionModuleArr)
 			{
-				executionModule.PrepareForResourceStateTracking();
-
 				numDirectPasses += executionModule.GetRenderPassSpan<GPUCommandQueueType::DIRECT>().size();
 				numComputePasses += executionModule.GetRenderPassSpan<GPUCommandQueueType::COMPUTE>().size();
 				numCopyPasses += executionModule.GetRenderPassSpan<GPUCommandQueueType::COPY>().size();

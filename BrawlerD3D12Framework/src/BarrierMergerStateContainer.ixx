@@ -3,7 +3,7 @@ module;
 #include <cassert>
 #include "DxDef.h"
 
-export module Brawler.D3D12.GPUResourceStateBarrierMerger:BarrierMergerStateContainer;
+export module Brawler.D3D12.GPUSubResourceStateBarrierMerger:BarrierMergerStateContainer;
 import Brawler.D3D12.I_GPUResource;
 import Util.D3D12;
 
@@ -14,7 +14,7 @@ export namespace Brawler
 		class BarrierMergerStateContainer
 		{
 		public:
-			explicit BarrierMergerStateContainer(I_GPUResource& resource);
+			BarrierMergerStateContainer(I_GPUResource& resource, const std::uint32_t subResourceIndex);
 
 			BarrierMergerStateContainer(const BarrierMergerStateContainer& rhs) = delete;
 			BarrierMergerStateContainer& operator=(const BarrierMergerStateContainer& rhs) = delete;
@@ -23,6 +23,7 @@ export namespace Brawler
 			BarrierMergerStateContainer& operator=(BarrierMergerStateContainer&& rhs) noexcept = default;
 
 			I_GPUResource& GetGPUResource();
+			std::uint32_t GetSubResourceIndex() const;
 
 			/// <summary>
 			/// Determines whether or not requiredState can be combined with the value currently
@@ -70,6 +71,7 @@ export namespace Brawler
 
 		private:
 			I_GPUResource* mResourcePtr;
+			std::uint32_t mSubResourceIndex;
 			D3D12_RESOURCE_STATES mBeforeState;
 			std::optional<D3D12_RESOURCE_STATES> mAfterState;
 			bool mAllowImplicitTransitions;
@@ -83,9 +85,10 @@ namespace Brawler
 {
 	namespace D3D12
 	{
-		BarrierMergerStateContainer::BarrierMergerStateContainer(I_GPUResource& resource) :
+		BarrierMergerStateContainer::BarrierMergerStateContainer(I_GPUResource& resource, const std::uint32_t subResourceIndex) :
 			mResourcePtr(std::addressof(resource)),
-			mBeforeState(resource.GetCurrentResourceState()),
+			mSubResourceIndex(subResourceIndex),
+			mBeforeState(resource.GetSubResourceState(subResourceIndex)),
 			mAfterState(),
 			mAllowImplicitTransitions(mBeforeState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON)
 		{}
@@ -93,6 +96,11 @@ namespace Brawler
 		I_GPUResource& BarrierMergerStateContainer::GetGPUResource()
 		{
 			return *mResourcePtr;
+		}
+
+		std::uint32_t BarrierMergerStateContainer::GetSubResourceIndex() const
+		{
+			return mSubResourceIndex;
 		}
 
 		bool BarrierMergerStateContainer::CanAfterStateBeCombined(const D3D12_RESOURCE_STATES requiredState) const
@@ -155,7 +163,7 @@ namespace Brawler
 
 		void BarrierMergerStateContainer::UpdateGPUResourceState()
 		{
-			mResourcePtr->SetCurrentResourceState(mBeforeState);
+			mResourcePtr->SetSubResourceState(mBeforeState, mSubResourceIndex);
 		}
 
 		void BarrierMergerStateContainer::SwapStates()

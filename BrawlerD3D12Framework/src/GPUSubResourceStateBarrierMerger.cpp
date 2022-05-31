@@ -6,32 +6,37 @@ module;
 #include <cassert>
 #include "DxDef.h"
 
-module Brawler.D3D12.GPUResourceStateBarrierMerger;
+module Brawler.D3D12.GPUSubResourceStateBarrierMerger;
 import Util.D3D12;
 
 namespace Brawler
 {
 	namespace D3D12
 	{
-		GPUResourceStateBarrierMerger::GPUResourceStateBarrierMerger(I_GPUResource& resource) :
-			mStateContainer(resource),
+		GPUSubResourceStateBarrierMerger::GPUSubResourceStateBarrierMerger(I_GPUResource& resource, const std::uint32_t subResourceIndex) :
+			mStateContainer(resource, subResourceIndex),
 			mEventCollection(),
 			mBeginBarrierPassArr(),
 			mEndBarrierPass(),
 			mWasLastStateForUAV(false)
 		{}
 
-		I_GPUResource& GPUResourceStateBarrierMerger::GetGPUResource()
+		I_GPUResource& GPUSubResourceStateBarrierMerger::GetGPUResource()
 		{
 			return mStateContainer.GetGPUResource();
 		}
+
+		std::uint32_t GPUSubResourceStateBarrierMerger::GetSubResourceIndex() const
+		{
+			return mStateContainer.GetSubResourceIndex();
+		}
 		
-		bool GPUResourceStateBarrierMerger::DoImplicitReadStateTransitionsAllowStateDecay() const
+		bool GPUSubResourceStateBarrierMerger::DoImplicitReadStateTransitionsAllowStateDecay() const
 		{
 			return mStateContainer.DoImplicitReadStateTransitionsAllowStateDecay();
 		}
 
-		void GPUResourceStateBarrierMerger::DecayResourceState()
+		void GPUSubResourceStateBarrierMerger::DecayResourceState()
 		{
 			CommitExistingExplicitResourceTransition();
 			EraseBarrierPasses();
@@ -39,7 +44,7 @@ namespace Brawler
 			mStateContainer.DecayResourceState();
 		}
 
-		GPUResourceEventCollection GPUResourceStateBarrierMerger::FinalizeStateTracking()
+		GPUResourceEventCollection GPUSubResourceStateBarrierMerger::FinalizeStateTracking()
 		{
 			CommitExistingExplicitResourceTransition();
 			mStateContainer.UpdateGPUResourceState();
@@ -47,7 +52,7 @@ namespace Brawler
 			return std::move(mEventCollection);
 		}
 
-		void GPUResourceStateBarrierMerger::AddPotentialBeginBarrierRenderPass(GPUResourceStateBarrierMerger::RenderPassVariant passVariant)
+		void GPUSubResourceStateBarrierMerger::AddPotentialBeginBarrierRenderPass(GPUSubResourceStateBarrierMerger::RenderPassVariant passVariant)
 		{
 			const I_GPUResource& resource{ mStateContainer.GetGPUResource() };
 
@@ -68,10 +73,30 @@ namespace Brawler
 			}
 		}
 
-		void GPUResourceStateBarrierMerger::CommitExistingExplicitResourceTransition()
+		bool GPUSubResourceStateBarrierMerger::CanUseAdditionalBeginBarrierRenderPasses() const
+		{
+			// We can still use additional render passes for begin barriers, unless we already have
+			// one in the DIRECT queue. This is because the DIRECT queue is capable of performing any
+			// resource transition, but the same cannot be said for other queues.
+
+			for (const auto& existingVariant : mBeginBarrierPassArr)
+			{
+				if (existingVariant.has_value() && existingVariant->index() == 0)
+					return false;
+			}
+
+			return true;
+		}
+
+		void GPUSubResourceStateBarrierMerger::CommitExistingExplicitResourceTransition()
 		{
 			if (!mStateContainer.HasExplicitStateTransition())
+			{
+				mStateContainer.SwapStates();
+				EraseBarrierPasses();
+
 				return;
+			}
 
 			I_GPUResource& resource{ mStateContainer.GetGPUResource() };
 			
@@ -106,12 +131,13 @@ namespace Brawler
 							mEventCollection.AddGPUResourceEvent(*renderPassPtr, GPUResourceEvent{
 								.GPUResource{ std::addressof(mStateContainer.GetGPUResource()) },
 								.Event{ ResourceTransitionEvent{
+									.SubResourceIndex{ GetSubResourceIndex() },
 									.BeforeState{ transitionCheckInfo.BeforeState },
 									.AfterState{ transitionCheckInfo.AfterState },
 									.Flags{ D3D12_RESOURCE_BARRIER_FLAGS::D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY }
 								} },
 								.EventID = GPUResourceEventID::RESOURCE_TRANSITION
-								});
+							});
 						}, *beginBarrierPassVariant);
 
 						usingSplitBarrier = true;
@@ -126,12 +152,13 @@ namespace Brawler
 					mEventCollection.AddGPUResourceEvent(*renderPassPtr, GPUResourceEvent{
 						.GPUResource{ std::addressof(mStateContainer.GetGPUResource()) },
 						.Event{ResourceTransitionEvent{
+							.SubResourceIndex{ GetSubResourceIndex() },
 							.BeforeState{ transitionCheckInfo.BeforeState },
 							.AfterState{ transitionCheckInfo.AfterState },
 							.Flags{ (usingSplitBarrier ? D3D12_RESOURCE_BARRIER_FLAGS::D3D12_RESOURCE_BARRIER_FLAG_END_ONLY : D3D12_RESOURCE_BARRIER_FLAGS::D3D12_RESOURCE_BARRIER_FLAG_NONE) }
 						} },
 						.EventID = GPUResourceEventID::RESOURCE_TRANSITION
-						});
+					});
 				}, *mEndBarrierPass);
 
 				mStateContainer.SwapStates();
@@ -140,7 +167,7 @@ namespace Brawler
 			EraseBarrierPasses();
 		}
 
-		void GPUResourceStateBarrierMerger::EraseBarrierPasses()
+		void GPUSubResourceStateBarrierMerger::EraseBarrierPasses()
 		{
 			for (auto& beginPassVariant : mBeginBarrierPassArr)
 				beginPassVariant.reset();

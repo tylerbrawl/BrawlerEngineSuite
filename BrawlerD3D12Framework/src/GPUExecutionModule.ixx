@@ -12,7 +12,6 @@ import Brawler.SortedVector;
 import Brawler.CompositeEnum;
 import Brawler.D3D12.GPUCommandListRecorder;
 import Brawler.D3D12.GPUExecutionModuleResourceMap;
-import Brawler.D3D12.ResourceStateZone;
 
 export namespace Brawler
 {
@@ -52,17 +51,17 @@ export namespace Brawler
 			std::size_t GetRenderPassCount() const;
 			Brawler::CompositeEnum<GPUCommandQueueType> GetUsedQueues() const;
 
-			void PrepareForResourceStateTracking();
-			
-			template <GPUCommandQueueType QueueType>
-				requires (QueueType != GPUCommandQueueType::COUNT_OR_ERROR)
-			std::vector<ResourceStateZone> GetResourceStateZones(const I_GPUResource& resource) const;
-
 			bool IsResourceUsed(const I_GPUResource& resource) const;
 			Brawler::CompositeEnum<GPUCommandQueueType> GetQueuesUsingResource(const I_GPUResource& resource) const;
 
+			bool IsResourceUsed(const I_GPUResource& resource, const std::uint32_t subResourceIndex) const;
+			Brawler::CompositeEnum<GPUCommandQueueType> GetQueuesUsingResource(const I_GPUResource& resource, const std::uint32_t subResourceIndex) const;
+
 			template <GPUCommandQueueType QueueType>
 			bool IsResourceUsedInQueue(const I_GPUResource& resource) const;
+
+			template <GPUCommandQueueType QueueType>
+			bool IsResourceUsedInQueue(const I_GPUResource& resource, const std::uint32_t subResourceIndex) const;
 
 			template <GPUCommandQueueType QueueType>
 				requires (QueueType != GPUCommandQueueType::COUNT_OR_ERROR)
@@ -113,23 +112,17 @@ namespace Brawler
 			else
 				return mCopyPassContainer;
 		}
-		
-		template <GPUCommandQueueType QueueType>
-			requires (QueueType != GPUCommandQueueType::COUNT_OR_ERROR)
-		std::vector<ResourceStateZone> GPUExecutionModule::GetResourceStateZones(const I_GPUResource& resource) const
-		{
-			std::vector<ResourceStateZone> stateZoneArr{ GetRenderPassContainer<QueueType>().ResourceMap.GetResourceStateZones(resource) };
-
-			for (auto& stateZone : stateZoneArr)
-				stateZone.ExecutionModule = this;
-
-			return stateZoneArr;
-		}
 
 		template <GPUCommandQueueType QueueType>
 		bool GPUExecutionModule::IsResourceUsedInQueue(const I_GPUResource& resource) const
 		{
 			return GetRenderPassContainer<QueueType>().ResourceMap.DoesResourceHaveDependentRenderPasses(resource);
+		}
+
+		template <GPUCommandQueueType QueueType>
+		bool GPUExecutionModule::IsResourceUsedInQueue(const I_GPUResource& resource, const std::uint32_t subResourceIndex) const
+		{
+			return GetRenderPassContainer<QueueType>().ResourceMap.DoesResourceHaveDependentRenderPasses(resource, subResourceIndex);
 		}
 
 		template <GPUCommandQueueType QueueType>

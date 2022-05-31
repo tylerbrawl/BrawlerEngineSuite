@@ -4,6 +4,7 @@ module;
 
 export module Util.Win32;
 import Brawler.Win32.ConsoleFormat;
+import Brawler.NZStringView;
 
 export namespace Util
 {
