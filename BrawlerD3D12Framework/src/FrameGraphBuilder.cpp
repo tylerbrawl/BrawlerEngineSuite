@@ -79,6 +79,18 @@ namespace Brawler
 			return mRenderPassBundleArr.size();
 		}
 
+		FrameGraph& FrameGraphBuilder::GetFrameGraph()
+		{
+			assert(mFrameGraphPtr != nullptr);
+			return *mFrameGraphPtr;
+		}
+
+		const FrameGraph& FrameGraphBuilder::GetFrameGraph() const
+		{
+			assert(mFrameGraphPtr != nullptr);
+			return *mFrameGraphPtr;
+		}
+
 		FrameGraphBlackboard& FrameGraphBuilder::GetBlackboard()
 		{
 			assert(mFrameGraphPtr != nullptr);
@@ -94,6 +106,21 @@ namespace Brawler
 		std::span<RenderPassBundle> FrameGraphBuilder::GetRenderPassBundleSpan()
 		{
 			return std::span<RenderPassBundle>{ mRenderPassBundleArr };
+		}
+
+		void FrameGraphBuilder::MergeFrameGraphBuilder(FrameGraphBuilder&& mergedBuilder)
+		{
+			assert(mFrameGraphPtr == mergedBuilder.mFrameGraphPtr);
+
+			mRenderPassBundleArr.reserve(mRenderPassBundleArr.size() + mergedBuilder.mRenderPassBundleArr.size());
+
+			for (auto&& bundle : mergedBuilder.mRenderPassBundleArr)
+				mRenderPassBundleArr.push_back(std::move(bundle));
+
+			mTransientResourceArr.reserve(mTransientResourceArr.size() + mergedBuilder.mTransientResourceArr.size());
+
+			for (auto&& transientResource : mergedBuilder.mTransientResourceArr)
+				mTransientResourceArr.push_back(std::move(transientResource));
 		}
 
 		std::vector<std::unique_ptr<I_GPUResource>> FrameGraphBuilder::ExtractTransientResources()

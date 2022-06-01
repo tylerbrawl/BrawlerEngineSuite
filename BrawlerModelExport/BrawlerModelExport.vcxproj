@@ -277,6 +277,9 @@
     <ClCompile Include="src\Application.ixx" />
     <ClCompile Include="src\AssimpMaterialKey.ixx" />
     <ClCompile Include="src\AssimpMaterialKeyID.ixx" />
+    <ClCompile Include="src\AssimpMaterials.ixx" />
+    <ClCompile Include="src\AssimpTextureConverter.ixx" />
+    <ClCompile Include="src\AssimpTextureMaterialColorMap.ixx" />
     <ClCompile Include="src\EmbeddedTextureModelTextureBuilder.ixx" />
     <ClCompile Include="src\ExternalTextureModelTextureBuilder.ixx" />
     <ClCompile Include="src\FormatConversionModelTextureUpdateState.cpp" />
@@ -295,7 +298,6 @@
     <ClCompile Include="src\BTEXFileAttributes.ixx" />
     <ClCompile Include="src\CommandLineParser.cpp" />
     <ClCompile Include="src\CommandLineParser.ixx" />
-    <ClCompile Include="src\CompositeEnum.ixx" />
     <ClCompile Include="src\FileAttributes.ixx" />
     <ClCompile Include="src\FilePathHash.ixx" />
     <ClCompile Include="src\FormatConversionModelTextureUpdateState.ixx" />
@@ -335,8 +337,14 @@
     <ClCompile Include="src\ModelTextureDatabase.ixx" />
     <ClCompile Include="src\ModelTextureHandle.ixx" />
     <ClCompile Include="src\ModelTextureLUT.ixx" />
+    <ClCompile Include="src\ModelTextureResolutionEventHandle.cpp" />
+    <ClCompile Include="src\ModelTextureResolutionEventHandle.ixx" />
+    <ClCompile Include="src\ModelTextureResolutionRenderModule.cpp" />
+    <ClCompile Include="src\ModelTextureResolutionRenderModule.ixx" />
     <ClCompile Include="src\ModelTextureUpdateStateID.ixx" />
     <ClCompile Include="src\ModelTextureUpdateStateTraits.ixx" />
+    <ClCompile Include="src\OpaqueDiffuseModelTextureResolver.cpp" />
+    <ClCompile Include="src\OpaqueDiffuseModelTextureResolver.ixx" />
     <ClCompile Include="src\OpaqueMaterialDefinition.cpp" />
     <ClCompile Include="src\OpaqueMaterialDefinition.ixx" />
     <ClCompile Include="src\SerializationContext.ixx" />

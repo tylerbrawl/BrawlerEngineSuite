@@ -3,8 +3,8 @@ module;
 #include <optional>
 #include <assimp/material.h>
 
-export module Brawler.AssimpMaterialKey;
-export import Brawler.AssimpMaterialKeyID;
+export module Brawler.AssimpMaterials:AssimpMaterialKey;
+import :AssimpMaterialKeyID;
 
 // This module represents my attempt to de-crapify the material property system of Assimp.
 
