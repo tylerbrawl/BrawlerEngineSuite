@@ -7,12 +7,23 @@ export module Brawler.OpaqueDiffuseModelTextureResolver;
 import Brawler.ModelTextureResolutionEventHandle;
 import Brawler.ImportedMesh;
 import Brawler.D3D12.BufferResource;
+import Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.D3D12.FrameGraphBuilder;
+import Brawler.D3D12.Texture2D;
+import Brawler.D3D12.BufferSubAllocationReservationHandle;
 
 export namespace Brawler
 {
 	class OpaqueDiffuseModelTextureResolver
 	{
+	private:
+		struct TextureResolutionContext
+		{
+			D3D12::FrameGraphBuilder& Builder;
+			D3D12::Texture2D* CurrTexturePtr;
+			D3D12::BufferSubAllocationReservationHandle HBC7TextureDataReservation;
+		};
+
 	public:
 		explicit OpaqueDiffuseModelTextureResolver(const ImportedMesh& mesh);
 
@@ -27,13 +38,21 @@ export namespace Brawler
 
 	private:
 		void BeginDiffuseTextureResolution();
-
 		void AddTextureResolutionRenderPasses(D3D12::FrameGraphBuilder& builder);
+
+		void AddSourceTextureUploadRenderPasses(TextureResolutionContext& context);
+		void AddBC7CompressionRenderPasses(TextureResolutionContext& context);
+		void AddMipMapGenerationRenderPasses(TextureResolutionContext& context);
+		void AddReadBackBufferCopyRenderPasses(TextureResolutionContext& context);
+
+		void CopyResolvedTextureToScratchImage();
 
 	private:
 		std::optional<ModelTextureResolutionEventHandle> mHDiffuseTextureResolutionEvent;
 		std::unique_ptr<D3D12::BufferResource> mOutputBuffer;
+		std::vector<D3D12::TextureCopyBufferSubAllocation> mTextureCopySubAllocationArr;
+		DirectX::ScratchImage mDestDiffuseScratchImage;
 		DirectX::ScratchImage mSrcDiffuseScratchImage;
-		ImportedMesh* mMeshPtr;
+		const ImportedMesh* mMeshPtr;
 	};
 }

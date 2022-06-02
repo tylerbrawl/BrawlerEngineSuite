@@ -7,14 +7,17 @@ module;
 #include <format>
 #include <span>
 #include <array>
-#include <assimp/material.h>
+#include <assimp/scene.h>
+
+#define NOMINMAX
 #include <DirectXTex.h>
+#undef NOMINMAX
 
 export module Brawler.AssimpTextureConverter;
 import :AssimpTextureMaterialColorMap;
 import Brawler.ImportedMesh;
 import Brawler.OptionalRef;
-import Brawler.TextureTypeMap
+import Brawler.TextureTypeMap;
 import Util.General;
 import Util.Win32;
 
@@ -55,6 +58,7 @@ export namespace Brawler
 		static ConvertedAssimpTexture CreateTextureFromExternalFile(const ImportedMesh& mesh, const aiString& filePath);
 		static ConvertedAssimpTexture CreateTextureFromEmbeddedCompressedFile(const ImportedMesh& mesh, const aiString& textureName, const aiTexture& embeddedTexture);
 		static ConvertedAssimpTexture CreateTextureFromEmbeddedUncompressedData(const ImportedMesh& mesh, const aiString& textureName, const aiTexture& embeddedTexture);
+
 	private:
 		std::vector<ConvertedAssimpTexture> mConvertedTextureArr;
 	};
@@ -69,7 +73,7 @@ namespace Brawler
 
 		if (numTexturesOfRelevantType > 0) [[likely]]
 		{
-			mScratchImage.resize(numTexturesOfRelevantType);
+			mConvertedTextureArr.resize(numTexturesOfRelevantType);
 			
 			for (auto i : std::views::iota(0u, numTexturesOfRelevantType))
 				BeginTextureConversion(mesh, i);
@@ -179,22 +183,22 @@ namespace Brawler
 		// are usually authored in.
 		
 		constexpr AssimpMaterialKeyID MATERIAL_KEY_ID{ *(GetMaterialColor<TextureType>()) };
-		const std::optional<aiColor3D> materialColor{ Brawler::GetAssimpMaterialProperty<MATERIAL_KEY_ID>() };
+		const std::optional<aiColor3D> materialColor{ Brawler::GetAssimpMaterialProperty<MATERIAL_KEY_ID>(mesh.GetMeshMaterial()) };
 
 		if (!materialColor.has_value())
 			return std::optional<ConvertedAssimpTexture>{};
 
-		const std::array<std::uint8_t, 4> rgbaColorArr{
+		std::array<std::uint8_t, 4> rgbaColorArr{
 			static_cast<std::uint8_t>(materialColor->r * 255.0f),
 			static_cast<std::uint8_t>(materialColor->g * 255.0f),
 			static_cast<std::uint8_t>(materialColor->b * 255.0f),
-			1.0f
+			std::numeric_limits<std::uint8_t>::max()
 		};
 
 		const DirectX::Image srcImage{
 			.width = 1,
 			.height = 1,
-			.format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_SRGB,
+			.format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
 			.rowPitch = sizeof(rgbaColorArr),
 			.slicePitch = sizeof(rgbaColorArr),
 			.pixels = rgbaColorArr.data()
@@ -204,7 +208,7 @@ namespace Brawler
 		Util::General::CheckHRESULT(DirectX::Convert(
 			srcImage,
 			Brawler::GetIntermediateTextureFormat<TextureType>(),
-			DirectX::TEX_FILTER_FLAGS::TEX_FILTER_FLAGS_DEFAULT,
+			DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT,
 			DirectX::TEX_THRESHOLD_DEFAULT,
 			convertedImage
 		));
@@ -224,12 +228,12 @@ namespace Brawler
 		bool fileExists = std::filesystem::exists(textureFilePath, errorCode);
 
 		if (errorCode) [[unlikely]]
-			throw std::runtime_error{ std::format(LR"(ERROR: The attempt to check if the file at "{}" exists failed with the following error: {})", textureFilePath.c_str(), Util::General::StringToWString(errorCode.message())) };
+			throw std::runtime_error{ std::format(R"(ERROR: The attempt to check if the file at "{}" exists failed with the following error: {})", textureFilePath.string(), errorCode.message()) };
 
 		bool isDirectory = std::filesystem::is_directory(textureFilePath, errorCode);
 
 		if (errorCode) [[unlikely]]
-			throw std::runtime_error{ std::format(LR"(ERROR: The attempt to check if the file at "{}" was actually a directory failed with the following error: {})", textureFilePath.c_str(), Util::General::StringToWString(errorCode.message())) };
+			throw std::runtime_error{ std::format(R"(ERROR: The attempt to check if the file at "{}" was actually a directory failed with the following error: {})", textureFilePath.string(), errorCode.message()) };
 
 		if (!fileExists || isDirectory) [[unlikely]]
 		{
@@ -239,18 +243,18 @@ namespace Brawler
 			fileExists = std::filesystem::exists(textureFilePath, errorCode);
 
 			if (errorCode) [[unlikely]]
-				throw std::runtime_error{ std::format(LR"(ERROR: The attempt to check if the file at "{}" exists failed with the following error: {})", textureFilePath.c_str(), Util::General::StringToWString(errorCode.message())) };
+				throw std::runtime_error{ std::format(R"(ERROR: The attempt to check if the file at "{}" exists failed with the following error: {})", textureFilePath.string(), errorCode.message()) };
 
 			if (!fileExists) [[unlikely]]
-				throw std::runtime_error{ std::format(LR"(ERROR: The external texture file "{}" referenced by the LOD mesh at "{}" could not be found!)", Util::General::StringToWString(filePath.C_Str()), mesh.GetLODScene().GetInputMeshFilePath().c_str()) };
+				throw std::runtime_error{ std::format(R"(ERROR: The external texture file "{}" referenced by the LOD mesh at "{}" could not be found!)", filePath.C_Str(), mesh.GetLODScene().GetInputMeshFilePath().string()) };
 
 			isDirectory = std::filesystem::is_directory(textureFilePath, errorCode);
 
 			if (errorCode) [[unlikely]]
-				throw std::runtime_error{ std::format(LR"(ERROR: The attempt to check if the file at "{}" was actually a directory failed with the following error: {})", textureFilePath.c_str(), Util::General::StringToWString(errorCode.message())) };
+				throw std::runtime_error{ std::format(R"(ERROR: The attempt to check if the file at "{}" was actually a directory failed with the following error: {})", textureFilePath.string(), errorCode.message()) };
 
 			if (isDirectory) [[unlikely]]
-				throw std::runtime_error{ std::format(LR"(ERROR: The external texture file "{}" referenced by the LOD mesh at "{}" is actually a directory!)", Util::General::StringToWString(filePath.C_Str()), mesh.GetLODScene().GetInputMeshFilePath().c_str()) };
+				throw std::runtime_error{ std::format(R"(ERROR: The external texture file "{}" referenced by the LOD mesh at "{}" is actually a directory!)", filePath.C_Str(), mesh.GetLODScene().GetInputMeshFilePath().string()) };
 		}
 
 		// Transform the texture file path into its canonical path. That way, we can compare it to other textures referring
@@ -258,7 +262,7 @@ namespace Brawler
 		textureFilePath = std::filesystem::canonical(textureFilePath, errorCode);
 
 		if (errorCode) [[unlikely]]
-			throw std::runtime_error{ std::format(LR"(ERROR: The attempt to get the canonical file path of "{}" failed with the following error: {})", textureFilePath.c_str(), Util::General::StringToWString(errorCode.message())) };
+			throw std::runtime_error{ std::format(R"(ERROR: The attempt to get the canonical file path of "{}" failed with the following error: {})", textureFilePath.string(), errorCode.message()) };
 
 		DirectX::ScratchImage scratchImage{};
 		Util::General::CheckHRESULT(DirectX::LoadFromWICFile(
@@ -274,7 +278,7 @@ namespace Brawler
 			scratchImage.GetImageCount(),
 			scratchImage.GetMetadata(),
 			Brawler::GetIntermediateTextureFormat<TextureType>(),
-			DirectX::TEX_FILTER_FLAGS::TEX_FILTER_FLAGS_DEFAULT,
+			DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT,
 			DirectX::TEX_THRESHOLD_DEFAULT,
 			intermediateScratchImage
 		));
@@ -299,11 +303,11 @@ namespace Brawler
 
 		DirectX::ScratchImage intermediateScratchImage{};
 		Util::General::CheckHRESULT(DirectX::Convert(
-			scratchImage.GetImages(),
-			scratchImage.GetImageCount(),
-			scratchImage.GetMetadata(),
+			wicScratchImage.GetImages(),
+			wicScratchImage.GetImageCount(),
+			wicScratchImage.GetMetadata(),
 			Brawler::GetIntermediateTextureFormat<TextureType>(),
-			DirectX::TEX_FILTER_FLAGS::TEX_FILTER_FLAGS_DEFAULT,
+			DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT,
 			DirectX::TEX_THRESHOLD_DEFAULT,
 			intermediateScratchImage
 		));
@@ -325,16 +329,16 @@ namespace Brawler
 		// of the texture data and swizzle that, instead.
 
 		// Warn the user that this texture may have been processed incorrectly.
-		Util::Win32::WriteFormattedConsoleMessage(std::string{ "WARNING: The embedded texture " } + mTexturePtr->mFilename.C_Str() + " was interpreted by Assimp ambiguously. The resulting texture file, if produced, may be incorrect for several reasons, such as color space inconsistency. Please use either unembedded textures or embedded textures in a compressed format, such as .png.", Brawler::Win32::ConsoleFormat::WARNING);
+		Util::Win32::WriteFormattedConsoleMessage(std::string{ "WARNING: The embedded texture " } + embeddedTexture.mFilename.C_Str() + " was interpreted by Assimp ambiguously. The resulting texture file, if produced, may be incorrect for several reasons, such as color space inconsistency. Please use either unembedded textures or embedded textures in a compressed format, such as .png.", Brawler::Win32::ConsoleFormat::WARNING);
 
-		assert(std::strcmp(mTexturePtr->achFormatHint, "argb8888") == 0 && "ERROR: Assimp's documentation was lying about its embedded texture format!");
+		assert(std::strcmp(embeddedTexture.achFormatHint, "argb8888") == 0 && "ERROR: Assimp's documentation was lying about its embedded texture format!");
 
 		// Create a copy of the texture data for swizzling.
-		const std::size_t textureSize = static_cast<std::size_t>(mTexturePtr->mWidth) * static_cast<std::size_t>(mTexturePtr->mHeight);
+		const std::size_t textureSize = static_cast<std::size_t>(embeddedTexture.mWidth) * static_cast<std::size_t>(embeddedTexture.mHeight);
 		std::vector<aiTexel> swizzledTexelArr{};
 		swizzledTexelArr.resize(textureSize);
 
-		std::memcpy(swizzledTexelArr.data(), mTexturePtr->pcData, textureSize * sizeof(aiTexel));
+		std::memcpy(swizzledTexelArr.data(), embeddedTexture.pcData, textureSize * sizeof(aiTexel));
 
 		for (auto& texel : swizzledTexelArr)
 		{
@@ -357,8 +361,8 @@ namespace Brawler
 		}
 
 		const DirectX::Image embeddedImage{
-			.width = mTexturePtr->mWidth,
-			.height = mTexturePtr->mHeight,
+			.width = embeddedTexture.mWidth,
+			.height = embeddedTexture.mHeight,
 
 			// Assimp's documentation states nothing about the color space in which these
 			// embedded texel values lie in. We'll assume that it is in sRGB space, since
@@ -367,8 +371,8 @@ namespace Brawler
 			// incorrect.
 			.format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
 
-			.rowPitch = static_cast<std::size_t>(mTexturePtr->mWidth) * sizeof(aiTexel),
-			.slicePitch = static_cast<std::size_t>(mTexturePtr->mWidth) * static_cast<std::size_t>(mTexturePtr->mHeight) * sizeof(aiTexel),
+			.rowPitch = static_cast<std::size_t>(embeddedTexture.mWidth) * sizeof(aiTexel),
+			.slicePitch = static_cast<std::size_t>(embeddedTexture.mWidth) * static_cast<std::size_t>(embeddedTexture.mHeight) * sizeof(aiTexel),
 			.pixels = reinterpret_cast<std::uint8_t*>(swizzledTexelArr.data())
 		};
 

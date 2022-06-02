@@ -230,15 +230,27 @@ namespace Brawler
 			// *LOCKED*
 			//
 			// This function is called from a locked context.
-			
-			Brawler::D3D12Resource* const d3dCounterResourcePtr = (uavInfo.UAVCounter.HasValue() ? &(uavInfo.UAVCounter->GetD3D12Resource()) : nullptr);
 
-			Util::Engine::GetD3D12Device().CreateUnorderedAccessView(
-				&(uavInfo.GPUResourcePtr->GetD3D12Resource()),
-				d3dCounterResourcePtr,
-				&(uavInfo.UAVDesc),
-				GetCPUDescriptorHandle(index)
-			);
+			if (uavInfo.GPUResourcePtr != nullptr) [[likely]]
+			{
+				Brawler::D3D12Resource* const d3dCounterResourcePtr = (uavInfo.UAVCounter.HasValue() ? &(uavInfo.UAVCounter->GetD3D12Resource()) : nullptr);
+
+				Util::Engine::GetD3D12Device().CreateUnorderedAccessView(
+					&(uavInfo.GPUResourcePtr->GetD3D12Resource()),
+					d3dCounterResourcePtr,
+					&(uavInfo.UAVDesc),
+					GetCPUDescriptorHandle(index)
+				);
+			}
+			else [[unlikely]]
+			{
+				Util::Engine::GetD3D12Device().CreateUnorderedAccessView(
+					nullptr,
+					nullptr,
+					&(uavInfo.UAVDesc),
+					GetCPUDescriptorHandle(index)
+				);
+			}
 		}
 	}
 }

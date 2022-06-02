@@ -8,12 +8,11 @@ module;
 export module Brawler.BC7ImageCompressor;
 import Brawler.D3D12.StructuredBufferSubAllocation;
 import Brawler.D3D12.ConstantBufferSubAllocation;
-import Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.D3D12.RenderPassBundle;
 import Brawler.D3D12.Texture2D;
 import Brawler.D3D12.DescriptorTableBuilder;
 import Brawler.D3D12.BufferResource;
-import Brawler.D3D12.BufferSubAllocationReservation;
+import Brawler.D3D12.BufferSubAllocationReservationHandle;
 
 namespace Brawler
 {
@@ -93,7 +92,7 @@ export namespace Brawler
 	public:
 		struct InitInfo
 		{
-			D3D12::TextureSubResource SrcTextureSubResource;
+			D3D12::Texture2DSubResource SrcTextureSubResource;
 			DXGI_FORMAT DesiredFormat;
 		};
 
@@ -106,7 +105,7 @@ export namespace Brawler
 		BC7ImageCompressor(BC7ImageCompressor&& rhs) noexcept = default;
 		BC7ImageCompressor& operator=(BC7ImageCompressor&& rhs) noexcept = default;
 
-		D3D12::BufferSubAllocationReservation AddCompressionRenderPasses(D3D12::FrameGraphBuilder& frameGraphBuilder);
+		D3D12::BufferSubAllocationReservationHandle AddCompressionRenderPasses(D3D12::FrameGraphBuilder& frameGraphBuilder);
 
 	private:
 		void CreateTransientResources(D3D12::FrameGraphBuilder& frameGraphBuilder);

@@ -76,26 +76,11 @@
     <Filter Include="Source Files\Command Line Parsing">
       <UniqueIdentifier>{5ca79dfb-240b-467d-97c3-01af256b049d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module Files\Textures\Texture Update States">
-      <UniqueIdentifier>{0c2d3c21-68c9-47e5-88b4-b733a77a4b74}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Module Files\Textures\Mip-Map Generators">
       <UniqueIdentifier>{47a5f549-eb19-4a46-9578-244887a5c9e3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module Files\Polymorphism Traits">
-      <UniqueIdentifier>{1e0d6f00-38b1-4a4e-be01-e799c7be4a54}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Render Modules">
       <UniqueIdentifier>{915515ab-d8e8-45c0-9b7d-82f2fc15dc4a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Module Files\Textures\Model Texture Builders">
-      <UniqueIdentifier>{02b5e01a-f8a6-43cf-a8af-d8d68afa8945}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Textures\Model Texture Builders">
-      <UniqueIdentifier>{fcd83040-3197-4b69-ad1b-27a8cb3b23b5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Textures\Texture Update States">
-      <UniqueIdentifier>{c4d5379b-ad8a-4e7f-99b9-8be806d4a519}</UniqueIdentifier>
     </Filter>
     <Filter Include="Module Files\Model Texture Resolvers">
       <UniqueIdentifier>{a18d667c-ebd9-4952-9972-af26ca339766}</UniqueIdentifier>
@@ -138,15 +123,6 @@
     <ClCompile Include="src\TextureTypeMap.ixx">
       <Filter>Module Files\Textures</Filter>
     </ClCompile>
-    <ClCompile Include="src\ModelTextureUtil.ixx">
-      <Filter>Module Files\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ModelTexture.ixx">
-      <Filter>Module Files\Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ModelTextureUtil.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="src\BTEXFileAttributes.ixx">
       <Filter>Module Files\File I/O</Filter>
     </ClCompile>
@@ -183,9 +159,6 @@
     <ClCompile Include="src\I_MaterialDefinition.ixx">
       <Filter>Module Files\Materials</Filter>
     </ClCompile>
-    <ClCompile Include="src\MaterialIDMap.ixx">
-      <Filter>Module Files\Materials</Filter>
-    </ClCompile>
     <ClCompile Include="src\Skeleton.ixx">
       <Filter>Module Files\Animations</Filter>
     </ClCompile>
@@ -213,12 +186,6 @@
     <ClCompile Include="src\ModelResolver.cpp">
       <Filter>Source Files\Mesh Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\BCTextureCompressionContext.ixx">
-      <Filter>Module Files\Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BCTextureCompressor.ixx">
-      <Filter>Module Files\Textures</Filter>
-    </ClCompile>
     <ClCompile Include="src\BC7ImageCompressor.ixx">
       <Filter>Module Files\Textures</Filter>
     </ClCompile>
@@ -230,9 +197,6 @@
     </ClCompile>
     <ClCompile Include="src\ModelExportUtil.cpp">
       <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BC7CompressionRenderModule.ixx">
-      <Filter>Module Files\Render Modules</Filter>
     </ClCompile>
     <ClCompile Include="src\MeshAttributePointerDescriptor.ixx">
       <Filter>Module Files\File I/O\Mesh Attribute Pointers %28MAPs%29</Filter>
@@ -252,14 +216,8 @@
     <ClCompile Include="src\LODResolver.cpp">
       <Filter>Source Files\Mesh Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\ModelTextureDatabase.ixx">
-      <Filter>Module Files\Textures</Filter>
-    </ClCompile>
     <ClCompile Include="src\MeshResolverCollection.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MeshResolverCollection.cpp">
-      <Filter>Source Files\Mesh Parsing</Filter>
     </ClCompile>
     <ClCompile Include="src\CommandLineParser.ixx">
       <Filter>Module Files\Command Line Parsing</Filter>
@@ -276,53 +234,17 @@
     <ClCompile Include="src\ImportedMesh.cpp">
       <Filter>Source Files\Mesh Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\ModelTextureLUT.ixx">
-      <Filter>Module Files\Textures</Filter>
-    </ClCompile>
     <ClCompile Include="src\LODScene.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
     </ClCompile>
     <ClCompile Include="src\LaunchParams.cpp">
       <Filter>Source Files\Command Line Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\MipMapGeneration.ixx">
-      <Filter>Module Files\Textures\Mip-Map Generators</Filter>
-    </ClCompile>
     <ClCompile Include="src\GenericMipMapGenerator.ixx">
       <Filter>Module Files\Textures\Mip-Map Generators</Filter>
     </ClCompile>
     <ClCompile Include="src\I_MaterialDefinition.cpp">
       <Filter>Source Files\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ModelTextureHandle.ixx">
-      <Filter>Module Files\Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\I_ModelTextureUpdateState.ixx">
-      <Filter>Module Files\Textures\Texture Update States</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ModelTextureUpdateStateID.ixx">
-      <Filter>Module Files\Textures\Texture Update States</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MipMapGenerationModelTextureUpdateState.ixx">
-      <Filter>Module Files\Textures\Texture Update States</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FormatConversionModelTextureUpdateState.ixx">
-      <Filter>Module Files\Textures\Texture Update States</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AwaitingSerializationModelTextureUpdateState.ixx">
-      <Filter>Module Files\Textures\Texture Update States</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ModelTextureUpdateStateTraits.ixx">
-      <Filter>Module Files\Polymorphism Traits</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BC7CompressionEventHandle.ixx">
-      <Filter>Module Files\Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BC7CompressionEventHandle.cpp">
-      <Filter>Source Files\Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BC7CompressionRenderModule.cpp">
-      <Filter>Source Files\Render Modules</Filter>
     </ClCompile>
     <ClCompile Include="src\MeshResolverBase.cpp">
       <Filter>Source Files\Mesh Parsing</Filter>
@@ -338,24 +260,6 @@
     </ClCompile>
     <ClCompile Include="src\AssimpMaterialKeyID.ixx">
       <Filter>Module Files\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="src\I_ModelTextureBuilder.ixx">
-      <Filter>Module Files\Textures\Model Texture Builders</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ExternalTextureModelTextureBuilder.ixx">
-      <Filter>Module Files\Textures\Model Texture Builders</Filter>
-    </ClCompile>
-    <ClCompile Include="src\EmbeddedTextureModelTextureBuilder.ixx">
-      <Filter>Module Files\Textures\Model Texture Builders</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MaterialColorModelTextureBuilder.ixx">
-      <Filter>Module Files\Textures\Model Texture Builders</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ModelTextureBuilderCollection.ixx">
-      <Filter>Module Files\Textures\Model Texture Builders</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FormatConversionModelTextureUpdateState.cpp">
-      <Filter>Source Files\Textures\Texture Update States</Filter>
     </ClCompile>
     <ClCompile Include="src\AssimpMaterials.ixx">
       <Filter>Module Files\Materials</Filter>
@@ -383,6 +287,21 @@
     </ClCompile>
     <ClCompile Include="src\OpaqueDiffuseModelTextureResolver.cpp">
       <Filter>Source Files\Model Texture Resolvers\Opaque Diffuse</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpaqueDiffuseSourceTextureUpload.cpp">
+      <Filter>Source Files\Model Texture Resolvers\Opaque Diffuse</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpaqueDiffuseBC7Compression.cpp">
+      <Filter>Source Files\Model Texture Resolvers\Opaque Diffuse</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpaqueDiffuseMipMapping.cpp">
+      <Filter>Source Files\Model Texture Resolvers\Opaque Diffuse</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpaqueDiffuseReadBackBufferCopy.cpp">
+      <Filter>Source Files\Model Texture Resolvers\Opaque Diffuse</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MipMapGeneration.ixx">
+      <Filter>Module Files\Textures\Mip-Map Generators</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

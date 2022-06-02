@@ -56,7 +56,7 @@ namespace Brawler
 		mTableBuilderInfo()
 	{}
 
-	D3D12::BufferSubAllocationReservation BC7ImageCompressor::AddCompressionRenderPasses(D3D12::FrameGraphBuilder& frameGraphBuilder)
+	D3D12::BufferSubAllocationReservationHandle BC7ImageCompressor::AddCompressionRenderPasses(D3D12::FrameGraphBuilder& frameGraphBuilder)
 	{
 		CreateTransientResources(frameGraphBuilder);
 		AddImageCompressionRenderPassBundles(frameGraphBuilder);
@@ -195,7 +195,7 @@ namespace Brawler
 			cbCopyRenderPass.AddResourceDependency(mResourceInfo.ConstantBufferSubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST);
 			cbCopyRenderPass.AddResourceDependency(mResourceInfo.ConstantBufferCopySubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE);
 
-			const Brawler::D3D12_RESOURCE_DESC& srcTextureDesc{ mInitInfo.SrcTextureSubAllocation.GetResourceDescription() };
+			const Brawler::D3D12_RESOURCE_DESC& srcTextureDesc{ mInitInfo.SrcTextureSubResource.GetResourceDescription() };
 			const std::uint32_t textureWidth = static_cast<std::uint32_t>(srcTextureDesc.Width);
 
 			ConstantsBC7 cbData{
@@ -312,7 +312,7 @@ namespace Brawler
 					"BC7 Image Compressor - Mode 2 Pass (BC7_TRY_MODE_02)"
 				};
 
-				const auto createRenderPassMode13702Lambda = [this, startBlockID, numBlocksInCurrBatch, &srcTextureSubResource, &compressionBundle, &RENDER_PASS_NAME_ARRAY] <Brawler::PSOs::PSOID PSOIdentifier, std::uint32_t ModeID, std::size_t RenderPassNameIndex> ()
+				const auto createRenderPassMode13702Lambda = [this, startBlockID, numBlocksInCurrBatch, &compressionBundle, &RENDER_PASS_NAME_ARRAY] <Brawler::PSOs::PSOID PSOIdentifier, std::uint32_t ModeID, std::size_t RenderPassNameIndex> ()
 				{
 					enum class ErrorBindingMode
 					{

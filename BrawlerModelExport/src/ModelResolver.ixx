@@ -25,8 +25,6 @@ export namespace Brawler
 
 	private:
 		void InitializeLODResolvers();
-		void InitializeModelTextures();
-		void CreateModelTextureBuilders();
 
 	private:
 		std::vector<std::unique_ptr<LODResolver>> mLODResolverPtrArr;

@@ -1,40 +1,54 @@
 module;
 #include <vector>
-#include <memory>
-#include <variant>
-#include <cassert>
 #include <stdexcept>
 #include <assimp/mesh.h>
 
 export module Brawler.MeshResolverCollection;
-import Brawler.StaticMeshResolver;
 import Brawler.Functional;
 import Brawler.ImportedMesh;
 import Util.General;
-import Brawler.ModelTextureBuilderCollection;
+import Brawler.MeshResolverBase;
+import Brawler.MeshTypeID;
+import Brawler.JobSystem;
+
+export namespace Brawler
+{
+	class I_MeshResolverCollection
+	{
+	protected:
+		I_MeshResolverCollection() = default;
+
+	public:
+		virtual ~I_MeshResolverCollection() = default;
+
+		I_MeshResolverCollection(const I_MeshResolverCollection& rhs) = delete;
+		I_MeshResolverCollection& operator=(const I_MeshResolverCollection& rhs) = delete;
+
+		I_MeshResolverCollection(I_MeshResolverCollection&& rhs) noexcept = default;
+		I_MeshResolverCollection& operator=(I_MeshResolverCollection&& rhs) noexcept = default;
+
+		virtual void CreateMeshResolverForImportedMesh(ImportedMesh&& mesh) = 0;
+
+		virtual void Update() = 0;
+		virtual bool IsReadyForSerialization() const = 0;
+
+		virtual std::size_t GetMeshResolverCount() const = 0;
+	};
+}
+
+// -------------------------------------------------------------------------------------------------------------
 
 namespace Brawler
 {
-	using RecognizedMeshResolverTuple = std::tuple<
-		StaticMeshResolver
-	>;
-
 	template <typename T>
-	struct MeshResolverArrayTupleSolver
-	{};
-
-	template <typename... MeshResolverTypes>
-	struct MeshResolverArrayTupleSolver<std::tuple<MeshResolverTypes...>>
-	{
-		using VariantType = std::variant<std::monostate, std::vector<MeshResolverTypes>...>;
-	};
-	
-	using MeshResolverArrayVariant = typename MeshResolverArrayTupleSolver<RecognizedMeshResolverTuple>::VariantType;
+	concept IsMeshResolver = std::derived_from<T, MeshResolverBase<T>>;
 }
 
 export namespace Brawler
 {
-	class MeshResolverCollection
+	template <typename T>
+		requires IsMeshResolver<T>
+	class MeshResolverCollection final : public I_MeshResolverCollection
 	{
 	public:
 		MeshResolverCollection() = default;
@@ -45,43 +59,15 @@ export namespace Brawler
 		MeshResolverCollection(MeshResolverCollection&& rhs) noexcept = default;
 		MeshResolverCollection& operator=(MeshResolverCollection&& rhs) noexcept = default;
 
-		void CreateMeshResolverForImportedMesh(ImportedMesh&& mesh);
+		void CreateMeshResolverForImportedMesh(ImportedMesh&& mesh) override;
 
-		ModelTextureBuilderCollection CreateModelTextureBuilders();
+		void Update() override;
+		bool IsReadyForSerialization() const override;
 
-		void Update();
-		bool IsReadyForSerialization() const;
-
-		std::size_t GetMeshResolverCount() const;
+		std::size_t GetMeshResolverCount() const override;
 
 	private:
-		/// <summary>
-		/// Executes the callback lambda represented by callback on each mesh resolver in this
-		/// MeshResolverCollection. Calling this function is preferred over manually looping over
-		/// each mesh resolver array in the MeshResolverCollection, since it ensures that no
-		/// mesh resolver type is accidentally skipped.
-		/// </summary>
-		/// <typeparam name="Callback">
-		/// - The (anonymous) type of the lambda function represented by callback.
-		/// </typeparam>
-		/// <param name="callback">
-		/// - An instance of a lambda closure which will be executed for each mesh resolver in this
-		///   MeshResolverCollection instance. 
-		/// 
-		///   Specifically, let M represent a mesh resolver. Then, for each mesh resolver in this
-		///   MeshResolverCollection instance, this function calls callback(M).
-		/// </param>
-		template <typename Callback>
-		void ForEachMeshResolver(const Callback& callback);
-
-		template <typename Callback>
-		void ForEachMeshResolver(const Callback& callback) const;
-
-		template <typename MeshResolverType, typename... Args>
-		void EmplaceMeshResolver(Args&&... args);
-
-	private:
-		MeshResolverArrayVariant mResolverArrVariant;
+		std::vector<T> mMeshResolverArr;
 	};
 }
 
@@ -89,45 +75,79 @@ export namespace Brawler
 
 namespace Brawler
 {
-	template <typename Callback>
-	void MeshResolverCollection::ForEachMeshResolver(const Callback& callback)
+	MeshTypeID GetMeshTypeID(const aiMesh& mesh)
 	{
-		std::visit([&callback] (auto& meshResolverArr)
+		// TODO: Add support for skinned meshes. For now, we assert that the mesh is not
+		// skinned and simply create a StaticMeshResolver.
+
+		if (mesh.HasBones()) [[unlikely]]
+			throw std::runtime_error{ std::string{ "ERROR: The mesh " } + mesh.mName.C_Str() + " is a skinned mesh. Skinned meshes are currently unsupported." };
+
+		return Brawler::MeshTypeID::STATIC;
+	}
+}
+
+namespace Brawler
+{
+	template <typename T>
+		requires IsMeshResolver<T>
+	void MeshResolverCollection<T>::CreateMeshResolverForImportedMesh(ImportedMesh&& mesh)
+	{
+		mMeshResolverArr.emplace_back(std::move(mesh));
+		
+		/*
+		switch (GetMeshTypeID(mesh.GetMesh()))
 		{
-			if constexpr (!std::is_same_v<std::remove_reference_t<decltype(meshResolverArr)>, std::monostate>)
-			{
-				for (auto& meshResolver : meshResolverArr)
-					callback(meshResolver);
-			}
-		}, mResolverArrVariant);
+		case Brawler::MeshTypeID::STATIC: [[likely]]
+		{
+			EmplaceMeshResolver<StaticMeshResolver>(std::move(mesh));
+			break;
+		}
+
+			// TODO: Add support for skinned meshes. For now, we assert that the mesh is not
+			// skinned and simply create a StaticMeshResolver.
+		case Brawler::MeshTypeID::SKINNED: [[fallthrough]];
+		default:
+		{
+			assert(false && "ERROR: A unique derived MeshResolverBase type was never specified for a given Brawler::MeshTypeID in MeshResolverCollection::CreateMeshResolverForImportedMesh()!");
+			std::unreachable();
+
+			break;
+		}
+		}
+		*/
 	}
 
-	template <typename Callback>
-	void MeshResolverCollection::ForEachMeshResolver(const Callback& callback) const
+	template <typename T>
+		requires IsMeshResolver<T>
+	void MeshResolverCollection<T>::Update()
 	{
-		std::visit([&callback] (const auto& meshResolverArr)
-		{
-			if constexpr (!std::is_same_v<std::remove_cvref_t<decltype(meshResolverArr)>, std::monostate>)
-			{
-				for (const auto& meshResolver : meshResolverArr)
-					callback(meshResolver);
-			}
-		}, mResolverArrVariant);
+		Brawler::JobGroup meshResolverUpdateGroup{};
+		meshResolverUpdateGroup.Reserve(GetMeshResolverCount());
+
+		for (auto& meshResolver : mMeshResolverArr)
+			meshResolverUpdateGroup.AddJob([&meshResolver] () { meshResolver.Update(); });
+
+		meshResolverUpdateGroup.ExecuteJobs();
 	}
 
-	template <typename MeshResolverType, typename... Args>
-	void MeshResolverCollection::EmplaceMeshResolver(Args&&... args)
+	template <typename T>
+		requires IsMeshResolver<T>
+	bool MeshResolverCollection<T>::IsReadyForSerialization() const
 	{
-		// The first MeshResolver to be created decides the type of this
-		// MeshResolverCollection.
-		if (mResolverArrVariant.index() == 0) [[unlikely]]
-			mResolverArrVariant = std::vector<MeshResolverType>{};
+		for (const auto& meshResolver : mMeshResolverArr)
+		{
+			if (!meshResolver.IsReadyForSerialization())
+				return false;
+		}
 
-		std::vector<MeshResolverType>* meshResolverArrPtr = std::get_if<std::vector<MeshResolverType>>(std::addressof(mResolverArrVariant));
+		return true;
+	}
 
-		if (meshResolverArrPtr != nullptr) [[likely]]
-			meshResolverArrPtr->emplace_back(std::forward<Args>(args)...);
-		else [[unlikely]]
-			throw std::runtime_error{ "ERROR: An LOD mesh which was considered to be of multiple different mesh formats was detected! (All meshes within an LOD mesh must be of the same mesh format, but different LOD meshes can have different mesh formats.)" };
+	template <typename T>
+		requires IsMeshResolver<T>
+	std::size_t MeshResolverCollection<T>::GetMeshResolverCount() const
+	{
+		return mMeshResolverArr.size();
 	}
 }

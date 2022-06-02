@@ -13,38 +13,39 @@ module;
 module Brawler.OpaqueDiffuseModelTextureResolver;
 import Brawler.AssimpTextureConverter;
 import Brawler.AssimpMaterials;
-import Brawler.D3D12.BufferResourceInitializationInfo;
-import Util.Engine;
-import Util.Math;
 import Util.General;
+import Brawler.Application;
 import Brawler.D3D12.Renderer;
 import Brawler.ModelTextureResolutionRenderModule;
 import Brawler.D3D12.Texture2D;
-import Brawler.D3D12.Texture2DBuilders;
-import Brawler.D3D12.TextureSubResource;
 import Brawler.TextureTypeMap;
-import Brawler.D3D12.FrameGraphBuilding;
-import Brawler.D3D12.BC7ImageCompressor;
-import Brawler.D3D12.BufferSubAllocationReservation;
-
-namespace Brawler
-{
-	extern D3D12::Renderer& GetRenderer();
-}
 
 namespace Brawler
 {
 	OpaqueDiffuseModelTextureResolver::OpaqueDiffuseModelTextureResolver(const ImportedMesh& mesh) :
 		mHDiffuseTextureResolutionEvent(),
 		mOutputBuffer(nullptr),
+		mDestDiffuseScratchImage(),
 		mSrcDiffuseScratchImage(),
-		mMeshPtr(std::addressof(mesh))
+		mMeshPtr(&mesh)
+
+	// We leave the constructor empty and only perform work in the OpaqueDiffuseModelTextureResolver::Update()
+	// function in order to take advantage of concurrency, since each I_MaterialDefinition which would
+	// ordinarily own one of these is updated in parallel.
 	{}
 
 	void OpaqueDiffuseModelTextureResolver::Update()
 	{
-		if (!mHDiffuseTextureResolutionEvent.has_value())
+		if (!mHDiffuseTextureResolutionEvent.has_value()) [[unlikely]]
 			BeginDiffuseTextureResolution();
+
+		else if (mHDiffuseTextureResolutionEvent->IsEventComplete() && mOutputBuffer != nullptr)
+			CopyResolvedTextureToScratchImage();
+	}
+
+	bool OpaqueDiffuseModelTextureResolver::IsReadyForSerialization() const
+	{
+		return (mHDiffuseTextureResolutionEvent.has_value() && mHDiffuseTextureResolutionEvent->IsEventComplete() && mOutputBuffer != nullptr);
 	}
 
 	void OpaqueDiffuseModelTextureResolver::BeginDiffuseTextureResolution()
@@ -112,10 +113,10 @@ namespace Brawler
 				throw std::runtime_error{ "ERROR: An attempt was made to resolve an opaque diffuse texture for an unnamed material, but no opaque texture could be found/created!" };
 		}
 
-		const std::span<DirectX::ScratchImage> srcScratchImageSpan{ diffuseTextureConverter.GetConvertedTextureSpan() };
-		assert(!srcScratchImageSpan.empty());
+		const std::span<ConvertedAssimpTexture> srcConvertedTextureSpan{ diffuseTextureConverter.GetConvertedTextureSpan() };
+		assert(!srcConvertedTextureSpan.empty());
 
-		DirectX::ScratchImage& relevantSrcScratchImage{ srcScratchImageSpan[0] };
+		DirectX::ScratchImage& relevantSrcScratchImage{ srcConvertedTextureSpan[0].ScratchImage };
 		assert(relevantSrcScratchImage.GetImageCount() > 0);
 
 		mSrcDiffuseScratchImage = std::move(relevantSrcScratchImage);
@@ -129,226 +130,80 @@ namespace Brawler
 
 	void OpaqueDiffuseModelTextureResolver::AddTextureResolutionRenderPasses(D3D12::FrameGraphBuilder& builder)
 	{
-		// STEP 1
+		// Originally, I had all of the tasks implemented in this one file and under this one
+		// function. However, I was getting MSVC error C1605 because the resulting object file
+		// was getting too bloated for the compiler to handle. So, each step was moved to its
+		// own module implementation unit and implemented as a separate member function.
 		//
-		// Copy the DirectX::ScratchImage texture into a transient BufferResource in an UPLOAD heap.
-		// Then, copy these contents into a transient Texture2D.
+		// While it is in general nicer to have smaller functions like this, the fact that I
+		// was even hitting error C1605 kind of worries me. We'll just have to see how things
+		// turn out in practice later on.
 
-		const DirectX::Image* relevantImagePtr{ mSrcDiffuseScratchImage.GetImage(0, 0, 0) };
-		assert(relevantImagePtr != nullptr);
+		TextureResolutionContext resolutionContext{
+			.Builder{builder},
+			.CurrTexturePtr = nullptr,
+			.HBC7TextureDataReservation{}
+		};
 
-		// Make sure that the image is a power-of-two texture. We can't* do proper mip-mapping if
-		// it is not.
-		//
-		// *The MiniEngine does show a way to do mip-mapping and avoid undersampling. However, this
-		// type of mip-mapping/downsampling is much more expensive, as you need to perform multiple
-		// samples per texel of the input texture in order to not undersample.
-		if (!Util::Math::IsPowerOfTwo(relevantImagePtr->width) || !Util::Math::IsPowerOfTwo(relevantImagePtr->height)) [[unlikely]]
-			throw std::runtime_error{ "ERROR: A non-power-of-two-sized texture was detected when performing diffuse model texture resolution for opaque materials!" };
+		AddSourceTextureUploadRenderPasses(resolutionContext);
+		AddBC7CompressionRenderPasses(resolutionContext);
+		AddMipMapGenerationRenderPasses(resolutionContext);
+		AddReadBackBufferCopyRenderPasses(resolutionContext);
+	}
 
-		// We should also make sure that we are dealing with a square texture.
-		if (relevantImagePtr->width != relevantImagePtr->height) [[unlikely]]
-			throw std::runtime_error{ "ERROR: A non-square texture was detected when performing diffuse model texture resolution for opaque materials!" };
-
-		D3D12::Texture2DBuilder srcTextureBuilder{};
-		srcTextureBuilder.SetTextureDimensions(relevantImagePtr->width, relevantImagePtr->height);
-		srcTextureBuilder.SetInitialResourceState(D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST);
-
-		// We are going to be writing the texture data into buffers during BC7 image compression.
-		// If we create the texture with an _SRGB format, then shaders will convert the sRGB data
-		// into linear data when we read from the texture. This is indeed the expected behavior.
-		//
-		// However, this causes us to write *linear* color data into the buffers. Since these are
-		// buffers, the shader will *NOT* convert these values back into sRGB space. This causes the
-		// data to always be written out in linear space, which is a problem if the destination format
-		// is supposed to be an sRGB format.
-		//
-		// I believe this is why DirectXTex disables hardware color space conversion when doing BC7
-		// image compression on the GPU. I could be wrong about this, though.
-		static_assert(Brawler::GetIntermediateTextureFormat<aiTextureType::aiTextureType_DIFFUSE>() == DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, "ERROR: The current OpaqueDiffuseModelTextureResolver implementation expects the intermediate format of aiTextureType_DIFFUSE textures to be DXGI_FORMAT_R8G8B8A8_UNORM_SRGB!");
-		srcTextureBuilder.SetTextureFormat(DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM);
-
-		D3D12::Texture2D& srcTextureResource{ builder.CreateTransientResource<D3D12::Texture2D>(srcTextureBuilder) };
-		D3D12::TextureSubResource mainSrcTextureSubResource{ srcTextureResource.GetSubResource() };
-
-		std::uint64_t requiredSizeForTextureCopy = 0;
-
-		Util::Engine::GetD3D12Device().GetCopyableFootprints1(
-			&(srcTextureResource.GetResourceDescription()),
-			mainSrcTextureSubResource.GetSubResourceIndex(),
-			1,
-			0,
-			nullptr,
-			nullptr,
-			nullptr,
-			&requiredSizeForTextureCopy
-		);
-
-		// Create a transient UPLOAD BufferResource for copying the data into the texture.
-		D3D12::BufferResource& textureUploadBuffer{ builder.CreateTransientResource<D3D12::BufferResource>(D3D12::BufferResourceInitializationInfo{
-			.SizeInBytes = requiredSizeForTextureCopy,
-			.HeapType = D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_UPLOAD
-		}) };
-
-		D3D12::TextureCopyBufferSubAllocation textureCopySubAllocation{};
+	void OpaqueDiffuseModelTextureResolver::CopyResolvedTextureToScratchImage()
+	{
+		assert(mHDiffuseTextureResolutionEvent->IsEventComplete() && mOutputBuffer != nullptr);
 
 		{
-			std::optional<D3D12::TextureCopyBufferSubAllocation> optionalSubAllocation{ textureUploadBuffer.CreateBufferSubAllocation<D3D12::TextureCopyBufferSubAllocation>(mainSrcTextureSubResource) };
-			assert(optionalSubAllocation.has_value());
+			const DirectX::Image* const srcImagePtr = mSrcDiffuseScratchImage.GetImage(0, 0, 0);
+			assert(srcImagePtr != nullptr);
 
-			textureCopySubAllocation = std::move(*optionalSubAllocation);
+			// Initialize the DirectX::ScratchImage to have one image for every sub-resource of the
+			// transient Texture2D which contained our data.
+			Util::General::CheckHRESULT(mDestDiffuseScratchImage.Initialize2D(
+				Brawler::GetDesiredTextureFormat<aiTextureType::aiTextureType_DIFFUSE>(),
+				srcImagePtr->width,
+				srcImagePtr->height,
+				0,
+				mTextureCopySubAllocationArr.size(),
+				DirectX::CP_FLAGS::CP_FLAGS_NONE
+			));
 		}
 
+		// Copy the data from each TextureCopyBufferSubAllocation (i.e., each sub-resource) to
+		// its corresponding DirectX::Image. (Before you ask: No, we still don't have std::views::zip.)
+		const std::span<const DirectX::Image> destImageSpan{ mDestDiffuseScratchImage.GetImages(), mDestDiffuseScratchImage.GetImageCount() };
+		assert(destImageSpan.size() == mTextureCopySubAllocationArr.size());
+
+		for (const auto i : std::views::iota(0u, mTextureCopySubAllocationArr.size()))
 		{
-			struct TextureCopyInfo
+			const DirectX::Image& currDestImage{ destImageSpan[i] };
+			const D3D12::TextureCopyBufferSubAllocation& currSrcCopySubAllocation{ mTextureCopySubAllocationArr[i] };
+
+			std::size_t rowPitch = 0;
+			std::size_t slicePitch = 0;
+
+			Util::General::CheckHRESULT(DirectX::ComputePitch(
+				currDestImage.format,
+				currDestImage.width,
+				currDestImage.height,
+				rowPitch,
+				slicePitch
+			));
+
+			for (std::size_t currRow = 0; currRow < currDestImage.height; ++currRow)
 			{
-				D3D12::TextureCopyBufferSubAllocation TextureCopySubAllocation;
-				D3D12::TextureSubResource DestTextureSubResource;
-				const DirectX::Image& SrcImage;
-			};
-
-			D3D12::RenderPass<GPUCommandQueueType::DIRECT, TextureCopyInfo> textureCopyPass{};
-			textureCopyPass.SetRenderPassName("Opaque Diffuse Model Texture Resolver - Source Texture Copy");
-
-			// Adding resource dependencies for resources in UPLOAD or READBACK heaps in technically unnecessary,
-			// since it is an error to transition these resources out of their starting state.
-			textureCopyPass.AddResourceDependency(textureCopySubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE);
-
-			// This one, however, is mandatory.
-			textureCopyPass.AddResourceDependency(mainSrcTextureSubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST);
-
-			textureCopyPass.SetInputData(TextureCopyInfo{
-				.TextureCopySubAllocation{ std::move(textureCopySubAllocation) },
-				.DestTextureSubResource{ std::move(mainSrcTextureSubResource) },
-				.SrcImage{ *relevantImagePtr }
-				});
-
-			textureCopyPass.SetRenderPassCommands([] (D3D12::DirectContext& context, const TextureCopyInfo& copyInfo)
-			{
-				std::size_t rowPitch = 0;
-				std::size_t slicePitch = 0;
-
-				Util::General::CheckHRESULT(DirectX::ComputePitch(
-					copyInfo.SrcImage.format,
-					copyInfo.SrcImage.width,
-					copyInfo.SrcImage.height,
-					rowPitch,
-					slicePitch
-				));
-
-				// Copy the data into the UPLOAD BufferResource. Although the Brawler Engine does support writing
-				// into a temporary CPU buffer before ID3D12Resource creation, there is no real point in doing so
-				// in this case. When this function is called, however, it is guaranteed that the ID3D12Resource
-				// has been created, so we will write directly to the GPU memory.
-
-				const std::size_t rowCount = copyInfo.SrcImage.height;
-
-				for (auto currRow : std::views::iota(0u, rowCount))
-				{
-					const std::span<const std::uint8_t> currRowDataSpan{ (copyInfo.SrcImage.pixels + (rowPitch * currRow)), rowPitch };
-					copyInfo.TextureCopySubAllocation.WriteTextureData(currRow, currRowDataSpan);
-				}
-
-				// Copy the data from the UPLOAD BufferResource to the GPU texture.
-				context.CopyBufferToTexture(copyInfo.DestTextureSubResource, copyInfo.TextureCopySubAllocation);
-			});
-
-			// We actually want our RenderPassBundles to be as small as possible, since this will allow for increased
-			// transient resource aliasing.
-			D3D12::RenderPassBundle textureCopyBundle{};
-			textureCopyBundle.AddRenderPass(std::move(textureCopyPass));
-
-			builder.AddRenderPassBundle(std::move(textureCopyBundle));
-		}
-
-		// STEP 2
-		//
-		// Convert the data contained in the Texture2D to the BC7 format.
-		D3D12::BufferSubAllocationReservation bc7TextureDataReservation{ [&builder, &srcTextureResource]()
-		{
-			BC7ImageCompressor bc7Compressor{BC7ImageCompressor::InitInfo{
-				.SrcTextureSubResource{srcTextureResource.GetSubResource()},
-				.DesiredFormat = Brawler::GetDesiredTextureFormat<aiTextureType::aiTextureType_DIFFUSE>()
-			} };
-
-			return bc7Compressor.AddCompressionRenderPasses(builder);
-		}() };
-
-		// STEP 3
-		//
-		// Copy the converted buffer texture data to a transient Texture2D resource and perform generic
-		// GPU-based mip-mapping of the texture, down to a 1x1 version.
-
-		// First, we need to calculate how many mip levels our texture is going to need.
-		std::size_t numMipLevels = 1;
-
-		{
-			std::size_t currWidth = relevantImagePtr->width;
-
-			while (currWidth > 1)
-			{
-				currWidth /= 2;
-				++numMipLevels;
+				const std::span<std::uint8_t> destRowDataSpan{ (currDestImage.pixels + (currRow * rowPitch)), rowPitch };
+				currSrcCopySubAllocation.ReadTextureData(static_cast<std::uint32_t>(currRow), destRowDataSpan);
 			}
 		}
 
-		D3D12::Texture2DBuilder mipMappedTextureBuilder{};
-		mipMappedTextureBuilder.SetTextureDimensions(relevantImagePtr->width, relevantImagePtr->height);
-		mipMappedTextureBuilder.SetMipLevelCount(numMipLevels);
-		mipMappedTextureBuilder.SetTextureFormat(Brawler::GetDesiredTextureFormat<aiTextureType::aiTextureType_DIFFUSE>());
-		mipMappedTextureBuilder.SetInitialResourceState(D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST);
-
-		// We'll need to allow UAVs, since we will be writing to it during the mip-mapping process.
-		mipMappedTextureBuilder.AllowUnorderedAccessViews();
-
-		D3D12::Texture2D& mipMappedTextureResource{ builder.CreateTransientResource<D3D12::Texture2D>(mipMappedTextureBuilder) };
-
-		// Copy the converted BC7 texture data into the highest mip level of the Texture2D which we just
-		// created.
-		{
-			struct TextureCopyInfo
-			{
-				D3D12::TextureSubResource DestTextureSubResource;
-				D3D12::TextureCopyBufferSubAllocation SrcTextureCopySubAllocation;
-			};
-
-			D3D12::RenderPass<GPUCommandQueueType::DIRECT, TextureCopyInfo> bc7TextureDataCopyPass{};
-			bc7TextureDataCopyPass.SetRenderPassName("Opaque Diffuse Model Texture Resolver - BC7 Texture Data Copy");
-
-			D3D12::TextureSubResource highestMipDestSubResource{ mipMappedTextureResource.GetSubResource(0) };
-			D3D12::TextureCopyBufferSubAllocation bc7TextureCopySubAllocation{ highestMipDestSubResource };
-
-			// Move the BC7 texture data taken from the BC7ImageCompressor into the bc7TextureCopySubAllocation.
-			// This is the Brawler Engine's equivalent to a std::move() of GPU buffer memory.
-			//
-			// One might wonder how this is possible without first assigning bc7TextureCopySubAllocation a
-			// BufferResource. It is important to note that all a buffer sub-allocation represents is a way to
-			// use GPU buffer memory. BufferSubAllocationReservation instances represent actual segments of
-			// GPU buffer memory.
-			//
-			// By assigning bc7TextureCopySubAllocation a BufferSubAllocationReservation, we are giving it
-			// the segment of GPU memory created by the BC7ImageCompressor; bc7TextureCopySubAllocation now
-			// owns this memory.
-			assert(bc7TextureCopySubAllocation.IsReservationCompatible(bc7TextureDataReservation));
-			bc7TextureCopySubAllocation.AssignReservation(std::move(bc7TextureDataReservation));
-
-			bc7TextureDataCopyPass.AddResourceDependency(highestMipDestSubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST);
-			bc7TextureDataCopyPass.AddResourceDependency(bc7TextureCopySubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE);
-
-			bc7TextureDataCopyPass.SetInputData(TextureCopyInfo{
-				.DestTextureSubResource{ std::move(highestMipDestSubResource) },
-				.SrcTextureCopySubAllocation{ std::move(bc7TextureCopySubAllocation) }
-			});
-
-			bc7TextureDataCopyPass.SetRenderPassCommands([] (D3D12::DirectContext& context, const TextureCopyInfo& copyInfo)
-			{
-				context.CopyBufferToTexture(copyInfo.DestTextureSubResource, copyInfo.SrcTextureCopySubAllocation);
-			});
-
-			D3D12::RenderPassBundle bc7TextureDataCopyBundle{};
-			bc7TextureDataCopyBundle.AddRenderPass(std::move(bc7TextureDataCopyBundle));
-
-			builder.AddRenderPassBundle(std::move(bc7TextureDataCopyBundle));
-		}
+		// Delete the persistent BufferResource and all of its associated TextureCopyBufferSubAllocation
+		// instances. Not only does this tell us if we are finished with everything (assuming that
+		// mHDiffuseTextureResolutionEvent->IsEventComplete() returns true, of course), but it also
+		// frees the GPU memory reserved by the BufferResource.
+		mOutputBuffer.reset();
+		mTextureCopySubAllocationArr.clear();
 	}
 }

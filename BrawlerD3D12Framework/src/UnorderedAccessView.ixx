@@ -218,7 +218,11 @@ namespace Brawler
 		template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
 		Brawler::OptionalRef<const UAVCounterSubAllocation> UnorderedAccessView<Format, ViewDimension>::GetUAVCounter() const
 		{
-			return this->GetUAVCounterSubAllocation();
+			if constexpr (ALLOW_UAV_COUNTER)
+				return this->GetUAVCounterSubAllocation();
+
+			else
+				return Brawler::OptionalRef<const UAVCounterSubAllocation>{};
 		}
 
 		template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>

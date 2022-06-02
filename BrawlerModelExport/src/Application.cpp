@@ -6,10 +6,9 @@ module;
 #include <DirectXTex.h>
 
 module Brawler.Application;
-import Brawler.BC7CompressionRenderModule;
+import Brawler.ModelTextureResolutionRenderModule;
 import Util.Win32;
 import Brawler.JobGroup;
-import Brawler.ModelTextureDatabase;
 
 #pragma push_macro("AddJob")
 #undef AddJob
@@ -40,7 +39,7 @@ namespace Brawler
 		mRenderer.Initialize();
 
 		// Add the I_RenderModules used by the application.
-		mRenderer.AddRenderModule<BC7CompressionRenderModule>();
+		mRenderer.AddRenderModule<ModelTextureResolutionRenderModule>();
 	}
 
 	void Application::Run(LaunchParams&& launchParams)
@@ -107,20 +106,7 @@ namespace Brawler
 
 	void Application::UpdateModelConversionComponents()
 	{
-		Brawler::JobGroup updateComponentsGroup{};
-		updateComponentsGroup.Reserve(2);
-
-		updateComponentsGroup.AddJob([this] ()
-		{
-			mModelResolver.Update();
-		});
-
-		updateComponentsGroup.AddJob([] ()
-		{
-			ModelTextureDatabase::GetInstance().UpdateModelTextures();
-		});
-
-		updateComponentsGroup.ExecuteJobs();
+		mModelResolver.Update();
 	}
 
 	void Application::ProcessFrame()
@@ -131,7 +117,7 @@ namespace Brawler
 
 	bool Application::IsModelReadyForSerialization() const
 	{
-		return (mModelResolver.IsReadyForSerialization() && ModelTextureDatabase::GetInstance().AreModelTexturesReadyForSerialization());
+		return mModelResolver.IsReadyForSerialization();
 	}
 
 	Application& GetApplication()

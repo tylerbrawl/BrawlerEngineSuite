@@ -87,7 +87,7 @@ export namespace Brawler
 			template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
 			void CreateUnorderedAccessView(const std::uint32_t index, const UnorderedAccessView<Format, ViewDimension>& uav);
 
-			template <D3D12_UAV_DIMENSION ViewDimension>
+			template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
 			void NullifyUnorderedAccessView(const std::uint32_t index);
 
 			/// <summary>
@@ -162,6 +162,155 @@ namespace Brawler
 {
 	namespace D3D12
 	{
+		// Even if we bind a NULL UAV descriptor to the pipeline, we still need to provide a UAV description
+		// which could theoretically be used to create an actual UAV. We define these descriptions here.
+		
+		template <DXGI_FORMAT ViewFormat, D3D12_UAV_DIMENSION Dimension>
+		struct NullUAVDescInfo
+		{};
+
+		template <DXGI_FORMAT ViewFormat>
+		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_BUFFER>
+		{
+		private:
+			static consteval D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+			{
+				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
+				nullUAVDesc.Format = ViewFormat;
+				nullUAVDesc.ViewDimension = D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_BUFFER;
+				nullUAVDesc.Buffer = D3D12_BUFFER_UAV{
+					.FirstElement = 0,
+					.NumElements = 0,
+
+					// According to the MSDN, StructureByteStride can only be 0 when the buffer
+					// SRV is *NOT* for a StructuredBuffer. A StructuredBuffer view both has a
+					// non-zero StructureByteStride and a Format of DXGI_FORMAT_UNKNOWN.
+					.StructureByteStride = (ViewFormat == DXGI_FORMAT::DXGI_FORMAT_UNKNOWN ? 1 : 0),
+
+					.CounterOffsetInBytes = 0
+				};
+
+				return nullUAVDesc;
+			}
+
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC NULL_UAV_DESC{ CreateNullUAVDescription() };
+		};
+
+		template <DXGI_FORMAT ViewFormat>
+		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE1D>
+		{
+		private:
+			static consteval D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+			{
+				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
+				nullUAVDesc.Format = ViewFormat;
+				nullUAVDesc.ViewDimension = D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE1D;
+				nullUAVDesc.Texture1D = D3D12_TEX1D_UAV{
+					.MipSlice = 0
+				};
+
+				return nullUAVDesc;
+			}
+
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC NULL_UAV_DESC{ CreateNullUAVDescription() };
+		};
+
+		template <DXGI_FORMAT ViewFormat>
+		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE1DARRAY>
+		{
+		private:
+			static consteval D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+			{
+				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
+				nullUAVDesc.Format = ViewFormat;
+				nullUAVDesc.ViewDimension = D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE1DARRAY;
+				nullUAVDesc.Texture1DArray = D3D12_TEX1D_ARRAY_UAV{
+					.MipSlice = 0,
+					.FirstArraySlice = 0,
+					.ArraySize = 0
+				};
+
+				return nullUAVDesc;
+			}
+			
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC NULL_UAV_DESC{ CreateNullUAVDescription() };
+		};
+
+		template <DXGI_FORMAT ViewFormat>
+		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2D>
+		{
+		private:
+			static consteval D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+			{
+				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
+				nullUAVDesc.Format = ViewFormat;
+				nullUAVDesc.ViewDimension = D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2D;
+				nullUAVDesc.Texture2D = D3D12_TEX2D_UAV{
+					.MipSlice = 0,
+					.PlaneSlice = 0
+				};
+
+				return nullUAVDesc;
+			}
+			
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC NULL_UAV_DESC{ CreateNullUAVDescription() };
+		};
+
+		template <DXGI_FORMAT ViewFormat>
+		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2DARRAY>
+		{
+		private:
+			static consteval D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+			{
+				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
+				nullUAVDesc.Format = ViewFormat;
+				nullUAVDesc.ViewDimension = D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
+				nullUAVDesc.Texture2DArray = D3D12_TEX2D_ARRAY_UAV{
+					.MipSlice = 0,
+					.FirstArraySlice = 0,
+					.ArraySize = 0,
+					.PlaneSlice = 0
+				};
+
+				return nullUAVDesc;
+			}
+
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC NULL_UAV_DESC{ CreateNullUAVDescription() };
+		};
+
+		template <DXGI_FORMAT ViewFormat>
+		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE3D>
+		{
+		private:
+			static consteval D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+			{
+				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
+				nullUAVDesc.Format = ViewFormat;
+				nullUAVDesc.ViewDimension = D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE3D;
+				nullUAVDesc.Texture3D = D3D12_TEX3D_UAV{
+					.MipSlice = 0,
+					.FirstWSlice = 0,
+					.WSize = 0
+				};
+
+				return nullUAVDesc;
+			}
+			
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC NULL_UAV_DESC{ CreateNullUAVDescription() };
+		};
+	}
+}
+
+namespace Brawler
+{
+	namespace D3D12
+	{
 		template <typename DataElementType>
 		void DescriptorTableBuilder::CreateConstantBufferView(const std::uint32_t index, const ConstantBufferView<DataElementType> cbv)
 		{
@@ -205,28 +354,9 @@ namespace Brawler
 			};
 		}
 
-		template <D3D12_UAV_DIMENSION ViewDimension>
+		template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
 		void DescriptorTableBuilder::NullifyUnorderedAccessView(const std::uint32_t index)
 		{
-			// Even if we bind a NULL descriptor to the pipeline, we still need to provide a UAV description
-			// which could theoretically be used to create an actual UAV. We define these descriptions here.
-
-			template <D3D12_UAV_DIMENSION Dimension>
-			struct NullDescInfo
-			{};
-
-			template <>
-			struct NullDescInfo<D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_BUFFER>
-			{
-				static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC NULL_UAV_DESC{
-					.Format = DXGI_FORMAT::DXGI_FORMAT_UNKNOWN,
-					.ViewDimension = D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_BUFFER,
-					.Buffer{
-
-}
-				}
-			};
-			
 			assert(!mDescriptorTable.has_value() && "ERROR: DescriptorTableBuilder::NullifyUnorderedAccessView() was called after DescriptorTableBuilder::GetDescriptorTable()!");
 			assert(index < mDescriptorInfoArr.size());
 
@@ -236,7 +366,11 @@ namespace Brawler
 
 			const std::scoped_lock<std::mutex> lock{ mTableCreationCritSection };
 
-			mDescriptor
+			mDescriptorInfoArr[index] = UAVInfo{
+				.GPUResourcePtr = nullptr,
+				.UAVCounter{},
+				.UAVDesc{ NullUAVDescInfo<Format, ViewDimension>::NULL_UAV_DESC }
+			};
 		}
 	}
 }

@@ -294,7 +294,6 @@
     <ClCompile Include="src\HLSLUtil.ixx" />
     <ClCompile Include="src\I_BufferSubAllocation.ixx" />
     <ClCompile Include="src\BufferSubAllocationManager.cpp" />
-    <ClCompile Include="src\BufferSubAllocationManager.ixx" />
     <ClCompile Include="src\CommittedD3D12ResourceContainer.cpp" />
     <ClCompile Include="src\CommittedD3D12ResourceContainer.ixx" />
     <ClCompile Include="src\ConstantBufferSubAllocation.ixx" />

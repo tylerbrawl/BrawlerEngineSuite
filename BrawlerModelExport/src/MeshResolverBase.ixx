@@ -4,7 +4,7 @@ module;
 export module Brawler.MeshResolverBase;
 import Brawler.I_MaterialDefinition;
 import Brawler.ImportedMesh;
-import Brawler.ModelTextureBuilderCollection;
+import Brawler.JobSystem;
 
 export namespace Brawler
 {
@@ -24,8 +24,6 @@ export namespace Brawler
 
 		MeshResolverBase(MeshResolverBase&& rhs) noexcept = default;
 		MeshResolverBase& operator=(MeshResolverBase&& rhs) noexcept = default;
-
-		ModelTextureBuilderCollection CreateModelTextureBuilders();
 
 		void Update();
 		bool IsReadyForSerialization() const;
@@ -58,19 +56,24 @@ namespace Brawler
 		mMaterialDefinitionPtr(CreateMaterialDefinition(mesh)),
 		mImportedMesh(std::move(mesh))
 	{}
-
-	template <typename DerivedClass>
-	ModelTextureBuilderCollection MeshResolverBase<DerivedClass>::CreateModelTextureBuilders()
-	{
-		return mMaterialDefinitionPtr->CreateModelTextureBuilders();
-	}
 	
 	template <typename DerivedClass>
 	void MeshResolverBase<DerivedClass>::Update()
 	{
-		mMaterialDefinitionPtr->Update();
-		
-		static_cast<DerivedClass*>(this)->UpdateIMPL();
+		Brawler::JobGroup meshResolverUpdateGroup{};
+		meshResolverUpdateGroup.Reserve(2);
+
+		meshResolverUpdateGroup.AddJob([this] ()
+		{
+			mMaterialDefinitionPtr->Update();
+		});
+
+		meshResolverUpdateGroup.AddJob([this] ()
+		{
+			static_cast<DerivedClass*>(this)->UpdateIMPL();
+		});
+
+		meshResolverUpdateGroup.ExecuteJobs();
 	}
 
 	template <typename DerivedClass>

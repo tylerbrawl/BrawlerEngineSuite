@@ -4,8 +4,7 @@ module;
 #include <DirectXTex.h>
 
 export module Brawler.TextureTypeMap;
-import Brawler.MipMapGeneration;
-import Brawler.AssimpMaterialKeyID;
+import Brawler.AssimpMaterials;
 
 export namespace Brawler
 {
@@ -54,33 +53,17 @@ namespace Brawler
 {
 	namespace IMPL
 	{
-		template <typename MipMapGeneratorType>
-		concept IsMipMapGenerator = requires (MipMapGeneratorType generator, const DirectX::ScratchImage& srcTexture)
-		{
-			// void MipMapGeneratorType::Update(const DirectX::ScratchImage& srcTexture)
-			{ generator.Update(srcTexture) } -> std::same_as<void>;
-
-			// bool-ish MipMapGeneratorType::IsMipMapGenerationFinished() const
-			{ std::as_const(generator).IsMipMapGenerationFinished() } -> std::convertible_to<bool>;
-
-			// DirectX::ScratchImage MipMapGeneratorType::ExtractGeneratedMipMaps()
-			{ generator.ExtractGeneratedMipMaps() } -> std::same_as<DirectX::ScratchImage>;
-		};
-		
 		template <
 			DXGI_FORMAT IntermediateFormat, 
 			DXGI_FORMAT DesiredFormat,
-			Brawler::AssimpMaterialKeyID MaterialKeyID,
-			typename MipMapGeneratorType_
+			Brawler::AssimpMaterialKeyID MaterialKeyID
 		>
-			requires !Brawler::IsBlockCompressedFormat<IntermediateFormat>() && IsMipMapGenerator<MipMapGeneratorType_>
+			requires !Brawler::IsBlockCompressedFormat<IntermediateFormat>()
 		struct TextureTypeMapInstantiation
 		{
 			static constexpr DXGI_FORMAT INTERMEDIATE_FORMAT = IntermediateFormat;
 			static constexpr DXGI_FORMAT DESIRED_FORMAT = DesiredFormat;
 			static constexpr Brawler::AssimpMaterialKeyID MATERIAL_KEY_ID{ MaterialKeyID };
-
-			using MipMapGeneratorType = MipMapGeneratorType_;
 		};
 	}
 }
@@ -97,10 +80,7 @@ export namespace Brawler
 	struct TextureTypeMap<aiTextureType::aiTextureType_DIFFUSE> : public IMPL::TextureTypeMapInstantiation<
 		DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
 		DXGI_FORMAT::DXGI_FORMAT_BC7_UNORM_SRGB,
-		AssimpMaterialKeyID::COLOR_DIFFUSE,
-
-		// Albedo textures *CAN* have mip-maps created in the default fashion.
-		GenericMipMapGenerator
+		AssimpMaterialKeyID::COLOR_DIFFUSE
 	>
 	{};
 }
@@ -126,7 +106,4 @@ export namespace Brawler
 	{
 		return TextureTypeMap<TextureType>::MATERIAL_KEY_ID;
 	}
-
-	template <aiTextureType TextureType>
-	using ModelTextureMipMapGeneratorType = typename TextureTypeMap<TextureType>::MipMapGeneratorType;
 }

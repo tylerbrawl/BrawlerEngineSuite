@@ -6,7 +6,7 @@ module;
 #include "DxDef.h"
 
 module Brawler.D3D12.I_BufferSubAllocation;
-import Brawler.D3D12.BufferSubAllocationManager;
+import Brawler.D3D12.BufferResource;
 import Brawler.D3D12.BufferSubAllocationReservation;
 
 namespace Brawler
@@ -43,17 +43,17 @@ namespace Brawler
 			return (mHReservation->GetBufferSubAllocationManager().GetBufferGPUVirtualAddress() + mHReservation->GetOffsetFromBufferStart());
 		}
 
-		bool I_BufferSubAllocation::IsReservationCompatible(const BufferSubAllocationReservation& reservation) const
+		bool I_BufferSubAllocation::IsReservationCompatible(const BufferSubAllocationReservationHandle& hReservation) const
 		{
 			// A BufferSubAllocationReservation is compatible with this sub-allocation if it is both large
 			// enough to store all of its relevant data and aligned to the required data placement alignment.
 
-			return ((reservation.GetOffsetFromBufferStart() % GetRequiredDataPlacementAlignment() == 0) && (reservation.GetReservationSize() >= GetSubAllocationSize()));
+			return ((hReservation->GetOffsetFromBufferStart() % GetRequiredDataPlacementAlignment() == 0) && (hReservation->GetReservationSize() >= GetSubAllocationSize()));
 		}
 
 		void I_BufferSubAllocation::AssignReservation(BufferSubAllocationReservationHandle&& hReservation)
 		{
-			assert(IsReservationCompatible(*hReservation) && "ERROR: An attempt was made to assign an incompatible BufferSubAllocationReservation to a (derived) BaseBufferSubAllocation object!");
+			assert(IsReservationCompatible(hReservation) && "ERROR: An attempt was made to assign an incompatible BufferSubAllocationReservation to a (derived) BaseBufferSubAllocation object!");
 			mHReservation = std::move(hReservation);
 
 			OnReservationAssigned();

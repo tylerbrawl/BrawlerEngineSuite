@@ -9,9 +9,7 @@ module Brawler.ModelResolver;
 import Brawler.JobGroup;
 import Brawler.LaunchParams;
 import Util.ModelExport;
-import Brawler.ModelTextureDatabase;
 import Brawler.LODScene;
-import Brawler.ModelTextureBuilderCollection;
 
 #pragma push_macro("AddJob")
 #undef AddJob
@@ -21,7 +19,6 @@ namespace Brawler
 	void ModelResolver::Initialize()
 	{
 		InitializeLODResolvers();
-		InitializeModelTextures();
 	}
 
 	void ModelResolver::Update()
@@ -73,50 +70,6 @@ namespace Brawler
 		}
 
 		lodResolverCreationGroup.ExecuteJobs();
-	}
-
-	void ModelResolver::InitializeModelTextures()
-	{
-		// First, register all of the textures from all of the LODResolver instances. Then, create
-		// the intermediate scratch texture for each of these textures.
-		//
-		// These processes are separated because registering the textures is a single-threaded process,
-		// but creating the intermediate scratch textures can be done on multiple threads.
-
-		CreateModelTextureBuilders();
-		ModelTextureDatabase::GetInstance().InitializeScratchTextures();
-	}
-
-	void ModelResolver::CreateModelTextureBuilders()
-	{
-		const std::size_t lodCount = mLODResolverPtrArr.size();
-
-		Brawler::JobGroup modelTextureBuilderCreationGroup{};
-		modelTextureBuilderCreationGroup.Reserve(lodCount);
-
-		std::vector<ModelTextureBuilderCollection> builderCollectionArr{};
-		builderCollectionArr.resize(lodCount);
-
-		std::size_t currIndex = 0;
-
-		for (const auto& lodResolver : mLODResolverPtrArr)
-		{
-			ModelTextureBuilderCollection& textureBuilderCollection{ builderCollectionArr[currIndex++] };
-			modelTextureBuilderCreationGroup.AddJob([&textureBuilderCollection, lodResolverPtr = lodResolver.get()] ()
-			{
-				textureBuilderCollection = lodResolverPtr->CreateModelTextureBuilders();
-			});
-		}
-
-		modelTextureBuilderCreationGroup.ExecuteJobs();
-
-		assert(!builderCollectionArr.empty());
-		ModelTextureBuilderCollection& baseCollection{ builderCollectionArr[0] };
-
-		for (auto&& mergedCollection : builderCollectionArr | std::views::drop(1))
-			baseCollection.MergeModelTextureBuilderCollection(std::move(mergedCollection));
-
-		ModelTextureDatabase::GetInstance().CreateModelTextures(baseCollection);
 	}
 }
 

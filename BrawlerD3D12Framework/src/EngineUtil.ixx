@@ -5,13 +5,13 @@ export module Util.Engine;
 import Brawler.D3D12.BindlessSRVAllocation;
 import Brawler.D3D12.GPUVendor;
 import Brawler.D3D12.GPUCommandQueueType;
+import Brawler.D3D12.GPUCapabilities;
 
 export namespace Brawler
 {
 	namespace D3D12
 	{
 		class GPUResourceDescriptorHeap;
-		struct GPUCapabilities;
 		class GPUCommandManager;
 		class PersistentGPUResourceManager;
 		class GPUResidencyManager;

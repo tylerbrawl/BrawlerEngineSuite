@@ -5,15 +5,7 @@ module;
 
 export module Brawler.D3D12.I_BufferSubAllocation;
 export import Brawler.D3D12.BufferSubAllocationReservationHandle;
-
-export namespace Brawler
-{
-	namespace D3D12
-	{
-		class BufferResource;
-		class BufferSubAllocationManager;
-	}
-}
+import Brawler.D3D12.BufferResource;
 
 export namespace Brawler
 {
@@ -54,7 +46,7 @@ export namespace Brawler
 			virtual std::size_t GetSubAllocationSize() const = 0;
 			virtual std::size_t GetRequiredDataPlacementAlignment() const = 0;
 
-			bool IsReservationCompatible(const BufferSubAllocationReservation& reservation) const;
+			bool IsReservationCompatible(const BufferSubAllocationReservationHandle& hReservation) const;
 
 			void AssignReservation(BufferSubAllocationReservationHandle&& hReservation);
 			BufferSubAllocationReservationHandle RevokeReservation();

@@ -732,9 +732,6 @@
     <ClCompile Include="src\BufferResourceInitializationInfo.ixx">
       <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
     </ClCompile>
-    <ClCompile Include="src\BufferSubAllocationManager.ixx">
-      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
-    </ClCompile>
     <ClCompile Include="src\I_BufferSubAllocation.ixx">
       <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
     </ClCompile>

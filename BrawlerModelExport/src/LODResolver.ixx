@@ -1,11 +1,11 @@
 module;
 #include <filesystem>
+#include <memory>
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 
 export module Brawler.LODResolver;
 import Brawler.MeshResolverCollection;
-import Brawler.ModelTextureBuilderCollection;
 
 export namespace Brawler
 {
@@ -34,8 +34,6 @@ export namespace Brawler
 		/// </summary>
 		void ImportScene();
 
-		ModelTextureBuilderCollection CreateModelTextureBuilders();
-
 		void Update();
 		bool IsReadyForSerialization() const;
 
@@ -55,7 +53,7 @@ export namespace Brawler
 		Assimp::Importer mImporter;
 
 		const aiScene* mAIScenePtr;
-		MeshResolverCollection mMeshResolverCollection;
+		std::unique_ptr<I_MeshResolverCollection> mMeshResolverCollectionPtr;
 		std::uint32_t mLODLevel;
 	};
 }

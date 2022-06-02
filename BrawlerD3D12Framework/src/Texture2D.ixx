@@ -99,6 +99,7 @@ export namespace Brawler
 		class Texture2DSubResource final : public TextureSubResource
 		{
 		public:
+			Texture2DSubResource() = default;
 			Texture2DSubResource(Texture2D& texture2D, const std::uint32_t subResourceIndex);
 
 			Texture2DSubResource(const Texture2DSubResource& rhs) = default;

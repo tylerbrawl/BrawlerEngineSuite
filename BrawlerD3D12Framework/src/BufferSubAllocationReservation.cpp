@@ -5,7 +5,7 @@ module;
 
 module Brawler.D3D12.BufferSubAllocationReservation;
 import Brawler.D3D12.TLSFMemoryBlock;
-import Brawler.D3D12.BufferSubAllocationManager;
+import Brawler.D3D12.BufferResource;
 
 namespace Brawler
 {
