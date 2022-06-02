@@ -225,7 +225,7 @@ namespace Brawler
 
 				builderCreationGroup.AddJob([&currBuilder, currModulePtr] ()
 				{
-					currBuilder = currModulePtr->CreateFrameGraphBuilder();
+					currModulePtr->CreateFrameGraphBuilder(currBuilder);
 				});
 			}
 

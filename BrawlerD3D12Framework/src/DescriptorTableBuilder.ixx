@@ -12,6 +12,8 @@ import Brawler.D3D12.GPUResourceViews;
 import Brawler.D3D12.I_BufferSubAllocation;
 import Brawler.D3D12.I_GPUResource;
 import Brawler.D3D12.UAVCounterSubAllocation;
+import Brawler.D3D12.GPUCapabilities;
+import Util.Engine;
 
 namespace Brawler
 {
@@ -77,11 +79,16 @@ export namespace Brawler
 			template <typename DataElementType>
 			void CreateConstantBufferView(const std::uint32_t index, const ConstantBufferView<DataElementType> cbv);
 
+			void NullifyConstantBufferView(const std::uint32_t index);
+
 			template <DXGI_FORMAT Format, D3D12_SRV_DIMENSION ViewDimension>
 			void CreateShaderResourceView(const std::uint32_t index, const ShaderResourceView<Format, ViewDimension>& srv);
 
 			template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
 			void CreateUnorderedAccessView(const std::uint32_t index, const UnorderedAccessView<Format, ViewDimension>& uav);
+
+			template <D3D12_UAV_DIMENSION ViewDimension>
+			void NullifyUnorderedAccessView(const std::uint32_t index);
 
 			/// <summary>
 			/// If this is the first time which this function is called for this DescriptorTableBuilder
@@ -196,6 +203,40 @@ namespace Brawler
 				.UAVCounter{ uav.GetUAVCounter() },
 				.UAVDesc{ uav.CreateUAVDescription() }
 			};
+		}
+
+		template <D3D12_UAV_DIMENSION ViewDimension>
+		void DescriptorTableBuilder::NullifyUnorderedAccessView(const std::uint32_t index)
+		{
+			// Even if we bind a NULL descriptor to the pipeline, we still need to provide a UAV description
+			// which could theoretically be used to create an actual UAV. We define these descriptions here.
+
+			template <D3D12_UAV_DIMENSION Dimension>
+			struct NullDescInfo
+			{};
+
+			template <>
+			struct NullDescInfo<D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_BUFFER>
+			{
+				static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC NULL_UAV_DESC{
+					.Format = DXGI_FORMAT::DXGI_FORMAT_UNKNOWN,
+					.ViewDimension = D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_BUFFER,
+					.Buffer{
+
+}
+				}
+			};
+			
+			assert(!mDescriptorTable.has_value() && "ERROR: DescriptorTableBuilder::NullifyUnorderedAccessView() was called after DescriptorTableBuilder::GetDescriptorTable()!");
+			assert(index < mDescriptorInfoArr.size());
+
+			// Don't bother setting a NULL descriptor if we do not need to.
+			if (Util::Engine::GetGPUCapabilities().GPUResourceBindingTier == ResourceBindingTier::TIER_3) [[likely]]
+				return;
+
+			const std::scoped_lock<std::mutex> lock{ mTableCreationCritSection };
+
+			mDescriptor
 		}
 	}
 }

@@ -82,6 +82,14 @@ namespace Brawler
 		static constexpr RootSignatureID ROOT_SIGNATURE_ID = RootSignatureID::BC6H_BC7_COMPRESSION;
 		using PSOStreamType = IMPL::StandardComputePSOStream;
 	};
+
+	template <>
+	struct PSODefinition<PSOID::GENERIC_DOWNSAMPLE>
+	{
+		static constexpr std::string_view PSO_ID_STRING{ "GENERIC_DOWNSAMPLE" };
+		static constexpr RootSignatureID ROOT_SIGNATURE_ID = RootSignatureID::GENERIC_DOWNSAMPLE;
+		using PSOStreamType = IMPL::StandardComputePSOStream;
+	};
 	
 	template <>
 	struct PSODefinition<PSOID::TEST_PSO>

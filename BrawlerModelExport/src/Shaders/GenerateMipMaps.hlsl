@@ -16,7 +16,7 @@ struct MipMapGenerationInfo
 
 ConstantBuffer<MipMapGenerationInfo> MipMapConstants : register(b0, space0);
 
-static const uint THREADS_IN_GROUP = 16;
+static const uint THREADS_IN_GROUP = 64;
 
 [numthreads(8, 8, 1)]
 void main(in const uint3 DTid : SV_DispatchThreadID, in const uint2 GTid : SV_GroupThreadID)
@@ -70,12 +70,8 @@ void main(in const uint3 DTid : SV_DispatchThreadID, in const uint2 GTid : SV_Gr
 	
 	// Write out the appropriate data, but only once per OutputMip1 quad.
 	[branch]
-    if ((GTid.xy & 1) == 0)
+    if (all((GTid.xy & 1) == 0))
         OutputMip2[DTid.xy / 2] = (0.25f * (currOutputValue + adjacentXValue + adjacentYValue + diagonalValue));
-
-	[branch]  // Coherent
-	if (MipMapConstants.OutputMipLevelsCount == 2)
-        return;
 	
 	// TODO: Add support for further reduction. We should be able to support at least one more
 	// downsample within this shader easily.

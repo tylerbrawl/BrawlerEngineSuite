@@ -27,7 +27,7 @@ namespace Brawler
 			I_GPUResource(CreateInitializationInfoFromBuilder(builder))
 		{}
 
-		TextureSubResource Texture2D::GetSubResource(const std::uint32_t mipSlice)
+		Texture2DSubResource Texture2D::GetSubResource(const std::uint32_t mipSlice)
 		{
 			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
 			
@@ -38,7 +38,42 @@ namespace Brawler
 				static_cast<std::uint32_t>(GetResourceDescription().MipLevels),
 				1
 			);
-			return TextureSubResource{ *this, subResourceIndex };
+			return Texture2DSubResource{ *this, subResourceIndex };
+		}
+	}
+}
+
+namespace Brawler
+{
+	namespace D3D12
+	{
+		Texture2DSubResource::Texture2DSubResource(Texture2D& texture2D, const std::uint32_t subResourceIndex) :
+			TextureSubResource(subResourceIndex),
+			mTexturePtr(&texture2D)
+		{}
+
+		I_GPUResource& Texture2DSubResource::GetGPUResource()
+		{
+			assert(mTexturePtr != nullptr);
+			return *mTexturePtr;
+		}
+
+		const I_GPUResource& Texture2DSubResource::GetGPUResource() const
+		{
+			assert(mTexturePtr != nullptr);
+			return *mTexturePtr;
+		}
+
+		Texture2D& Texture2DSubResource::GetTexture2D()
+		{
+			assert(mTexturePtr != nullptr);
+			return *mTexturePtr;
+		}
+
+		const Texture2D& Texture2DSubResource::GetTexture2D() const
+		{
+			assert(mTexturePtr != nullptr);
+			return *mTexturePtr;
 		}
 	}
 }

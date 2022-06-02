@@ -174,14 +174,25 @@ export namespace Brawler
 			// ==================================================================
 
 		public:
-			void AssertResourceState(const I_GPUResource& resource, const D3D12_RESOURCE_STATES expectedState) const;
+			void AssertResourceState(const I_BufferSubAllocation& bufferSubAllocation, const D3D12_RESOURCE_STATES expectedState) const;
+			void AssertResourceState(const TextureSubResource& textureSubResource, const D3D12_RESOURCE_STATES expectedState) const;
 
 			void CopyBufferToTexture(const TextureSubResource& destTexture, const TextureCopyBufferSubAllocation& srcSubAllocation) const;
 			void CopyTextureToBuffer(const TextureCopyBufferSubAllocation& destSubAllocation, const TextureSubResource& srcTexture) const;
 
 			void CopyBufferToBuffer(const I_BufferSubAllocation& destSubAllocation, const I_BufferSubAllocation& srcSubAllocation) const;
 
-			void DebugResourceBarrier(const I_GPUResource& resource, const D3D12_RESOURCE_STATES beforeState, const D3D12_RESOURCE_STATES afterState) const;
+			/// <summary>
+			/// Issues the D3D12 resource barrier specified by barrier immediately on the GPU timeline.
+			/// 
+			/// This function is meant for debugging the Brawler Engine's resource state tracking system. It
+			/// should never be necessary to call this function for *ANY* barrier type if the system is working
+			/// correctly, and this function does nothing in Release builds.
+			/// </summary>
+			/// <param name="barrier">
+			/// - The CD3DX12_RESOURCE_BARRIER which is to be immediately issued on the GPU timeline.
+			/// </param>
+			void DebugResourceBarrier(const CD3DX12_RESOURCE_BARRIER& barrier) const;
 
 		private:
 			Microsoft::WRL::ComPtr<Brawler::D3D12GraphicsCommandList> mCmdList;
@@ -312,7 +323,7 @@ namespace Brawler
 		// ==================================================================
 
 		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::AssertResourceState(const I_GPUResource& resource, const D3D12_RESOURCE_STATES expectedState) const
+		void GPUCommandContext<CmdListType>::AssertResourceState(const I_BufferSubAllocation& bufferSubAllocation, const D3D12_RESOURCE_STATES expectedState) const
 		{
 			if (Util::D3D12::IsDebugLayerEnabled())
 			{
@@ -321,7 +332,21 @@ namespace Brawler
 				Microsoft::WRL::ComPtr<Brawler::D3D12DebugCommandList> debugCmdList{};
 				Util::General::CheckHRESULT(mCmdList.As(&debugCmdList));
 
-				assert(debugCmdList->AssertResourceState(&(resource.GetD3D12Resource()), D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, static_cast<std::uint32_t>(expectedState)) && "ERROR: A D3D12 resource state assertion failed! (See GPUCommandContext::AssertResourceState().)");
+				assert(debugCmdList->AssertResourceState(&(bufferSubAllocation.GetD3D12Resource()), 0, static_cast<std::uint32_t>(expectedState)) && "ERROR: A D3D12 resource state assertion failed! (See GPUCommandContext::AssertResourceState().)");
+			}
+		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::AssertResourceState(const TextureSubResource& textureSubResource, const D3D12_RESOURCE_STATES expectedState) const
+		{
+			if (Util::D3D12::IsDebugLayerEnabled())
+			{
+				assert(Util::D3D12::IsResourceStateValid(expectedState) && "ERROR: An attempt was made to check if a resource is in a given state using GPUCommandContext::AssertResourceState(), but the provided resource state was invalid!");
+
+				Microsoft::WRL::ComPtr<Brawler::D3D12DebugCommandList> debugCmdList{};
+				Util::General::CheckHRESULT(mCmdList.As(&debugCmdList));
+
+				assert(debugCmdList->AssertResourceState(&(textureSubResource.GetD3D12Resource()), textureSubResource.GetSubResourceIndex(), static_cast<std::uint32_t>(expectedState)) && "ERROR: A D3D12 resource state assertion failed! (See GPUCommandContext::AssertResourceState().)");
 			}
 		}
 
@@ -383,13 +408,10 @@ namespace Brawler
 		}
 
 		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::DebugResourceBarrier(const I_GPUResource& resource, const D3D12_RESOURCE_STATES beforeState, const D3D12_RESOURCE_STATES afterState) const
+		void GPUCommandContext<CmdListType>::DebugResourceBarrier(const CD3DX12_RESOURCE_BARRIER& barrier) const
 		{
 			if constexpr (Util::General::IsDebugModeEnabled())
-			{
-				const CD3DX12_RESOURCE_BARRIER transitionBarrier{ CD3DX12_RESOURCE_BARRIER::Transition(&(resource.GetD3D12Resource()), beforeState, afterState) };
-				mCmdList->ResourceBarrier(1, &transitionBarrier);
-			}
+				mCmdList->ResourceBarrier(1, &barrier);
 		}
 	}
 }

@@ -20,5 +20,13 @@ export namespace Brawler
 
 			COUNT_OR_ERROR
 		};
+
+		enum class GenericDownsample
+		{
+			TEXTURES_TABLE,
+			MIP_MAP_CONSTANTS,
+
+			COUNT_OR_ERROR
+		};
 	}
 }

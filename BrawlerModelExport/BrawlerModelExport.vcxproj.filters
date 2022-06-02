@@ -106,6 +106,12 @@
     <Filter Include="Source Files\Model Texture Resolvers">
       <UniqueIdentifier>{b799c220-cd9d-4afd-adca-3b97e09e4068}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Model Texture Resolvers\Opaque Diffuse">
+      <UniqueIdentifier>{748eee15-661e-41e9-ba79-c1e80cf13a05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Model Texture Resolvers\Opaque Diffuse">
+      <UniqueIdentifier>{2f514f87-f98c-4717-90a8-a4f7edaf6daa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -351,9 +357,6 @@
     <ClCompile Include="src\FormatConversionModelTextureUpdateState.cpp">
       <Filter>Source Files\Textures\Texture Update States</Filter>
     </ClCompile>
-    <ClCompile Include="src\OpaqueDiffuseModelTextureResolver.ixx">
-      <Filter>Module Files\Model Texture Resolvers</Filter>
-    </ClCompile>
     <ClCompile Include="src\AssimpMaterials.ixx">
       <Filter>Module Files\Materials</Filter>
     </ClCompile>
@@ -375,8 +378,11 @@
     <ClCompile Include="src\ModelTextureResolutionEventHandle.cpp">
       <Filter>Source Files\Model Texture Resolvers</Filter>
     </ClCompile>
+    <ClCompile Include="src\OpaqueDiffuseModelTextureResolver.ixx">
+      <Filter>Module Files\Model Texture Resolvers\Opaque Diffuse</Filter>
+    </ClCompile>
     <ClCompile Include="src\OpaqueDiffuseModelTextureResolver.cpp">
-      <Filter>Source Files\Model Texture Resolvers</Filter>
+      <Filter>Source Files\Model Texture Resolvers\Opaque Diffuse</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

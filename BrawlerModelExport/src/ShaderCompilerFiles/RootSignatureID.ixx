@@ -12,6 +12,7 @@ export namespace Brawler
 		enum class RootSignatureID
 		{
 			BC6H_BC7_COMPRESSION,
+			GENERIC_DOWNSAMPLE,
 
 			COUNT_OR_ERROR
 		};

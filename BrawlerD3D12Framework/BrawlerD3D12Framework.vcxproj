@@ -360,6 +360,7 @@
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_TRY_MODE_02.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_TRY_MODE_137.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_TRY_MODE_456.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_GENERIC_DOWNSAMPLE.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSOID.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\RootParameterEnums.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\RootSignatureDefinition.ixx" />

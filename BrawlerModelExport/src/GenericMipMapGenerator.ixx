@@ -1,19 +1,25 @@
 module;
 #include <span>
 #include <optional>
+#include <cassert>
+#include <DxDef.h>
 #include <DirectXTex.h>
 
 export module Brawler.MipMapGeneration:GenericMipMapGenerator;
-import Util.General;
-import Util.Win32;
-import Brawler.Win32.ConsoleFormat;
+import Brawler.D3D12.Texture2D;
+import Brawler.D3D12.FrameGraphBuilding;
+import Brawler.D3D12.DescriptorTableBuilder;
+import Brawler.D3D12.GPUCommandContexts;
+import Brawler.D3D12.PipelineEnums;
+import Brawler.D3D12.GPUResourceViews;
 
 export namespace Brawler
 {
+	template <DXGI_FORMAT TextureFormat>
 	class GenericMipMapGenerator
 	{
 	public:
-		GenericMipMapGenerator() = default;
+		explicit GenericMipMapGenerator(D3D12::Texture2D& textureToMipMap, const std::size_t startingMipLevel = 0);
 
 		GenericMipMapGenerator(const GenericMipMapGenerator& rhs) = delete;
 		GenericMipMapGenerator& operator=(const GenericMipMapGenerator& rhs) = delete;
@@ -21,13 +27,11 @@ export namespace Brawler
 		GenericMipMapGenerator(GenericMipMapGenerator&& rhs) noexcept = default;
 		GenericMipMapGenerator& operator=(GenericMipMapGenerator&& rhs) noexcept = default;
 
-		void Update(const DirectX::ScratchImage& srcTexture);
-		bool IsMipMapGenerationFinished() const;
-
-		DirectX::ScratchImage ExtractGeneratedMipMaps();
+		void CreateMipMapGenerationRenderPasses(D3D12::FrameGraphBuilder& frameGraphBuilder) const;
 
 	private:
-		std::optional<DirectX::ScratchImage> mGeneratedMipMapTexture;
+		D3D12::Texture2D* mTexturePtr;
+		std::size_t mStartingMipLevel;
 	};
 }
 
@@ -35,73 +39,72 @@ export namespace Brawler
 
 namespace Brawler
 {
-	void GenericMipMapGenerator::Update(const DirectX::ScratchImage& srcTexture)
+	template <DXGI_FORMAT TextureFormat>
+	GenericMipMapGenerator<TextureFormat>::GenericMipMapGenerator(D3D12::Texture2D& textureToMipMap, const std::size_t startingMipLevel) :
+		mTexturePtr(&textureToMipMap),
+		mStartingMipLevel(startingMipLevel)
 	{
-		// DirectXTex does not support generating mip-map chains directly from BC formats.
-		// We could first decompress the textures, create the chain, and then compress them 
-		// again, but this can be incredibly slow.
+		assert(mStartingMipLevel < mTexturePtr->GetResourceDescription().MipLevels && "ERROR: An out-of-bounds mip level index was specified when constructing a GenericMipMapGenerator instance!");
+	}
 
-		if (!mGeneratedMipMapTexture.has_value()) [[likely]]
+	template <DXGI_FORMAT TextureFormat>
+	void GenericMipMapGenerator<TextureFormat>::CreateMipMapGenerationRenderPasses(D3D12::FrameGraphBuilder& frameGraphBuilder) const
+	{
+		static constexpr std::size_t MAX_OUTPUT_TEXTURES_PER_PASS = 2;
+		
+		// Create a RenderPass for every mip level which we need to generate, starting from
+		// mStartingMipLevel and ending with the texture's last mip level.
+		const std::size_t numTotalMipLevels = mTexturePtr->GetResourceDescription().MipLevels;
+		std::size_t numMipLevelsToGenerate = (numTotalMipLevels - mStartingMipLevel - 1);
+
+		if (numMipLevelsToGenerate == 0) [[unlikely]]
+			return;
+
+		D3D12::RenderPassBundle mipMapGenerationBundle{};
+		std::size_t currInputMipLevel = mStartingMipLevel;
+
+		while (numMipLevelsToGenerate > 0)
 		{
-			DirectX::ScratchImage generatedTexture{};
-			
-			if constexpr (Util::General::IsDebugModeEnabled())
+			struct MipMapGenerationInfo
 			{
-				const std::span<const DirectX::Image> imageSpan{ srcTexture.GetImages(), srcTexture.GetImageCount() };
+				D3D12::Texture2DSubResource InputTextureSubResource;
+				D3D12::Texture2DSubResource OutputMip1SubResource;
+				std::optional<D3D12::Texture2DSubResource> OutputMip2SubResource;
+			};
 
-				for (const auto& image : imageSpan)
-					assert(!DirectX::IsCompressed(image.format) && "ERROR: A block-compressed image was provided for GenericMipMapGenerator::BeginMipMapGeneration()! (Did you forget to use Util::ModelTexture::CreateIntermediateTexture()?)");
+			std::size_t mipLevelsGeneratedThisPass = 0;
+
+			D3D12::RenderPass<GPUCommandQueueType::DIRECT, MipMapGenerationInfo> mipMapGenerationPass{};
+			mipMapGenerationPass.SetRenderPassName("Mip Map Generation Pass");
+
+			MipMapGenerationInfo generationInfo{};
+
+			generationInfo.InputTextureSubResource = mTexturePtr->GetSubResource(currInputMipLevel);
+			mipMapGenerationPass.AddResourceDependency(generationInfo.InputTextureSubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+			assert((currInputMipLevel + 1) < numTotalMipLevels);
+			generationInfo.OutputMip1SubResource = mTexturePtr->GetSubResource(currInputMipLevel + 1);
+			mipMapGenerationPass.AddResourceDependency(generationInfo.OutputMip1SubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			++mipLevelsGeneratedThisPass;
+
+			if ((currInputMipLevel + 2) < numTotalMipLevels)
+			{
+				generationInfo.OutputMip2SubResource = mTexturePtr->GetSubResource(currInputMipLevel + 2);
+				mipMapGenerationPass.AddResourceDependency(generationInfo.OutputMip2SubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+				++mipLevelsGeneratedThisPass;
 			}
 
-			const HRESULT hr = DirectX::GenerateMipMaps(
-				srcTexture.GetImages(),
-				srcTexture.GetImageCount(),
-				srcTexture.GetMetadata(),
-				DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT,
-				0,  // Create a full mip-map chain, down to a 1x1 texture.
-				generatedTexture
-			);
+			mipMapGenerationPass.SetInputData(std::move(generationInfo));
 
-			if (FAILED(hr)) [[unlikely]]
+			mipMapGenerationPass.SetRenderPassCommands([] (D3D12::DirectContext& context, const MipMapGenerationInfo& generationInfo)
 			{
-				// If mip-map generation failed, then send out a warning, but only if the texture should
-				// supposedly have the ability to generate mip-maps.
+				auto resourceBinder = context.SetPipelineState<Brawler::PSOs::PSOID::GENERIC_DOWNSAMPLE>();
 
-				const std::span<const DirectX::Image> imageSpan{ srcTexture.GetImages(), srcTexture.GetImageCount() };
-				bool issueWarning = true;
-
-				for (const auto& image : imageSpan)
-				{
-					if (image.width == image.height && image.width == 1)
-						issueWarning = false;
-				}
-
-				if (issueWarning) [[unlikely]]
-					Util::Win32::WriteFormattedConsoleMessage(L"WARNING: Mip-map generation for a ModelTexture failed, even though it probably shouldn't have!", Brawler::Win32::ConsoleFormat::WARNING);
-
-				generatedTexture.Initialize(srcTexture.GetMetadata());
-
-				const std::span<const DirectX::Image> destImageSpan{ generatedTexture.GetImages(), generatedTexture.GetImageCount() };
-				assert(destImageSpan.size() == imageSpan.size());
+				D3D12::DescriptorTableBuilder tableBuilder{ 3 };
+				tableBuilder.CreateShaderResourceView(0, InputTextureSubResource.CreateShaderResourceView());
+				tableBuilder.CreateUnorderedAccessView(1, OutputMip1SubResource.CreateUnorderedAccessView());
 				
-				for (std::size_t i = 0; i < destImageSpan.size(); ++i)
-					std::memcpy(destImageSpan[i].pixels, imageSpan[i].pixels, destImageSpan[i].slicePitch);
-			}
-
-			mGeneratedMipMapTexture = std::move(generatedTexture);
+			})
 		}
-	}
-
-	bool GenericMipMapGenerator::IsMipMapGenerationFinished() const
-	{
-		// The GenericMipMapGenerator does all of its work immediately on the CPU timeline, so
-		// this function always returns true.
-
-		return true;
-	}
-
-	DirectX::ScratchImage GenericMipMapGenerator::ExtractGeneratedMipMaps()
-	{
-		return std::move(*mGeneratedMipMapTexture);
 	}
 }

@@ -996,6 +996,9 @@
     <ClCompile Include="src\NZStringView.ixx">
       <Filter>Module Files\Convenience Types</Filter>
     </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_GENERIC_DOWNSAMPLE.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

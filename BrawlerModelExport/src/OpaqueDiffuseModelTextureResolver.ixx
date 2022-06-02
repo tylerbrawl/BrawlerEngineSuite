@@ -1,9 +1,13 @@
 module;
 #include <optional>
+#include <memory>
+#include <DirectXTex.h>
 
 export module Brawler.OpaqueDiffuseModelTextureResolver;
 import Brawler.ModelTextureResolutionEventHandle;
 import Brawler.ImportedMesh;
+import Brawler.D3D12.BufferResource;
+import Brawler.D3D12.FrameGraphBuilder;
 
 export namespace Brawler
 {
@@ -24,8 +28,12 @@ export namespace Brawler
 	private:
 		void BeginDiffuseTextureResolution();
 
+		void AddTextureResolutionRenderPasses(D3D12::FrameGraphBuilder& builder);
+
 	private:
-		std::optional<ModelTextureResolutionEventHandle> mHDiffuseTextureResolution;
+		std::optional<ModelTextureResolutionEventHandle> mHDiffuseTextureResolutionEvent;
+		std::unique_ptr<D3D12::BufferResource> mOutputBuffer;
+		DirectX::ScratchImage mSrcDiffuseScratchImage;
 		ImportedMesh* mMeshPtr;
 	};
 }

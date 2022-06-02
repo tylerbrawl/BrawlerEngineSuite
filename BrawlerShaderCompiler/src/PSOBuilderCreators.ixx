@@ -85,6 +85,16 @@ export namespace Brawler
 		}
 
 		template <>
+		PSOBuilder<Brawler::PSOID::GENERIC_DOWNSAMPLE> CreatePSOBuilder<Brawler::PSOID::GENERIC_DOWNSAMPLE>()
+		{
+			return CreateGeneralComputePSOBuilder<Brawler::PSOID::GENERIC_DOWNSAMPLE>(Brawler::ShaderCompilationParams{
+				.FilePath{ L"Shaders\\GenerateMipMaps.hlsl" },
+				.EntryPoint{ L"main" },
+				.MacroDefinitionArr{}
+			});
+		}
+
+		template <>
 		PSOBuilder<Brawler::PSOID::TEST_PSO> CreatePSOBuilder<Brawler::PSOID::TEST_PSO>()
 		{
 			Brawler::PSOStreamType<Brawler::PSOID::TEST_PSO> psoStream{};

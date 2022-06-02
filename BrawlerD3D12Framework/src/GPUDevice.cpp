@@ -480,6 +480,40 @@ namespace Brawler
 
 				mDeviceCapabilities.GPUResourceHeapTier = (optionsData.ResourceHeapTier == D3D12_RESOURCE_HEAP_TIER::D3D12_RESOURCE_HEAP_TIER_1 ? ResourceHeapTier::TIER_1 : ResourceHeapTier::TIER_2);
 
+				// Set the GPU Resource Binding Tier. This value describes the capabilities of binding
+				// GPU resources to the pipeline for this device. These capabilities include how large
+				// descriptor heaps can be, how much of a descriptor table can be dedicated to a given
+				// type of view, and whether or not null descriptors need to be used when not binding
+				// a resource to a specific root parameter slot.
+				switch (optionsData.ResourceBindingTier)
+				{
+				case D3D12_RESOURCE_BINDING_TIER::D3D12_RESOURCE_BINDING_TIER_1: [[unlikely]]
+				{
+					mDeviceCapabilities.GPUResourceBindingTier = ResourceBindingTier::TIER_1;
+					break;
+				}
+
+				case D3D12_RESOURCE_BINDING_TIER::D3D12_RESOURCE_BINDING_TIER_2:
+				{
+					mDeviceCapabilities.GPUResourceBindingTier = ResourceBindingTier::TIER_2;
+					break;
+				}
+
+				case D3D12_RESOURCE_BINDING_TIER::D3D12_RESOURCE_BINDING_TIER_3:
+				{
+					mDeviceCapabilities.GPUResourceBindingTier = ResourceBindingTier::TIER_3;
+					break;
+				}
+
+				default: [[unlikely]]
+				{
+					assert(false);
+					std::unreachable();
+
+					break;
+				}
+				}
+
 				// Check for supported typed UAV formats. The set specified by FORMAT_ALWAYS_SUPPORTED
 				// is always guaranteed to exist.
 

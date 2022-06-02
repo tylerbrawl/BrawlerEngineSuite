@@ -109,6 +109,71 @@ export namespace Brawler
 		}
 
 		template <>
+		RootSignatureBuilder<Brawler::RootSignatureID::GENERIC_DOWNSAMPLE> CreateRootSignatureBuilder<Brawler::RootSignatureID::GENERIC_DOWNSAMPLE>()
+		{
+			RootSignatureBuilder<RootSignatureID::GENERIC_DOWNSAMPLE> rootSigBuilder{};
+
+			/*
+			Root Parameter 0: DescriptorTable
+			{
+				STATIC_AT_EXECUTE SRV InputTexture -> Space0[t0];
+				VOLATILE UAV OutputTexture1 -> Space0[u0];
+				VOLATILE UAV OutputTexture2 -> Space0[u1];
+			};
+			*/
+			{
+				std::vector<CD3DX12_DESCRIPTOR_RANGE1> param0TableRanges{};
+				param0TableRanges.resize(2);
+
+				// Static-at-Execute Data: When the descriptor table is bound on the GPU timeline, we guarantee that InputTexture will not be
+				// written to. However, we cannot set this as completely static, because this texture may have previously been used as an
+				// output texture. This is common for mip-mapping.
+				param0TableRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAGS::D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC_WHILE_SET_AT_EXECUTE);
+
+				param0TableRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 2, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAGS::D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE);
+
+				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::GenericDownsample::TEXTURES_TABLE>(DescriptorTableInfo{
+					.DescriptorRangeArr{ std::move(param0TableRanges) },
+					.Visibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL
+				});
+			}
+
+			// Root Parameter 1: RootConstants<4> -> Space0[b0]
+			{
+				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::GenericDownsample::MIP_MAP_CONSTANTS>(RootConstantsInfo{
+					.Num32BitValues = 4,
+					.ShaderRegister = 0,
+					.RegisterSpace = 0,
+					.Visibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL
+				});
+			}
+
+			// Static Sampler 0: Binlinear Clamp
+			{
+				CD3DX12_STATIC_SAMPLER_DESC staticBilinearClampSampler{};
+				staticBilinearClampSampler.Init(
+					0,
+					D3D12_FILTER::D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT,
+					D3D12_TEXTURE_ADDRESS_MODE::D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
+					D3D12_TEXTURE_ADDRESS_MODE::D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
+					D3D12_TEXTURE_ADDRESS_MODE::D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
+					0,
+					1,
+					D3D12_COMPARISON_FUNC::D3D12_COMPARISON_FUNC_NEVER,
+					D3D12_STATIC_BORDER_COLOR::D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK,
+					0.0f,
+					D3D12_FLOAT32_MAX,
+					D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL,
+					0
+				);
+
+				rootSigBuilder.AddStaticSampler(std::move(staticBilinearClampSampler));
+			}
+
+			return rootSigBuilder;
+		}
+
+		template <>
 		RootSignatureBuilder<Brawler::RootSignatureID::TEST_ROOT_SIGNATURE> CreateRootSignatureBuilder<Brawler::RootSignatureID::TEST_ROOT_SIGNATURE>()
 		{
 			RootSignatureBuilder<RootSignatureID::TEST_ROOT_SIGNATURE> rootSigBuilder{};
