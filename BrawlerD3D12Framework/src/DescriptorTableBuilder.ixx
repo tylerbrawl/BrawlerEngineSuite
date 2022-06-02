@@ -172,8 +172,8 @@ namespace Brawler
 		template <DXGI_FORMAT ViewFormat>
 		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_BUFFER>
 		{
-		private:
-			static consteval D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
 			{
 				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
 				nullUAVDesc.Format = ViewFormat;
@@ -192,16 +192,13 @@ namespace Brawler
 
 				return nullUAVDesc;
 			}
-
-		public:
-			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC NULL_UAV_DESC{ CreateNullUAVDescription() };
 		};
 
 		template <DXGI_FORMAT ViewFormat>
 		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE1D>
 		{
-		private:
-			static consteval D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
 			{
 				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
 				nullUAVDesc.Format = ViewFormat;
@@ -212,16 +209,13 @@ namespace Brawler
 
 				return nullUAVDesc;
 			}
-
-		public:
-			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC NULL_UAV_DESC{ CreateNullUAVDescription() };
 		};
 
 		template <DXGI_FORMAT ViewFormat>
 		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE1DARRAY>
 		{
-		private:
-			static consteval D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
 			{
 				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
 				nullUAVDesc.Format = ViewFormat;
@@ -234,18 +228,15 @@ namespace Brawler
 
 				return nullUAVDesc;
 			}
-			
-		public:
-			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC NULL_UAV_DESC{ CreateNullUAVDescription() };
 		};
 
 		template <DXGI_FORMAT ViewFormat>
 		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2D>
 		{
-		private:
-			static consteval D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
 			{
-				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
+				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc;
 				nullUAVDesc.Format = ViewFormat;
 				nullUAVDesc.ViewDimension = D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2D;
 				nullUAVDesc.Texture2D = D3D12_TEX2D_UAV{
@@ -255,16 +246,13 @@ namespace Brawler
 
 				return nullUAVDesc;
 			}
-			
-		public:
-			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC NULL_UAV_DESC{ CreateNullUAVDescription() };
 		};
 
 		template <DXGI_FORMAT ViewFormat>
 		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2DARRAY>
 		{
-		private:
-			static consteval D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
 			{
 				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
 				nullUAVDesc.Format = ViewFormat;
@@ -278,16 +266,13 @@ namespace Brawler
 
 				return nullUAVDesc;
 			}
-
-		public:
-			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC NULL_UAV_DESC{ CreateNullUAVDescription() };
 		};
 
 		template <DXGI_FORMAT ViewFormat>
 		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE3D>
 		{
-		private:
-			static consteval D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
 			{
 				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
 				nullUAVDesc.Format = ViewFormat;
@@ -300,9 +285,6 @@ namespace Brawler
 
 				return nullUAVDesc;
 			}
-			
-		public:
-			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC NULL_UAV_DESC{ CreateNullUAVDescription() };
 		};
 	}
 }
@@ -364,12 +346,18 @@ namespace Brawler
 			if (Util::Engine::GetGPUCapabilities().GPUResourceBindingTier == ResourceBindingTier::TIER_3) [[likely]]
 				return;
 
+			// The MSVC refuses to let this be constexpr, even though it could/should be. There's some type
+			// of bug with the compiler which causes it to write out more data than is necessary for some
+			// structures, resulting in a buffer overflow. However, this bug only occurs in a constant-evaluated
+			// context.
+			const auto nullUAVDesc = NullUAVDescInfo<Format, ViewDimension>::CreateNullUAVDescription();
+
 			const std::scoped_lock<std::mutex> lock{ mTableCreationCritSection };
 
 			mDescriptorInfoArr[index] = UAVInfo{
 				.GPUResourcePtr = nullptr,
 				.UAVCounter{},
-				.UAVDesc{ NullUAVDescInfo<Format, ViewDimension>::NULL_UAV_DESC }
+				.UAVDesc{ nullUAVDesc }
 			};
 		}
 	}

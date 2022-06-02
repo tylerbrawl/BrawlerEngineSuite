@@ -9,6 +9,10 @@ namespace Brawler
 {
 	namespace D3D12
 	{
+		TextureSubResource::TextureSubResource(const std::uint32_t subResourceIndex) :
+			mSubResourceIndex(subResourceIndex)
+		{}
+		
 		Brawler::D3D12Resource& TextureSubResource::GetD3D12Resource() const
 		{
 			return GetGPUResource().GetD3D12Resource();

@@ -39,6 +39,24 @@ export namespace Brawler
 
 namespace Brawler
 {
+	struct MipMapGenerationInfo
+	{
+		std::unique_ptr<D3D12::DescriptorTableBuilder> TableBuilderPtr;
+		DirectX::XMUINT2 OutputDimensions;
+		std::uint32_t StartingMipLevel;
+		std::size_t NumMipLevelsGenerated;
+	};
+
+	struct MipMapConstants
+	{
+		DirectX::XMFLOAT2 InverseOutputDimensions;
+		std::uint32_t StartingMipLevel;
+		std::uint32_t OutputMipLevelCount;
+	};
+}
+
+namespace Brawler
+{
 	template <DXGI_FORMAT TextureFormat>
 	GenericMipMapGenerator<TextureFormat>::GenericMipMapGenerator(D3D12::Texture2D& textureToMipMap, const std::uint32_t startingMipLevel) :
 		mTexturePtr(&textureToMipMap),
@@ -70,14 +88,6 @@ namespace Brawler
 
 		while (numMipLevelsToGenerate > 0)
 		{
-			struct MipMapGenerationInfo
-			{
-				std::unique_ptr<D3D12::DescriptorTableBuilder> TableBuilderPtr;
-				DirectX::XMUINT2 OutputDimensions;
-				std::uint32_t StartingMipLevel;
-				std::size_t NumMipLevelsGenerated;
-			};
-
 			std::size_t mipLevelsGeneratedThisPass = 0;
 
 			D3D12::RenderPass<D3D12::GPUCommandQueueType::DIRECT, MipMapGenerationInfo> mipMapGenerationPass{};
@@ -121,13 +131,6 @@ namespace Brawler
 
 				auto resourceBinder = context.SetPipelineState<Brawler::PSOs::PSOID::GENERIC_DOWNSAMPLE>();
 				resourceBinder.BindDescriptorTable<RootParams::TEXTURES_TABLE>(generationInfo.TableBuilderPtr->GetDescriptorTable());
-
-				struct MipMapConstants
-				{
-					DirectX::XMFLOAT2 InverseOutputDimensions;
-					std::uint32_t StartingMipLevel;
-					std::uint32_t OutputMipLevelCount;
-				};
 
 				// Check for validity when setting these values as root constants.
 				static_assert(sizeof(MipMapConstants) == 4 * sizeof(std::uint32_t));
