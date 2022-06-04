@@ -13,6 +13,72 @@ import Brawler.D3D12.DescriptorTableBuilder;
 import Brawler.D3D12.PipelineEnums;
 import Brawler.D3D12.GPUResourceBinding;
 
+namespace Brawler
+{
+	template <DXGI_FORMAT Format>
+	consteval bool IsSRGB()
+	{
+		switch (Format)
+		{
+		case DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB: [[fallthrough]];
+		case DXGI_FORMAT::DXGI_FORMAT_BC1_UNORM_SRGB: [[fallthrough]];
+		case DXGI_FORMAT::DXGI_FORMAT_BC2_UNORM_SRGB: [[fallthrough]];
+		case DXGI_FORMAT::DXGI_FORMAT_BC3_UNORM_SRGB: [[fallthrough]];
+		case DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM_SRGB: [[fallthrough]];
+		case DXGI_FORMAT::DXGI_FORMAT_B8G8R8X8_UNORM_SRGB: [[fallthrough]];
+		case DXGI_FORMAT::DXGI_FORMAT_BC7_UNORM_SRGB:
+			return true;
+
+		default:
+			return false;
+		}
+	}
+
+	template <DXGI_FORMAT Format>
+	consteval DXGI_FORMAT GetUAVFormatForSRGBFormat()
+	{
+		switch (Format)
+		{
+		case DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+			return DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
+
+		case DXGI_FORMAT::DXGI_FORMAT_BC1_UNORM_SRGB:
+			return DXGI_FORMAT::DXGI_FORMAT_BC1_UNORM;
+
+		case DXGI_FORMAT::DXGI_FORMAT_BC2_UNORM_SRGB:
+			return DXGI_FORMAT::DXGI_FORMAT_BC2_UNORM;
+
+		case DXGI_FORMAT::DXGI_FORMAT_BC3_UNORM_SRGB:
+			return DXGI_FORMAT::DXGI_FORMAT_BC3_UNORM;
+
+		case DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+			return DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM;
+
+		case DXGI_FORMAT::DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
+			return DXGI_FORMAT::DXGI_FORMAT_B8G8R8X8_UNORM;
+
+		case DXGI_FORMAT::DXGI_FORMAT_BC7_UNORM_SRGB:
+			return DXGI_FORMAT::DXGI_FORMAT_BC7_UNORM_SRGB;
+
+		default:
+			assert(false);
+
+			return DXGI_FORMAT::DXGI_FORMAT_UNKNOWN;
+		}
+	}
+
+	template <DXGI_FORMAT Format>
+	struct FormatInfo
+	{
+	private:
+		static constexpr bool IS_SRGB = IsSRGB<Format>();
+
+	public:
+		static constexpr Brawler::PSOs::PSOID PSO_IDENTIFIER = (IS_SRGB ? Brawler::PSOs::PSOID::GENERIC_DOWNSAMPLE_SRGB : Brawler::PSOs::PSOID::GENERIC_DOWNSAMPLE);
+		static constexpr DXGI_FORMAT UAV_FORMAT = (IS_SRGB ? GetUAVFormatForSRGBFormat<Format>() : Format);
+	};
+}
+
 export namespace Brawler
 {
 	template <DXGI_FORMAT TextureFormat>
@@ -104,18 +170,18 @@ namespace Brawler
 			assert((currInputMipLevel + 1) < numTotalMipLevels);
 			D3D12::Texture2DSubResource outputMip1SubResource{ mTexturePtr->GetSubResource(currInputMipLevel + 1) };
 			mipMapGenerationPass.AddResourceDependency(outputMip1SubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-			generationInfo.TableBuilderPtr->CreateUnorderedAccessView(1, outputMip1SubResource.CreateUnorderedAccessView<TextureFormat>());
+			generationInfo.TableBuilderPtr->CreateUnorderedAccessView(1, outputMip1SubResource.CreateUnorderedAccessView<FormatInfo<TextureFormat>::UAV_FORMAT>());
 			++mipLevelsGeneratedThisPass;
 
 			if ((currInputMipLevel + 2) < numTotalMipLevels)
 			{
 				D3D12::Texture2DSubResource outputMip2SubResource{ mTexturePtr->GetSubResource(currInputMipLevel + 2) };
 				mipMapGenerationPass.AddResourceDependency(outputMip2SubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-				generationInfo.TableBuilderPtr->CreateUnorderedAccessView(2, outputMip2SubResource.CreateUnorderedAccessView<TextureFormat>());
+				generationInfo.TableBuilderPtr->CreateUnorderedAccessView(2, outputMip2SubResource.CreateUnorderedAccessView<FormatInfo<TextureFormat>::UAV_FORMAT>());
 				++mipLevelsGeneratedThisPass;
 			}
 			else
-				generationInfo.TableBuilderPtr->NullifyUnorderedAccessView<TextureFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2D>(2);
+				generationInfo.TableBuilderPtr->NullifyUnorderedAccessView<FormatInfo<TextureFormat>::UAV_FORMAT, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2D>(2);
 
 			generationInfo.OutputDimensions.x = static_cast<std::uint32_t>(originalWidth / (static_cast<std::uint64_t>(1) << currInputMipLevel));
 			generationInfo.OutputDimensions.y = static_cast<std::uint32_t>(originalHeight / (static_cast<std::uint64_t>(1) << currInputMipLevel));
@@ -129,7 +195,7 @@ namespace Brawler
 			{
 				using RootParams = Brawler::RootParameters::GenericDownsample;
 
-				auto resourceBinder = context.SetPipelineState<Brawler::PSOs::PSOID::GENERIC_DOWNSAMPLE>();
+				auto resourceBinder = context.SetPipelineState<FormatInfo<TextureFormat>::PSO_IDENTIFIER>();
 				resourceBinder.BindDescriptorTable<RootParams::TEXTURES_TABLE>(generationInfo.TableBuilderPtr->GetDescriptorTable());
 
 				// Check for validity when setting these values as root constants.

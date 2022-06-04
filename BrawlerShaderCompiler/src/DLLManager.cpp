@@ -4,6 +4,7 @@ module;
 #include <string>
 #include <mutex>
 #include <filesystem>
+#include <format>
 #include "DxDef.h"
 
 module Brawler.DLLManager;
@@ -18,19 +19,29 @@ namespace Brawler
 	namespace Win32
 	{
 		DLLManager::DLLManager() :
-			mDirCookie(),
+			mDirCookie(nullptr),
 			mCritSection(),
 			mModuleMap()
 		{
-			mDirCookie = AddDllDirectory(APPLICATION_LIBRARY_PATH.c_str());
+			std::error_code errorCode{};
+			const bool pathExists = std::filesystem::exists(APPLICATION_LIBRARY_PATH, errorCode);
 
-			if (mDirCookie == nullptr) [[unlikely]]
-				CheckHRESULT(HRESULT_FROM_WIN32(GetLastError()));
+			if (errorCode) [[unlikely]]
+				throw std::runtime_error{ std::format(R"(ERROR: The attempt to check whether the path "{}" exists resulted in the following error: {})", APPLICATION_LIBRARY_PATH.string(), errorCode.message()) };
+
+			if (pathExists)
+			{
+				mDirCookie = AddDllDirectory(APPLICATION_LIBRARY_PATH.c_str());
+
+				if (mDirCookie == nullptr) [[unlikely]]
+					CheckHRESULT(HRESULT_FROM_WIN32(GetLastError()));
+			}
 		}
 
 		DLLManager::~DLLManager()
 		{
-			RemoveDllDirectory(mDirCookie);
+			if (mDirCookie != nullptr)
+				RemoveDllDirectory(mDirCookie);
 		}
 
 		DLLManager& DLLManager::GetInstance()

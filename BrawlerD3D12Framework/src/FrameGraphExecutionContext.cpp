@@ -23,6 +23,7 @@ import Brawler.D3D12.GPUCommandManager;
 import Brawler.D3D12.GPUExecutionModuleRecordContext;
 import Brawler.D3D12.GPUResourceUsageAnalyzer;
 import Brawler.D3D12.GPUResourceEventCollection;
+import Brawler.D3D12.ScopedCPUPIXEvent;
 
 namespace
 {
@@ -227,7 +228,10 @@ namespace Brawler
 				numResourcesAdded += numResourcesThisJob;
 			}
 
-			resourceTrackingJobGroup.ExecuteJobs();
+			{
+				ScopedCPUPIXEvent resourceTrackingPIXEvent{ L"Brawler Engine - GPU Resource State Analysis" };
+				resourceTrackingJobGroup.ExecuteJobs();
+			}
 
 			// Before we begin merging GPUResourceEvent instances, we can allocate all of the
 			// memory required for the GPUResourceEventManager.

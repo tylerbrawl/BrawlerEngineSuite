@@ -1,11 +1,7 @@
 // Yes, this was definitely ripped wholesale from the MiniEngine implementation on GitHub.
 // I'm still learning HLSL, you know?
 
-#ifdef __SUPPORTS_TYPED_UAV_LOADS__
 Texture2D<unorm float4> InputTexture : register(t0, space0);
-#else
-Texture2D<uint> InputTexture : register(t0, space0);
-#endif
 
 RWTexture2D<float4> OutputMip1 : register(u0, space0);
 RWTexture2D<float4> OutputMip2 : register(u1, space0);
@@ -23,48 +19,51 @@ ConstantBuffer<MipMapGenerationInfo> MipMapConstants : register(b0, space0);
 
 static const uint THREADS_IN_GROUP = 64;
 
-float4 UnpackR32TextureData(in const uint r32Data)
-{
-    float4 unpackedData = float4(0.0f);
-    unpackedData.x = (float) (r32Data & 0xFF) / 255.0f;
-    unpackedData.y = (float) ((r32Data >> 8) & 0xFF) / 255.0f;
-    unpackedData.z = (float) ((r32Data >> 16) & 0xFF) / 255.0f;
-    unpackedData.w = (float) ((r32Data >> 24) & 0xFF) / 255.0f;
+// The exact sRGB equations can be found at https://entropymine.com/imageworsener/srgbformula/.
+// The approximations were taken from https://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html.
 
-    return unpackedData;
+float4 LinearToSRGB(in const float4 linearColor)
+{
+#ifdef __EXACT_SRGB__
+    return float4(select(linearColor.xyz <= 0.0031308f, (linearColor.xyz * 12.92), 1.055f * pow(linearColor.xyz, 1.0f / 2.4f) - 0.055f), linearColor.w);
+#else
+    return float4(max(1.055f * pow(linearColor.xyz, 0.416666667f) - 0.055, 0), linearColor.w);
+#endif
+}
+
+float4 SRGBToLinear(in const float4 srgbColor)
+{
+#ifdef __EXACT_SRGB__
+    return float4(select(srgbColor.xyz <= 0.04045f, (srgbColor.xyz / 12.92f), pow((srgbColor.xyz + 0.055f) / 1.055f, 2.4)), srgbColor.w);
+#else
+    float3 linearColor = mad(srgbColor.xyz, 0.305306011f, 0.682171111f);
+    linearColor = mad(srgbColor.xyz, linearColor, 0.012522878f);
+    linearColor *= srgbColor.xyz;
+	
+    return float4(linearColor, srgbColor.w);
+#endif
 }
 
 float4 SampleInputTexture(in const uint2 DTid)
 {
-#ifdef __SUPPORTS_TYPED_UAV_LOADS__
-	const float2 inputTextureUV = (DTid + 0.5f) / MipMapConstants.InverseOutputDimensions;
+	// Assuming that we are creating X * Y threads, where X and Y are the x- and y-dimensions
+	// of OutputMip1, we can do the following:
+	
+	const float2 inputTextureUV = (DTid + 0.5f) * MipMapConstants.InverseOutputDimensions;
 	return InputTexture.SampleLevel(BilinearClampSampler, inputTextureUV, MipMapConstants.StartingMipLevel);
-#else
-	// If out input texture is actually an R8G8B8A8 texture but is being re-interpreted as
-	// an R32 texture in order to work on devices without typed UAV load support, then we
-	// need to manually interpret the value.
-	//
-	// Normally, we would need to do bilinear interpolation ourselves manually. However,
-	// since we know that (DTid * 2) will give us the sampling coordinates, and that is
-	// is guaranteed to be a full integer, we will never have to actually interpolate
-	// between texel values. So, for this particular case, we can get away with just one
-	// sample.
-    const int3 inputTexelCoords = int3((DTid * 2), MipMapConstants.StartingMipLevel);
-    return UnpackR32TextureData(InputTexture.Load(inputTexelCoords));
-#endif
 }
 
 [numthreads(8, 8, 1)]
 void main(in const uint3 DTid : SV_DispatchThreadID, in const uint2 GTid : SV_GroupThreadID)
 {
-	// Assuming that we are creating X * Y threads, where X and Y are the x- and y-dimensions
-	// of OutputMip1, we can do the following:
-	
-	const float2 inputTextureUV = (DTid.xy + 0.5f) / MipMapConstants.InverseOutputDimensions;
-
 	// Moving from InputTexture -> OutputMip1...
-	float4 currOutputValue = InputTexture.SampleLevel(BilinearClampSampler, inputTextureUV, MipMapConstants.StartingMipLevel);
+	float4 currOutputValue = SampleInputTexture(DTid.xy);
+	
+#ifdef __USING_SRGB_DATA__
+	OutputMip1[DTid.xy] = LinearToSRGB(currOutputValue);
+#else
 	OutputMip1[DTid.xy] = currOutputValue;
+#endif
 	
 	[branch]  // Coherent
 	if (MipMapConstants.OutputMipLevelsCount == 1)
@@ -104,10 +103,32 @@ void main(in const uint3 DTid : SV_DispatchThreadID, in const uint2 GTid : SV_Gr
     float4 adjacentYValue = QuadReadAcrossY(currOutputValue);
     float4 diagonalValue = QuadReadAcrossDiagonal(currOutputValue);
 	
+	// sRGB color data is non-linear. This makes it unsuitable for direct downsampling.
+	// Unfortunately, there are no devices which support typed UAVs from _SRGB formats
+	// at the time of writing this. If we are dealing with sRGB data, then this is how
+	// we must do the downsampling:
+	//
+	//   - Convert the data to linear space. This is actually done automatically by
+	//     the hardware during the load from InputTexture, since we can still make SRVs 
+	//     out of _SRGB formats. (Otherwise, they would be useless!)
+	//   - Average the linear colors together to get the color for the corresponding
+	//     OutputMip2 quad.
+	//   - Convert the data back to sRGB space.
+	//
+	// We could actually implement this as an if-statement, since the branching would
+	// be coherent, but is it really worth wasting a root parameter for that if it isn't
+	// going to change between passes?
+	
+#ifdef __USING_SRGB_DATA__
+	float4 colorToWrite = LinearToSRGB(0.25f * (currOutputValue + adjacentXValue + adjacentYValue + diagonalValue));
+#else
+    float4 colorToWrite = 0.25f * (currOutputValue + adjacentXValue + adjacentYValue + diagonalValue);
+#endif
+	
 	// Write out the appropriate data, but only once per OutputMip1 quad.
 	[branch]
     if (all((GTid.xy & 1) == 0))
-        OutputMip2[DTid.xy / 2] = (0.25f * (currOutputValue + adjacentXValue + adjacentYValue + diagonalValue));
+        OutputMip2[DTid.xy / 2] = colorToWrite;
 	
 	// TODO: Add support for further reduction. We should be able to support at least one more
 	// downsample within this shader easily.

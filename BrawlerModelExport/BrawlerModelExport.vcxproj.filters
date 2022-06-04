@@ -97,9 +97,6 @@
     <Filter Include="Source Files\Model Texture Resolvers\Opaque Diffuse">
       <UniqueIdentifier>{2f514f87-f98c-4717-90a8-a4f7edaf6daa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Textures\Mip-Map Generators">
-      <UniqueIdentifier>{e5a7813b-ea0f-4eb0-8e3f-266f8b336c0c}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">

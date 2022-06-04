@@ -26,7 +26,8 @@ namespace Brawler
 				Brawler::PSOID::BC7_TRY_MODE_137,
 				Brawler::PSOID::BC7_TRY_MODE_02,
 				Brawler::PSOID::BC7_ENCODE_BLOCK,
-				Brawler::PSOID::GENERIC_DOWNSAMPLE
+				Brawler::PSOID::GENERIC_DOWNSAMPLE,
+				Brawler::PSOID::GENERIC_DOWNSAMPLE_SRGB
 			> RELEVANT_PSO_IDS_ARR{};
 
 			static constexpr Brawler::EnumSequence<Brawler::RootSignatureID,

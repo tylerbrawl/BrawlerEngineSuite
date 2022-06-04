@@ -16,6 +16,7 @@ export namespace Brawler
 			BC7_TRY_MODE_02,
 			BC7_ENCODE_BLOCK,
 			GENERIC_DOWNSAMPLE,
+			GENERIC_DOWNSAMPLE_SRGB,
 
 			COUNT_OR_ERROR
 		};

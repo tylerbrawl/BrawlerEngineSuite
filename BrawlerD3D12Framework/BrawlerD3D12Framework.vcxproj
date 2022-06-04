@@ -252,6 +252,8 @@
     <ClCompile Include="src\BindlessSRVSentinel.cpp" />
     <ClCompile Include="src\BindlessSRVSentinel.ixx" />
     <ClCompile Include="src\CustomEventHandle.ixx" />
+    <ClCompile Include="src\DebugScopedCPUPIXEvent.cpp" />
+    <ClCompile Include="src\DebugScopedCPUPIXEvent.ixx" />
     <ClCompile Include="src\DelayedJobGroup.cpp" />
     <ClCompile Include="src\DelayedJobGroup.ixx" />
     <ClCompile Include="src\DelayedJobSubmitter.cpp" />
@@ -356,6 +358,7 @@
     <ClCompile Include="src\RootParameterType.ixx" />
     <ClCompile Include="src\RootSignatureDatabase.cpp" />
     <ClCompile Include="src\SafeModule.ixx" />
+    <ClCompile Include="src\ScopedCPUPIXEvent.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinitionBase.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_ENCODE_BLOCK.ixx" />
@@ -363,6 +366,7 @@
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_TRY_MODE_137.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_TRY_MODE_456.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_GENERIC_DOWNSAMPLE.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_GENERIC_DOWNSAMPLE_SRGB.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSOID.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\RootParameterEnums.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\RootSignatureDefinition.ixx" />

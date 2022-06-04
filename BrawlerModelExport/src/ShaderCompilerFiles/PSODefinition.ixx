@@ -12,6 +12,7 @@ export import :BC7_TRY_MODE_137;
 export import :BC7_TRY_MODE_02;
 export import :BC7_ENCODE_BLOCK;
 export import :GENERIC_DOWNSAMPLE;
+export import :GENERIC_DOWNSAMPLE_SRGB;
 
 import Brawler.PSOs.PSOID;
 import Brawler.RootSignatures.RootSignatureID;
