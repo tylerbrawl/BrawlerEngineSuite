@@ -52,8 +52,6 @@ export namespace Brawler
 			// ============================================
 			// v Default Heap
 			// ============================================
-			D3D12::Texture2D* SourceTexturePtr;
-
 			D3D12::StructuredBufferSubAllocation<BufferBC7> OutputBufferSubAllocation;
 			D3D12::StructuredBufferSubAllocation<BufferBC7> Error1BufferSubAllocation;
 			D3D12::StructuredBufferSubAllocation<BufferBC7> Error2BufferSubAllocation;

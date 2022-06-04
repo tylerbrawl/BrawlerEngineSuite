@@ -25,6 +25,8 @@ namespace Brawler
 	OpaqueDiffuseModelTextureResolver::OpaqueDiffuseModelTextureResolver(const ImportedMesh& mesh) :
 		mHDiffuseTextureResolutionEvent(),
 		mOutputBuffer(nullptr),
+		mBC7CompressorPtrArr(),
+		mBC7BufferSubAllocationArr(),
 		mDestDiffuseScratchImage(),
 		mSrcDiffuseScratchImage(),
 		mMeshPtr(&mesh)
@@ -138,16 +140,21 @@ namespace Brawler
 		// While it is in general nicer to have smaller functions like this, the fact that I
 		// was even hitting error C1605 kind of worries me. We'll just have to see how things
 		// turn out in practice later on.
+		//
+		// UPDATE: As it turns out, the MSVC bug was caused by the implementation of
+		// DescriptorTableBuilder::NullifyUnorderedAccessView(). I'm thinking of filing a bug
+		// report. Anyways, we'll leave the steps in separate module implementation units
+		// regardless.
 
 		TextureResolutionContext resolutionContext{
 			.Builder{builder},
 			.CurrTexturePtr = nullptr,
-			.HBC7TextureDataReservation{}
+			.HBC7TextureDataReservationArr{}
 		};
 
 		AddSourceTextureUploadRenderPasses(resolutionContext);
-		AddBC7CompressionRenderPasses(resolutionContext);
 		AddMipMapGenerationRenderPasses(resolutionContext);
+		AddBC7CompressionRenderPasses(resolutionContext);
 		AddReadBackBufferCopyRenderPasses(resolutionContext);
 	}
 
@@ -165,21 +172,21 @@ namespace Brawler
 				Brawler::GetDesiredTextureFormat<aiTextureType::aiTextureType_DIFFUSE>(),
 				srcImagePtr->width,
 				srcImagePtr->height,
-				0,
-				mTextureCopySubAllocationArr.size(),
+				1,
+				mBC7BufferSubAllocationArr.size(),
 				DirectX::CP_FLAGS::CP_FLAGS_NONE
 			));
 		}
 
-		// Copy the data from each TextureCopyBufferSubAllocation (i.e., each sub-resource) to
+		// Copy the data from each StructuredBufferSubAllocation<BufferBC7> (i.e., each sub-resource) to
 		// its corresponding DirectX::Image. (Before you ask: No, we still don't have std::views::zip.)
 		const std::span<const DirectX::Image> destImageSpan{ mDestDiffuseScratchImage.GetImages(), mDestDiffuseScratchImage.GetImageCount() };
-		assert(destImageSpan.size() == mTextureCopySubAllocationArr.size());
+		assert(destImageSpan.size() == mBC7BufferSubAllocationArr.size());
 
-		for (const auto i : std::views::iota(0u, mTextureCopySubAllocationArr.size()))
+		for (const auto i : std::views::iota(0u, mBC7BufferSubAllocationArr.size()))
 		{
 			const DirectX::Image& currDestImage{ destImageSpan[i] };
-			const D3D12::TextureCopyBufferSubAllocation& currSrcCopySubAllocation{ mTextureCopySubAllocationArr[i] };
+			const D3D12::StructuredBufferSubAllocation<BufferBC7>& currSrcDataSubAllocation{ mBC7BufferSubAllocationArr[i] };
 
 			std::size_t rowPitch = 0;
 			std::size_t slicePitch = 0;
@@ -192,18 +199,23 @@ namespace Brawler
 				slicePitch
 			));
 
+			const std::size_t numRows = (slicePitch / rowPitch);
+			assert(numRows == std::max<std::size_t>(1, (currDestImage.height + 3) >> 2));
+
+			const std::size_t numBlocksPerRow = std::max<size_t>(1, (currDestImage.width + 3) >> 2);
+
 			for (std::size_t currRow = 0; currRow < currDestImage.height; ++currRow)
 			{
-				const std::span<std::uint8_t> destRowDataSpan{ (currDestImage.pixels + (currRow * rowPitch)), rowPitch };
-				currSrcCopySubAllocation.ReadTextureData(static_cast<std::uint32_t>(currRow), destRowDataSpan);
+				const std::span<BufferBC7> destRowDataSpan{ reinterpret_cast<BufferBC7*>(currDestImage.pixels + (currRow * rowPitch)), numBlocksPerRow };
+				currSrcDataSubAllocation.ReadStructuredBufferData(static_cast<std::uint32_t>(currRow * numBlocksPerRow), destRowDataSpan);
 			}
 		}
 
-		// Delete the persistent BufferResource and all of its associated TextureCopyBufferSubAllocation
+		// Delete the persistent BufferResource and all of its associated StructuredBufferSubAllocation
 		// instances. Not only does this tell us if we are finished with everything (assuming that
 		// mHDiffuseTextureResolutionEvent->IsEventComplete() returns true, of course), but it also
 		// frees the GPU memory reserved by the BufferResource.
 		mOutputBuffer.reset();
-		mTextureCopySubAllocationArr.clear();
+		mBC7BufferSubAllocationArr.clear();
 	}
 }

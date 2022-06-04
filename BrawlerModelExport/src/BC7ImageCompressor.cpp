@@ -26,6 +26,7 @@ import Util.Engine;
 import Util.General;
 import Brawler.RootSignatures.RootSignatureDefinition;
 import Brawler.D3D12.GPUResourceViews;
+import Brawler.D3D12.PerFrameDescriptorTable;
 
 #pragma push_macro("max")
 #undef max
@@ -74,8 +75,6 @@ namespace Brawler
 
 	void BC7ImageCompressor::AddImageCompressionRenderPassBundles(D3D12::FrameGraphBuilder& frameGraphBuilder)
 	{
-		assert(mResourceInfo.SourceTexturePtr != nullptr && "ERROR: BC7ImageCompressor::GetImageCompressionRenderPassBundles() was called before the compressor's transient resource could be created (i.e., before BC7ImageCompressor::CreateTransientResources())!");
-		
 		std::vector<D3D12::RenderPassBundle> createdBundleArr{};
 		createdBundleArr.reserve(2);
 
@@ -146,23 +145,13 @@ namespace Brawler
 	{
 		// The DirectXTex BC7 image compressor always creates an SRV of type DXGI_FORMAT_R8G8B8A8_UNORM during
 		// BC7 image compression for the source texture.
-		{
-			assert(mInitInfo.SrcTextureSubResource.GetSubResourceIndex() == 0 && "ERROR: BC7 image compression should always be done on the highest mip level!");
-			
-			D3D12::Texture2DShaderResourceView<DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM> subResourceSRV{ mInitInfo.SrcTextureSubResource.GetGPUResource(), D3D12_TEX2D_SRV{
-				.MostDetailedMip = mInitInfo.SrcTextureSubResource.GetSubResourceIndex(),
-				.MipLevels = 1,
-				.PlaneSlice = 0,
-				.ResourceMinLODClamp = 0.0f
-			} };
-			mTableBuilderInfo.SourceTextureTableBuilder.CreateShaderResourceView(0, std::move(subResourceSRV));
-		}
+		mTableBuilderInfo.SourceTextureTableBuilder.CreateShaderResourceView(0, mInitInfo.SrcTextureSubResource.CreateShaderResourceView<DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM>());
 
-		mTableBuilderInfo.Error1SRVTableBuilder.CreateShaderResourceView(0, mResourceInfo.Error1BufferSubAllocation.CreateShaderResourceViewForDescriptorTable());
-		mTableBuilderInfo.Error1UAVTableBuilder.CreateUnorderedAccessView(0, mResourceInfo.Error1BufferSubAllocation.CreateUnorderedAccessViewForDescriptorTable());
-		mTableBuilderInfo.Error2SRVTableBuilder.CreateShaderResourceView(0, mResourceInfo.Error2BufferSubAllocation.CreateShaderResourceViewForDescriptorTable());
-		mTableBuilderInfo.Error2UAVTableBuilder.CreateUnorderedAccessView(0, mResourceInfo.Error2BufferSubAllocation.CreateUnorderedAccessViewForDescriptorTable());
-		mTableBuilderInfo.OutputTableBuilder.CreateUnorderedAccessView(0, mResourceInfo.OutputBufferSubAllocation.CreateUnorderedAccessViewForDescriptorTable());
+		mTableBuilderInfo.Error1SRVTableBuilder.CreateShaderResourceView(0, mResourceInfo.Error1BufferSubAllocation.CreateTableShaderResourceView());
+		mTableBuilderInfo.Error1UAVTableBuilder.CreateUnorderedAccessView(0, mResourceInfo.Error1BufferSubAllocation.CreateTableUnorderedAccessView());
+		mTableBuilderInfo.Error2SRVTableBuilder.CreateShaderResourceView(0, mResourceInfo.Error2BufferSubAllocation.CreateTableShaderResourceView());
+		mTableBuilderInfo.Error2UAVTableBuilder.CreateUnorderedAccessView(0, mResourceInfo.Error2BufferSubAllocation.CreateTableUnorderedAccessView());
+		mTableBuilderInfo.OutputTableBuilder.CreateUnorderedAccessView(0, mResourceInfo.OutputBufferSubAllocation.CreateTableUnorderedAccessView());
 	}
 
 	D3D12::RenderPassBundle BC7ImageCompressor::CreateResourceUploadRenderPassBundle()
@@ -184,7 +173,7 @@ namespace Brawler
 		{
 			struct ConstantBufferCopyInfo
 			{
-				D3D12::ConstantBufferSubAllocation<ConstantsBC7>& DestConstantBufferSubAllocation;
+				D3D12::ConstantBufferSnapshot<ConstantsBC7> DestConstantBufferSnapshot;
 				D3D12::StructuredBufferSubAllocation<ConstantsBC7> ConstantBufferUploadSubAllocation;
 				ConstantsBC7 ConstantsData;
 			};
@@ -196,21 +185,21 @@ namespace Brawler
 			cbCopyRenderPass.AddResourceDependency(mResourceInfo.ConstantBufferCopySubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE);
 
 			const Brawler::D3D12_RESOURCE_DESC& srcTextureDesc{ mInitInfo.SrcTextureSubResource.GetResourceDescription() };
-			const std::uint32_t textureWidth = static_cast<std::uint32_t>(srcTextureDesc.Width);
+			const std::uint32_t subResourceWidth = static_cast<std::uint32_t>(srcTextureDesc.Width >> mInitInfo.SrcTextureSubResource.GetSubResourceIndex());
 
 			ConstantsBC7 cbData{
-				.TextureWidth = textureWidth,
-				.NumBlockX = static_cast<std::uint32_t>(std::max<std::size_t>(1, (textureWidth + 3) >> 2)),
+				.TextureWidth = subResourceWidth,
+				.NumBlockX = static_cast<std::uint32_t>(std::max<std::size_t>(1, (subResourceWidth + 3) >> 2)),
 				.Format = static_cast<std::uint32_t>(mInitInfo.DesiredFormat),
 				.NumTotalBlocks = static_cast<std::uint32_t>(GetTotalBlockCount()),
 				.AlphaWeight = BC7_COMPRESSION_ALPHA_WEIGHT
 			};
 
 			cbCopyRenderPass.SetInputData(ConstantBufferCopyInfo{
-				.DestConstantBufferSubAllocation{mResourceInfo.ConstantBufferSubAllocation},
-				.ConstantBufferUploadSubAllocation{std::move(mResourceInfo.ConstantBufferCopySubAllocation)},
-				.ConstantsData{std::move(cbData)}
-				});
+				.DestConstantBufferSnapshot{D3D12::ConstantBufferSnapshot<ConstantsBC7>{ mResourceInfo.ConstantBufferSubAllocation }},
+				.ConstantBufferUploadSubAllocation{ std::move(mResourceInfo.ConstantBufferCopySubAllocation) },
+				.ConstantsData{ std::move(cbData) }
+			});
 
 			cbCopyRenderPass.SetRenderPassCommands([] (D3D12::DirectContext& context, const ConstantBufferCopyInfo& copyInfo)
 			{
@@ -218,7 +207,8 @@ namespace Brawler
 				copyInfo.ConstantBufferUploadSubAllocation.WriteStructuredBufferData(0, std::span<const ConstantsBC7>{&(copyInfo.ConstantsData), 1});
 
 				// Push the constants data to the default heap buffer.
-				context.CopyBufferToBuffer(copyInfo.DestConstantBufferSubAllocation, copyInfo.ConstantBufferUploadSubAllocation);
+				D3D12::StructuredBufferSnapshot<ConstantsBC7> constantBufferUploadSnapshot{ copyInfo.ConstantBufferUploadSubAllocation };
+				context.CopyBufferToBuffer(copyInfo.DestConstantBufferSnapshot, constantBufferUploadSnapshot);
 			});
 
 			uploadResourcesBundle.AddRenderPass(std::move(cbCopyRenderPass));
@@ -242,8 +232,8 @@ namespace Brawler
 		struct CompressionPassInfo
 		{
 			RootConstantsBC7 RootConstants;
-			ResourceInfo& Resources;
-			DescriptorTableBuilderInfo& DescriptorTableBuilders;
+			DescriptorTableBuilderInfo& TableBuilderInfo;
+			D3D12::ConstantBufferSnapshot<ConstantsBC7> CompressionSettingsSnapshot;
 			std::uint32_t ThreadGroupCount;
 		};
 
@@ -277,23 +267,23 @@ namespace Brawler
 
 				mode0Pass.SetInputData(CompressionPassInfo{
 					.RootConstants{ std::move(mode0RootConstants) },
-					.Resources{ mResourceInfo },
-					.DescriptorTableBuilders{ mTableBuilderInfo },
+					.TableBuilderInfo{ mTableBuilderInfo },
+					.CompressionSettingsSnapshot{ mResourceInfo.ConstantBufferSubAllocation },
 					.ThreadGroupCount = std::max<std::uint32_t>(((numBlocksInCurrBatch + 3) / 4), 1)
-					});
+				});
 
 				mode0Pass.SetRenderPassCommands([] (D3D12::DirectContext& context, const CompressionPassInfo& passInfo)
 				{
 					auto resourceBinder{ context.SetPipelineState<Brawler::PSOs::PSOID::BC7_TRY_MODE_456>() };
 
-					resourceBinder.BindDescriptorTable<RootParams::SOURCE_TEXTURE_SRV_TABLE>(passInfo.DescriptorTableBuilders.SourceTextureTableBuilder.GetDescriptorTable());
+					resourceBinder.BindDescriptorTable<RootParams::SOURCE_TEXTURE_SRV_TABLE>(passInfo.TableBuilderInfo.SourceTextureTableBuilder.GetDescriptorTable());
 
 					// We require Resource Binding Tier 2 as a minimum, so we can leave INPUT_BUFFER_SRV_TABLE
 					// unbound. (SRVs in descriptor tables do not need to be bound in this tier, and according
 					// to NVIDIA, leaving descriptors unbound when it is possible improves performance.)
 
-					resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(passInfo.DescriptorTableBuilders.Error1UAVTableBuilder.GetDescriptorTable());
-					resourceBinder.BindRootCBV<RootParams::COMPRESSION_SETTINGS_CBV>(passInfo.Resources.ConstantBufferSubAllocation.CreateRootConstantBufferView());
+					resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(passInfo.TableBuilderInfo.Error1UAVTableBuilder.GetDescriptorTable());
+					resourceBinder.BindRootCBV<RootParams::COMPRESSION_SETTINGS_CBV>(passInfo.CompressionSettingsSnapshot.CreateRootConstantBufferView());
 					resourceBinder.BindRoot32BitConstants<RootParams::MODE_ID_AND_START_BLOCK_NUM_ROOT_CONSTANTS>(passInfo.RootConstants);
 
 					context.Dispatch1D(passInfo.ThreadGroupCount);
@@ -346,29 +336,30 @@ namespace Brawler
 							.ModeID = ModeID,
 							.StartBlockID = startBlockID
 						},
-						.Resources{ mResourceInfo },
-						.DescriptorTableBuilders{ mTableBuilderInfo },
+						.TableBuilderInfo{ mTableBuilderInfo },
+						.CompressionSettingsSnapshot{ mResourceInfo.ConstantBufferSubAllocation },
 						.ThreadGroupCount = numBlocksInCurrBatch
-						});
+					});
 
 					compressionPass.SetRenderPassCommands([] (D3D12::DirectContext& context, const CompressionPassInfo& passInfo)
 					{
 						auto resourceBinder{ context.SetPipelineState<PSOIdentifier>() };
 
-						resourceBinder.BindDescriptorTable<RootParams::SOURCE_TEXTURE_SRV_TABLE>(passInfo.DescriptorTableBuilders.SourceTextureTableBuilder.GetDescriptorTable());
-						resourceBinder.BindRootCBV<RootParams::COMPRESSION_SETTINGS_CBV>(passInfo.Resources.ConstantBufferSubAllocation.CreateRootConstantBufferView());
-						resourceBinder.BindRoot32BitConstants<RootParams::MODE_ID_AND_START_BLOCK_NUM_ROOT_CONSTANTS>(passInfo.RootConstants);
+						resourceBinder.BindDescriptorTable<RootParams::SOURCE_TEXTURE_SRV_TABLE>(passInfo.TableBuilderInfo.SourceTextureTableBuilder.GetDescriptorTable());
 
 						if constexpr (CURRENT_ERROR_BINDING_MODE == ErrorBindingMode::ERROR1_SRV_ERROR2_UAV)
 						{
-							resourceBinder.BindDescriptorTable<RootParams::INPUT_BUFFER_SRV_TABLE>(passInfo.DescriptorTableBuilders.Error1SRVTableBuilder.GetDescriptorTable());
-							resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(passInfo.DescriptorTableBuilders.Error2UAVTableBuilder.GetDescriptorTable());
+							resourceBinder.BindDescriptorTable<RootParams::INPUT_BUFFER_SRV_TABLE>(passInfo.TableBuilderInfo.Error1SRVTableBuilder.GetDescriptorTable());
+							resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(passInfo.TableBuilderInfo.Error2UAVTableBuilder.GetDescriptorTable());
 						}
 						else
 						{
-							resourceBinder.BindDescriptorTable<RootParams::INPUT_BUFFER_SRV_TABLE>(passInfo.DescriptorTableBuilders.Error2SRVTableBuilder.GetDescriptorTable());
-							resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(passInfo.DescriptorTableBuilders.Error1UAVTableBuilder.GetDescriptorTable());
+							resourceBinder.BindDescriptorTable<RootParams::INPUT_BUFFER_SRV_TABLE>(passInfo.TableBuilderInfo.Error2SRVTableBuilder.GetDescriptorTable());
+							resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(passInfo.TableBuilderInfo.Error1UAVTableBuilder.GetDescriptorTable());
 						}
+
+						resourceBinder.BindRootCBV<RootParams::COMPRESSION_SETTINGS_CBV>(passInfo.CompressionSettingsSnapshot.CreateRootConstantBufferView());
+						resourceBinder.BindRoot32BitConstants<RootParams::MODE_ID_AND_START_BLOCK_NUM_ROOT_CONSTANTS>(passInfo.RootConstants);
 
 						context.Dispatch1D(passInfo.ThreadGroupCount);
 					});
@@ -407,8 +398,8 @@ namespace Brawler
 						.ModeID = 2,  // Does this value really matter?
 						.StartBlockID = startBlockID
 					},
-					.Resources{ mResourceInfo },
-					.DescriptorTableBuilders{ mTableBuilderInfo },
+					.TableBuilderInfo{ mTableBuilderInfo },
+					.CompressionSettingsSnapshot{ mResourceInfo.ConstantBufferSubAllocation },
 					.ThreadGroupCount = std::max<std::uint32_t>(((numBlocksInCurrBatch + 3) / 4), 1)
 				});
 
@@ -416,10 +407,10 @@ namespace Brawler
 				{
 					auto resourceBinder{ context.SetPipelineState<Brawler::PSOs::PSOID::BC7_ENCODE_BLOCK>() };
 
-					resourceBinder.BindDescriptorTable<RootParams::SOURCE_TEXTURE_SRV_TABLE>(passInfo.DescriptorTableBuilders.SourceTextureTableBuilder.GetDescriptorTable());
-					resourceBinder.BindDescriptorTable<RootParams::INPUT_BUFFER_SRV_TABLE>(passInfo.DescriptorTableBuilders.Error2SRVTableBuilder.GetDescriptorTable());
-					resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(passInfo.DescriptorTableBuilders.OutputTableBuilder.GetDescriptorTable());
-					resourceBinder.BindRootCBV<RootParams::COMPRESSION_SETTINGS_CBV>(passInfo.Resources.ConstantBufferSubAllocation.CreateRootConstantBufferView());
+					resourceBinder.BindDescriptorTable<RootParams::SOURCE_TEXTURE_SRV_TABLE>(passInfo.TableBuilderInfo.SourceTextureTableBuilder.GetDescriptorTable());
+					resourceBinder.BindDescriptorTable<RootParams::INPUT_BUFFER_SRV_TABLE>(passInfo.TableBuilderInfo.Error2SRVTableBuilder.GetDescriptorTable());
+					resourceBinder.BindDescriptorTable<RootParams::OUTPUT_BUFFER_UAV_TABLE>(passInfo.TableBuilderInfo.OutputTableBuilder.GetDescriptorTable());
+					resourceBinder.BindRootCBV<RootParams::COMPRESSION_SETTINGS_CBV>(passInfo.CompressionSettingsSnapshot.CreateRootConstantBufferView());
 					resourceBinder.BindRoot32BitConstants<RootParams::MODE_ID_AND_START_BLOCK_NUM_ROOT_CONSTANTS>(passInfo.RootConstants);
 
 					context.Dispatch1D(passInfo.ThreadGroupCount);
@@ -438,9 +429,13 @@ namespace Brawler
 	std::size_t BC7ImageCompressor::GetTotalBlockCount() const
 	{
 		const Brawler::D3D12_RESOURCE_DESC& srcTextureDesc{ mInitInfo.SrcTextureSubResource.GetResourceDescription() };
+		const std::uint32_t subResourceIndex = mInitInfo.SrcTextureSubResource.GetSubResourceIndex();
+
+		const std::size_t subResourceWidth = srcTextureDesc.Width >> subResourceIndex;
+		const std::size_t subResourceHeight = srcTextureDesc.Height >> subResourceIndex;
 		
-		const std::size_t numXBlocks = std::max<std::size_t>(1, (srcTextureDesc.Width + 3) >> 2);
-		const std::size_t numYBlocks = std::max<std::size_t>(1, (srcTextureDesc.Height + 3) >> 2);
+		const std::size_t numXBlocks = std::max<std::size_t>(1, (subResourceWidth + 3) >> 2);
+		const std::size_t numYBlocks = std::max<std::size_t>(1, (subResourceHeight + 3) >> 2);
 		return (numXBlocks * numYBlocks);
 	}
 }

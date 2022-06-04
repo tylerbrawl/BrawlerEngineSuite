@@ -273,6 +273,7 @@
     <ClCompile Include="src\FrameGraphManager.ixx" />
     <ClCompile Include="src\FrameGraphSyncPointFactory.cpp" />
     <ClCompile Include="src\FrameGraphSyncPointFactory.ixx" />
+    <ClCompile Include="src\GenericBufferSnapshots.ixx" />
     <ClCompile Include="src\GPUExecutionModuleResourceMap.ixx" />
     <ClCompile Include="src\GPUResourceBinding.ixx" />
     <ClCompile Include="src\GPUResourceBindlessSRVManager.cpp" />
@@ -285,6 +286,8 @@
     <ClCompile Include="src\GPUResourceViews.ixx" />
     <ClCompile Include="src\GPUSubResourceStateManager.cpp" />
     <ClCompile Include="src\GPUSubResourceStateManager.ixx" />
+    <ClCompile Include="src\I_BufferSnapshot.cpp" />
+    <ClCompile Include="src\I_BufferSnapshot.ixx" />
     <ClCompile Include="src\I_BufferSubAllocation.cpp" />
     <ClCompile Include="src\BufferResource.cpp" />
     <ClCompile Include="src\BufferResource.ixx" />
@@ -365,10 +368,14 @@
     <ClCompile Include="src\ShaderCompilerFiles\RootSignatureDefinition.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\RootSignatureID.ixx" />
     <ClCompile Include="src\ShaderResourceView.ixx" />
+    <ClCompile Include="src\StructuredBufferElementRange.ixx" />
     <ClCompile Include="src\StructuredBufferSubAllocation.ixx" />
+    <ClCompile Include="src\StructuredBufferViewGenerator.ixx" />
     <ClCompile Include="src\Texture2D.cpp" />
     <ClCompile Include="src\Texture2D.ixx" />
     <ClCompile Include="src\Texture2DBuilders.ixx" />
+    <ClCompile Include="src\TextureCopyBufferSnapshot.cpp" />
+    <ClCompile Include="src\TextureCopyBufferSnapshot.ixx" />
     <ClCompile Include="src\TextureCopyBufferSubAllocation.cpp" />
     <ClCompile Include="src\TextureCopyBufferSubAllocation.ixx" />
     <ClCompile Include="src\TextureSubResource.cpp" />

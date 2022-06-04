@@ -1,7 +1,12 @@
 // Yes, this was definitely ripped wholesale from the MiniEngine implementation on GitHub.
 // I'm still learning HLSL, you know?
 
-Texture2D<float4> InputTexture : register(t0, space0);
+#ifdef __SUPPORTS_TYPED_UAV_LOADS__
+Texture2D<unorm float4> InputTexture : register(t0, space0);
+#else
+Texture2D<uint> InputTexture : register(t0, space0);
+#endif
+
 RWTexture2D<float4> OutputMip1 : register(u0, space0);
 RWTexture2D<float4> OutputMip2 : register(u1, space0);
 
@@ -17,6 +22,37 @@ struct MipMapGenerationInfo
 ConstantBuffer<MipMapGenerationInfo> MipMapConstants : register(b0, space0);
 
 static const uint THREADS_IN_GROUP = 64;
+
+float4 UnpackR32TextureData(in const uint r32Data)
+{
+    float4 unpackedData = float4(0.0f);
+    unpackedData.x = (float) (r32Data & 0xFF) / 255.0f;
+    unpackedData.y = (float) ((r32Data >> 8) & 0xFF) / 255.0f;
+    unpackedData.z = (float) ((r32Data >> 16) & 0xFF) / 255.0f;
+    unpackedData.w = (float) ((r32Data >> 24) & 0xFF) / 255.0f;
+
+    return unpackedData;
+}
+
+float4 SampleInputTexture(in const uint2 DTid)
+{
+#ifdef __SUPPORTS_TYPED_UAV_LOADS__
+	const float2 inputTextureUV = (DTid + 0.5f) / MipMapConstants.InverseOutputDimensions;
+	return InputTexture.SampleLevel(BilinearClampSampler, inputTextureUV, MipMapConstants.StartingMipLevel);
+#else
+	// If out input texture is actually an R8G8B8A8 texture but is being re-interpreted as
+	// an R32 texture in order to work on devices without typed UAV load support, then we
+	// need to manually interpret the value.
+	//
+	// Normally, we would need to do bilinear interpolation ourselves manually. However,
+	// since we know that (DTid * 2) will give us the sampling coordinates, and that is
+	// is guaranteed to be a full integer, we will never have to actually interpolate
+	// between texel values. So, for this particular case, we can get away with just one
+	// sample.
+    const int3 inputTexelCoords = int3((DTid * 2), MipMapConstants.StartingMipLevel);
+    return UnpackR32TextureData(InputTexture.Load(inputTexelCoords));
+#endif
+}
 
 [numthreads(8, 8, 1)]
 void main(in const uint3 DTid : SV_DispatchThreadID, in const uint2 GTid : SV_GroupThreadID)

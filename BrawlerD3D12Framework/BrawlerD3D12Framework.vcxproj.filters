@@ -202,6 +202,12 @@
     <Filter Include="Source Files\Threading\Event Handles">
       <UniqueIdentifier>{87a0c87f-fb04-4e67-b5c6-f3f45871a27a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\GPU Resources\Buffer Resource Types\Buffer Snapshot Types">
+      <UniqueIdentifier>{6e1270b4-7f94-4d19-9244-d9a933f73764}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Resources\Buffer Resource Types\Buffer Snapshot Types">
+      <UniqueIdentifier>{f0e8971f-6747-4869-b3fc-4225cc2955d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GeneralUtil.ixx">
@@ -995,6 +1001,27 @@
     </ClCompile>
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_GENERIC_DOWNSAMPLE.ixx">
       <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_BufferSnapshot.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_BufferSnapshot.cpp">
+      <Filter>Source Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TextureCopyBufferSnapshot.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types\Buffer Snapshot Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TextureCopyBufferSnapshot.cpp">
+      <Filter>Source Files\GPU Resources\Buffer Resource Types\Buffer Snapshot Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StructuredBufferViewGenerator.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StructuredBufferElementRange.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GenericBufferSnapshots.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types\Buffer Snapshot Types</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

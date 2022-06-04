@@ -81,9 +81,13 @@ namespace Brawler
 
 			const std::scoped_lock<std::mutex> lock{ mTableCreationCritSection };
 
-			mDescriptorInfoArr[index] = CBVInfo{
-				.BufferSubAllocationPtr = nullptr,
-				.OffsetFromSubAllocationStart = 0
+			// The specs state that if we define SizeInBytes to be 0, then we can specify nullptr (0) for
+			// BufferLocation and still get the intended behavior of a null CBV. (The source for this
+			// information is https://microsoft.github.io/DirectX-Specs/d3d/ResourceBinding.html#null-descriptors.
+			// Don't bother looking on the MSDN for it; it's not there.)
+			mDescriptorInfoArr[index] = D3D12_CONSTANT_BUFFER_VIEW_DESC{
+				.BufferLocation = 0,
+				.SizeInBytes = 0
 			};
 		}
 
@@ -148,7 +152,7 @@ namespace Brawler
 				{
 				case 1:
 				{
-					CreateConstantBufferView(currIndex, std::get<CBVInfo>(descriptorInfo));
+					CreateConstantBufferView(currIndex, std::get<D3D12_CONSTANT_BUFFER_VIEW_DESC>(descriptorInfo));
 					break;
 				}
 
@@ -185,35 +189,16 @@ namespace Brawler
 			// frame.
 		}
 
-		void DescriptorTableBuilder::CreateConstantBufferView(const std::uint32_t index, const CBVInfo& cbvInfo)
+		void DescriptorTableBuilder::CreateConstantBufferView(const std::uint32_t index, const D3D12_CONSTANT_BUFFER_VIEW_DESC& cbvDesc)
 		{
 			// *LOCKED*
 			//
 			// This function is called from a locked context.
 
-			if (cbvInfo.BufferSubAllocationPtr != nullptr) [[likely]]
-			{
-				const D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc{
-					.BufferLocation = cbvInfo.BufferSubAllocationPtr->GetGPUVirtualAddress() + cbvInfo.OffsetFromSubAllocationStart,
-					.SizeInBytes = static_cast<std::uint32_t>(cbvInfo.BufferSubAllocationPtr->GetSubAllocationSize())
-				};
+			// We actually do not need to do anything special for null descriptors, since cbvDesc will already
+			// be appropriately set in that case.
 
-				Util::Engine::GetD3D12Device().CreateConstantBufferView(&cbvDesc, GetCPUDescriptorHandle(index));
-			}
-			else [[unlikely]]
-			{
-				// The specs state that if we define SizeInBytes to be 0, then we can specify nullptr (0) for
-				// BufferLocation and still get the intended behavior of a null CBV. (The source for this
-				// information is https://microsoft.github.io/DirectX-Specs/d3d/ResourceBinding.html#null-descriptors.
-				// Don't bother looking on the MSDN for it; it's not there.)
-				
-				static constexpr D3D12_CONSTANT_BUFFER_VIEW_DESC NULL_CBV_DESC{
-					.BufferLocation = 0,
-					.SizeInBytes = 0
-				};
-
-				Util::Engine::GetD3D12Device().CreateConstantBufferView(&NULL_CBV_DESC, GetCPUDescriptorHandle(index));
-			}
+			Util::Engine::GetD3D12Device().CreateConstantBufferView(&cbvDesc, GetCPUDescriptorHandle(index));
 		}
 
 		void DescriptorTableBuilder::CreateShaderResourceView(const std::uint32_t index, const SRVInfo& srvInfo)
@@ -233,7 +218,7 @@ namespace Brawler
 
 			if (uavInfo.GPUResourcePtr != nullptr) [[likely]]
 			{
-				Brawler::D3D12Resource* const d3dCounterResourcePtr = (uavInfo.UAVCounter.HasValue() ? &(uavInfo.UAVCounter->GetD3D12Resource()) : nullptr);
+				Brawler::D3D12Resource* const d3dCounterResourcePtr = (uavInfo.UAVCounterResource.HasValue() ? &(*(uavInfo.UAVCounterResource)) : nullptr);
 
 				Util::Engine::GetD3D12Device().CreateUnorderedAccessView(
 					&(uavInfo.GPUResourcePtr->GetD3D12Resource()),

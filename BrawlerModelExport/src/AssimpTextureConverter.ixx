@@ -195,23 +195,43 @@ namespace Brawler
 			std::numeric_limits<std::uint8_t>::max()
 		};
 
-		const DirectX::Image srcImage{
-			.width = 1,
-			.height = 1,
-			.format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
-			.rowPitch = sizeof(rgbaColorArr),
-			.slicePitch = sizeof(rgbaColorArr),
-			.pixels = rgbaColorArr.data()
-		};
-
 		DirectX::ScratchImage convertedImage{};
-		Util::General::CheckHRESULT(DirectX::Convert(
-			srcImage,
-			Brawler::GetIntermediateTextureFormat<TextureType>(),
-			DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT,
-			DirectX::TEX_THRESHOLD_DEFAULT,
-			convertedImage
-		));
+
+		if constexpr (Brawler::GetIntermediateTextureFormat<TextureType>() != DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
+		{
+			const DirectX::Image srcImage{
+				.width = 1,
+				.height = 1,
+				.format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
+				.rowPitch = sizeof(rgbaColorArr),
+				.slicePitch = sizeof(rgbaColorArr),
+				.pixels = rgbaColorArr.data()
+			};
+
+			Util::General::CheckHRESULT(DirectX::Convert(
+				srcImage,
+				Brawler::GetIntermediateTextureFormat<TextureType>(),
+				DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT,
+				DirectX::TEX_THRESHOLD_DEFAULT,
+				convertedImage
+			));
+		}
+		else
+		{
+			Util::General::CheckHRESULT(convertedImage.Initialize2D(
+				Brawler::GetIntermediateTextureFormat<TextureType>(),
+				1,
+				1,
+				1,
+				1,
+				DirectX::CP_FLAGS::CP_FLAGS_NONE
+			));
+
+			const DirectX::Image* const relevantImagePtr = convertedImage.GetImage(0, 0, 0);
+			assert(relevantImagePtr != nullptr);
+
+			std::memcpy(relevantImagePtr->pixels, rgbaColorArr.data(), sizeof(rgbaColorArr));
+		}
 
 		return ConvertedAssimpTexture{
 			.ScratchImage{std::move(convertedImage)},
@@ -230,12 +250,7 @@ namespace Brawler
 		if (errorCode) [[unlikely]]
 			throw std::runtime_error{ std::format(R"(ERROR: The attempt to check if the file at "{}" exists failed with the following error: {})", textureFilePath.string(), errorCode.message()) };
 
-		bool isDirectory = std::filesystem::is_directory(textureFilePath, errorCode);
-
-		if (errorCode) [[unlikely]]
-			throw std::runtime_error{ std::format(R"(ERROR: The attempt to check if the file at "{}" was actually a directory failed with the following error: {})", textureFilePath.string(), errorCode.message()) };
-
-		if (!fileExists || isDirectory) [[unlikely]]
+		if (!fileExists)
 		{
 			// If we can't find the file like that, then perhaps it was specified relative to the LOD mesh file directory.
 			textureFilePath = mesh.GetLODScene().GetInputMeshFilePath().parent_path() / textureFilePath;
@@ -247,15 +262,15 @@ namespace Brawler
 
 			if (!fileExists) [[unlikely]]
 				throw std::runtime_error{ std::format(R"(ERROR: The external texture file "{}" referenced by the LOD mesh at "{}" could not be found!)", filePath.C_Str(), mesh.GetLODScene().GetInputMeshFilePath().string()) };
-
-			isDirectory = std::filesystem::is_directory(textureFilePath, errorCode);
-
-			if (errorCode) [[unlikely]]
-				throw std::runtime_error{ std::format(R"(ERROR: The attempt to check if the file at "{}" was actually a directory failed with the following error: {})", textureFilePath.string(), errorCode.message()) };
-
-			if (isDirectory) [[unlikely]]
-				throw std::runtime_error{ std::format(R"(ERROR: The external texture file "{}" referenced by the LOD mesh at "{}" is actually a directory!)", filePath.C_Str(), mesh.GetLODScene().GetInputMeshFilePath().string()) };
 		}
+
+		const bool isDirectory = std::filesystem::is_directory(textureFilePath, errorCode);
+
+		if (errorCode) [[unlikely]]
+			throw std::runtime_error{ std::format(R"(ERROR: The attempt to check if the file at "{}" was actually a directory failed with the following error: {})", textureFilePath.string(), errorCode.message()) };
+
+		if (isDirectory) [[unlikely]]
+			throw std::runtime_error{ std::format(R"(ERROR: The external texture file "{}" referenced by the LOD mesh at "{}" is actually a directory!)", filePath.C_Str(), mesh.GetLODScene().GetInputMeshFilePath().string()) };
 
 		// Transform the texture file path into its canonical path. That way, we can compare it to other textures referring
 		// to the same file on the system, but through different means (e.g., as a symbolic link).

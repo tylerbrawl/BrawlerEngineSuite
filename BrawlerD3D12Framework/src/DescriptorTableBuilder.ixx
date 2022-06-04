@@ -33,12 +33,6 @@ export namespace Brawler
 			friend class GPUResourceDescriptorHeap;
 
 		private:
-			struct CBVInfo
-			{
-				const I_BufferSubAllocation* BufferSubAllocationPtr;
-				std::size_t OffsetFromSubAllocationStart;
-			};
-
 			struct SRVInfo
 			{
 				const I_GPUResource* GPUResourcePtr;
@@ -59,12 +53,12 @@ export namespace Brawler
 				/// about this can be found at 
 				/// https://docs.microsoft.com/en-us/windows/win32/direct3d12/uav-counters#using-uav-counters.
 				/// </summary>
-				Brawler::OptionalRef<const UAVCounterSubAllocation> UAVCounter;
+				Brawler::OptionalRef<Brawler::D3D12Resource> UAVCounterResource;
 
 				D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc;
 			};
 
-			using DescriptorInfoVariant = std::variant<std::monostate, CBVInfo, SRVInfo, UAVInfo>;
+			using DescriptorInfoVariant = std::variant<std::monostate, D3D12_CONSTANT_BUFFER_VIEW_DESC, SRVInfo, UAVInfo>;
 
 		public:
 			DescriptorTableBuilder() = delete;
@@ -140,7 +134,7 @@ export namespace Brawler
 		private:
 			void CreateDescriptorTable();
 
-			void CreateConstantBufferView(const std::uint32_t index, const CBVInfo& cbvInfo);
+			void CreateConstantBufferView(const std::uint32_t index, const D3D12_CONSTANT_BUFFER_VIEW_DESC& cbvInfo);
 			void CreateShaderResourceView(const std::uint32_t index, const SRVInfo& srvInfo);
 			void CreateUnorderedAccessView(const std::uint32_t index, const UAVInfo& uavInfo);
 
@@ -301,10 +295,7 @@ namespace Brawler
 
 			const std::scoped_lock<std::mutex> lock{ mTableCreationCritSection };
 			
-			mDescriptorInfoArr[index] = CBVInfo{
-				.BufferSubAllocationPtr{ &(cbv.GetBufferSubAllocation()) },
-				.OffsetFromSubAllocationStart = cbv.GetOffsetFromSubAllocationStart()
-			};
+			mDescriptorInfoArr[index] = cbv.GetCBVDescription();
 		}
 
 		template <DXGI_FORMAT Format, D3D12_SRV_DIMENSION ViewDimension>
@@ -331,7 +322,7 @@ namespace Brawler
 
 			mDescriptorInfoArr[index] = UAVInfo{
 				.GPUResourcePtr{ &(uav.GetGPUResource()) },
-				.UAVCounter{ uav.GetUAVCounter() },
+				.UAVCounterResource{ uav.GetUAVCounterResource() },
 				.UAVDesc{ uav.CreateUAVDescription() }
 			};
 		}
@@ -356,7 +347,7 @@ namespace Brawler
 
 			mDescriptorInfoArr[index] = UAVInfo{
 				.GPUResourcePtr = nullptr,
-				.UAVCounter{},
+				.UAVCounterResource{},
 				.UAVDesc{ nullUAVDesc }
 			};
 		}

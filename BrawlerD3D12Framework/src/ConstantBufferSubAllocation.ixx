@@ -5,6 +5,7 @@ module;
 
 export module Brawler.D3D12.ConstantBufferSubAllocation;
 import Brawler.D3D12.I_BufferSubAllocation;
+import Brawler.D3D12.I_BufferSnapshot;
 import Util.HLSL;
 import Util.Math;
 import Brawler.D3D12.RootDescriptors;
@@ -18,6 +19,47 @@ namespace Brawler
 		concept HLSLConstantBufferCompatible = (Util::HLSL::IsHLSLConstantBufferAligned<T>() && (sizeof(T) <= Util::Math::KilobytesToBytes(64)));
 	}
 }
+
+export namespace Brawler
+{
+	namespace D3D12
+	{
+		template <typename T>
+			requires HLSLConstantBufferCompatible<T>
+		class ConstantBufferSubAllocation;
+	}
+}
+
+export namespace Brawler
+{
+	namespace D3D12
+	{
+		template <typename T>
+			requires HLSLConstantBufferCompatible<T>
+		class ConstantBufferSnapshot final : public I_BufferSnapshot
+		{
+		public:
+			explicit ConstantBufferSnapshot(const ConstantBufferSubAllocation<T>& cbSubAllocation);
+
+			ConstantBufferSnapshot(const ConstantBufferSnapshot& rhs) = default;
+			ConstantBufferSnapshot& operator=(const ConstantBufferSnapshot& rhs) = default;
+
+			ConstantBufferSnapshot(ConstantBufferSnapshot&& rhs) noexcept = default;
+			ConstantBufferSnapshot& operator=(ConstantBufferSnapshot&& rhs) noexcept = default;
+
+			RootConstantBufferView CreateRootConstantBufferView() const;
+			ConstantBufferView<T> CreateTableConstantBufferView() const;
+
+			RootShaderResourceView CreateRootShaderResourceView() const;
+			StructuredBufferShaderResourceView CreateTableShaderResourceView() const;
+
+		private:
+			D3D12_BUFFER_SRV CreateBufferSRVDescription() const;
+		};
+	}
+}
+
+// -----------------------------------------------------------------------------------------------------------------------------
 
 export namespace Brawler
 {
@@ -44,14 +86,71 @@ export namespace Brawler
 			void WriteConstantBufferData(U&& cbData) const;
 
 			RootConstantBufferView CreateRootConstantBufferView() const;
-			ConstantBufferView<T> CreateConstantBufferViewForDescriptorTable() const;
+			ConstantBufferView<T> CreateTableConstantBufferView() const;
 
 			RootShaderResourceView CreateRootShaderResourceView() const;
-			StructuredBufferShaderResourceView CreateShaderResourceViewForDescriptorTable() const;
+			StructuredBufferShaderResourceView CreateTableShaderResourceView() const;
 
 		private:
 			D3D12_BUFFER_SRV CreateBufferSRVDescription() const;
 		};
+	}
+}
+
+// -----------------------------------------------------------------------------------------------------------------------------
+
+namespace Brawler
+{
+	namespace D3D12
+	{
+		template <typename T>
+			requires HLSLConstantBufferCompatible<T>
+		ConstantBufferSnapshot<T>::ConstantBufferSnapshot(const ConstantBufferSubAllocation<T>& cbSubAllocation) :
+			I_BufferSnapshot(cbSubAllocation)
+		{}
+
+		template <typename T>
+			requires HLSLConstantBufferCompatible<T>
+		RootConstantBufferView ConstantBufferSnapshot<T>::CreateRootConstantBufferView() const
+		{
+			return RootConstantBufferView{ GetGPUVirtualAddress() };
+		}
+
+		template <typename T>
+			requires HLSLConstantBufferCompatible<T>
+		ConstantBufferView<T> ConstantBufferSnapshot<T>::CreateTableConstantBufferView() const
+		{
+			return ConstantBufferView<T>{ D3D12_CONSTANT_BUFFER_VIEW_DESC{
+				.BufferLocation = GetGPUVirtualAddress(),
+				.SizeInBytes = sizeof(T)
+			} };
+		}
+
+		template <typename T>
+			requires HLSLConstantBufferCompatible<T>
+		RootShaderResourceView ConstantBufferSnapshot<T>::CreateRootShaderResourceView() const
+		{
+			return RootShaderResourceView{ GetGPUVirtualAddress() };
+		}
+
+		template <typename T>
+			requires HLSLConstantBufferCompatible<T>
+		StructuredBufferShaderResourceView ConstantBufferSnapshot<T>::CreateTableShaderResourceView() const
+		{
+			return StructuredBufferShaderResourceView{ GetBufferResource(), CreateBufferSRVDescription() };
+		}
+
+		template <typename T>
+			requires HLSLConstantBufferCompatible<T>
+		D3D12_BUFFER_SRV ConstantBufferSnapshot<T>::CreateBufferSRVDescription() const
+		{
+			return D3D12_BUFFER_SRV{
+				.FirstElement = (GetOffsetFromBufferStart() / sizeof(T)),
+				.NumElements = 1,
+				.StructureByteStride = sizeof(T),
+				.Flags = D3D12_BUFFER_SRV_FLAGS::D3D12_BUFFER_SRV_FLAG_NONE
+			};
+		}
 	}
 }
 
@@ -97,7 +196,7 @@ namespace Brawler
 
 		template <typename T>
 			requires HLSLConstantBufferCompatible<T>
-		ConstantBufferView<T> ConstantBufferSubAllocation<T>::CreateConstantBufferViewForDescriptorTable() const
+		ConstantBufferView<T> ConstantBufferSubAllocation<T>::CreateTableConstantBufferView() const
 		{
 			return ConstantBufferView<T>{ *this };
 		}
@@ -111,7 +210,7 @@ namespace Brawler
 
 		template <typename T>
 			requires HLSLConstantBufferCompatible<T>
-		StructuredBufferShaderResourceView ConstantBufferSubAllocation<T>::CreateShaderResourceViewForDescriptorTable() const
+		StructuredBufferShaderResourceView ConstantBufferSubAllocation<T>::CreateTableShaderResourceView() const
 		{
 			return StructuredBufferShaderResourceView{ GetBufferResource(), CreateBufferSRVDescription() };
 		}
@@ -122,11 +221,9 @@ namespace Brawler
 		{
 			return D3D12_BUFFER_SRV{
 				// For the sake of the driver, we can "pretend" that the entire buffer consists only
-				// of structures of size D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT. Then, we know
-				// that the index of the element which we are looking for is
-				// (GetOffsetFromBufferStart() / D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT). This
-				// works because all constant buffer data must be aligned to that alignment.
-				.FirstElement = (GetOffsetFromBufferStart() / D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT),
+				// of structures of size sizeof(T). Then, we know that the index of the element which 
+				// we are looking for is (GetOffsetFromBufferStart() / sizeof(T)).
+				.FirstElement = (GetOffsetFromBufferStart() / sizeof(T)),
 
 				.NumElements = 1,
 				.StructureByteStride = sizeof(T),

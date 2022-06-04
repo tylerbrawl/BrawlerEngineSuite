@@ -153,6 +153,8 @@ namespace Brawler
 
 			mipMapGenerationBundle.AddRenderPass(std::move(mipMapGenerationPass));
 
+			numMipLevelsToGenerate -= mipLevelsGeneratedThisPass;
+
 			// Even if we only output one mip level, we'll be exiting the loop anyways, so
 			// we can just always add 2 to currInputMipLevel.
 			currInputMipLevel += MAX_OUTPUT_TEXTURES_PER_PASS;

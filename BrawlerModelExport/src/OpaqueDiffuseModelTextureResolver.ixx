@@ -1,16 +1,19 @@
 module;
 #include <optional>
 #include <memory>
+#include <array>
+#include <vector>
 #include <DirectXTex.h>
 
 export module Brawler.OpaqueDiffuseModelTextureResolver;
 import Brawler.ModelTextureResolutionEventHandle;
 import Brawler.ImportedMesh;
 import Brawler.D3D12.BufferResource;
-import Brawler.D3D12.TextureCopyBufferSubAllocation;
+import Brawler.D3D12.StructuredBufferSubAllocation;
 import Brawler.D3D12.FrameGraphBuilder;
 import Brawler.D3D12.Texture2D;
 import Brawler.D3D12.BufferSubAllocationReservationHandle;
+import Brawler.BC7ImageCompressor;
 
 export namespace Brawler
 {
@@ -21,7 +24,12 @@ export namespace Brawler
 		{
 			D3D12::FrameGraphBuilder& Builder;
 			D3D12::Texture2D* CurrTexturePtr;
-			D3D12::BufferSubAllocationReservationHandle HBC7TextureDataReservation;
+			std::vector<D3D12::BufferSubAllocationReservationHandle> HBC7TextureDataReservationArr;
+		};
+
+		struct BufferBC7
+		{
+			DirectX::XMUINT4 Color;
 		};
 
 	public:
@@ -50,7 +58,8 @@ export namespace Brawler
 	private:
 		std::optional<ModelTextureResolutionEventHandle> mHDiffuseTextureResolutionEvent;
 		std::unique_ptr<D3D12::BufferResource> mOutputBuffer;
-		std::vector<D3D12::TextureCopyBufferSubAllocation> mTextureCopySubAllocationArr;
+		std::vector<std::unique_ptr<BC7ImageCompressor>> mBC7CompressorPtrArr;
+		std::vector<D3D12::StructuredBufferSubAllocation<BufferBC7>> mBC7BufferSubAllocationArr;
 		DirectX::ScratchImage mDestDiffuseScratchImage;
 		DirectX::ScratchImage mSrcDiffuseScratchImage;
 		const ImportedMesh* mMeshPtr;
