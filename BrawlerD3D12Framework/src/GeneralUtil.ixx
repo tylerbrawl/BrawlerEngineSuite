@@ -2,7 +2,6 @@ module;
 #include <string>
 #include <source_location>
 #include <system_error>
-#include <format>
 #include "DxDef.h"
 
 export module Util.General;
@@ -86,34 +85,16 @@ namespace Util
 			if (FAILED(hr)) [[unlikely]]
 			{
 				const _com_error comErr{ hr };
-				throw std::runtime_error{ std::format(
-R"(An HRESULT check failed!
-
-HRESULT Returned: {}
-Function: {}
-File: {} (Line Number: {})",
-					WStringToString(comErr.ErrorMessage()),
-					srcLocation.function_name(),
-					srcLocation.file_name(),
-					srcLocation.line()
-				) };
+				throw std::runtime_error{ std::string{ "An HRESULT check failed!\n\nHRESULT Returned: " } + WStringToString(comErr.ErrorMessage()) +
+					"\nFunction: " + std::string{ srcLocation.function_name() } + "\nFile: " + std::string{ srcLocation.file_name() } + " (Line Number: " + std::to_string(srcLocation.line()) + ")" };
 			}
 		}
 
 		__forceinline void CheckErrorCode(const std::error_code errorCode, const std::source_location srcLocation)
 		{
 			if (errorCode) [[unlikely]]
-				throw std::runtime_error{ std::format(
-R"(A std::error_code check failed!
-
-std::error_code Returned: {}
-Function: {}
-File: {} (Line Number: {}))",
-					errorCode.message(),
-					srcLocation.function_name(),
-					srcLocation.file_name(),
-					srcLocation.line()
-				) };
+				throw std::runtime_error{ std::string{ "A std::error_code check failed!\n\nstd::error_code Returned: " } + errorCode.message() +
+					"\nFunction: " + std::string{ srcLocation.function_name() } + "\nFile: " + std::string{ srcLocation.file_name() } + " (Line Number: " + std::to_string(srcLocation.line()) + ")" };
 		}
 #else
 		__forceinline void CheckHRESULT(const HRESULT hr)

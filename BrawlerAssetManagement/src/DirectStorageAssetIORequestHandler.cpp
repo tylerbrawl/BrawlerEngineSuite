@@ -123,7 +123,7 @@ namespace Brawler
 		{
 			// Let the asset dependency resolver callbacks in the AssetDependency tell us which assets need to
 			// be loaded.
-			DirectStorageAssetIORequestBuilder requestBuilder{ *(mBPKDStorageFile.Get()) };
+			DirectStorageAssetIORequestBuilder requestBuilder{ *(mDStorageFactory.Get()), *(mBPKDStorageFile.Get())};
 			enqueuedDependency.Dependency.BuildAssetIORequests(requestBuilder);
 
 			std::unique_ptr<PendingDirectStorageRequest> pendingRequestPtr{ std::make_unique<PendingDirectStorageRequest>(std::move(requestBuilder), std::move(enqueuedDependency.HRequestEvent)) };

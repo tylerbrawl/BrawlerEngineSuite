@@ -49,7 +49,7 @@ float4 SampleInputTexture(in const uint2 DTid)
 	// Assuming that we are creating X * Y threads, where X and Y are the x- and y-dimensions
 	// of OutputMip1, we can do the following:
 	
-	const float2 inputTextureUV = (DTid + 0.5f) * MipMapConstants.InverseOutputDimensions;
+	const float2 inputTextureUV = mad(DTid, 2.0f, 0.5f) * MipMapConstants.InverseOutputDimensions;
 	return InputTexture.SampleLevel(BilinearClampSampler, inputTextureUV, MipMapConstants.StartingMipLevel);
 }
 

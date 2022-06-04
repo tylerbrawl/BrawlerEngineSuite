@@ -4,6 +4,7 @@ module;
 #include <span>
 #include <atomic>
 #include <cassert>
+#include <filesystem>
 #include <DxDef.h>
 
 module Brawler.AssetManagement.Win32AssetIORequestBuilder;
@@ -52,6 +53,31 @@ namespace Brawler
 
 					bufferSubAllocation.WriteToBuffer(srcDataSpan, 0);
 				}
+			});
+
+			GetCurrentRequestContainer().push_back(std::move(assetIORequest));
+		}
+
+		void Win32AssetIORequestBuilder::AddAssetIORequest(const CustomFileAssetIORequest& customFileRequest)
+		{
+			if constexpr (Util::General::IsDebugModeEnabled())
+			{
+				// Make sure that the provided std::span instance can contain the contents of the
+				// entire file.
+
+				std::error_code errorCode{};
+
+				const auto fileSize = std::filesystem::file_size(customFileRequest.FilePath, errorCode);
+				Util::General::CheckErrorCode(errorCode);
+
+				assert((customFileRequest.FileOffset + customFileRequest.DestDataSpan.size_bytes()) <= fileSize && "ERROR: The size of the provided std::span for an asset I/O request from a custom file was too large compared to the size of the file minus the specified offset from the start of the file!");
+			}
+
+			Win32AssetIORequest assetIORequest{ customFileRequest, mRequestTracker };
+			assetIORequest.SetWriteDataCallback([destSpan = customFileRequest.DestDataSpan] (const std::span<const std::byte> srcDataSpan)
+			{
+				assert(destSpan.size_bytes() == srcDataSpan.size_bytes());
+				std::memcpy(destSpan.data(), srcDataSpan.data(), srcDataSpan.size_bytes());
 			});
 
 			GetCurrentRequestContainer().push_back(std::move(assetIORequest));

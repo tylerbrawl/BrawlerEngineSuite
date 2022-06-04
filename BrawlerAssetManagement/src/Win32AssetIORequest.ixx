@@ -6,6 +6,9 @@ export module Brawler.AssetManagement.Win32AssetIORequest;
 import Brawler.CompositeEnum;
 import Brawler.FilePathHash;
 import Brawler.AssetManagement.Win32AssetIORequestTracker;
+import Brawler.MappedFileView;
+import Brawler.FileAccessMode;
+import Brawler.AssetManagement.I_AssetIORequestBuilder;
 
 export namespace Brawler
 {
@@ -19,12 +22,13 @@ export namespace Brawler
 		public:
 			Win32AssetIORequest() = default;
 			Win32AssetIORequest(Brawler::FilePathHash pathHash, Win32AssetIORequestTracker& requestTracker);
+			Win32AssetIORequest(const CustomFileAssetIORequest& customFileRequest, Win32AssetIORequestTracker& requestTracker);
 
 			Win32AssetIORequest(const Win32AssetIORequest& rhs) = delete;
 			Win32AssetIORequest& operator=(const Win32AssetIORequest& rhs) = delete;
 
-			Win32AssetIORequest(Win32AssetIORequest&& rhs) noexcept = default;
-			Win32AssetIORequest& operator=(Win32AssetIORequest&& rhs) noexcept = default;
+			Win32AssetIORequest(Win32AssetIORequest&& rhs) noexcept;
+			Win32AssetIORequest& operator=(Win32AssetIORequest&& rhs) noexcept;
 
 			void SetWriteDataCallback(WriteDataCallback_T&& callback);
 
@@ -32,7 +36,7 @@ export namespace Brawler
 
 		private:
 			WriteDataCallback_T mWriteDataCallback;
-			Brawler::FilePathHash mPathHash;
+			MappedFileView<FileAccessMode::READ_ONLY> mMappedFileView;
 			Win32AssetIORequestTracker* mRequestTrackerPtr;
 		};
 	}

@@ -342,6 +342,7 @@
     <ClCompile Include="src\PipelineEnums.ixx" />
     <ClCompile Include="src\PipelineType.ixx" />
     <ClCompile Include="src\PSODatabase.cpp" />
+    <ClCompile Include="src\PSOLibrary.ixx" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\ResourceStateTrackingTest.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

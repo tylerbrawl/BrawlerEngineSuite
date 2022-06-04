@@ -1035,6 +1035,9 @@
     <ClCompile Include="src\DebugScopedCPUPIXEvent.cpp">
       <Filter>Source Files\Profiling</Filter>
     </ClCompile>
+    <ClCompile Include="src\PSOLibrary.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

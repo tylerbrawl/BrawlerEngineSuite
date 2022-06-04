@@ -18,7 +18,7 @@ namespace
 	// DirectStorage.
 	static constexpr bool FORCE_WIN32_ASSET_REQUEST_HANDLER_USE = false;
 
-	static constexpr Brawler::AssetManagement::AssetLoadingMode DEFAULT_LOADING_MODE = AssetLoadingMode::MINIMAL_OVERHEAD;
+	static constexpr Brawler::AssetManagement::AssetLoadingMode DEFAULT_LOADING_MODE = Brawler::AssetManagement::AssetLoadingMode::MINIMAL_OVERHEAD;
 }
 
 namespace Brawler

@@ -2,11 +2,10 @@ module;
 #include <span>
 #include <functional>
 #include <cassert>
+#include <filesystem>
 
 module Brawler.AssetManagement.Win32AssetIORequest;
 import Brawler.AssetManagement.BPKArchiveReader;
-import Brawler.MappedFileView;
-import Brawler.FileAccessMode;
 
 namespace Brawler
 {
@@ -14,9 +13,38 @@ namespace Brawler
 	{
 		Win32AssetIORequest::Win32AssetIORequest(Brawler::FilePathHash pathHash, Win32AssetIORequestTracker& requestTracker) :
 			mWriteDataCallback(),
-			mPathHash(std::move(pathHash)),
-			mRequestTrackerPtr(std::addressof(requestTracker))
+			mMappedFileView(BPKArchiveReader::GetInstance().CreateMappedFileViewForAsset(pathHash)),
+			mRequestTrackerPtr(&requestTracker)
 		{}
+
+		Win32AssetIORequest::Win32AssetIORequest(const CustomFileAssetIORequest& customFileRequest, Win32AssetIORequestTracker& requestTracker) :
+			mWriteDataCallback(),
+			mMappedFileView(customFileRequest.FilePath, MappedFileView<FileAccessMode::READ_ONLY>::ViewParams{
+				.FileOffsetInBytes = customFileRequest.FileOffset,
+				.ViewSizeInBytes = customFileRequest.DestDataSpan.size_bytes()
+			}),
+			mRequestTrackerPtr(&requestTracker)
+		{}
+
+		Win32AssetIORequest::Win32AssetIORequest(Win32AssetIORequest&& rhs) noexcept :
+			mWriteDataCallback(std::move(rhs.mWriteDataCallback)),
+			mMappedFileView(std::move(rhs.mMappedFileView)),
+			mRequestTrackerPtr(rhs.mRequestTrackerPtr)
+		{
+			rhs.mRequestTrackerPtr = nullptr;
+		}
+
+		Win32AssetIORequest& Win32AssetIORequest::operator=(Win32AssetIORequest&& rhs) noexcept
+		{
+			mWriteDataCallback = std::move(rhs.mWriteDataCallback);
+
+			mMappedFileView = std::move(rhs.mMappedFileView);
+
+			mRequestTrackerPtr = rhs.mRequestTrackerPtr;
+			rhs.mRequestTrackerPtr = nullptr;
+
+			return *this;
+		}
 
 		void Win32AssetIORequest::SetWriteDataCallback(WriteDataCallback_T&& callback)
 		{
@@ -26,8 +54,7 @@ namespace Brawler
 		void Win32AssetIORequest::LoadAssetData()
 		{
 			// Create the mapped file view for the source data.
-			MappedFileView<FileAccessMode::READ_ONLY> sourceDataView{ BPKArchiveReader::GetInstance().CreateMappedFileViewForAsset(mPathHash) };
-			const std::span<const std::byte> srcDataSpan{ sourceDataView.GetMappedData() };
+			const std::span<const std::byte> srcDataSpan{ mMappedFileView.GetMappedData() };
 
 			mWriteDataCallback(srcDataSpan);
 

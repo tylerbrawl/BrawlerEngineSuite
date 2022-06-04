@@ -13,17 +13,20 @@ import Brawler.FileMapper;
 namespace Brawler
 {
 	using MappedAddress_T = LPVOID;
-	
-	static constexpr auto UNMAP_ADDRESS_LAMBDA = [] (MappedAddress_T mappedAddress)
+
+	struct MappedAddressDeleter
 	{
-		if (mappedAddress != nullptr)
+		void operator()(MappedAddress_T mappedAddress) const
 		{
-			const bool unmapResult = UnmapViewOfFileEx(mappedAddress, 0);
-			assert(unmapResult && "ERROR: UnmapViewOfFileEx() failed to unmap an address!");
+			if (mappedAddress != nullptr)
+			{
+				const bool unmapResult = UnmapViewOfFileEx(mappedAddress, 0);
+				assert(unmapResult && "ERROR: UnmapViewOfFileEx() failed to unmap an address!");
+			}
 		}
 	};
 
-	using SafeAddressMapping = std::unique_ptr<std::remove_pointer_t<MappedAddress_T>, decltype(UNMAP_ADDRESS_LAMBDA)>;
+	using SafeAddressMapping = std::unique_ptr<std::remove_pointer_t<MappedAddress_T>, MappedAddressDeleter>;
 
 	template <FileAccessMode AccessMode>
 	concept IsValidAccessMode = (AccessMode != FileAccessMode::COUNT_OR_ERROR);
@@ -46,8 +49,6 @@ export namespace Brawler
 		MappedFileView() = default;
 		MappedFileView(const std::filesystem::path& filePath, const ViewParams& params);
 		MappedFileView(const HANDLE hFileMappingObject, const ViewParams& params);
-
-		~MappedFileView() = default;
 
 		MappedFileView(const MappedFileView& rhs) = delete;
 		MappedFileView& operator=(const MappedFileView& rhs) = delete;

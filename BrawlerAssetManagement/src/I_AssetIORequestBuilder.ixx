@@ -1,10 +1,25 @@
 module;
 #include <vector>
+#include <filesystem>
+#include <span>
 
 export module Brawler.AssetManagement.I_AssetIORequestBuilder;
 import Brawler.FilePathHash;
 import Brawler.D3D12.I_BufferSubAllocation;
 import Brawler.JobPriority;
+
+export namespace Brawler
+{
+	namespace AssetManagement
+	{
+		struct CustomFileAssetIORequest
+		{
+			const std::filesystem::path& FilePath;
+			std::span<std::byte> DestDataSpan;
+			std::size_t FileOffset;
+		};
+	}
+}
 
 export namespace Brawler
 {
@@ -25,6 +40,8 @@ export namespace Brawler
 			I_AssetIORequestBuilder& operator=(I_AssetIORequestBuilder&& rhs) noexcept = default;
 
 			virtual void AddAssetIORequest(const Brawler::FilePathHash pashHash, Brawler::D3D12::I_BufferSubAllocation& bufferSubAllocation) = 0;
+
+			virtual void AddAssetIORequest(const CustomFileAssetIORequest& customFileRequest) = 0;
 
 			/// <summary>
 			/// Sets the priority for requests made in subsequent calls to
