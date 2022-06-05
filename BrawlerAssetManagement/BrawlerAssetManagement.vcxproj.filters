@@ -111,18 +111,6 @@
     <ClCompile Include="src\BPKArchiveReader.cpp">
       <Filter>Source Files\Asset Management</Filter>
     </ClCompile>
-    <ClCompile Include="src\MappedFileView.ixx">
-      <Filter>Module Files\File I/O</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FileAccessMode.ixx">
-      <Filter>Module Files\File I/O</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FileMapper.ixx">
-      <Filter>Module Files\File I/O</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FileMapper.cpp">
-      <Filter>Source Files\File I/O</Filter>
-    </ClCompile>
     <ClCompile Include="src\DirectStorageAssetIORequestBuilder.cpp">
       <Filter>Source Files\Asset Management\Asset I/O Requests</Filter>
     </ClCompile>

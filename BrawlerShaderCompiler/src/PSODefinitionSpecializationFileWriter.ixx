@@ -28,6 +28,7 @@ import :PSODefinitionBase;
 import Brawler.PSOs.PSOID;
 import Brawler.RootSignatures.RootSignatureID;
 import Brawler.D3D12.RootSignatureDatabase;
+import Brawler.NZStringView;
 
 export namespace Brawler
 {
@@ -43,6 +44,8 @@ export namespace Brawler
 
 			static constexpr std::array<std::uint8_t, sizeof(PSOStreamType)> DEFAULT_PSO_VALUE{ ... };
 			static constexpr Brawler::RootSignatures::RootSignatureID ROOT_SIGNATURE_ID = { ... };
+
+			static constexpr Brawler::NZWStringView UNIQUE_PSO_NAME{ ... };
 
 			\\ Additional fields are added to this stucture as specified by the corresponding PSOBuilder's I_PSOFieldResolver
 			\\ instances.
@@ -112,7 +115,7 @@ namespace Brawler
 				std::string headerText{ Brawler::FileStrings::AUTO_GENERATED_WARNING_COMMENT };
 				headerText += "module;\n#include <array>\n#include \"../DxDef.h\"\n\nexport module Brawler.PSOs.PSODefinition:";
 				headerText += Brawler::GetPSOIDString<PSOIdentifier>();
-				headerText += ";\nimport :PSODefinitionBase;\nimport Brawler.PSOs.PSOID;\nimport Brawler.RootSignatures.RootSignatureID;\nimport Brawler.D3D12.RootSignatureDatabase;\n\n";
+				headerText += ";\nimport :PSODefinitionBase;\nimport Brawler.PSOs.PSOID;\nimport Brawler.RootSignatures.RootSignatureID;\nimport Brawler.D3D12.RootSignatureDatabase;\nimport Brawler.NZStringView;\n\n";
 
 				headerNode.SetOutputText(std::move(headerText));
 				rootNode.AddChildNode(std::move(headerNode));

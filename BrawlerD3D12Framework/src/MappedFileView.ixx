@@ -3,7 +3,7 @@ module;
 #include <filesystem>
 #include <memory>
 #include <cassert>
-#include <DxDef.h>
+#include "DxDef.h"
 
 export module Brawler.MappedFileView;
 import Brawler.FileAccessMode;

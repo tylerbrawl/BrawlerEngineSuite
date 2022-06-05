@@ -19,6 +19,7 @@ import Brawler.RootSignatures.RootSignatureID;
 import Util.Engine;
 import Util.Reflection;
 import Brawler.D3D12.PipelineType;
+import Brawler.NZStringView;
 
 namespace Brawler
 {
@@ -69,6 +70,12 @@ export namespace Brawler
 		consteval PipelineType GetPipelineType()
 		{
 			return (IsComputePSOStream<PSOStreamType<PSOIdentifier>, 0>() ? PipelineType::COMPUTE : PipelineType::GRAPHICS);
+		}
+
+		template <Brawler::PSOs::PSOID PSOIdentifier>
+		consteval Brawler::NZWStringView GetUniquePSOName()
+		{
+			return PSODefinition<PSOIdentifier>::UNIQUE_PSO_NAME;
 		}
 	}
 }

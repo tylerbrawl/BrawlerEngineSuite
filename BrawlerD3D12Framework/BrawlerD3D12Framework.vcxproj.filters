@@ -208,6 +208,12 @@
     <Filter Include="Source Files\GPU Resources\Buffer Resource Types\Buffer Snapshot Types">
       <UniqueIdentifier>{f0e8971f-6747-4869-b3fc-4225cc2955d7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\File I/O">
+      <UniqueIdentifier>{e09d18c8-86a9-4c43-a8d9-65715a0c549d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File I/O">
+      <UniqueIdentifier>{901026e0-49cd-4f3c-b9d3-4317b0df1444}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GeneralUtil.ixx">
@@ -1037,6 +1043,21 @@
     </ClCompile>
     <ClCompile Include="src\PSOLibrary.ixx">
       <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileAccessMode.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileMapper.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MappedFileView.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileMapper.cpp">
+      <Filter>Source Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSOLibrary.cpp">
+      <Filter>Source Files\Pipeline State Management</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

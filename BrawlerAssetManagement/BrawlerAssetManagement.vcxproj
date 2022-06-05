@@ -1177,9 +1177,6 @@
     <ClCompile Include="src\DirectStorageQueue.ixx" />
     <ClCompile Include="src\DirectStorageStatusArrayEntry.ixx" />
     <ClCompile Include="src\EnqueuedAssetDependency.ixx" />
-    <ClCompile Include="src\FileAccessMode.ixx" />
-    <ClCompile Include="src\FileMapper.cpp" />
-    <ClCompile Include="src\FileMapper.ixx" />
     <ClCompile Include="src\I_AssetIORequestBuilder.cpp" />
     <ClCompile Include="src\I_AssetIORequestBuilder.ixx" />
     <ClCompile Include="src\DirectStorageUtil.cpp" />
@@ -1188,7 +1185,6 @@
     <ClCompile Include="src\FilePathHash.ixx" />
     <ClCompile Include="src\I_AssetIORequestHandler.ixx" />
     <ClCompile Include="src\I_AssetResolver.ixx" />
-    <ClCompile Include="src\MappedFileView.ixx" />
     <ClCompile Include="src\PendingDirectStorageRequest.cpp" />
     <ClCompile Include="src\PendingDirectStorageRequest.ixx" />
     <ClCompile Include="src\SerializedStruct.ixx" />

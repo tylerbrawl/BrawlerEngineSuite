@@ -2,7 +2,7 @@ module;
 #include <unordered_map>
 #include <filesystem>
 #include <mutex>
-#include <DxDef.h>
+#include "DxDef.h"
 
 module Brawler.FileMapper;
 

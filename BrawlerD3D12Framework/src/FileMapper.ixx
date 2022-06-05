@@ -2,7 +2,7 @@ module;
 #include <unordered_map>
 #include <filesystem>
 #include <mutex>
-#include <DxDef.h>
+#include "DxDef.h"
 
 export module Brawler.FileMapper;
 import Brawler.Win32.SafeHandle;

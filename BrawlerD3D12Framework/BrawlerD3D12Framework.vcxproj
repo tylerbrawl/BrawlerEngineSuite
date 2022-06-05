@@ -269,6 +269,9 @@
     <ClCompile Include="src\ConstantBufferView.ixx" />
     <ClCompile Include="src\D3D12UtilFormats.ixx" />
     <ClCompile Include="src\D3D12UtilGeneral.ixx" />
+    <ClCompile Include="src\FileAccessMode.ixx" />
+    <ClCompile Include="src\FileMapper.cpp" />
+    <ClCompile Include="src\FileMapper.ixx" />
     <ClCompile Include="src\Finally.ixx" />
     <ClCompile Include="src\FormattedConsoleMessageBuilder.ixx" />
     <ClCompile Include="src\FrameGraphManager.cpp" />
@@ -338,10 +341,12 @@
     <ClCompile Include="src\GPUResourceCreationType.ixx" />
     <ClCompile Include="src\I_EventHandle.cpp" />
     <ClCompile Include="src\I_EventHandle.ixx" />
+    <ClCompile Include="src\MappedFileView.ixx" />
     <ClCompile Include="src\NZStringView.ixx" />
     <ClCompile Include="src\PipelineEnums.ixx" />
     <ClCompile Include="src\PipelineType.ixx" />
     <ClCompile Include="src\PSODatabase.cpp" />
+    <ClCompile Include="src\PSOLibrary.cpp" />
     <ClCompile Include="src\PSOLibrary.ixx" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\ResourceStateTrackingTest.cpp">

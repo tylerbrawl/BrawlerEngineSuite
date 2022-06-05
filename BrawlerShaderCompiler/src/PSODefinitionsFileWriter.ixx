@@ -36,6 +36,7 @@ import Brawler.RootSignatures.RootSignatureID;
 import Util.Engine;
 import Util.Reflection;
 import Brawler.PSOs.PipelineType;
+import Brawler.NZStringView;
 
 namespace Brawler
 {
@@ -86,6 +87,12 @@ export namespace Brawler
 		consteval PipelineType GetPipelineType()
 		{
 			return (IsComputePSOStream<PSOStreamType<PSOIdentifier>, 0>() ? PipelineType::COMPUTE : PipelineType::GRAPHICS);
+		}
+
+		template <Brawler::PSOs::PSOID PSOIdentifier>
+		consteval Brawler::NZWStringView GetUniquePSOName()
+		{
+			return PSODefinition<PSOIdentifier>::UNIQUE_PSO_NAME;
 		}
 	}
 }
@@ -168,7 +175,7 @@ namespace Brawler
 
 				{
 					Brawler::FileWriterNode endHeaderNode{};
-					endHeaderNode.SetOutputText("import Brawler.PSOs.PSOID;\nimport Brawler.RootSignatures.RootSignatureID;\nimport Util.Engine;\nimport Util.Reflection;\nimport Brawler.D3D12.PipelineType;\n\n");
+					endHeaderNode.SetOutputText("import Brawler.PSOs.PSOID;\nimport Brawler.RootSignatures.RootSignatureID;\nimport Util.Engine;\nimport Util.Reflection;\nimport Brawler.D3D12.PipelineType;\nimport Brawler.NZStringView;\n\n");
 
 					headerNode.AddChildNode(std::move(endHeaderNode));
 				}
@@ -252,9 +259,16 @@ namespace Brawler
 
 				{
 					Brawler::FileWriterNode getPipelineTypeNode{};
-					getPipelineTypeNode.SetOutputText("\t\ttemplate <Brawler::PSOs::PSOID PSOIdentifier>\n\t\tconsteval PipelineType GetPipelineType()\n\t\t{\n\t\t\treturn (IsComputePSOStream<PSOStreamType<PSOIdentifier>, 0>() ? PipelineType::COMPUTE : PipelineType::GRAPHICS);\n\t\t}\n");
+					getPipelineTypeNode.SetOutputText("\t\ttemplate <Brawler::PSOs::PSOID PSOIdentifier>\n\t\tconsteval PipelineType GetPipelineType()\n\t\t{\n\t\t\treturn (IsComputePSOStream<PSOStreamType<PSOIdentifier>, 0>() ? PipelineType::COMPUTE : PipelineType::GRAPHICS);\n\t\t}\n\n");
 
 					exportedNamespaceNode.AddChildNode(std::move(getPipelineTypeNode));
+				}
+
+				{
+					Brawler::FileWriterNode getUniquePSONameNode{};
+					getUniquePSONameNode.SetOutputText("\t\ttemplate <Brawler::PSOs::PSOID PSOIdentifier>\n\t\tconsteval Brawler::NZWStringView GetUniquePSOName()\n\t\t{\n\t\t\treturn PSODefinition<PSOIdentifier>::UNIQUE_PSO_NAME;\n\t\t}\n");
+
+					exportedNamespaceNode.AddChildNode(std::move(getUniquePSONameNode));
 				}
 
 				{
