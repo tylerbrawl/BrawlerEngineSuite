@@ -8,7 +8,8 @@ module;
 export module Brawler.MappedFileView;
 import Brawler.FileAccessMode;
 import Brawler.Win32.SafeHandle;
-import Brawler.FileMapper;
+import Util.General;
+import Util.Win32;
 
 namespace Brawler
 {
@@ -48,7 +49,6 @@ export namespace Brawler
 	public:
 		MappedFileView() = default;
 		MappedFileView(const std::filesystem::path& filePath, const ViewParams& params);
-		MappedFileView(const HANDLE hFileMappingObject, const ViewParams& params);
 
 		MappedFileView(const MappedFileView& rhs) = delete;
 		MappedFileView& operator=(const MappedFileView& rhs) = delete;
@@ -62,9 +62,11 @@ export namespace Brawler
 		bool IsValidView() const;
 
 	private:
-		void MapFileView(const HANDLE hFileMappingObject, const ViewParams& params);
+		void CreateFileMappingObject(const std::filesystem::path& filePath, const ViewParams& params);
+		void MapFileView(const ViewParams& params);
 
 	private:
+		Win32::SafeHandle mHFileMappingObject;
 		SafeAddressMapping mMapping;
 		std::span<std::byte> mMappedSpan;
 	};
@@ -74,13 +76,7 @@ export namespace Brawler
 
 namespace Brawler
 {
-	static const std::uint32_t allocationGranularity = [] ()
-	{
-		SYSTEM_INFO sysInfo{};
-		GetSystemInfo(&sysInfo);
-
-		return sysInfo.dwAllocationGranularity;
-	}();
+	std::uint32_t GetAllocationGranularity();
 }
 
 namespace Brawler
@@ -88,19 +84,12 @@ namespace Brawler
 	template <FileAccessMode AccessMode>
 		requires IsValidAccessMode<AccessMode>
 	MappedFileView<AccessMode>::MappedFileView(const std::filesystem::path& filePath, const ViewParams& params) :
+		mHFileMappingObject(nullptr),
 		mMapping(nullptr),
 		mMappedSpan()
 	{
-		MapFileView(FileMapper::GetInstance().GetFileMappingObject(filePath), params);
-	}
-
-	template <FileAccessMode AccessMode>
-		requires IsValidAccessMode<AccessMode>
-	MappedFileView<AccessMode>::MappedFileView(const HANDLE hFileMappingObject, const ViewParams& params) :
-		mMapping(nullptr),
-		mMappedSpan()
-	{
-		MapFileView(hFileMappingObject, params);
+		CreateFileMappingObject(filePath, params);
+		MapFileView(params);
 	}
 
 	template <FileAccessMode AccessMode>
@@ -121,41 +110,98 @@ namespace Brawler
 		requires IsValidAccessMode<AccessMode>
 	bool MappedFileView<AccessMode>::IsValidView() const
 	{
-		return (mMapping != nullptr);
+		return (Util::Win32::IsHandleValid(mHFileMappingObject) && mMapping != nullptr);
 	}
 
 	template <FileAccessMode AccessMode>
 		requires IsValidAccessMode<AccessMode>
-	void MappedFileView<AccessMode>::MapFileView(const HANDLE hFileMappingObject, const ViewParams& params)
+	void MappedFileView<AccessMode>::CreateFileMappingObject(const std::filesystem::path& filePath, const ViewParams& params)
 	{
-		assert(hFileMappingObject != nullptr && hFileMappingObject != INVALID_HANDLE_VALUE && "ERROR: An invalid HANDLE value was specified when creating a MappedFileView!");
+		static constexpr std::uint32_t DW_DESIRED_ACCESS = (AccessMode == FileAccessMode::READ_ONLY ? GENERIC_READ : GENERIC_READ | GENERIC_WRITE);
+		
+		Win32::SafeHandle hFile{ CreateFile(
+			filePath.c_str(),
+			DW_DESIRED_ACCESS,
 
-		static constexpr std::uint32_t DESIRED_ACCESS = []<FileAccessMode Mode>()
+			// Allow only reading for now. According to the MSDN, this prevents other accesses
+			// until the HANDLE to the created file is destroyed. This will happen once we exit
+			// this function. In theory, then, we should still be able to open HANDLEs with
+			// write access after leaving this function.
+			FILE_SHARE_READ,
+
+			nullptr,
+
+			// Only allow opening existing files, regardless of what AccessMode is set to. If
+			// the user wants to create a new file, they can call the constructor of
+			// std::ofstream with the ios flag std::ios::out; this will destroy the contents
+			// of the original file and create a new one if it does not already exist. For
+			// more information, refer to https://en.cppreference.com/w/cpp/io/basic_filebuf/open.
+			OPEN_EXISTING,
+
+			// We expect memory-mapped I/O access to be largely sequential. If this needs to
+			// change in the future, then we can add the caching behavior as a parameter to
+			// the constructor of MappedFileView.
+			FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN,
+
+			nullptr
+		) };
+
+		if (hFile.get() == INVALID_HANDLE_VALUE) [[unlikely]]
+			Util::General::CheckHRESULT(HRESULT_FROM_WIN32(GetLastError()));
+
+		static constexpr std::uint32_t FL_PROTECT = (AccessMode == FileAccessMode::READ_ONLY ? PAGE_READONLY : PAGE_READWRITE);
+
+		if constexpr (Util::General::IsDebugModeEnabled()) 
 		{
-			if constexpr (Mode == FileAccessMode::READ_ONLY)
-				return FILE_MAP_READ;
-			else
-				return FILE_MAP_WRITE;
-		}.operator()<AccessMode>();
+			// According to the MSDN, file mapping fails if the size of the file is 0.
+			std::error_code errorCode{};
+
+			const std::size_t fileSize = std::filesystem::file_size(filePath, errorCode);
+			Util::General::CheckErrorCode(errorCode);
+
+			assert(fileSize != 0 && "ERROR: File mappings cannot be created if the size of the file is 0 bytes! (To efficiently change the size of a file, use std::filesystem::resize_file().)");
+		}
+
+		mHFileMappingObject.reset(CreateFileMapping(
+			hFile.get(),
+			nullptr,
+			FL_PROTECT,
+			0,
+			0,
+			nullptr
+		));
+
+		if (mHFileMappingObject == nullptr) [[unlikely]]
+			Util::General::CheckHRESULT(HRESULT_FROM_WIN32(GetLastError()));
+	}
+
+	template <FileAccessMode AccessMode>
+		requires IsValidAccessMode<AccessMode>
+	void MappedFileView<AccessMode>::MapFileView(const ViewParams& params)
+	{
+		static constexpr std::uint32_t DW_DESIRED_ACCESS = (AccessMode == FileAccessMode::READ_ONLY ? FILE_MAP_READ : FILE_MAP_WRITE);
 
 		// We want the returned std::span to reflect the user's desired view of the file. However,
 		// the Win32 API requires that our offset be a multiple of the system allocation granularity.
 		// Therefore, we need to offset our start address by moving it backwards. To make sure that
 		// we are reading all of the data, however, we also need to increase the size of the mapped
 		// view.
-		const std::size_t fileOffsetDelta = (params.FileOffsetInBytes % allocationGranularity);
+		const std::size_t fileOffsetDelta = (params.FileOffsetInBytes % GetAllocationGranularity());
 
 		const std::size_t adjustedFileOffset = (params.FileOffsetInBytes - fileOffsetDelta);
 		const std::size_t numBytesToView = (params.ViewSizeInBytes + fileOffsetDelta);
 
 		mMapping.reset(MapViewOfFileEx(
-			hFileMappingObject,
-			DESIRED_ACCESS,
+			mHFileMappingObject.get(),
+			DW_DESIRED_ACCESS,
 			(adjustedFileOffset >> 32),
 			(adjustedFileOffset & 0xFFFFFFFF),
 			numBytesToView,
 			nullptr
 		));
+
+		if (mMapping == nullptr) [[unlikely]]
+			Util::General::CheckHRESULT(HRESULT_FROM_WIN32(GetLastError()));
 
 		// Adjust the mapped std::span to be equivalent to the user's desired view.
 		mMappedSpan = std::span<std::byte>{ (reinterpret_cast<std::byte*>(mMapping.get()) + fileOffsetDelta), params.ViewSizeInBytes };

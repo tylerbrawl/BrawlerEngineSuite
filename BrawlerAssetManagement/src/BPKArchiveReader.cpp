@@ -12,7 +12,6 @@ module Brawler.AssetManagement.BPKArchiveReader;
 import Brawler.FilePathHash;
 import Brawler.FileAccessMode;
 import Brawler.SerializedStruct;
-import Brawler.FileMapper;
 
 namespace
 {
@@ -201,8 +200,7 @@ namespace Brawler
 	namespace AssetManagement
 	{
 		BPKArchiveReader::BPKArchiveReader() :
-			mTableOfContents(CreateTableOfContents()),
-			mHFileMappingObject(Brawler::FileMapper::GetInstance().GetFileMappingObject(bpkArchivePath))
+			mTableOfContents(CreateTableOfContents())
 		{}
 		
 		BPKArchiveReader& BPKArchiveReader::GetInstance()
@@ -221,9 +219,9 @@ namespace Brawler
 		{
 			const TOCEntry& tocEntry{ GetTableOfContentsEntry(pathHash) };
 			
-			MappedFileView<FileAccessMode::READ_ONLY>  mappedView{ mHFileMappingObject, MappedFileView<FileAccessMode::READ_ONLY>::ViewParams{
+			MappedFileView<FileAccessMode::READ_ONLY>  mappedView{ bpkArchivePath, MappedFileView<FileAccessMode::READ_ONLY>::ViewParams{
 				.FileOffsetInBytes = tocEntry.FileOffsetInBytes,
-				.ViewSizeInBytes = tocEntry.CompressedSizeInBytes
+				.ViewSizeInBytes = (tocEntry.IsDataCompressed() ? tocEntry.CompressedSizeInBytes : tocEntry.UncompressedSizeInBytes)
 			} };
 			assert(mappedView.IsViewValid() && "ERROR: Something went wrong when creating a MappedFileView for an asset in a BPK file!");
 

@@ -187,6 +187,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <UndefinePreprocessorDefinitions>__D3D12_FRAMEWORK__;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
+      <AdditionalOptions>/Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -195,7 +196,7 @@
     </Link>
     <PreBuildEvent>
       <Message>Copying Brawler Shader Compiler files...</Message>
-      <Command>$(CopyBrawlerShaderCompilerFiles)</Command>
+      <Command>$(CopyBrawlerShaderCompilerFiles) &amp; $(CopyEngineConstants)</Command>
     </PreBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -219,6 +220,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <UndefinePreprocessorDefinitions>__D3D12_FRAMEWORK__;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
+      <AdditionalOptions>/Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -229,7 +231,7 @@
     </Link>
     <PreBuildEvent>
       <Message>Copying Brawler Shader Compiler files...</Message>
-      <Command>$(CopyBrawlerShaderCompilerFiles)</Command>
+      <Command>$(CopyBrawlerShaderCompilerFiles) &amp; $(CopyEngineConstants)</Command>
     </PreBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -253,6 +255,8 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <UndefinePreprocessorDefinitions>__D3D12_FRAMEWORK__;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
+      <AdditionalOptions>/Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -263,7 +267,7 @@
     </Link>
     <PreBuildEvent>
       <Message>Copying Brawler Shader Compiler files...</Message>
-      <Command>$(CopyBrawlerShaderCompilerFiles)</Command>
+      <Command>$(CopyBrawlerShaderCompilerFiles) &amp; $(CopyEngineConstants)</Command>
     </PreBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -280,6 +284,11 @@
     <ClCompile Include="src\AssimpMaterials.ixx" />
     <ClCompile Include="src\AssimpTextureConverter.ixx" />
     <ClCompile Include="src\AssimpTextureMaterialColorMap.ixx" />
+    <ClCompile Include="src\EngineConstantsDef.ixx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\LaunchParams.cpp" />
     <ClCompile Include="src\LaunchParams.ixx" />
     <ClCompile Include="src\BC7ImageCompressor.cpp" />

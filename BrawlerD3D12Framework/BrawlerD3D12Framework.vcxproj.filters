@@ -211,8 +211,11 @@
     <Filter Include="Module Files\File I/O">
       <UniqueIdentifier>{e09d18c8-86a9-4c43-a8d9-65715a0c549d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Constants">
+      <UniqueIdentifier>{dde26d45-e03d-48df-b932-0cc5e2b6a8ec}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\File I/O">
-      <UniqueIdentifier>{901026e0-49cd-4f3c-b9d3-4317b0df1444}</UniqueIdentifier>
+      <UniqueIdentifier>{db9c111c-9688-4b77-ae05-586181768420}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1047,17 +1050,23 @@
     <ClCompile Include="src\FileAccessMode.ixx">
       <Filter>Module Files\File I/O</Filter>
     </ClCompile>
-    <ClCompile Include="src\FileMapper.ixx">
-      <Filter>Module Files\File I/O</Filter>
-    </ClCompile>
     <ClCompile Include="src\MappedFileView.ixx">
       <Filter>Module Files\File I/O</Filter>
     </ClCompile>
-    <ClCompile Include="src\FileMapper.cpp">
-      <Filter>Source Files\File I/O</Filter>
-    </ClCompile>
     <ClCompile Include="src\PSOLibrary.cpp">
       <Filter>Source Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EngineConstants.ixx">
+      <Filter>Module Files\Constants</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EngineConstantsDef.ixx">
+      <Filter>Module Files\Constants</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MappedFileView.cpp">
+      <Filter>Source Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceEventCollection.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

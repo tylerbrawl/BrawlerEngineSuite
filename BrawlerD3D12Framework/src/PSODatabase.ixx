@@ -4,6 +4,7 @@ module;
 #include "DxDef.h"
 
 export module Brawler.D3D12.PSODatabase;
+import :PSOLibrary;
 import Brawler.PSOs.PSOID;
 
 export namespace Brawler
@@ -16,10 +17,10 @@ export namespace Brawler
 	namespace D3D12
 	{
 		// PSOIdentifierEnumType should be Brawler::PSOs::PSOID.
-		class PSODatabase
+		class PSODatabase final
 		{
 		private:
-			PSODatabase();
+			PSODatabase() = default;
 
 		public:
 			~PSODatabase() = default;
@@ -31,6 +32,9 @@ export namespace Brawler
 			PSODatabase& operator=(PSODatabase&& rhs) noexcept = default;
 			
 			static PSODatabase& GetInstance();
+
+			void InitializePSOLibrary();
+			void LoadPSOs();
 
 			template <Brawler::PSOs::PSOID PSOIdentifier>
 				requires (PSOIdentifier != Brawler::PSOs::PSOID::COUNT_OR_ERROR)
@@ -49,6 +53,7 @@ export namespace Brawler
 
 		private:
 			std::array<Microsoft::WRL::ComPtr<Brawler::D3D12PipelineState>, std::to_underlying(Brawler::PSOs::PSOID::COUNT_OR_ERROR)> mPSOMap;
+			PSOLibrary mPSOLibrary;
 		};
 	}
 }

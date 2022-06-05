@@ -2,6 +2,7 @@ module;
 #include <string>
 #include <string_view>
 #include <cassert>
+#include <compare>
 
 export module Brawler.NZStringView;
 
@@ -9,43 +10,15 @@ namespace Brawler
 {
 	template <typename CharT, typename Traits>
 	class BasicNZStringView;
+}
 
-	template <typename CharT, typename Traits>
-	constexpr bool operator==(const BasicNZStringView<CharT, Traits> lhs, const BasicNZStringView<CharT, Traits> rhs);
-
-	template <typename Traits>
-	concept HasDefinedComparisonCategory = requires ()
-	{
-		typename Traits::comparison_category;
-	};
-
-	template <typename T>
-	struct ComparisonTypeSolver
-	{};
-
-	template <typename Traits>
-		requires HasDefinedComparisonCategory<Traits>
-	struct ComparisonTypeSolver<Traits>
-	{
-		using ComparisonType = typename Traits::comparison_category;
-	};
-
-	template <typename Traits>
-		requires !HasDefinedComparisonCategory<Traits>
-	struct ComparisonTypeSolver<Traits>
-	{
-		using ComparisonType = std::weak_ordering;
-	};
-
-	template <typename CharT, typename Traits>
-	constexpr typename ComparisonTypeSolver<Traits>::ComparisonType operator<=>(const BasicNZStringView<CharT, Traits> lhs, const BasicNZStringView<CharT, Traits> rhs);
-
+export namespace Brawler
+{
 	template <typename CharT, typename Traits = std::char_traits<CharT>>
 	class BasicNZStringView final : private std::basic_string_view<CharT, Traits>
 	{
 	private:
-		friend constexpr bool operator==(const BasicNZStringView lhs, const BasicNZStringView rhs);
-		friend constexpr typename ComparisonTypeSolver<Traits>::ComparisonType operator<=>(const BasicNZStringView lhs, const BasicNZStringView rhs);
+		friend constexpr auto operator<=>(const BasicNZStringView lhs, const BasicNZStringView rhs) = default;
 
 	public:
 		constexpr BasicNZStringView() = default;
@@ -169,18 +142,6 @@ namespace Brawler
 	constexpr std::basic_string<CharT, Traits, Allocator> BasicNZStringView<CharT, Traits>::SubStr(const std::size_t offset, const std::size_t numChars) const
 	{
 		return std::basic_string<CharT, Traits, Allocator>{ std::basic_string_view<CharT, Traits>::substr(offset, numChars) };
-	}
-
-	template <typename CharT, typename Traits>
-	constexpr bool operator==(const BasicNZStringView<CharT, Traits> lhs, const BasicNZStringView<CharT, Traits> rhs)
-	{
-		return *(static_cast<std::basic_string_view<CharT, Traits>*>(std::addressof(lhs))) == *(static_cast<std::basic_string_view<CharT, Traits>*>(std::addressof(rhs)));
-	}
-
-	template <typename CharT, typename Traits>
-	constexpr typename ComparisonTypeSolver<Traits>::ComparisonType operator<=>(const BasicNZStringView<CharT, Traits> lhs, const BasicNZStringView<CharT, Traits> rhs)
-	{
-		return *(static_cast<std::basic_string_view<CharT, Traits>*>(std::addressof(lhs))) <=> *(static_cast<std::basic_string_view<CharT, Traits>*>(std::addressof(rhs)));
 	}
 }
 

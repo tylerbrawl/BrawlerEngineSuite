@@ -1,4 +1,5 @@
 module;
+#include <compare>
 
 export module Brawler.D3D12.ScopedCPUPIXEvent;
 import :DebugScopedCPUPIXEvent;

@@ -77,8 +77,6 @@ export namespace Brawler
 			/// Table of Contents (ToC) entry in a BPK file.
 			/// </summary>
 			std::unordered_map<std::uint64_t, TOCEntry> mTableOfContents;
-
-			HANDLE mHFileMappingObject;
 		};
 	}
 }

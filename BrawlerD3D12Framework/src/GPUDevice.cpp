@@ -23,6 +23,25 @@ namespace
 	
 	bool VerifyD3D12DeviceFeatureSupport(const Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice)
 	{
+		// Ensure ID3D12PipelineLibrary1 support. According to the D3D12 Pipeline State Cache sample,
+		// this should be only a software requirement, as it only requires an updated OS and graphics
+		// driver. Nevertheless, we still need to check for it.
+		{
+			D3D12_FEATURE_DATA_SHADER_CACHE shaderCacheData{};
+			Util::General::CheckHRESULT(d3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_SHADER_CACHE, &shaderCacheData, sizeof(shaderCacheData)));
+
+			// TODO: If the D3D12_SHADER_CACHE_SUPPORT_AUTOMATIC_DISK_CACHE bit is set in
+			// shaderCacheData.SupportFlags, then the MSDN states that "the driver supports an OS-
+			// managed shader cache that stores compiled shaders on disk to accelerate future runs
+			// of the program."
+			//
+			// If this is true, then do we even need to cache PSOs ourselves? Is this bit even set
+			// in practice?
+
+			if ((shaderCacheData.SupportFlags & D3D12_SHADER_CACHE_SUPPORT_FLAGS::D3D12_SHADER_CACHE_SUPPORT_LIBRARY) == 0)
+				return false;
+		}
+		
 		// Ensure Shader Model 6.0 support.
 		{
 			D3D12_FEATURE_DATA_SHADER_MODEL shaderModelData{

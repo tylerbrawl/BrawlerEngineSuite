@@ -97,6 +97,9 @@
     <Filter Include="Source Files\Model Texture Resolvers\Opaque Diffuse">
       <UniqueIdentifier>{2f514f87-f98c-4717-90a8-a4f7edaf6daa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Constants">
+      <UniqueIdentifier>{b70e8f0b-f0aa-4269-a4b0-94f609f23263}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -302,6 +305,9 @@
     </ClCompile>
     <ClCompile Include="src\MipMapGeneration.ixx">
       <Filter>Module Files\Textures\Mip-Map Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EngineConstantsDef.ixx">
+      <Filter>Module Files\Constants</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -17,38 +17,66 @@ namespace Brawler
 			// two concurrently, creating the bindless SRV index queue should be "free."
 			std::atomic<bool> bindlessSRVQueueInitialized{ false };
 
-			Brawler::JobGroup bindlessSRVQueueInitializationGroup{};
-			bindlessSRVQueueInitializationGroup.Reserve(1);
-
-			bindlessSRVQueueInitializationGroup.AddJob([this, &bindlessSRVQueueInitialized] ()
 			{
-				mDevice.GetGPUResourceDescriptorHeap().InitializeBindlessSRVQueue();
+				Brawler::JobGroup bindlessSRVQueueInitializationGroup{};
 
-				// We can use std::memory_order::relaxed, because the bindless SRV queue itself
-				// is protected by a std::mutex.
-				bindlessSRVQueueInitialized.store(true, std::memory_order::relaxed);
-			});
+				bindlessSRVQueueInitializationGroup.AddJob([this, &bindlessSRVQueueInitialized] ()
+				{
+					mDevice.GetGPUResourceDescriptorHeap().InitializeBindlessSRVQueue();
 
-			bindlessSRVQueueInitializationGroup.ExecuteJobsAsync();
+					// We can use std::memory_order::relaxed, because the bindless SRV queue itself
+					// is protected by a std::mutex.
+					bindlessSRVQueueInitialized.store(true, std::memory_order::relaxed);
+				});
+
+				bindlessSRVQueueInitializationGroup.ExecuteJobsAsync();
+			}
 			
 			// Initialize the GPUDevice.
 			mDevice.Initialize();
 
-			// Initialize the PersistentGPUResourceManager.
-			mPersistentResourceManager.Initialize();
+			// Now, we will initialize components of the Brawler Engine which require that the
+			// GPUDevice be fully initialized, but are otherwise independent of each other. Since
+			// these are independent and thread-safe tasks, we can easily parallelize them.
+			Brawler::JobGroup postDeviceCreationInitializationGroup{};
+			postDeviceCreationInitializationGroup.Reserve(5);
 
-			// Initialize the GPUCommandManager.
-			mCmdManager.Initialize();
+			postDeviceCreationInitializationGroup.AddJob([] ()
+			{
+				// Load the PSO library from the file system.
+				PSODatabase::GetInstance().InitializePSOLibrary();
+			});
 
-			// Initialize the RootSignatureDatabase.
-			RootSignatureDatabase::GetInstance();
+			postDeviceCreationInitializationGroup.AddJob([this] ()
+			{
+				// Initialize the PersistentGPUResourceManager.
+				mPersistentResourceManager.Initialize();
+			});
 
-			// Initialize the PSODatabase. This *MUST* be initialized after the RootSignatureDatabase,
-			// since PSO compilation relies on compiled root signatures.
-			PSODatabase::GetInstance();
+			postDeviceCreationInitializationGroup.AddJob([this] ()
+			{
+				// Initialize the GPUCommandManager.
+				mCmdManager.Initialize();
+			});
 
-			// Initialize the FrameGraphManager.
-			mFrameGraphManager.Initialize();
+			postDeviceCreationInitializationGroup.AddJob([this] ()
+			{
+				// Initialize the RootSignatureDatabase.
+				RootSignatureDatabase::GetInstance();
+			});
+
+			postDeviceCreationInitializationGroup.AddJob([this] ()
+			{
+				// Initialize the FrameGraphManager.
+				mFrameGraphManager.Initialize();
+			});
+
+			postDeviceCreationInitializationGroup.ExecuteJobs();
+
+			// Initialize the PSOs. This *MUST* be done after the RootSignatureDatabase, since PSO
+			// compilation relies on compiled root signatures. It also must be done after the PSO
+			// library has been loaded from the disk.
+			PSODatabase::GetInstance().LoadPSOs();
 
 			// Wait for the bindless SRV queue to be initialized.
 			while (!bindlessSRVQueueInitialized.load(std::memory_order::relaxed))
