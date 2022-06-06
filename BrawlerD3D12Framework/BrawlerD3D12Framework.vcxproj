@@ -231,7 +231,6 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalOptions>/constexpr:steps2000000 /Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
       <AdditionalBMIDirectories>%(AdditionalBMIDirectories)</AdditionalBMIDirectories>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -261,8 +260,6 @@
     <ClCompile Include="src\DelayedJobSubmitter.ixx" />
     <ClCompile Include="src\DLLManager.cpp" />
     <ClCompile Include="src\DLLManager.ixx" />
-    <ClCompile Include="src\EngineConstants.ixx" />
-    <ClCompile Include="src\EngineConstantsDef.ixx" />
     <ClCompile Include="src\FastUnorderedMap.ixx" />
     <ClCompile Include="src\BufferSubAllocationReservationHandle.cpp" />
     <ClCompile Include="src\BufferSubAllocationReservationHandle.ixx" />
@@ -573,6 +570,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h" />
+    <ClInclude Include="src\EngineConstantsDef.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

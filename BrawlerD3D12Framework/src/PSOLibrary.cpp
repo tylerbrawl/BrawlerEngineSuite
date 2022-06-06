@@ -8,6 +8,7 @@ module;
 #include <fstream>
 #include <algorithm>
 #include <cwctype>
+#include "EngineConstantsDef.h"
 #include "DxDef.h"
 
 module Brawler.D3D12.PSODatabase;
@@ -18,7 +19,6 @@ import Brawler.MappedFileView;
 import Brawler.JobSystem;
 import Brawler.D3D12.PipelineEnums;
 import Brawler.NZStringView;
-import Brawler.EngineConstants;
 
 namespace
 {
