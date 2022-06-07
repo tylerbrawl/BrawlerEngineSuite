@@ -311,6 +311,9 @@
     <FxCompile Include="src\Shaders\GenerateMipMaps.hlsl">
       <Filter>Shader Files</Filter>
     </FxCompile>
+    <FxCompile Include="src\StaticIndirectPrepare.hlsl">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

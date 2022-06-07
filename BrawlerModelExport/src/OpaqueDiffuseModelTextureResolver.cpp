@@ -47,7 +47,7 @@ namespace Brawler
 
 	bool OpaqueDiffuseModelTextureResolver::IsReadyForSerialization() const
 	{
-		return (mHDiffuseTextureResolutionEvent.has_value() && mHDiffuseTextureResolutionEvent->IsEventComplete() && mOutputBuffer != nullptr);
+		return (mHDiffuseTextureResolutionEvent.has_value() && mHDiffuseTextureResolutionEvent->IsEventComplete() && mOutputBuffer == nullptr);
 	}
 
 	void OpaqueDiffuseModelTextureResolver::BeginDiffuseTextureResolution()
@@ -86,12 +86,12 @@ namespace Brawler
 		//     instances outlive the task on the GPU timeline.) Then, copy these contents into a transient
 		//     Texture2D.
 		//
-		//   - Convert the data contained in the Texture2D to the BC7 format.
-		//
 		//   - Copy the converted buffer texture data to a transient Texture2D resource and perform generic
-		//     GPU-based mip-mapping of the texture, down to a 1x1 version. We do this with our own shader,
-		//     rather than with DirectXTex, because DirectXTex's mip-mapping function does not support block-
-		//     compressed formats (and because I desperately need HLSL practice).
+		//     GPU-based mip-mapping of the texture, down to a 1x1 version.
+		// 
+		//   - For each generated mip level of the texture, create the equivalent BC7 version. We use a slightly
+		//     modified version of the image compression shader used by DirectXTex. (The shader was modified to
+		//     allow for more optimized root parameter updates.)
 		//
 		//   - Copy the generated textures into a persistent BufferResource in a READBACK heap. (Yes, this one
 		//     must be persistent. How else are we going to get the data back?)
@@ -204,7 +204,7 @@ namespace Brawler
 
 			const std::size_t numBlocksPerRow = std::max<size_t>(1, (currDestImage.width + 3) >> 2);
 
-			for (std::size_t currRow = 0; currRow < currDestImage.height; ++currRow)
+			for (std::size_t currRow = 0; currRow < numRows; ++currRow)
 			{
 				const std::span<BufferBC7> destRowDataSpan{ reinterpret_cast<BufferBC7*>(currDestImage.pixels + (currRow * rowPitch)), numBlocksPerRow };
 				currSrcDataSubAllocation.ReadStructuredBufferData(static_cast<std::uint32_t>(currRow * numBlocksPerRow), destRowDataSpan);
