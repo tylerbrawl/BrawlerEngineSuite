@@ -323,6 +323,8 @@
     <ClCompile Include="src\ModelTextureResolutionEventHandle.ixx" />
     <ClCompile Include="src\ModelTextureResolutionRenderModule.cpp" />
     <ClCompile Include="src\ModelTextureResolutionRenderModule.ixx" />
+    <ClCompile Include="src\NormalBoundingConeSolver.ixx" />
+    <ClCompile Include="src\NormalBoundingConeSolver.cpp" />
     <ClCompile Include="src\OpaqueDiffuseBC7Compression.cpp" />
     <ClCompile Include="src\OpaqueDiffuseMipMapping.cpp" />
     <ClCompile Include="src\OpaqueDiffuseModelTextureResolver.cpp" />

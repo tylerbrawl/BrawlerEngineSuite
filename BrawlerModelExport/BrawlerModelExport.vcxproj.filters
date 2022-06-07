@@ -97,6 +97,12 @@
     <Filter Include="Source Files\Model Texture Resolvers\Opaque Diffuse">
       <UniqueIdentifier>{2f514f87-f98c-4717-90a8-a4f7edaf6daa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Mesh Parsing\Normal Bounding Cones">
+      <UniqueIdentifier>{90dafcb6-245d-4b42-a863-35c199236854}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Mesh Parsing\Normal Bounding Cones">
+      <UniqueIdentifier>{d09ca4a1-01ea-4e17-a0cb-cff81231f631}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -302,6 +308,12 @@
     </ClCompile>
     <ClCompile Include="src\MipMapGeneration.ixx">
       <Filter>Module Files\Textures\Mip-Map Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NormalBoundingConeSolver.ixx">
+      <Filter>Module Files\Mesh Parsing\Normal Bounding Cones</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NormalBoundingConeSolver.cpp">
+      <Filter>Source Files\Mesh Parsing\Normal Bounding Cones</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
