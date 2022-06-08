@@ -133,6 +133,11 @@ namespace Brawler
 		return true;
 	}
 
+	std::span<const UnpackedStaticVertex> StaticVertexBuffer::GetUnpackedVertexSpan() const
+	{
+		return std::span<const UnpackedStaticVertex>{ mUnpackedVertices };
+	}
+
 	void StaticVertexBuffer::InitializePackedData()
 	{
 		for (const auto& unpackedVertex : mUnpackedVertices)

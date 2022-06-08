@@ -1,5 +1,6 @@
 module;
 #include <vector>
+#include <span>
 #include <assimp/mesh.h>
 
 export module Brawler.IndexBuffer;
@@ -16,6 +17,8 @@ export namespace Brawler
 
 		IndexBuffer(IndexBuffer&& rhs) noexcept = default;
 		IndexBuffer& operator=(IndexBuffer&& rhs) noexcept = default;
+
+		std::span<const std::uint16_t> GetIndexSpan() const;
 
 	private:
 		std::vector<std::uint16_t> mIndices;

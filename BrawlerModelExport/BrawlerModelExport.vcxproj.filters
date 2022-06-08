@@ -315,6 +315,12 @@
     <ClCompile Include="src\NormalBoundingConeSolver.cpp">
       <Filter>Source Files\Mesh Parsing\Normal Bounding Cones</Filter>
     </ClCompile>
+    <ClCompile Include="src\NormalBoundingCone.ixx">
+      <Filter>Module Files\Mesh Parsing\Normal Bounding Cones</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StaticVertexData.ixx">
+      <Filter>Module Files\Static Mesh Data</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\Shaders\BC7Encode.hlsl">

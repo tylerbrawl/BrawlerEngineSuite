@@ -1,4 +1,5 @@
 module;
+#include <vector>
 #include <assimp/scene.h>
 
 export module Brawler.StaticMeshResolver;
@@ -6,6 +7,7 @@ import Brawler.StaticVertexBuffer;
 import Brawler.IndexBuffer;
 import Brawler.MeshResolverBase;
 import Brawler.ImportedMesh;
+import Brawler.NormalBoundingCone;
 
 export namespace Brawler
 {
@@ -30,5 +32,6 @@ export namespace Brawler
 	private:
 		StaticVertexBuffer mVertexBuffer;
 		IndexBuffer mIndexBuffer;
+		std::vector<NormalBoundingCone> mNormalConeArr;
 	};
 }

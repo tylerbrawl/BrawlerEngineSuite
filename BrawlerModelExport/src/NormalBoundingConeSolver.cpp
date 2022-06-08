@@ -1,5 +1,6 @@
 module;
 #include <cassert>
+#include <utility>
 #include <DirectXMath/DirectXMath.h>
 
 module Brawler.NormalBoundingConeSolver;
@@ -33,7 +34,7 @@ namespace Brawler
 
 		return SphericalCircle{
 			.CenterPoint{std::move(storedCenterPoint)},
-			.ConeAngle{ DirectX::XMVectorGetX(DirectX::XMVector3AngleBetweenNormals(centerPoint, pointA)) }
+			.ConeAngle{ DirectX::XMVectorGetX(DirectX::XMVector3AngleBetweenNormals(centerPoint, loadedA)) }
 		};
 	}
 	
@@ -162,7 +163,7 @@ namespace Brawler
 
 		return SphericalCircle{
 			.CenterPoint{ std::move(storedCenterPoint) },
-			.ConeAngle{ DirectX::XMVectorGetX(DirectX::XMVector3AngleBetweenNormals(centerPoint, pointA)) }
+			.ConeAngle{ DirectX::XMVectorGetX(DirectX::XMVector3AngleBetweenNormals(centerPoint, loadedA)) }
 		};
 	}
 }

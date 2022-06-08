@@ -3,10 +3,12 @@ module;
 #include <cassert>
 #include <ranges>
 #include <cmath>
+#include <vector>
 #include <DirectXMath/DirectXMath.h>
 
 export module Brawler.NormalBoundingConeSolver;
 import Util.General;
+import Brawler.NormalBoundingCone;
 
 // NOTE: The implementation of this type is heavily inspired by the academic whitepaper
 // "Optimal bounding cones of vectors in three dimensions" by Gill Barequet and
@@ -15,9 +17,9 @@ import Util.General;
 namespace Brawler
 {
 	template <typename Vertex>
-	concept HasNormal = requires (const Vertex& v)
+	concept HasPosition = requires (const Vertex& v)
 	{
-		{ v.GetNormal(); } -> std::same_as<const DirectX::XMFLOAT3&>;
+		{ v.GetPosition() } -> std::same_as<const DirectX::XMFLOAT3&>;
 	};
 }
 
@@ -41,7 +43,7 @@ namespace Brawler
 export namespace Brawler
 {
 	template <typename Vertex>
-		requires HasNormal<Vertex>
+		requires HasPosition<Vertex>
 	class NormalBoundingConeSolver
 	{
 	public:
@@ -53,16 +55,17 @@ export namespace Brawler
 		NormalBoundingConeSolver(NormalBoundingConeSolver&& rhs) noexcept = default;
 		NormalBoundingConeSolver& operator=(NormalBoundingConeSolver&& rhs) noexcept = default;
 
-		void CalculateNormalBoundingCone(const std::span<const Vertex> vertexSpan);
-
-		const DirectX::XMFLOAT3 GetConeNormal() const;
-		float GetNegativeSineAngle() const;
+		void SetVertexSpan(const std::span<const Vertex> vertexSpan);
+		NormalBoundingCone CalculateNormalBoundingCone(const std::span<const std::uint16_t> indexSpan);
 
 	private:
-		void AdjustSphericalCircleForPoint(const std::span<const Vertex> processedVertexSpan, const DirectX::XMFLOAT3& point);
+		void AddNewPoint(const DirectX::XMFLOAT3& point);
+		void AdjustSphericalCircleForPoint(const DirectX::XMFLOAT3& point);
 
 	private:
+		std::span<const Vertex> mVertexSpan;
 		SphericalCircle mCircle;
+		std::vector<DirectX::XMFLOAT3> mProcessedPointArr;
 	};
 }
 
@@ -73,8 +76,8 @@ namespace Brawler
 	void AssertVectorNormalization(const DirectX::XMFLOAT3& vector);
 
 	template <typename Vertex>
-		requires HasNormal<Vertex>
-	SphericalCircle GetAdjustedSphericalCircleForTwoPoints(const std::span<const Vertex> processedVertexSpan, const DirectX::XMFLOAT3& pointA, const DirectX::XMFLOAT3& pointB);
+		requires HasPosition<Vertex>
+	SphericalCircle GetAdjustedSphericalCircleForTwoPoints(const std::span<const DirectX::XMFLOAT3> processedPointSpan, const DirectX::XMFLOAT3& pointA, const DirectX::XMFLOAT3& pointB);
 
 	SphericalCircle GetEncompassingSphericalCircle(const DirectX::XMFLOAT3& pointA, const DirectX::XMFLOAT3& pointB);
 	SphericalCircle GetEncompassingSphericalCircle(const DirectX::XMFLOAT3& pointA, const DirectX::XMFLOAT3& pointB, const DirectX::XMFLOAT3& pointC);
@@ -83,17 +86,15 @@ namespace Brawler
 namespace Brawler
 {
 	template <typename Vertex>
-		requires HasNormal<Vertex>
-	SphericalCircle GetAdjustedSphericalCircleForTwoPoints(const std::span<const Vertex> processedVertexSpan, const DirectX::XMFLOAT3& pointA, const DirectX::XMFLOAT3& pointB)
+		requires HasPosition<Vertex>
+	SphericalCircle GetAdjustedSphericalCircleForTwoPoints(const std::span<const DirectX::XMFLOAT3> processedPointSpan, const DirectX::XMFLOAT3& pointA, const DirectX::XMFLOAT3& pointB)
 	{
 		SphericalCircle adjustedSphericalCircle = GetEncompassingSphericalCircle(pointA, pointB);
 
-		for (const auto& vertex : processedVertexSpan)
+		for (const auto& currPoint : processedPointSpan)
 		{
-			const DirectX::XMFLOAT3& currNormal{ vertex.GetNormal() };
-
-			if (!adjustedSphericalCircle.IsPointWithinCircle(currNormal))
-				adjustedSphericalCircle = GetEncompassingSphericalCircle(pointA, pointB, currNormal);
+			if (!adjustedSphericalCircle.IsPointWithinCircle(currPoint))
+				adjustedSphericalCircle = GetEncompassingSphericalCircle(pointA, pointB, currPoint);
 		}
 
 		return adjustedSphericalCircle;
@@ -103,80 +104,102 @@ namespace Brawler
 namespace Brawler
 {
 	template <typename Vertex>
-		requires HasNormal<Vertex>
-	void NormalBoundingConeSolver<Vertex>::CalculateNormalBoundingCone(const std::span<const Vertex> vertexSpan)
+		requires HasPosition<Vertex>
+	void NormalBoundingConeSolver<Vertex>::SetVertexSpan(const std::span<const Vertex> vertexSpan)
 	{
-		assert(!vertexSpan.empty());
+		mVertexSpan = vertexSpan;
+	}
+	
+	template <typename Vertex>
+		requires HasPosition<Vertex>
+	NormalBoundingCone NormalBoundingConeSolver<Vertex>::CalculateNormalBoundingCone(const std::span<const std::uint16_t> indexSpan)
+	{
+		assert(!mVertexSpan.empty());
+		assert(indexSpan.size() >= 3 && indexSpan.size() % 3 == 0);
 
-		// Reset the current SphericalCircle instance.
+		// Reset the current SphericalCircle instance and mProcessedPointArr.
 		mCircle = SphericalCircle{};
+		mProcessedPointArr.clear();
 
-		// We assume that all relevant normal vectors are already normalized. In Debug builds, we
-		// assert if this is not the case.
+		mProcessedPointArr.reserve(indexSpan.size() / 3);
 
-		// Set the center point to be that of the first normal we find.
+		// It is important to note that we need to create the normal bounding cone for
+		// *triangles,* and *NOT* for vertices.
+
+		for (std::size_t i = 0; i < indexSpan.size(); i += 3)
 		{
-			const DirectX::XMFLOAT3& firstNormal{ vertexSpan[0].GetNormal() };
-			AssertVectorNormalization(firstNormal);
+			// Re-construct the normal of the triangle formed by the three relevant indices. We let
+			// Assimp convert the mesh to our left-handed format. Let A, B, and C be indices in the
+			// indexSpan, and suppose that they are listed in the order A, B, and then C. The normal
+			// we want can then be constructed from AB x BC.
+			assert(indexSpan[i] < mVertexSpan.size() && indexSpan[i + 1] < mVertexSpan.size() && indexSpan[i + 2] < mVertexSpan.size() && 
+				"ERROR: An out-of-bounds index was detected in the std::span of indices provided to NormalBoundingConeSolver::CalculateNormalBoundingCone()!");
 
-			mCircle.CenterPoint = firstNormal;
+			const Vertex& vertexA{ mVertexSpan[indexSpan[i]] };
+			const DirectX::XMVECTOR positionA{ DirectX::XMLoadFloat3(&(vertexA.GetPosition())) };
+
+			const Vertex& vertexB{ mVertexSpan[indexSpan[i + 1]] };
+			const DirectX::XMVECTOR positionB{ DirectX::XMLoadFloat3(&(vertexB.GetPosition())) };
+
+			const Vertex& vertexC{ mVertexSpan[indexSpan[i + 2]] };
+			const DirectX::XMVECTOR positionC{ DirectX::XMLoadFloat3(&(vertexC.GetPosition())) };
+
+			const DirectX::XMVECTOR triangleNormal{ DirectX::XMVector3Normalize(DirectX::XMVector3Cross(DirectX::XMVectorSubtract(positionB, positionA), DirectX::XMVectorSubtract(positionC, positionB))) };
+
+			DirectX::XMFLOAT3 storedTriangleNormal{};
+			DirectX::XMStoreFloat3(&storedTriangleNormal, triangleNormal);
+
+			AddNewPoint(storedTriangleNormal);
 		}
 
-		if (vertexSpan.size() == 1) [[unlikely]]
-			return;
+		return NormalBoundingCone{
+			.ConeNormal{ mCircle.CenterPoint },
 
-		{
-			const DirectX::XMFLOAT3& secondNormal{ vertexSpan[1].GetNormal() };
-			AssertVectorNormalization(secondNormal);
-
-			mCircle = GetEncompassingSphericalCircle(mCenterPoint, secondNormal);
-		}
-
-		for (const auto i : std::views::iota(2u, vertexSpan.size()))
-		{
-			const DirectX::XMFLOAT3& currNormal{ vertexSpan[i].GetNormal() };
-			AssertVectorNormalization(currNormal);
-
-			// Check if the current normal represented as a point projected onto the unit sphere
-			// lies within the current spherical circle.
-			if (!mCircle.IsPointWithinCircle(currNormal))
-				AdjustSphericalCircleForPoint(vertexSpan.subspan(0, i), currNormal);
-		}
+			// It is recommended in "Optimizing the Graphics Pipeline with Compute" that the angle
+			// be expanded slightly in order to not reject valid normals during culling.
+			.NegativeSineAngle{ -std::sin(mCircle.ConeAngle + EPSILON) }
+		};
 	}
 
 	template <typename Vertex>
-		requires HasNormal<Vertex>
-	const DirectX::XMFLOAT3& NormalBoundingConeSolver<Vertex>::GetConeNormal() const
+		requires HasPosition<Vertex>
+	void NormalBoundingConeSolver<Vertex>::AddNewPoint(const DirectX::XMFLOAT3& point)
 	{
-		AssertVectorNormalization(mCircle.CenterPoint);
-		return mCircle.CenterPoint;
+		if (mProcessedPointArr.empty()) [[unlikely]]
+		{
+			// Set the center point to be that of the first normal we find.
+			mCircle.CenterPoint = point;
+		}
+
+		else if (mProcessedPointArr.size() == 1) [[unlikely]]
+		{
+			// The second processed point should be used to construct the first real spherical circle.
+			mCircle = GetEncompassingSphericalCircle(mCircle.CenterPoint, point);
+		}
+
+		else if (!mCircle.IsPointWithinCircle(point))
+			AdjustSphericalCircleForPoint(point);
+
+		mProcessedPointArr.push_back(point);
 	}
 
 	template <typename Vertex>
-		requires HasNormal<Vertex>
-	float NormalBoundingConeSolver<Vertex>::GetNegativeSineAngle() const
+		requires HasPosition<Vertex>
+	void NormalBoundingConeSolver<Vertex>::AdjustSphericalCircleForPoint(const DirectX::XMFLOAT3& point)
 	{
-		// It is recommended in "Optimizing the Graphics Pipeline with Compute" that the angle
-		// be expanded slightly in order to not reject valid normals during runtime.
-		
-		return -std::sin(mCircle.ConeAngle + EPSILON);
-	}
+		assert(!mProcessedPointArr.empty());
 
-	template <typename Vertex>
-		requires HasNormal<Vertex>
-	void NormalBoundingConeSolver<Vertex>::AdjustSphericalCircleForPoint(const std::span<const Vertex> processedVertexSpan, const DirectX::XMFLOAT3& point)
-	{
-		SphericalCircle adjustedSphericalCircle{ GetEncompassingSphericalCircle(processedVertexSpan[0].GetNormal(), point) };
+		SphericalCircle adjustedSphericalCircle{ GetEncompassingSphericalCircle(mProcessedPointArr[0], point)};
 
-		for (const auto i : std::views::iota(1u, processedVertexSpan.size()))
+		for (const auto i : std::views::iota(1u, mProcessedPointArr.size()))
 		{
 			// We don't need to continue asserting that the vectors are normalized if we already do
 			// so in NormalBoundingConeSolver::CalculateNormalBoundingCone().
 
-			const DirectX::XMFLOAT3& currNormal{ processedVertexSpan[i].GetNormal() };
+			const DirectX::XMFLOAT3& currNormal{ mProcessedPointArr[i] };
 
 			if (!adjustedSphericalCircle.IsPointWithinCircle(currNormal))
-				adjustedSphericalCircle = GetAdjustedSphericalCircleForTwoPoints(currNormal, point);
+				adjustedSphericalCircle = GetAdjustedSphericalCircleForTwoPoints(std::span<const DirectX::XMFLOAT3>{ mProcessedPointArr | std::views::take(i) }, currNormal, point);
 		}
 
 		mCircle = std::move(adjustedSphericalCircle);

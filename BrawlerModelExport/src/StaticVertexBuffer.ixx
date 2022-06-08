@@ -1,30 +1,17 @@
 module;
 #include <vector>
+#include <span>
 #include <assimp/mesh.h>
 #include <DirectXMath/DirectXMath.h>
 
 export module Brawler.StaticVertexBuffer;
 import Brawler.Math.AABB;
+import Brawler.StaticVertexData;
 
 export namespace Brawler
 {
 	class StaticVertexBuffer
 	{
-	private:
-		struct UnpackedStaticVertex
-		{
-			DirectX::XMFLOAT3 Position;
-			DirectX::XMFLOAT3 Normal;
-			DirectX::XMFLOAT3 Tangent;
-			DirectX::XMFLOAT2 UVCoords;
-		};
-
-		struct PackedStaticVertex
-		{
-			DirectX::XMFLOAT4 PositionAndTangentFrame;
-			DirectX::XMFLOAT2 UVCoords;
-		};
-
 	public:
 		explicit StaticVertexBuffer(const aiMesh& mesh);
 
@@ -36,6 +23,8 @@ export namespace Brawler
 
 		void Update();
 		bool IsReadyForSerialization() const;
+
+		std::span<const UnpackedStaticVertex> GetUnpackedVertexSpan() const;
 
 	private:
 		void InitializePackedData();

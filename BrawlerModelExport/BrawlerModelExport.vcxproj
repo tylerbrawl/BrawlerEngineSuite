@@ -323,6 +323,7 @@
     <ClCompile Include="src\ModelTextureResolutionEventHandle.ixx" />
     <ClCompile Include="src\ModelTextureResolutionRenderModule.cpp" />
     <ClCompile Include="src\ModelTextureResolutionRenderModule.ixx" />
+    <ClCompile Include="src\NormalBoundingCone.ixx" />
     <ClCompile Include="src\NormalBoundingConeSolver.ixx" />
     <ClCompile Include="src\NormalBoundingConeSolver.cpp" />
     <ClCompile Include="src\OpaqueDiffuseBC7Compression.cpp" />
@@ -359,6 +360,7 @@
     <ClCompile Include="src\StaticMeshResolver.ixx" />
     <ClCompile Include="src\StaticVertexBuffer.cpp" />
     <ClCompile Include="src\StaticVertexBuffer.ixx" />
+    <ClCompile Include="src\StaticVertexData.ixx" />
     <ClCompile Include="src\TextureTypeMap.ixx" />
   </ItemGroup>
   <ItemGroup>

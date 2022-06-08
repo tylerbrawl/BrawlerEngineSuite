@@ -27,4 +27,9 @@ namespace Brawler
 			mIndices.push_back(static_cast<std::uint16_t>(face.mIndices[2]));
 		}
 	}
+
+	std::span<const std::uint16_t> IndexBuffer::GetIndexSpan() const
+	{
+		return std::span<const std::uint16_t>{ mIndices };
+	}
 }
