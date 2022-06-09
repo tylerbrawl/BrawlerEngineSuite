@@ -315,11 +315,17 @@
     <ClCompile Include="src\NormalBoundingConeSolver.cpp">
       <Filter>Source Files\Mesh Parsing\Normal Bounding Cones</Filter>
     </ClCompile>
-    <ClCompile Include="src\NormalBoundingCone.ixx">
+    <ClCompile Include="src\NormalBoundingConeTypes.ixx">
       <Filter>Module Files\Mesh Parsing\Normal Bounding Cones</Filter>
     </ClCompile>
     <ClCompile Include="src\StaticVertexData.ixx">
       <Filter>Module Files\Static Mesh Data</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NormalBoundingConeTriangleGrouper.ixx">
+      <Filter>Module Files\Mesh Parsing\Normal Bounding Cones</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NormalBoundingCones.ixx">
+      <Filter>Module Files\Mesh Parsing\Normal Bounding Cones</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

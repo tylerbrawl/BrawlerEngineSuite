@@ -6,22 +6,13 @@ module;
 #include <vector>
 #include <DirectXMath/DirectXMath.h>
 
-export module Brawler.NormalBoundingConeSolver;
+export module Brawler.NormalBoundingCones:NormalBoundingConeSolver;
 import Util.General;
-import Brawler.NormalBoundingCone;
+import :NormalBoundingConeTypes;
 
 // NOTE: The implementation of this type is heavily inspired by the academic whitepaper
 // "Optimal bounding cones of vectors in three dimensions" by Gill Barequet and
 // Gershon Elber.
-
-namespace Brawler
-{
-	template <typename Vertex>
-	concept HasPosition = requires (const Vertex& v)
-	{
-		{ v.GetPosition() } -> std::same_as<const DirectX::XMFLOAT3&>;
-	};
-}
 
 namespace Brawler
 {
@@ -75,30 +66,10 @@ namespace Brawler
 {
 	void AssertVectorNormalization(const DirectX::XMFLOAT3& vector);
 
-	template <typename Vertex>
-		requires HasPosition<Vertex>
 	SphericalCircle GetAdjustedSphericalCircleForTwoPoints(const std::span<const DirectX::XMFLOAT3> processedPointSpan, const DirectX::XMFLOAT3& pointA, const DirectX::XMFLOAT3& pointB);
 
 	SphericalCircle GetEncompassingSphericalCircle(const DirectX::XMFLOAT3& pointA, const DirectX::XMFLOAT3& pointB);
 	SphericalCircle GetEncompassingSphericalCircle(const DirectX::XMFLOAT3& pointA, const DirectX::XMFLOAT3& pointB, const DirectX::XMFLOAT3& pointC);
-}
-
-namespace Brawler
-{
-	template <typename Vertex>
-		requires HasPosition<Vertex>
-	SphericalCircle GetAdjustedSphericalCircleForTwoPoints(const std::span<const DirectX::XMFLOAT3> processedPointSpan, const DirectX::XMFLOAT3& pointA, const DirectX::XMFLOAT3& pointB)
-	{
-		SphericalCircle adjustedSphericalCircle = GetEncompassingSphericalCircle(pointA, pointB);
-
-		for (const auto& currPoint : processedPointSpan)
-		{
-			if (!adjustedSphericalCircle.IsPointWithinCircle(currPoint))
-				adjustedSphericalCircle = GetEncompassingSphericalCircle(pointA, pointB, currPoint);
-		}
-
-		return adjustedSphericalCircle;
-	}
 }
 
 namespace Brawler
