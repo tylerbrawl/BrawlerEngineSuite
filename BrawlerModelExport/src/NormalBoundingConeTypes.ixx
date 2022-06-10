@@ -21,12 +21,6 @@ export namespace Brawler
 	{
 		{ v.GetPosition() } -> std::same_as<const DirectX::XMFLOAT3&>;
 	};
-
-	struct NormalBoundingConeTriangleGroup
-	{
-		NormalBoundingCone BoundingCone;
-		std::vector<std::uint16_t> IndexArr;
-	};
 }
 
 export namespace Brawler
@@ -51,6 +45,17 @@ export namespace Brawler
 	private:
 		std::array<std::uint16_t, 3> mIndexArr;
 		DirectX::XMFLOAT3 mTriangleNormal;
+	};
+}
+
+export namespace Brawler
+{
+	template <typename Vertex>
+		requires HasPosition<Vertex>
+	struct NormalBoundingConeTriangleGroup
+	{
+		NormalBoundingCone BoundingCone;
+		std::vector<Triangle<Vertex>> TriangleArr;
 	};
 }
 

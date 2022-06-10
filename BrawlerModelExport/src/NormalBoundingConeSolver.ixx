@@ -46,15 +46,13 @@ export namespace Brawler
 		NormalBoundingConeSolver(NormalBoundingConeSolver&& rhs) noexcept = default;
 		NormalBoundingConeSolver& operator=(NormalBoundingConeSolver&& rhs) noexcept = default;
 
-		void SetVertexSpan(const std::span<const Vertex> vertexSpan);
-		NormalBoundingCone CalculateNormalBoundingCone(const std::span<const std::uint16_t> indexSpan);
+		NormalBoundingCone CalculateNormalBoundingCone(const std::span<const Triangle<Vertex>> triangleSpan);
 
 	private:
 		void AddNewPoint(const DirectX::XMFLOAT3& point);
 		void AdjustSphericalCircleForPoint(const DirectX::XMFLOAT3& point);
 
 	private:
-		std::span<const Vertex> mVertexSpan;
 		SphericalCircle mCircle;
 		std::vector<DirectX::XMFLOAT3> mProcessedPointArr;
 	};
@@ -76,52 +74,21 @@ namespace Brawler
 {
 	template <typename Vertex>
 		requires HasPosition<Vertex>
-	void NormalBoundingConeSolver<Vertex>::SetVertexSpan(const std::span<const Vertex> vertexSpan)
+	NormalBoundingCone NormalBoundingConeSolver<Vertex>::CalculateNormalBoundingCone(const std::span<const Triangle<Vertex>> triangleSpan)
 	{
-		mVertexSpan = vertexSpan;
-	}
-	
-	template <typename Vertex>
-		requires HasPosition<Vertex>
-	NormalBoundingCone NormalBoundingConeSolver<Vertex>::CalculateNormalBoundingCone(const std::span<const std::uint16_t> indexSpan)
-	{
-		assert(!mVertexSpan.empty());
-		assert(indexSpan.size() >= 3 && indexSpan.size() % 3 == 0);
+		assert(!triangleSpan.empty());
 
 		// Reset the current SphericalCircle instance and mProcessedPointArr.
 		mCircle = SphericalCircle{};
 		mProcessedPointArr.clear();
 
-		mProcessedPointArr.reserve(indexSpan.size() / 3);
+		mProcessedPointArr.reserve(triangleSpan.size());
 
 		// It is important to note that we need to create the normal bounding cone for
 		// *triangles,* and *NOT* for vertices.
 
-		for (std::size_t i = 0; i < indexSpan.size(); i += 3)
-		{
-			// Re-construct the normal of the triangle formed by the three relevant indices. We let
-			// Assimp convert the mesh to our left-handed format. Let A, B, and C be indices in the
-			// indexSpan, and suppose that they are listed in the order A, B, and then C. The normal
-			// we want can then be constructed from AB x BC.
-			assert(indexSpan[i] < mVertexSpan.size() && indexSpan[i + 1] < mVertexSpan.size() && indexSpan[i + 2] < mVertexSpan.size() && 
-				"ERROR: An out-of-bounds index was detected in the std::span of indices provided to NormalBoundingConeSolver::CalculateNormalBoundingCone()!");
-
-			const Vertex& vertexA{ mVertexSpan[indexSpan[i]] };
-			const DirectX::XMVECTOR positionA{ DirectX::XMLoadFloat3(&(vertexA.GetPosition())) };
-
-			const Vertex& vertexB{ mVertexSpan[indexSpan[i + 1]] };
-			const DirectX::XMVECTOR positionB{ DirectX::XMLoadFloat3(&(vertexB.GetPosition())) };
-
-			const Vertex& vertexC{ mVertexSpan[indexSpan[i + 2]] };
-			const DirectX::XMVECTOR positionC{ DirectX::XMLoadFloat3(&(vertexC.GetPosition())) };
-
-			const DirectX::XMVECTOR triangleNormal{ DirectX::XMVector3Normalize(DirectX::XMVector3Cross(DirectX::XMVectorSubtract(positionB, positionA), DirectX::XMVectorSubtract(positionC, positionB))) };
-
-			DirectX::XMFLOAT3 storedTriangleNormal{};
-			DirectX::XMStoreFloat3(&storedTriangleNormal, triangleNormal);
-
-			AddNewPoint(storedTriangleNormal);
-		}
+		for (const auto& triangle : triangleSpan)
+			AddNewPoint(triangle.GetTriangleNormal());
 
 		return NormalBoundingCone{
 			.ConeNormal{ mCircle.CenterPoint },

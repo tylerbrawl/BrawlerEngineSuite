@@ -295,7 +295,6 @@
     <ClCompile Include="src\GenericMipMapGenerator.ixx" />
     <ClCompile Include="src\ImportedMesh.cpp" />
     <ClCompile Include="src\ImportedMesh.ixx" />
-    <ClCompile Include="src\IndexBuffer.cpp" />
     <ClCompile Include="src\IndexBuffer.ixx" />
     <ClCompile Include="src\I_MaterialDefinition.cpp" />
     <ClCompile Include="src\I_MaterialDefinition.ixx" />

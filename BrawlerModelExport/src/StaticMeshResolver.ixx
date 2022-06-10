@@ -7,15 +7,12 @@ import Brawler.StaticVertexBuffer;
 import Brawler.IndexBuffer;
 import Brawler.MeshResolverBase;
 import Brawler.ImportedMesh;
-import Brawler.NormalBoundingCone;
+import Brawler.StaticVertexData;
 
 export namespace Brawler
 {
 	class StaticMeshResolver final : public MeshResolverBase<StaticMeshResolver>
 	{
-	private:
-		friend class MeshResolverBase<StaticMeshResolver>;
-
 	public:
 		explicit StaticMeshResolver(ImportedMesh&& mesh);
 
@@ -25,13 +22,15 @@ export namespace Brawler
 		StaticMeshResolver(StaticMeshResolver&& rhs) noexcept = default;
 		StaticMeshResolver& operator=(StaticMeshResolver&& rhs) noexcept = default;
 
-	private:
 		void UpdateIMPL();
 		bool IsReadyForSerializationIMPL() const;
 
 	private:
+		void UpdateIndexBuffer();
+
+	private:
 		StaticVertexBuffer mVertexBuffer;
-		IndexBuffer mIndexBuffer;
-		std::vector<NormalBoundingCone> mNormalConeArr;
+		IndexBuffer<UnpackedStaticVertex> mIndexBuffer;
+		std::uint32_t mNumUpdateCalls;
 	};
 }

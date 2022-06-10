@@ -150,9 +150,6 @@
     <ClCompile Include="src\IndexBuffer.ixx">
       <Filter>Module Files\Static Mesh Data</Filter>
     </ClCompile>
-    <ClCompile Include="src\IndexBuffer.cpp">
-      <Filter>Source Files\Static Mesh Data</Filter>
-    </ClCompile>
     <ClCompile Include="src\OpaqueMaterialDefinition.ixx">
       <Filter>Module Files\Materials</Filter>
     </ClCompile>
