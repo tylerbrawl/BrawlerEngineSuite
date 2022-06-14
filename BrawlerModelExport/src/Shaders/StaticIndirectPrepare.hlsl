@@ -101,7 +101,7 @@ Triangle CreateTriangleForThread(in const uint DTid, in const uint groupID, in c
 	// the required value.
 	//
 	// Because we add this padding, we are able to always get the indices for a triangle within a triangle cluster.
-    const uint baseIndexBufferOffset = ((triangleClusterID * MAX_TRIANGLES_PER_TRIANGLE_CLUSTER) + triangleIDWithinCluster) * 3;
+    const uint baseIndexBufferOffset = GetGlobalIndexBufferOffsetForTriangle(triangleClusterID, triangleIDWithinCluster);
 	const StructuredBuffer<StaticVertex> globalVertexBuffer = GetGlobalVertexBuffer();
 	
 	threadTriangle.VertexAPosition = float4(globalVertexBuffer[NonUniformResourceIndex(baseIndexBufferOffset)].PositionAndTangentFrame.xyz, 1.0f);

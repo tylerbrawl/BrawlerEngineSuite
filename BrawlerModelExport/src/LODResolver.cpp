@@ -42,6 +42,7 @@ namespace Brawler
 		mImporter(),
 		mAIScenePtr(nullptr),
 		mMeshResolverCollectionPtr(nullptr),
+		mMeshTypeID(MeshTypeID::COUNT_OR_ERROR),
 		mLODLevel(lodLevel)
 	{}
 
@@ -63,6 +64,28 @@ namespace Brawler
 	bool LODResolver::IsReadyForSerialization() const
 	{
 		return mMeshResolverCollectionPtr->IsReadyForSerialization();
+	}
+
+	ByteStream LODResolver::GetSerializedLODMeshData() const
+	{
+		assert(IsReadyForSerialization());
+
+		ByteStream lodMeshByteStream{};
+
+		// Before adding the actual mesh data, specify the MeshTypeID for the LODResolver and the number
+		// of meshes.
+		assert(mMeshTypeID != MeshTypeID::COUNT_OR_ERROR);
+		lodMeshByteStream << static_cast<std::uint32_t>(mMeshTypeID);
+
+		assert(mMeshResolverCollectionPtr->GetMeshResolverCount() <= std::numeric_limits<std::uint32_t>::max());
+		lodMeshByteStream << static_cast<std::uint32_t>(mMeshResolverCollectionPtr->GetMeshResolverCount());
+
+		{
+			ByteStream serializedMeshDataByteStream{ mMeshResolverCollectionPtr->GetSerializedMeshData() };
+			lodMeshByteStream << serializedMeshDataByteStream;
+		}
+
+		return lodMeshByteStream;
 	}
 
 	const aiScene& LODResolver::GetScene() const
@@ -131,7 +154,8 @@ namespace Brawler
 				throw std::runtime_error{ Util::General::WStringToString(std::format(LR"(ERROR: Multiple mesh types were detected in the LOD mesh file "{}!")", Util::ModelExport::GetLaunchParameters().GetLODFilePath(mLODLevel).c_str())) };
 		}
 
-		switch (*lodMeshTypeID)
+		mMeshTypeID = *lodMeshTypeID;
+		switch (mMeshTypeID)
 		{
 		case MeshTypeID::STATIC:
 		{
@@ -155,6 +179,9 @@ namespace Brawler
 		// Have the MeshResolverCollection create a mesh resolver for each aiMesh which we
 		// imported.
 		for (const auto i : std::views::iota(0u, meshSpan.size()))
-			mMeshResolverCollectionPtr->CreateMeshResolverForImportedMesh(ImportedMesh{ *(meshSpan[i]), static_cast<std::uint32_t>(i), LODScene{*mAIScenePtr, GetLODLevel()}});
+		{
+			assert(meshSpan[i] != nullptr);
+			mMeshResolverCollectionPtr->CreateMeshResolverForImportedMesh(std::make_unique<ImportedMesh>(*(meshSpan[i]), static_cast<std::uint32_t>(i), LODScene{ *mAIScenePtr, GetLODLevel() }));
+		}			
 	}
 }

@@ -60,6 +60,16 @@ PackedTriangleCluster PackTriangleCluster(in const UnpackedTriangleCluster unpac
 static const uint MAX_TRIANGLES_PER_TRIANGLE_CLUSTER = 128;
 static const uint MAX_TRIANGLE_CLUSTERS = (1 << 25);
 
+uint GetGlobalIndexBufferOffsetForTriangle(in const uint triangleClusterID, in const uint triangleIDWithinCluster)
+{
+    // We pad each triangle cluster out to 128 triangles, even if it does not hold that many. That way,
+    // we can easily get the starting index of a triangle within a given cluster using the following
+    // equation:
+    
+    return (((triangleClusterID * MAX_TRIANGLES_PER_TRIANGLE_CLUSTER) + triangleIDWithinCluster) * 3);
+
+}
+
 struct ModelInstanceDataBuffer
 {
     ModelInstanceData Entry[MAX_MODEL_INSTANCES];

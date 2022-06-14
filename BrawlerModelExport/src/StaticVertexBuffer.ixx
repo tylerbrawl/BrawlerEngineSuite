@@ -1,19 +1,20 @@
 module;
 #include <vector>
 #include <span>
-#include <assimp/mesh.h>
 #include <DirectXMath/DirectXMath.h>
 
 export module Brawler.StaticVertexBuffer;
 import Brawler.Math.AABB;
 import Brawler.StaticVertexData;
+import Brawler.FilePathHash;
+import Brawler.ImportedMesh;
 
 export namespace Brawler
 {
 	class StaticVertexBuffer
 	{
 	public:
-		explicit StaticVertexBuffer(const aiMesh& mesh);
+		explicit StaticVertexBuffer(const ImportedMesh& mesh);
 
 		StaticVertexBuffer(const StaticVertexBuffer& rhs) = delete;
 		StaticVertexBuffer& operator=(const StaticVertexBuffer& rhs) = delete;
@@ -24,7 +25,12 @@ export namespace Brawler
 		void Update();
 		bool IsReadyForSerialization() const;
 
+		FilePathHash SerializeVertexBuffer() const;
+
 		std::span<const UnpackedStaticVertex> GetUnpackedVertexSpan() const;
+
+		const Math::AABB& GetBoundingBox() const;
+		std::size_t GetVertexCount() const;
 
 	private:
 		void InitializePackedData();
@@ -34,5 +40,6 @@ export namespace Brawler
 		std::vector<UnpackedStaticVertex> mUnpackedVertices;
 		std::vector<PackedStaticVertex> mPackedVertices;
 		Math::AABB mBoundingBox;
+		const ImportedMesh* mMeshPtr;
 	};
 }

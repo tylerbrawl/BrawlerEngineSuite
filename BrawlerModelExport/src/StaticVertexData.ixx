@@ -29,3 +29,19 @@ export namespace Brawler
 		DirectX::XMUINT2 __Pad0;
 	};
 }
+
+namespace Brawler
+{
+#pragma pack(push)
+#pragma pack(1)
+	struct SerializableStaticVertex
+	{
+		DirectX::XMFLOAT4 PositionAndTangentFrame;
+
+		DirectX::XMFLOAT2 UVCoords;
+		DirectX::XMUINT2 __Pad0;
+	};
+#pragma pack(pop)
+
+	static_assert(sizeof(SerializableStaticVertex) == sizeof(PackedStaticVertex));
+}

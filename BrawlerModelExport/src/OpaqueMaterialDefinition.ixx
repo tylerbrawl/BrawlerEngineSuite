@@ -23,7 +23,7 @@ export namespace Brawler
 		void Update() override;
 		bool IsReadyForSerialization() const override;
 
-		SerializedMaterialDefinition SerializeMaterial() override;
+		SerializedMaterialDefinition SerializeMaterial() const override;
 
 	private:
 		OpaqueDiffuseModelTextureResolver mDiffuseTextureResolver;

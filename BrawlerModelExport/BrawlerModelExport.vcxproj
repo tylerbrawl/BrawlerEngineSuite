@@ -117,16 +117,19 @@
     <LinkIncremental>true</LinkIncremental>
     <CustomBuildBeforeTargets>
     </CustomBuildBeforeTargets>
+    <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <CustomBuildBeforeTargets>
     </CustomBuildBeforeTargets>
+    <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">
     <LinkIncremental>false</LinkIncremental>
     <CustomBuildBeforeTargets>
     </CustomBuildBeforeTargets>
+    <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -283,6 +286,7 @@
     <ClCompile Include="src\AssimpMaterials.ixx" />
     <ClCompile Include="src\AssimpTextureConverter.ixx" />
     <ClCompile Include="src\AssimpTextureMaterialColorMap.ixx" />
+    <ClCompile Include="src\ByteStream.ixx" />
     <ClCompile Include="src\FileMagicHandler.ixx" />
     <ClCompile Include="src\IndexBuffer.cpp" />
     <ClCompile Include="src\LaunchParams.cpp" />
@@ -313,8 +317,6 @@
     <ClCompile Include="src\MeshResolverBase.ixx" />
     <ClCompile Include="src\MeshResolverCollection.ixx" />
     <ClCompile Include="src\MeshTypeID.ixx" />
-    <ClCompile Include="src\MeshAttributeID.ixx" />
-    <ClCompile Include="src\MeshAttributePointerDescriptor.ixx" />
     <ClCompile Include="src\MipMapGeneration.ixx" />
     <ClCompile Include="src\ModelExportUtil.cpp" />
     <ClCompile Include="src\ModelExportUtil.ixx" />
@@ -342,7 +344,7 @@
     <ClCompile Include="src\OpaqueMaterialDefinition.ixx" />
     <ClCompile Include="src\SerializationContext.ixx" />
     <ClCompile Include="src\SerializedMaterialDefinition.ixx" />
-    <ClCompile Include="src\SerializedMeshAttributeChunk.ixx" />
+    <ClCompile Include="src\SerializedStaticMeshData.ixx" />
     <ClCompile Include="src\SHA512AlgorithmProvider.cpp" />
     <ClCompile Include="src\SHA512AlgorithmProvider.ixx" />
     <ClCompile Include="src\SHA512Hash.ixx" />
@@ -371,7 +373,6 @@
     </ClCompile>
     <ClCompile Include="src\StaticMeshResolver.cpp" />
     <ClCompile Include="src\StaticMeshResolver.ixx" />
-    <ClCompile Include="src\StaticMeshResolverSerializer.ixx" />
     <ClCompile Include="src\StaticVertexBuffer.cpp" />
     <ClCompile Include="src\StaticVertexBuffer.ixx" />
     <ClCompile Include="src\StaticVertexData.ixx" />

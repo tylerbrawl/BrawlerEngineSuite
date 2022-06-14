@@ -67,9 +67,6 @@
     <Filter Include="Module Files\Render Modules">
       <UniqueIdentifier>{272f588e-9adc-4c59-8690-b01baa7ea7f4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module Files\File I/O\Mesh Attribute Pointers %28MAPs%29">
-      <UniqueIdentifier>{33599010-e8d6-45cf-b96a-de1469d2bd26}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Module Files\Command Line Parsing">
       <UniqueIdentifier>{87cf4233-9db8-444b-b7e6-4c9aed189576}</UniqueIdentifier>
     </Filter>
@@ -102,9 +99,6 @@
     </Filter>
     <Filter Include="Source Files\Mesh Parsing\Normal Bounding Cones">
       <UniqueIdentifier>{d09ca4a1-01ea-4e17-a0cb-cff81231f631}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Module Files\Mesh Serialization">
-      <UniqueIdentifier>{665fe1c1-d395-4456-ae8e-22f7ee42bb72}</UniqueIdentifier>
     </Filter>
     <Filter Include="Module Files\Textures\Model Texture Serialization">
       <UniqueIdentifier>{b2470c6e-04d0-4719-b3b8-42462fcc782b}</UniqueIdentifier>
@@ -219,17 +213,8 @@
     <ClCompile Include="src\ModelExportUtil.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="src\MeshAttributePointerDescriptor.ixx">
-      <Filter>Module Files\File I/O\Mesh Attribute Pointers %28MAPs%29</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MeshAttributeID.ixx">
-      <Filter>Module Files\File I/O\Mesh Attribute Pointers %28MAPs%29</Filter>
-    </ClCompile>
     <ClCompile Include="src\I_MeshResolver.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
-    </ClCompile>
-    <ClCompile Include="src\SerializedMeshAttributeChunk.ixx">
-      <Filter>Module Files\File I/O\Mesh Attribute Pointers %28MAPs%29</Filter>
     </ClCompile>
     <ClCompile Include="src\LODResolver.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
@@ -348,9 +333,6 @@
     <ClCompile Include="src\IndexBuffer.cpp">
       <Filter>Source Files\Static Mesh Data</Filter>
     </ClCompile>
-    <ClCompile Include="src\StaticMeshResolverSerializer.ixx">
-      <Filter>Module Files\Mesh Serialization</Filter>
-    </ClCompile>
     <ClCompile Include="src\SerializedMaterialDefinition.ixx">
       <Filter>Module Files\Materials</Filter>
     </ClCompile>
@@ -380,6 +362,12 @@
     </ClCompile>
     <ClCompile Include="src\SHA512AlgorithmProvider.cpp">
       <Filter>Source Files\File I/O\SHA-512 Hashing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SerializedStaticMeshData.ixx">
+      <Filter>Module Files\Static Mesh Data</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ByteStream.ixx">
+      <Filter>Module Files\File I/O</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

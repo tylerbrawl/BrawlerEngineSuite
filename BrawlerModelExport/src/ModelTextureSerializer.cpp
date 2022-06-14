@@ -48,6 +48,8 @@ namespace
 		.Magic = MODEL_TEXTURE_MAGIC_HANDLER.GetMagicIntegerValue(),
 		.Version = CURRENT_MODEL_TEXTURE_FORMAT_VERSION
 	};
+
+	static constexpr std::size_t HEADER_SIZE = sizeof(CurrentModelTextureHeader);
 }
 
 namespace

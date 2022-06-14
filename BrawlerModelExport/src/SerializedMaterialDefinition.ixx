@@ -1,5 +1,5 @@
 module;
-#include <cstddef>
+#include <cstdint>
 
 export module Brawler.SerializedMaterialDefinition;
 import Brawler.MaterialID;
@@ -12,7 +12,7 @@ export namespace Brawler
 	{
 		MaterialID Identifier;
 		
-		std::size_t DiffuseAlbedoTextureHash;
+		std::uint64_t DiffuseAlbedoTextureHash;
 	};
 #pragma pack(pop)
 }

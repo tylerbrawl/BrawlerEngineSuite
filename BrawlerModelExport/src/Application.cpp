@@ -49,10 +49,13 @@ namespace Brawler
 		Util::Win32::WriteFormattedConsoleMessage(L"Beginning LOD mesh imports...");
 		mModelResolver.Initialize();
 
-		Util::Win32::WriteFormattedConsoleMessage(L"All LOD meshes have been imported. Initiating conversion sequence...");
+		Util::Win32::WriteFormattedConsoleMessage(L"\nAll LOD meshes have been imported. Initiating conversion sequence...");
 		ExecuteModelConversionLoop();
 
-		Util::Win32::WriteFormattedConsoleMessage(std::format(L"Conversion process completed. Exporting {}...", mLaunchParams.GetModelName()));
+		Util::Win32::WriteFormattedConsoleMessage(std::format(L"Conversion process completed. Exporting {}...\n", mLaunchParams.GetModelName()));
+		mModelResolver.SerializeModelData();
+
+		Util::Win32::WriteFormattedConsoleMessage(L"[MODEL EXPORT SUCCESSFUL]", Util::Win32::ConsoleFormat::SUCCESS);
 	}
 
 	const LaunchParams& Application::GetLaunchParameters() const

@@ -33,7 +33,7 @@ namespace Brawler
 		return mDiffuseTextureResolver.IsReadyForSerialization();
 	}
 
-	SerializedMaterialDefinition OpaqueMaterialDefinition::SerializeMaterial()
+	SerializedMaterialDefinition OpaqueMaterialDefinition::SerializeMaterial() const
 	{
 		const ModelTextureSerializer<ModelTextureID::DIFFUSE_ALBEDO> opaqueDiffuseSerializer{ GetImportedMesh(), mDiffuseTextureResolver.GetFinalOpaqueDiffuseTexture() };
 

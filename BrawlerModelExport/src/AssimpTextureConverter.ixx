@@ -188,6 +188,11 @@ namespace Brawler
 		if (!materialColor.has_value())
 			return std::optional<ConvertedAssimpTexture>{};
 
+		// If we make our texture too small, then the D3D12 Debug Layer might complain when we call
+		// ID3D12Device::GetCopyableFootprints() when exporting the finalized texture data. This might
+		// happen, for instance, when the desired model texture format is DXGI_FORMAT_BC7_UNORM_SRGB.
+		// In that case, the dimensions must be a multiple of 4, and can be no less than 4.
+
 		std::array<std::uint8_t, 4> rgbaColorArr{
 			static_cast<std::uint8_t>(materialColor->r * 255.0f),
 			static_cast<std::uint8_t>(materialColor->g * 255.0f),
@@ -195,48 +200,56 @@ namespace Brawler
 			std::numeric_limits<std::uint8_t>::max()
 		};
 
-		DirectX::ScratchImage convertedImage{};
+		DirectX::ScratchImage materialColorImage{};
+
+		// If we make our texture too small, then the D3D12 Debug Layer might complain when we call
+		// ID3D12Device::GetCopyableFootprints() when exporting the finalized texture data. This might
+		// happen, for instance, when the desired model texture format is DXGI_FORMAT_BC7_UNORM_SRGB.
+		// In that case, the dimensions must be a multiple of 4, and can be no less than 4.
+		Util::General::CheckHRESULT(materialColorImage.Initialize2D(
+			DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
+			4,
+			4,
+			1,
+			1
+		));
+
+		const DirectX::Image& relevantImage{ *(materialColorImage.GetImage(0, 0, 0)) };
+		for (std::size_t currRow = 0; currRow < relevantImage.height; ++currRow)
+		{
+			const std::span<std::uint32_t> rowDataSpan{ reinterpret_cast<std::uint32_t*>(relevantImage.pixels + (currRow * relevantImage.rowPitch)), relevantImage.rowPitch / sizeof(std::uint32_t) };
+
+			// We only want to write into the first four pixels' worth of data in each row, and not into
+			// any additional padding.
+			const std::span<std::uint32_t> rowPixelDataSpan{ rowDataSpan.subspan(0, 4) };
+
+			for (auto& pixel : rowPixelDataSpan)
+				std::memcpy(&pixel, rgbaColorArr.data(), sizeof(rgbaColorArr));
+		}
 
 		if constexpr (Brawler::GetIntermediateTextureFormat<TextureType>() != DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
 		{
-			const DirectX::Image srcImage{
-				.width = 1,
-				.height = 1,
-				.format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
-				.rowPitch = sizeof(rgbaColorArr),
-				.slicePitch = sizeof(rgbaColorArr),
-				.pixels = rgbaColorArr.data()
-			};
+			DirectX::ScratchImage convertedImage{};
 
 			Util::General::CheckHRESULT(DirectX::Convert(
-				srcImage,
+				relevantImage,
 				Brawler::GetIntermediateTextureFormat<TextureType>(),
 				DirectX::TEX_FILTER_FLAGS::TEX_FILTER_DEFAULT,
 				DirectX::TEX_THRESHOLD_DEFAULT,
 				convertedImage
 			));
+
+			return ConvertedAssimpTexture{
+				.ScratchImage{std::move(convertedImage)},
+				.TextureName{}
+			};
 		}
+
 		else
-		{
-			Util::General::CheckHRESULT(convertedImage.Initialize2D(
-				Brawler::GetIntermediateTextureFormat<TextureType>(),
-				1,
-				1,
-				1,
-				1,
-				DirectX::CP_FLAGS::CP_FLAGS_NONE
-			));
-
-			const DirectX::Image* const relevantImagePtr = convertedImage.GetImage(0, 0, 0);
-			assert(relevantImagePtr != nullptr);
-
-			std::memcpy(relevantImagePtr->pixels, rgbaColorArr.data(), sizeof(rgbaColorArr));
-		}
-
-		return ConvertedAssimpTexture{
-			.ScratchImage{std::move(convertedImage)},
-			.TextureName{}
-		};
+			return ConvertedAssimpTexture{
+				.ScratchImage{std::move(materialColorImage)},
+				.TextureName{}
+			};
 	}
 
 	template <aiTextureType TextureType>

@@ -144,6 +144,8 @@ namespace Brawler
 			Win32::FormattedConsoleMessageBuilder usageMsgBuilder{};
 			usageMsgBuilder << std::format(PROGRAM_USAGE_FORMAT_STRING, Util::General::StringToWString(mCmdLineArgsSpan[0]));
 
+			mCmdLineErrorMsgBuilder = std::move(usageMsgBuilder);
+
 			return false;
 		}
 

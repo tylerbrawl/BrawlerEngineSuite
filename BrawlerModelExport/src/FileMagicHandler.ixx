@@ -1,6 +1,7 @@
 module;
 #include <cstdint>
 #include <cassert>
+#include <ranges>
 #include <compare>
 
 export module Brawler.FileMagicHandler;
@@ -42,9 +43,11 @@ namespace Brawler
 		std::uint32_t magicNumValue = 0;
 		std::uint32_t bitShiftAmount = 24;
 
-		for (const auto c : mMagicStr)
+		// We reverse the bytes for little-endian serialization. Using std::views::reverse is causing
+		// an MSVC crash, for some reason.
+		for (auto itr = mMagicStr.rbegin(); itr != mMagicStr.rend(); ++itr)
 		{
-			magicNumValue |= (static_cast<std::uint32_t>(c) << bitShiftAmount);
+			magicNumValue |= (static_cast<std::uint32_t>(*itr) << bitShiftAmount);
 			bitShiftAmount -= 8;
 		}
 

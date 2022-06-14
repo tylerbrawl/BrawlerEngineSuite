@@ -6,6 +6,8 @@ module;
 
 export module Brawler.LODResolver;
 import Brawler.MeshResolverCollection;
+import Brawler.MeshTypeID;
+import Brawler.ByteStream;
 
 export namespace Brawler
 {
@@ -37,6 +39,8 @@ export namespace Brawler
 		void Update();
 		bool IsReadyForSerialization() const;
 
+		ByteStream GetSerializedLODMeshData() const;
+
 		const aiScene& GetScene() const;
 		std::uint32_t GetLODLevel() const;
 
@@ -54,6 +58,7 @@ export namespace Brawler
 
 		const aiScene* mAIScenePtr;
 		std::unique_ptr<I_MeshResolverCollection> mMeshResolverCollectionPtr;
+		MeshTypeID mMeshTypeID;
 		std::uint32_t mLODLevel;
 	};
 }

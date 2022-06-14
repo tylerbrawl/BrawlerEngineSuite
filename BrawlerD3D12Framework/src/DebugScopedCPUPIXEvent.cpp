@@ -5,6 +5,19 @@ module Brawler.D3D12.ScopedCPUPIXEvent;
 import Util.D3D12;
 import Brawler.NZStringView;
 
+// Define our own versions of the PIX functions here if we are not #including pix3.h.
+#if !defined(_DEBUG) && !defined(__RELEASE_WITH_DEBUGGING__)
+namespace
+{
+	template <typename... Args>
+	__forceinline void PIXBeginEvent(Args&&... args)
+	{}
+
+	consteval void PIXEndEvent()
+	{}
+}
+#endif
+
 namespace Brawler
 {
 	namespace D3D12

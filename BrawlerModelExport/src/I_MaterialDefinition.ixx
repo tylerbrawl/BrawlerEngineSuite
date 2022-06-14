@@ -37,7 +37,7 @@ export namespace Brawler
 		virtual void Update() = 0;
 		virtual bool IsReadyForSerialization() const = 0;
 
-		virtual SerializedMaterialDefinition SerializeMaterial() = 0;
+		virtual SerializedMaterialDefinition SerializeMaterial() const = 0;
 
 	protected:
 		const ImportedMesh& GetImportedMesh() const;
