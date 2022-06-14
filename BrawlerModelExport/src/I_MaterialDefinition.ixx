@@ -3,6 +3,7 @@ module;
 export module Brawler.I_MaterialDefinition;
 import Brawler.MaterialID;
 import Brawler.ImportedMesh;
+import Brawler.SerializedMaterialDefinition;
 
 export namespace Brawler
 {
@@ -36,7 +37,7 @@ export namespace Brawler
 		virtual void Update() = 0;
 		virtual bool IsReadyForSerialization() const = 0;
 
-		virtual MaterialID GetMaterialID() const = 0;
+		virtual SerializedMaterialDefinition SerializeMaterial() = 0;
 
 	protected:
 		const ImportedMesh& GetImportedMesh() const;

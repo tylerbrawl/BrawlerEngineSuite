@@ -19,6 +19,7 @@ import Brawler.D3D12.Renderer;
 import Brawler.ModelTextureResolutionRenderModule;
 import Brawler.D3D12.Texture2D;
 import Brawler.TextureTypeMap;
+import Brawler.ModelTextureID;
 
 namespace Brawler
 {
@@ -48,6 +49,13 @@ namespace Brawler
 	bool OpaqueDiffuseModelTextureResolver::IsReadyForSerialization() const
 	{
 		return (mHDiffuseTextureResolutionEvent.has_value() && mHDiffuseTextureResolutionEvent->IsEventComplete() && mOutputBuffer == nullptr);
+	}
+
+	const DirectX::ScratchImage& OpaqueDiffuseModelTextureResolver::GetFinalOpaqueDiffuseTexture() const
+	{
+		assert(IsReadyForSerialization());
+
+		return mDestDiffuseScratchImage;
 	}
 
 	void OpaqueDiffuseModelTextureResolver::BeginDiffuseTextureResolution()
@@ -169,7 +177,7 @@ namespace Brawler
 			// Initialize the DirectX::ScratchImage to have one image for every sub-resource of the
 			// transient Texture2D which contained our data.
 			Util::General::CheckHRESULT(mDestDiffuseScratchImage.Initialize2D(
-				Brawler::GetDesiredTextureFormat<aiTextureType::aiTextureType_DIFFUSE>(),
+				Brawler::GetDesiredTextureFormat<ModelTextureID::DIFFUSE_ALBEDO>(),
 				srcImagePtr->width,
 				srcImagePtr->height,
 				1,

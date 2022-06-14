@@ -44,6 +44,8 @@ export namespace Brawler
 		void Update();
 		bool IsReadyForSerialization() const;
 
+		const DirectX::ScratchImage& GetFinalOpaqueDiffuseTexture() const;
+
 	private:
 		void BeginDiffuseTextureResolution();
 		void AddTextureResolutionRenderPasses(D3D12::FrameGraphBuilder& builder);

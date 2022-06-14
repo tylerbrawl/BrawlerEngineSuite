@@ -1,7 +1,12 @@
 module;
-#include <utility>
+#include <format>
+#include <dxgiformat.h>
 
 module Brawler.OpaqueMaterialDefinition;
+import Brawler.ModelTextureSerializer;
+import Brawler.ModelTextureID;
+import Brawler.MaterialID;
+import Brawler.FilePathHash;
 
 namespace Brawler
 {
@@ -28,8 +33,13 @@ namespace Brawler
 		return mDiffuseTextureResolver.IsReadyForSerialization();
 	}
 
-	MaterialID OpaqueMaterialDefinition::GetMaterialID() const
+	SerializedMaterialDefinition OpaqueMaterialDefinition::SerializeMaterial()
 	{
-		return MaterialID::OPAQUE;
+		const ModelTextureSerializer<ModelTextureID::DIFFUSE_ALBEDO> opaqueDiffuseSerializer{ GetImportedMesh(), mDiffuseTextureResolver.GetFinalOpaqueDiffuseTexture() };
+
+		return SerializedMaterialDefinition{
+			.Identifier = MaterialID::OPAQUE,
+			.DiffuseAlbedoTextureHash = opaqueDiffuseSerializer.GetModelTextureFilePathHash().GetHash()
+		};
 	}
 }

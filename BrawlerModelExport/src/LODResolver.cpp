@@ -7,6 +7,7 @@ module;
 #include <format>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -153,7 +154,7 @@ namespace Brawler
 
 		// Have the MeshResolverCollection create a mesh resolver for each aiMesh which we
 		// imported.
-		for (const auto meshPtr : meshSpan)
-			mMeshResolverCollectionPtr->CreateMeshResolverForImportedMesh(ImportedMesh{ *meshPtr, LODScene{*mAIScenePtr, GetLODLevel()} });
+		for (const auto i : std::views::iota(0u, meshSpan.size()))
+			mMeshResolverCollectionPtr->CreateMeshResolverForImportedMesh(ImportedMesh{ *(meshSpan[i]), static_cast<std::uint32_t>(i), LODScene{*mAIScenePtr, GetLODLevel()}});
 	}
 }

@@ -7,6 +7,7 @@ module;
 module Brawler.OpaqueDiffuseModelTextureResolver;
 import Brawler.BC7ImageCompressor;
 import Brawler.TextureTypeMap;
+import Brawler.ModelTextureID;
 import Brawler.D3D12.Texture2D;
 import Brawler.D3D12.BufferSubAllocationReservationHandle;
 
@@ -28,7 +29,7 @@ namespace Brawler
 		{
 			std::unique_ptr<BC7ImageCompressor> compressorPtr{ std::make_unique<BC7ImageCompressor>(BC7ImageCompressor::InitInfo{
 				.SrcTextureSubResource{ context.CurrTexturePtr->GetSubResource(i) },
-				.DesiredFormat = Brawler::GetDesiredTextureFormat<aiTextureType::aiTextureType_DIFFUSE>()
+				.DesiredFormat = Brawler::GetDesiredTextureFormat<ModelTextureID::DIFFUSE_ALBEDO>()
 			}) };
 			
 			D3D12::BufferSubAllocationReservationHandle hBC7SubResourceDataReservation{ compressorPtr->AddCompressionRenderPasses(context.Builder) };

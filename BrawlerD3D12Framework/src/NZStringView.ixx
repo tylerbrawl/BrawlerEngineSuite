@@ -18,7 +18,14 @@ export namespace Brawler
 	class BasicNZStringView final : private std::basic_string_view<CharT, Traits>
 	{
 	private:
-		friend constexpr auto operator<=>(const BasicNZStringView lhs, const BasicNZStringView rhs) = default;
+		friend auto operator<=>(const BasicNZStringView lhs, const BasicNZStringView rhs) = default;
+
+	public:
+		using iterator = std::basic_string_view<CharT, Traits>::iterator;
+		using const_iterator = std::basic_string_view<CharT, Traits>::const_iterator;
+
+		using reverse_iterator = std::basic_string_view<CharT, Traits>::reverse_iterator;
+		using const_reverse_iterator = std::basic_string_view<CharT, Traits>::const_reverse_iterator;
 
 	public:
 		constexpr BasicNZStringView() = default;
@@ -87,6 +94,18 @@ export namespace Brawler
 		/// </returns>
 		template <typename Allocator = std::allocator<CharT>>
 		constexpr std::basic_string<CharT, Traits, Allocator> SubStr(const std::size_t offsetInChars = 0, const std::size_t numChars = std::npos) const;
+
+		constexpr const_iterator begin() const;
+		constexpr const_iterator cbegin() const;
+
+		constexpr const_iterator end() const;
+		constexpr const_iterator cend() const;
+
+		constexpr const_reverse_iterator rbegin() const;
+		constexpr const_reverse_iterator crbegin() const;
+
+		constexpr const_reverse_iterator rend() const;
+		constexpr const_reverse_iterator crend() const;
 	};
 }
 
@@ -142,6 +161,54 @@ namespace Brawler
 	constexpr std::basic_string<CharT, Traits, Allocator> BasicNZStringView<CharT, Traits>::SubStr(const std::size_t offset, const std::size_t numChars) const
 	{
 		return std::basic_string<CharT, Traits, Allocator>{ std::basic_string_view<CharT, Traits>::substr(offset, numChars) };
+	}
+
+	template <typename CharT, typename Traits>
+	constexpr BasicNZStringView<CharT, Traits>::const_iterator BasicNZStringView<CharT, Traits>::begin() const
+	{
+		return std::basic_string_view<CharT, Traits>::begin();
+	}
+
+	template <typename CharT, typename Traits>
+	constexpr BasicNZStringView<CharT, Traits>::const_iterator BasicNZStringView<CharT, Traits>::cbegin() const
+	{
+		return std::basic_string_view<CharT, Traits>::cbegin();
+	}
+
+	template <typename CharT, typename Traits>
+	constexpr BasicNZStringView<CharT, Traits>::const_iterator BasicNZStringView<CharT, Traits>::end() const
+	{
+		return std::basic_string_view<CharT, Traits>::end();
+	}
+
+	template <typename CharT, typename Traits>
+	constexpr BasicNZStringView<CharT, Traits>::const_iterator BasicNZStringView<CharT, Traits>::cend() const
+	{
+		return std::basic_string_view<CharT, Traits>::cend();
+	}
+
+	template <typename CharT, typename Traits>
+	constexpr BasicNZStringView<CharT, Traits>::const_reverse_iterator BasicNZStringView<CharT, Traits>::rbegin() const
+	{
+		return std::basic_string_view<CharT, Traits>::rbegin();
+	}
+
+	template <typename CharT, typename Traits>
+	constexpr BasicNZStringView<CharT, Traits>::const_reverse_iterator BasicNZStringView<CharT, Traits>::crbegin() const
+	{
+		return std::basic_string_view<CharT, Traits>::crbegin();
+	}
+
+	template <typename CharT, typename Traits>
+	constexpr BasicNZStringView<CharT, Traits>::const_reverse_iterator BasicNZStringView<CharT, Traits>::rend() const
+	{
+		return std::basic_string_view<CharT, Traits>::rend();
+	}
+
+	template <typename CharT, typename Traits>
+	constexpr BasicNZStringView<CharT, Traits>::const_reverse_iterator BasicNZStringView<CharT, Traits>::crend() const
+	{
+		return std::basic_string_view<CharT, Traits>::crend();
 	}
 }
 

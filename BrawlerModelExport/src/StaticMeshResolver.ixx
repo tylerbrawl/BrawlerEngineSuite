@@ -7,7 +7,6 @@ import Brawler.StaticVertexBuffer;
 import Brawler.IndexBuffer;
 import Brawler.MeshResolverBase;
 import Brawler.ImportedMesh;
-import Brawler.StaticVertexData;
 
 export namespace Brawler
 {
@@ -26,11 +25,7 @@ export namespace Brawler
 		bool IsReadyForSerializationIMPL() const;
 
 	private:
-		void UpdateIndexBuffer();
-
-	private:
 		StaticVertexBuffer mVertexBuffer;
-		IndexBuffer<UnpackedStaticVertex> mIndexBuffer;
-		std::uint32_t mNumUpdateCalls;
+		IndexBuffer mIndexBuffer;
 	};
 }

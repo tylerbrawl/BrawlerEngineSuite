@@ -103,6 +103,24 @@
     <Filter Include="Source Files\Mesh Parsing\Normal Bounding Cones">
       <UniqueIdentifier>{d09ca4a1-01ea-4e17-a0cb-cff81231f631}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Mesh Serialization">
+      <UniqueIdentifier>{665fe1c1-d395-4456-ae8e-22f7ee42bb72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Textures\Model Texture Serialization">
+      <UniqueIdentifier>{b2470c6e-04d0-4719-b3b8-42462fcc782b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Textures\Model Texture Serialization">
+      <UniqueIdentifier>{4c78b39d-2f59-4615-bf64-6273cf58c61a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\File I/O\SHA-512 Hashing">
+      <UniqueIdentifier>{b3503302-25e7-4759-9df7-5887be1039d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File I/O">
+      <UniqueIdentifier>{01c83128-6099-4e94-94bf-fbee6ad8f423}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File I/O\SHA-512 Hashing">
+      <UniqueIdentifier>{cbc9e8a8-9b98-4f5f-b1de-d54d40c34a1a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -324,6 +342,45 @@
     <ClCompile Include="src\NormalBoundingCones.ixx">
       <Filter>Module Files\Mesh Parsing\Normal Bounding Cones</Filter>
     </ClCompile>
+    <ClCompile Include="src\FileMagicHandler.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IndexBuffer.cpp">
+      <Filter>Source Files\Static Mesh Data</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StaticMeshResolverSerializer.ixx">
+      <Filter>Module Files\Mesh Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SerializedMaterialDefinition.ixx">
+      <Filter>Module Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelTextureID.ixx">
+      <Filter>Module Files\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelTextureSerializer.ixx">
+      <Filter>Module Files\Textures\Model Texture Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelTextureSerializer.cpp">
+      <Filter>Source Files\Textures\Model Texture Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512Hasher.ixx">
+      <Filter>Module Files\File I/O\SHA-512 Hashing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512Hashing.ixx">
+      <Filter>Module Files\File I/O\SHA-512 Hashing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512Hash.ixx">
+      <Filter>Module Files\File I/O\SHA-512 Hashing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512Hasher.cpp">
+      <Filter>Source Files\File I/O\SHA-512 Hashing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512AlgorithmProvider.ixx">
+      <Filter>Module Files\File I/O\SHA-512 Hashing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512AlgorithmProvider.cpp">
+      <Filter>Source Files\File I/O\SHA-512 Hashing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\Shaders\BC7Encode.hlsl">
@@ -332,12 +389,21 @@
     <FxCompile Include="src\Shaders\GenerateMipMaps.hlsl">
       <Filter>Shader Files</Filter>
     </FxCompile>
-    <FxCompile Include="src\StaticIndirectPrepare.hlsl">
+    <FxCompile Include="src\Shaders\StaticIndirectPrepare.hlsl">
       <Filter>Shader Files</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="src\Shaders\GeometryTypes.hlsli">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="src\Shaders\BindlessDescriptors.hlsli">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="src\Shaders\GeneralUtil.hlsli">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\EngineConstantsDef.h">

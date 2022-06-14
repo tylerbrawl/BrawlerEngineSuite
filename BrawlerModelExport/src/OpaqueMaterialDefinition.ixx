@@ -5,6 +5,7 @@ export module Brawler.OpaqueMaterialDefinition;
 import Brawler.I_MaterialDefinition;
 import Brawler.MaterialID;
 import Brawler.OpaqueDiffuseModelTextureResolver;
+import Brawler.SerializedMaterialDefinition;
 
 export namespace Brawler
 {
@@ -22,7 +23,7 @@ export namespace Brawler
 		void Update() override;
 		bool IsReadyForSerialization() const override;
 
-		MaterialID GetMaterialID() const override;
+		SerializedMaterialDefinition SerializeMaterial() override;
 
 	private:
 		OpaqueDiffuseModelTextureResolver mDiffuseTextureResolver;
