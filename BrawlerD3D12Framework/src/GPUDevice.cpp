@@ -23,6 +23,25 @@ namespace
 	
 	bool VerifyD3D12DeviceFeatureSupport(const Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice)
 	{
+		// Ensure ID3D12PipelineLibrary1 support. According to the D3D12 Pipeline State Cache sample,
+		// this should be only a software requirement, as it only requires an updated OS and graphics
+		// driver. Nevertheless, we still need to check for it.
+		{
+			D3D12_FEATURE_DATA_SHADER_CACHE shaderCacheData{};
+			Util::General::CheckHRESULT(d3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_SHADER_CACHE, &shaderCacheData, sizeof(shaderCacheData)));
+
+			// TODO: If the D3D12_SHADER_CACHE_SUPPORT_AUTOMATIC_DISK_CACHE bit is set in
+			// shaderCacheData.SupportFlags, then the MSDN states that "the driver supports an OS-
+			// managed shader cache that stores compiled shaders on disk to accelerate future runs
+			// of the program."
+			//
+			// If this is true, then do we even need to cache PSOs ourselves? Is this bit even set
+			// in practice?
+
+			if ((shaderCacheData.SupportFlags & D3D12_SHADER_CACHE_SUPPORT_FLAGS::D3D12_SHADER_CACHE_SUPPORT_LIBRARY) == 0)
+				return false;
+		}
+		
 		// Ensure Shader Model 6.0 support.
 		{
 			D3D12_FEATURE_DATA_SHADER_MODEL shaderModelData{
@@ -194,7 +213,7 @@ namespace Brawler
 			// messages more, but who really knows which is better?)
 			//
 			// NOTE: The debug layer is never enabled in Release builds, even if this value is set to true.
-			constexpr bool ALLOW_D3D12_DEBUG_LAYER = false;
+			constexpr bool ALLOW_D3D12_DEBUG_LAYER = true;
 
 			return ALLOW_D3D12_DEBUG_LAYER;
 		}
@@ -207,6 +226,9 @@ namespace Brawler
 			// PIX does not play nicely with the D3D12 Debug Layer. If we detect that PIX is trying
 			// to capture the application, then we will not enable the Debug Layer. (I am not aware
 			// of a way to detect PIX timing captures, but this should work for GPU captures.)
+			static constexpr bool DISABLE_DEBUG_LAYER_WHEN_USING_PIX = false;
+
+			if constexpr (DISABLE_DEBUG_LAYER_WHEN_USING_PIX)
 			{
 				static constexpr std::wstring_view PIX_CAPTURER_DLL_NAME{ L"WinPixGpuCapturer.dll" };
 
@@ -218,6 +240,8 @@ namespace Brawler
 				{
 					Util::Win32::WriteDebugMessage(L"WARNING: The D3D12 Debug Layer was set to be enabled (see DebugLayerEnabler<Util::General::BuildMode::DEBUG>::IsDebugLayerAllowed()), but PIX is attempting to perform a GPU capture. Thus, the request to enable the D3D12 Debug Layer has been ignored. If you wish, you may use PIX's Debug Layer after the capture has completed.");
 					mIsDebugLayerEnabled = false;
+
+					return;
 				}
 			}
 
@@ -474,6 +498,40 @@ namespace Brawler
 				Util::General::CheckHRESULT(mD3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_D3D12_OPTIONS, &optionsData, sizeof(optionsData)));
 
 				mDeviceCapabilities.GPUResourceHeapTier = (optionsData.ResourceHeapTier == D3D12_RESOURCE_HEAP_TIER::D3D12_RESOURCE_HEAP_TIER_1 ? ResourceHeapTier::TIER_1 : ResourceHeapTier::TIER_2);
+
+				// Set the GPU Resource Binding Tier. This value describes the capabilities of binding
+				// GPU resources to the pipeline for this device. These capabilities include how large
+				// descriptor heaps can be, how much of a descriptor table can be dedicated to a given
+				// type of view, and whether or not null descriptors need to be used when not binding
+				// a resource to a specific root parameter slot.
+				switch (optionsData.ResourceBindingTier)
+				{
+				case D3D12_RESOURCE_BINDING_TIER::D3D12_RESOURCE_BINDING_TIER_1: [[unlikely]]
+				{
+					mDeviceCapabilities.GPUResourceBindingTier = ResourceBindingTier::TIER_1;
+					break;
+				}
+
+				case D3D12_RESOURCE_BINDING_TIER::D3D12_RESOURCE_BINDING_TIER_2:
+				{
+					mDeviceCapabilities.GPUResourceBindingTier = ResourceBindingTier::TIER_2;
+					break;
+				}
+
+				case D3D12_RESOURCE_BINDING_TIER::D3D12_RESOURCE_BINDING_TIER_3:
+				{
+					mDeviceCapabilities.GPUResourceBindingTier = ResourceBindingTier::TIER_3;
+					break;
+				}
+
+				default: [[unlikely]]
+				{
+					assert(false);
+					std::unreachable();
+
+					break;
+				}
+				}
 
 				// Check for supported typed UAV formats. The set specified by FORMAT_ALWAYS_SUPPORTED
 				// is always guaranteed to exist.

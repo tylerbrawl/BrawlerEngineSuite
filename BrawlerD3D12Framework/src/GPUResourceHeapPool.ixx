@@ -73,13 +73,19 @@ namespace Brawler
 			if constexpr (HeapType == D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_UPLOAD)
 			{
 				for (const auto& resourcePtr : allocationInfo.AliasedResources)
-					assert(resourcePtr->GetCurrentResourceState() == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_GENERIC_READ && "ERROR: GPU resources created in an upload heap *MUST* have an initial resource state of D3D12_RESOURCE_STATE_GENERIC_READ!");
+				{
+					for(const auto subResourceState : resourcePtr->GetAllSubResourceStates())
+						assert(subResourceState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_GENERIC_READ && "ERROR: GPU resources created in an upload heap *MUST* have an initial resource state of D3D12_RESOURCE_STATE_GENERIC_READ!");
+				}
 			}
 
 			else if constexpr (HeapType == D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_READBACK)
 			{
-				for(const auto& resourcePtr : allocationInfo.AliasedResources)
-					assert(resourcePtr->GetCurrentResourceState() == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST && "ERROR: GPU resources created in a readback heap *MUST* have an initial resource state of D3D12_RESOURCE_STATE_COPY_DEST!");
+				for (const auto& resourcePtr : allocationInfo.AliasedResources)
+				{
+					for(const auto subResourceState : resourcePtr->GetAllSubResourceStates())
+						assert(subResourceState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST && "ERROR: GPU resources created in a readback heap *MUST* have an initial resource state of D3D12_RESOURCE_STATE_COPY_DEST!");
+				}
 			}
 #endif // _DEBUG
 

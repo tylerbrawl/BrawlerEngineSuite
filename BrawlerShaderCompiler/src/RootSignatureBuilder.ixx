@@ -3,6 +3,7 @@ module;
 #include <memory>
 #include <cassert>
 #include <span>
+#include <format>
 #include "DxDef.h"
 
 export module Brawler.RootSignatureBuilder;
@@ -13,6 +14,7 @@ import Brawler.RootParameterDefinition;
 import Brawler.RootParameters;
 import Brawler.FileWriterNode;
 import Util.FileWrite;
+import Util.Win32;
 
 namespace Brawler
 {
@@ -231,7 +233,11 @@ export namespace Brawler
 		{
 		private:
 			// A root signature can consist of at most 64 DWORDs.
-			static constexpr std::uint32_t MAX_ROOT_SIGNATURE_COST = 64;
+			static constexpr std::uint32_t ABSOLUTE_MAX_ROOT_SIGNATURE_COST = 64;
+
+			// However, AMD recommends that root signatures be no larger than 12 DWORDs.
+			// (The source for this information is https://gpuopen.com/performance/.)
+			static constexpr std::uint32_t RECOMMENDED_MAX_ROOT_SIGNATURE_COST = 12;
 
 		private:
 			struct SerializedRootSignatureBlobs
@@ -262,9 +268,10 @@ export namespace Brawler
 			/// <summary>
 			/// Adds a static sampler to the root signature.
 			/// 
-			/// The MSVC states that there is "no performance cost" to using static samplers, and
+			/// The MSDN states that there is "no performance cost" to using static samplers, and
 			/// that if a sampler can be defined as static, then there is no need for the sampler
-			/// to be part of a descriptor heap.
+			/// to be part of a descriptor heap. (The source for this information is
+			/// https://docs.microsoft.com/en-us/windows/win32/direct3d12/root-signature-limits#static-samplers.)
 			/// 
 			/// In other words, if a sampler *CAN* be static, then it *SHOULD* be static.
 			/// </summary>
@@ -539,6 +546,10 @@ namespace Brawler
 			if (errorBlob != nullptr) [[unlikely]]
 				throw std::runtime_error{ std::string{ "ERROR: A particular root signature failed to be serialized under the Root Signature 1.1 standard! The error message is as follows:\n" } + reinterpret_cast<const char*>(errorBlob->GetBufferPointer()) };
 
+			// Warn the user if they are making an excessively large root signature.
+			if (mRootSignatureCost > RECOMMENDED_MAX_ROOT_SIGNATURE_COST) [[unlikely]]
+				Util::Win32::WriteFormattedConsoleMessage(std::format("WARNING: The root signature cost of {} has exceeded the recommended maximum of {} DWORDs. Things will still work fine in both shaders and CPU programs, but performance in both might take a significant hit. Try to reduce the number of root parameters.", GetRootSignatureIDString<RSIdentifier>(), RECOMMENDED_MAX_ROOT_SIGNATURE_COST), Util::Win32::ConsoleFormat::WARNING);
+			
 			return rootSigBlobs;
 		}
 
@@ -548,7 +559,7 @@ namespace Brawler
 		{
 			mRootSignatureCost += costIncrease;
 
-			if (mRootSignatureCost > MAX_ROOT_SIGNATURE_COST) [[unlikely]]
+			if (mRootSignatureCost > ABSOLUTE_MAX_ROOT_SIGNATURE_COST) [[unlikely]]
 				throw std::runtime_error{ "ERROR: The maximum limit of 64 DWORDs for a root signature has been exceeded!" };
 		}
 	}

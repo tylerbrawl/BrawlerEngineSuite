@@ -1,34 +1,90 @@
 module;
+#include <vector>
+#include <span>
+#include <cassert>
 #include <assimp/scene.h>
 
 module Brawler.StaticMeshResolver;
+import Brawler.JobSystem;
+import Brawler.Math.AABB;
 
 namespace Brawler
 {
-	StaticMeshResolver::StaticMeshResolver(ImportedMesh&& mesh) :
-		MeshResolverBase(std::move(mesh)),
-		mVertexBuffer(mesh.GetMesh()),
-		mIndexBuffer(mesh.GetMesh())
+	StaticMeshResolver::StaticMeshResolver(std::unique_ptr<ImportedMesh>&& meshPtr) :
+		MeshResolverBase(std::move(meshPtr)),
+		mVertexBuffer(GetImportedMesh()),
+		mIndexBuffer(GetImportedMesh())
 	{}
 
 	void StaticMeshResolver::UpdateIMPL()
 	{
-		// We actually do not have an IndexBuffer::Update() function, since index buffers
-		// are simple enough to implement that we just do everything we need to in the
-		// constructor of the IndexBuffer class.
+		// Packing the VertexBuffer takes a significant amount of CPU time, so we delay it until
+		// the first update, rather than doing it in the constructor of the VertexBuffer class.
 		//
-		// On the other hand, packing the VertexBuffer data does, in fact, take a significant
-		// amount of CPU time. Thus, that gets postponed until the mesh resolver is updated
-		// in order to better benefit from multithreading.
-
+		// Updating the index buffer is essentially a no-op for now. We leave that call here for
+		// principle, but since it costs nothing, we don't bother creating any CPU jobs.
+		
 		mVertexBuffer.Update();
+		mIndexBuffer.Update();
 	}
 
 	bool StaticMeshResolver::IsReadyForSerializationIMPL() const
 	{
-		// For now, this function will essentially always return true. However, this might
-		// change in the future if packing vertex data is moved onto the GPU.
+		return (mVertexBuffer.IsReadyForSerialization() && mIndexBuffer.IsReadyForSerialization());
+	}
 
-		return mVertexBuffer.IsReadyForSerialization();
+	StaticMeshResolver::SerializedMeshData StaticMeshResolver::SerializeMeshDataIMPL() const
+	{
+		struct VertexBufferJobInfo
+		{
+			DirectX::XMFLOAT3 AABBMinPoint;
+			DirectX::XMFLOAT3 AABBMaxPoint;
+			std::uint32_t VertexCount;
+			std::uint64_t VertexBufferFilePathHash;
+		};
+
+		struct IndexBufferJobInfo
+		{
+			std::uint32_t IndexCount;
+			std::uint64_t IndexBufferFilePathHash;
+		};
+
+		Brawler::JobGroup meshDataSerializationGroup{};
+		meshDataSerializationGroup.Reserve(2);
+
+		VertexBufferJobInfo vbInfo{};
+
+		meshDataSerializationGroup.AddJob([this, &vbInfo] ()
+		{
+			const Math::AABB& objectSpaceBoundingBox{ mVertexBuffer.GetBoundingBox() };
+			vbInfo.AABBMinPoint = objectSpaceBoundingBox.GetMinimumBoundingPoint();
+			vbInfo.AABBMaxPoint = objectSpaceBoundingBox.GetMaximumBoundingPoint();
+
+			assert(mVertexBuffer.GetVertexCount() <= std::numeric_limits<std::uint32_t>::max());
+			vbInfo.VertexCount = static_cast<std::uint32_t>(mVertexBuffer.GetVertexCount());
+
+			vbInfo.VertexBufferFilePathHash = mVertexBuffer.SerializeVertexBuffer();
+		});
+
+		IndexBufferJobInfo ibInfo{};
+
+		meshDataSerializationGroup.AddJob([this, &ibInfo] ()
+		{
+			assert(mIndexBuffer.GetIndexCount() <= std::numeric_limits<std::uint32_t>::max());
+			ibInfo.IndexCount = static_cast<std::uint32_t>(mIndexBuffer.GetIndexCount());
+
+			ibInfo.IndexBufferFilePathHash = mIndexBuffer.SerializeIndexBuffer();
+		});
+
+		meshDataSerializationGroup.ExecuteJobs();
+
+		return SerializedMeshData{
+			.AABBMinPoint{std::move(vbInfo.AABBMinPoint)},
+			.VertexCount = vbInfo.VertexCount,
+			.AABBMaxPoint{std::move(vbInfo.AABBMaxPoint)},
+			.IndexCount = ibInfo.IndexCount,
+			.VertexBufferFilePathHash = vbInfo.VertexBufferFilePathHash,
+			.IndexBufferFilePathHash = ibInfo.IndexBufferFilePathHash
+		};
 	}
 }

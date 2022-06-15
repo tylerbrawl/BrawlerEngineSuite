@@ -110,15 +110,18 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
+    <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
+    <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">
     <LinkIncremental>false</LinkIncremental>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
+    <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -175,7 +178,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalOptions>/constexpr:steps2000000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/constexpr:steps2000000 /Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
       <AdditionalBMIDirectories>%(AdditionalBMIDirectories)</AdditionalBMIDirectories>
     </ClCompile>
     <Link>
@@ -201,7 +204,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalOptions>/constexpr:steps2000000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/constexpr:steps2000000 /Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
       <AdditionalBMIDirectories>%(AdditionalBMIDirectories)</AdditionalBMIDirectories>
     </ClCompile>
     <Link>
@@ -229,7 +232,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalOptions>/constexpr:steps2000000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/constexpr:steps2000000 /Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
       <AdditionalBMIDirectories>%(AdditionalBMIDirectories)</AdditionalBMIDirectories>
     </ClCompile>
     <Link>
@@ -251,6 +254,13 @@
     <ClCompile Include="src\BarrierMergerStateContainer.ixx" />
     <ClCompile Include="src\BindlessSRVSentinel.cpp" />
     <ClCompile Include="src\BindlessSRVSentinel.ixx" />
+    <ClCompile Include="src\CustomEventHandle.ixx" />
+    <ClCompile Include="src\DebugScopedCPUPIXEvent.cpp" />
+    <ClCompile Include="src\DebugScopedCPUPIXEvent.ixx" />
+    <ClCompile Include="src\DelayedJobGroup.cpp" />
+    <ClCompile Include="src\DelayedJobGroup.ixx" />
+    <ClCompile Include="src\DelayedJobSubmitter.cpp" />
+    <ClCompile Include="src\DelayedJobSubmitter.ixx" />
     <ClCompile Include="src\DLLManager.cpp" />
     <ClCompile Include="src\DLLManager.ixx" />
     <ClCompile Include="src\FastUnorderedMap.ixx" />
@@ -262,31 +272,29 @@
     <ClCompile Include="src\ConstantBufferView.ixx" />
     <ClCompile Include="src\D3D12UtilFormats.ixx" />
     <ClCompile Include="src\D3D12UtilGeneral.ixx" />
-    <ClCompile Include="src\ExplicitBarrierGPUResourceStateTrackerState.ixx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="src\FileAccessMode.ixx" />
+    <ClCompile Include="src\Finally.ixx" />
     <ClCompile Include="src\FormattedConsoleMessageBuilder.ixx" />
     <ClCompile Include="src\FrameGraphManager.cpp" />
     <ClCompile Include="src\FrameGraphManager.ixx" />
+    <ClCompile Include="src\FrameGraphSyncPointFactory.cpp" />
+    <ClCompile Include="src\FrameGraphSyncPointFactory.ixx" />
+    <ClCompile Include="src\GenericBufferSnapshots.ixx" />
     <ClCompile Include="src\GPUExecutionModuleResourceMap.ixx" />
     <ClCompile Include="src\GPUResourceBinding.ixx" />
     <ClCompile Include="src\GPUResourceBindlessSRVManager.cpp" />
     <ClCompile Include="src\GPUResourceBindlessSRVManager.ixx" />
+    <ClCompile Include="src\GPUResourceEventCollection.cpp" />
     <ClCompile Include="src\GPUResourceEventCollection.ixx" />
-    <ClCompile Include="src\GPUResourceStateBarrierMerger.cpp" />
-    <ClCompile Include="src\GPUResourceStateBarrierMerger.ixx" />
+    <ClCompile Include="src\GPUSubResourceStateBarrierMerger.cpp" />
+    <ClCompile Include="src\GPUSubResourceStateBarrierMerger.ixx" />
     <ClCompile Include="src\GPUResourceStateTracker.cpp" />
     <ClCompile Include="src\GPUResourceStateTracker.ixx" />
-    <ClCompile Include="src\GPUResourceStateTrackerStateID.ixx" />
-    <ClCompile Include="src\GPUResourceStateTrackingContext.ixx" />
     <ClCompile Include="src\GPUResourceViews.ixx" />
-    <ClCompile Include="src\ImplicitBarrierGPUResourceStateTrackerState.ixx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="src\GPUSubResourceStateManager.cpp" />
+    <ClCompile Include="src\GPUSubResourceStateManager.ixx" />
+    <ClCompile Include="src\I_BufferSnapshot.cpp" />
+    <ClCompile Include="src\I_BufferSnapshot.ixx" />
     <ClCompile Include="src\I_BufferSubAllocation.cpp" />
     <ClCompile Include="src\BufferResource.cpp" />
     <ClCompile Include="src\BufferResource.ixx" />
@@ -296,7 +304,6 @@
     <ClCompile Include="src\HLSLUtil.ixx" />
     <ClCompile Include="src\I_BufferSubAllocation.ixx" />
     <ClCompile Include="src\BufferSubAllocationManager.cpp" />
-    <ClCompile Include="src\BufferSubAllocationManager.ixx" />
     <ClCompile Include="src\CommittedD3D12ResourceContainer.cpp" />
     <ClCompile Include="src\CommittedD3D12ResourceContainer.ixx" />
     <ClCompile Include="src\ConstantBufferSubAllocation.ixx" />
@@ -334,14 +341,16 @@
     <ClCompile Include="src\GPUResourceAllocationHandle.cpp" />
     <ClCompile Include="src\GPUResourceAllocationHandle.ixx" />
     <ClCompile Include="src\GPUResourceCreationType.ixx" />
-    <ClCompile Include="src\I_GPUResourceStateTrackerState.ixx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="src\I_EventHandle.cpp" />
+    <ClCompile Include="src\I_EventHandle.ixx" />
+    <ClCompile Include="src\MappedFileView.cpp" />
+    <ClCompile Include="src\MappedFileView.ixx" />
+    <ClCompile Include="src\NZStringView.ixx" />
     <ClCompile Include="src\PipelineEnums.ixx" />
     <ClCompile Include="src\PipelineType.ixx" />
     <ClCompile Include="src\PSODatabase.cpp" />
+    <ClCompile Include="src\PSOLibrary.cpp" />
+    <ClCompile Include="src\PSOLibrary.ixx" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\ResourceStateTrackingTest.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -358,21 +367,28 @@
     <ClCompile Include="src\RootParameterType.ixx" />
     <ClCompile Include="src\RootSignatureDatabase.cpp" />
     <ClCompile Include="src\SafeModule.ixx" />
+    <ClCompile Include="src\ScopedCPUPIXEvent.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinitionBase.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_ENCODE_BLOCK.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_TRY_MODE_02.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_TRY_MODE_137.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_TRY_MODE_456.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_GENERIC_DOWNSAMPLE.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_GENERIC_DOWNSAMPLE_SRGB.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSOID.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\RootParameterEnums.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\RootSignatureDefinition.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\RootSignatureID.ixx" />
     <ClCompile Include="src\ShaderResourceView.ixx" />
+    <ClCompile Include="src\StructuredBufferElementRange.ixx" />
     <ClCompile Include="src\StructuredBufferSubAllocation.ixx" />
+    <ClCompile Include="src\StructuredBufferViewGenerator.ixx" />
     <ClCompile Include="src\Texture2D.cpp" />
     <ClCompile Include="src\Texture2D.ixx" />
     <ClCompile Include="src\Texture2DBuilders.ixx" />
+    <ClCompile Include="src\TextureCopyBufferSnapshot.cpp" />
+    <ClCompile Include="src\TextureCopyBufferSnapshot.ixx" />
     <ClCompile Include="src\TextureCopyBufferSubAllocation.cpp" />
     <ClCompile Include="src\TextureCopyBufferSubAllocation.ixx" />
     <ClCompile Include="src\TextureSubResource.cpp" />
@@ -546,6 +562,8 @@
     <ClCompile Include="src\UAVCounterSubAllocation.cpp" />
     <ClCompile Include="src\UAVCounterSubAllocation.ixx" />
     <ClCompile Include="src\UnorderedAccessView.ixx" />
+    <ClCompile Include="src\Win32EventHandle.cpp" />
+    <ClCompile Include="src\Win32EventHandle.ixx" />
     <ClCompile Include="src\Win32Util.cpp" />
     <ClCompile Include="src\Win32Util.ixx" />
     <ClCompile Include="src\WorkerThread.cpp" />
@@ -555,6 +573,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h" />
+    <ClInclude Include="src\EngineConstantsDef.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -562,11 +581,13 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets" Condition="Exists('..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets')" />
+    <Import Project="..\packages\Microsoft.Direct3D.DirectStorage.1.0.2\build\native\targets\Microsoft.Direct3D.DirectStorage.targets" Condition="Exists('..\packages\Microsoft.Direct3D.DirectStorage.1.0.2\build\native\targets\Microsoft.Direct3D.DirectStorage.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Direct3D.DirectStorage.1.0.2\build\native\targets\Microsoft.Direct3D.DirectStorage.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.DirectStorage.1.0.2\build\native\targets\Microsoft.Direct3D.DirectStorage.targets'))" />
   </Target>
 </Project>

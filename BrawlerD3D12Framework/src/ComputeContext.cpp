@@ -27,5 +27,20 @@ namespace Brawler
 
 			GetCommandList().Dispatch(numThreadGroupsX, numThreadGroupsY, numThreadGroupsZ);
 		}
+
+		void ComputeContext::Dispatch1D(const std::uint32_t numThreadGroups) const
+		{
+			Dispatch(numThreadGroups, 1, 1);
+		}
+
+		void ComputeContext::Dispatch2D(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY) const
+		{
+			Dispatch(numThreadGroupsX, numThreadGroupsY, 1);
+		}
+
+		void ComputeContext::Dispatch3D(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY, const std::uint32_t numThreadGroupsZ) const
+		{
+			Dispatch(numThreadGroupsX, numThreadGroupsY, numThreadGroupsZ);
+		}
 	}
 }

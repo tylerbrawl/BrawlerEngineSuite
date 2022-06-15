@@ -3,7 +3,7 @@ module;
 export module Brawler.I_MaterialDefinition;
 import Brawler.MaterialID;
 import Brawler.ImportedMesh;
-import Brawler.ModelTextureBuilderCollection;
+import Brawler.SerializedMaterialDefinition;
 
 export namespace Brawler
 {
@@ -34,12 +34,10 @@ export namespace Brawler
 	public:
 		virtual ~I_MaterialDefinition() = default;
 
-		virtual ModelTextureBuilderCollection CreateModelTextureBuilders() = 0;
-
 		virtual void Update() = 0;
 		virtual bool IsReadyForSerialization() const = 0;
 
-		virtual MaterialID GetMaterialID() const = 0;
+		virtual SerializedMaterialDefinition SerializeMaterial() const = 0;
 
 	protected:
 		const ImportedMesh& GetImportedMesh() const;

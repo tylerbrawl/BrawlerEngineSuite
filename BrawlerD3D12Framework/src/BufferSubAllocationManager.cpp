@@ -6,9 +6,8 @@ module;
 #include <cassert>
 #include "DxDef.h"
 
-module Brawler.D3D12.BufferSubAllocationManager;
+module Brawler.D3D12.BufferResource;
 import Brawler.D3D12.I_BufferSubAllocation;
-import Brawler.D3D12.BufferResource;
 import Util.General;
 import Brawler.D3D12.BufferSubAllocationReservationHandle;
 

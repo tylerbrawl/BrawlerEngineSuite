@@ -124,6 +124,9 @@ export namespace Brawler
 
 		constexpr std::uint32_t CountOneBits() const;
 
+		constexpr bool ContainsAllFlags(const CompositeEnum& rhs) const;
+		constexpr bool ContainsAnyFlag(const CompositeEnum& rhs) const;
+
 	private:
 		constexpr std::size_t GetBitSetArrayIndex(const EnumType enumValue) const;
 
@@ -243,6 +246,28 @@ namespace Brawler
 			onesCount += Util::Math::CountOneBits(bitSet);
 
 		return static_cast<std::uint32_t>(onesCount);
+	}
+
+	template <typename EnumType>
+		requires IsValidEnum<EnumType>
+	constexpr bool CompositeEnum<EnumType>::ContainsAllFlags(const CompositeEnum& rhs) const
+	{
+		const CompositeEnum<EnumType> combinedEnum{ *this & rhs };
+
+		// We know that *this contains all of the flags in rhs iff (*this & rhs) has just as
+		// many one bits as rhs does.
+		return (combinedEnum.CountOneBits() == rhs.CountOneBits());
+	}
+
+	template <typename EnumType>
+		requires IsValidEnum<EnumType>
+	constexpr bool CompositeEnum<EnumType>::ContainsAnyFlag(const CompositeEnum& rhs) const
+	{
+		const CompositeEnum<EnumType> combinedEnum{ *this & rhs };
+
+		// If (*this & rhs) has any set one bits, then it contains at least one flag specified
+		// in rhs.
+		return (combinedEnum.CountOneBits() != 0);
 	}
 
 	template <typename EnumType>

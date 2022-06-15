@@ -12,6 +12,7 @@ import Brawler.Application;
 import Brawler.ExceptionReporter;
 import Brawler.PackerSettings;
 import Util.General;
+import Util.Win32;
 import Brawler.AppParams;
 
 namespace
@@ -41,8 +42,13 @@ int main(int argc, char* argv[])
 {
 	try
 	{
+		Util::Win32::EnableConsoleFormatting();
+		
 		if (argc < 3)
-			throw std::runtime_error{ GetUsageInformation() };
+		{
+			Util::Win32::WriteFormattedConsoleMessage(GetUsageInformation());
+			return 1;
+		}
 
 		const std::string_view rootDataDirectory{ argv[1] };
 		const std::string_view rootOutputDirectory{ argv[2] };

@@ -15,15 +15,12 @@ export namespace Brawler
 		public:
 			ConstantBufferView() = default;
 			explicit ConstantBufferView(const I_BufferSubAllocation& subAllocation, const std::size_t offsetInElements = 0);
+			explicit ConstantBufferView(D3D12_CONSTANT_BUFFER_VIEW_DESC&& cbvDesc);
 
-			D3D12_CONSTANT_BUFFER_VIEW_DESC CreateCBVDescription() const;
-
-			const I_BufferSubAllocation& GetBufferSubAllocation() const;
-			std::size_t GetOffsetFromSubAllocationStart() const;
+			const D3D12_CONSTANT_BUFFER_VIEW_DESC& GetCBVDescription() const;
 
 		private:
-			const I_BufferSubAllocation* mSubAllocationPtr;
-			std::size_t mOffsetInElements;
+			D3D12_CONSTANT_BUFFER_VIEW_DESC mCBVDesc;
 		};
 	}
 }
@@ -36,32 +33,21 @@ namespace Brawler
 	{
 		template <typename DataElementType>
 		ConstantBufferView<DataElementType>::ConstantBufferView(const I_BufferSubAllocation& subAllocation, const std::size_t offsetInElements) :
-			mSubAllocationPtr(&subAllocation),
-			mOffsetInElements(offsetInElements)
+			mCBVDesc(D3D12_CONSTANT_BUFFER_VIEW_DESC{
+				.BufferLocation = subAllocation.GetGPUVirtualAddress() + (offsetInElements * sizeof(DataElementType)),
+				.SizeInBytes = sizeof(DataElementType)
+			})
 		{}
 
 		template <typename DataElementType>
-		D3D12_CONSTANT_BUFFER_VIEW_DESC ConstantBufferView<DataElementType>::CreateCBVDescription() const
-		{
-			assert(mSubAllocationPtr != nullptr && "ERROR: An attempt was made to create a ConstantBufferView without giving it an I_BufferSubAllocation to reference!");
-
-			return D3D12_CONSTANT_BUFFER_VIEW_DESC{
-				.BufferLocation = mSubAllocationPtr->GetGPUVirtualAddress() + GetOffsetFromSubAllocationStart(),
-				.SizeInBytes = sizeof(DataElementType)
-			};
-		}
+		ConstantBufferView<DataElementType>::ConstantBufferView(D3D12_CONSTANT_BUFFER_VIEW_DESC&& cbvDesc) :
+			mCBVDesc(std::move(cbvDesc))
+		{}
 
 		template <typename DataElementType>
-		const I_BufferSubAllocation& ConstantBufferView<DataElementType>::GetBufferSubAllocation() const
+		const D3D12_CONSTANT_BUFFER_VIEW_DESC& ConstantBufferView<DataElementType>::GetCBVDescription() const
 		{
-			assert(mSubAllocationPtr != nullptr && "ERROR: An attempt was made to create a ConstantBufferView without giving it an I_BufferSubAllocation to reference!");
-			return *mSubAllocationPtr;
-		}
-
-		template <typename DataElementType>
-		std::size_t ConstantBufferView<DataElementType>::GetOffsetFromSubAllocationStart() const
-		{
-			return (mOffsetInElements * sizeof(DataElementType));
+			return mCBVDesc;
 		}
 	}
 }

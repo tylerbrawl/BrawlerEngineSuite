@@ -23,10 +23,10 @@ export namespace Brawler
 		void Update();
 		bool IsReadyForSerialization() const;
 
+		void SerializeModelData() const;
+
 	private:
 		void InitializeLODResolvers();
-		void InitializeModelTextures();
-		void CreateModelTextureBuilders();
 
 	private:
 		std::vector<std::unique_ptr<LODResolver>> mLODResolverPtrArr;

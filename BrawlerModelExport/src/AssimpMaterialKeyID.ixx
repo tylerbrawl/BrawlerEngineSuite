@@ -1,6 +1,6 @@
 module;
 
-export module Brawler.AssimpMaterialKeyID;
+export module Brawler.AssimpMaterials:AssimpMaterialKeyID;
 
 export namespace Brawler
 {

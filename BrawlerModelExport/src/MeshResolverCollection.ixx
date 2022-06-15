@@ -1,25 +1,60 @@
 module;
 #include <vector>
+#include <ranges>
+#include <span>
 #include <memory>
+#include <stdexcept>
 #include <assimp/mesh.h>
 
 export module Brawler.MeshResolverCollection;
-import Brawler.StaticMeshResolver;
 import Brawler.Functional;
 import Brawler.ImportedMesh;
 import Util.General;
-import Brawler.ModelTextureBuilderCollection;
+import Brawler.MeshResolverBase;
+import Brawler.MeshTypeID;
+import Brawler.JobSystem;
+import Brawler.ByteStream;
+
+export namespace Brawler
+{
+	class I_MeshResolverCollection
+	{
+	protected:
+		I_MeshResolverCollection() = default;
+
+	public:
+		virtual ~I_MeshResolverCollection() = default;
+
+		I_MeshResolverCollection(const I_MeshResolverCollection& rhs) = delete;
+		I_MeshResolverCollection& operator=(const I_MeshResolverCollection& rhs) = delete;
+
+		I_MeshResolverCollection(I_MeshResolverCollection&& rhs) noexcept = default;
+		I_MeshResolverCollection& operator=(I_MeshResolverCollection&& rhs) noexcept = default;
+
+		virtual void CreateMeshResolverForImportedMesh(std::unique_ptr<ImportedMesh>&& meshPtr) = 0;
+
+		virtual void Update() = 0;
+		virtual bool IsReadyForSerialization() const = 0;
+
+		virtual ByteStream GetSerializedMeshData() const = 0;
+
+		virtual std::size_t GetMeshResolverCount() const = 0;
+	};
+}
+
+// -------------------------------------------------------------------------------------------------------------
 
 namespace Brawler
 {
-	using MeshResolverArrayTuple = std::tuple<
-		std::vector<StaticMeshResolver>
-	>;
+	template <typename T>
+	concept IsMeshResolver = std::derived_from<T, MeshResolverBase<T>>;
 }
 
 export namespace Brawler
 {
-	class MeshResolverCollection
+	template <typename T>
+		requires IsMeshResolver<T>
+	class MeshResolverCollection final : public I_MeshResolverCollection
 	{
 	public:
 		MeshResolverCollection() = default;
@@ -30,43 +65,17 @@ export namespace Brawler
 		MeshResolverCollection(MeshResolverCollection&& rhs) noexcept = default;
 		MeshResolverCollection& operator=(MeshResolverCollection&& rhs) noexcept = default;
 
-		void CreateMeshResolverForImportedMesh(ImportedMesh&& mesh);
+		void CreateMeshResolverForImportedMesh(std::unique_ptr<ImportedMesh>&& meshPtr) override;
 
-		ModelTextureBuilderCollection CreateModelTextureBuilders();
+		void Update() override;
+		bool IsReadyForSerialization() const override;
 
-		void Update();
-		bool IsReadyForSerialization() const;
+		ByteStream GetSerializedMeshData() const override;
 
-		std::size_t GetMeshResolverCount() const;
-
-	private:
-		/// <summary>
-		/// Executes the callback lambda represented by callback on each mesh resolver in this
-		/// MeshResolverCollection. Calling this function is preferred over manually looping over
-		/// each mesh resolver array in the MeshResolverCollection, since it ensures that no
-		/// mesh resolver type is accidentally skipped.
-		/// </summary>
-		/// <typeparam name="Callback">
-		/// - The (anonymous) type of the lambda function represented by callback.
-		/// </typeparam>
-		/// <param name="callback">
-		/// - An instance of a lambda closure which will be executed for each mesh resolver in this
-		///   MeshResolverCollection instance. 
-		/// 
-		///   Specifically, let M represent a mesh resolver. Then, for each mesh resolver in this
-		///   MeshResolverCollection instance, this function calls callback(M).
-		/// </param>
-		template <typename Callback>
-		void ForEachMeshResolver(const Callback& callback);
-
-		template <typename Callback>
-		void ForEachMeshResolver(const Callback& callback) const;
-
-		template <typename MeshResolverType, typename... Args>
-		void EmplaceMeshResolver(Args&&... args);
+		std::size_t GetMeshResolverCount() const override;
 
 	private:
-		MeshResolverArrayTuple mResolverArrTuple;
+		std::vector<T> mMeshResolverArr;
 	};
 }
 
@@ -74,36 +83,74 @@ export namespace Brawler
 
 namespace Brawler
 {
-	template <std::size_t CurrIndex, typename TupleType, typename Callback>
-	void ForEachMeshResolverIMPL(std::add_lvalue_reference_t<TupleType> tuple, const Callback& callback)
+	template <typename T>
+		requires IsMeshResolver<T>
+	void MeshResolverCollection<T>::CreateMeshResolverForImportedMesh(std::unique_ptr<ImportedMesh>&& meshPtr)
 	{
-		if constexpr (CurrIndex != std::tuple_size_v<MeshResolverArrayTuple>)
+		mMeshResolverArr.emplace_back(std::move(meshPtr));
+	}
+
+	template <typename T>
+		requires IsMeshResolver<T>
+	void MeshResolverCollection<T>::Update()
+	{
+		Brawler::JobGroup meshResolverUpdateGroup{};
+		meshResolverUpdateGroup.Reserve(GetMeshResolverCount());
+
+		for (auto& meshResolver : mMeshResolverArr)
+			meshResolverUpdateGroup.AddJob([&meshResolver] () { meshResolver.Update(); });
+
+		meshResolverUpdateGroup.ExecuteJobs();
+	}
+
+	template <typename T>
+		requires IsMeshResolver<T>
+	bool MeshResolverCollection<T>::IsReadyForSerialization() const
+	{
+		for (const auto& meshResolver : mMeshResolverArr)
 		{
-			for (auto& meshResolver : std::get<CurrIndex>(tuple))
-				callback(meshResolver);
-
-			ForEachMeshResolverIMPL<(CurrIndex + 1), TupleType>(tuple, callback);
+			if (!meshResolver.IsReadyForSerialization())
+				return false;
 		}
-	}
-}
 
-namespace Brawler
-{
-	template <typename Callback>
-	void MeshResolverCollection::ForEachMeshResolver(const Callback& callback)
-	{
-		ForEachMeshResolverIMPL<0, MeshResolverArrayTuple>(mResolverArrTuple, callback);
+		return true;
 	}
 
-	template <typename Callback>
-	void MeshResolverCollection::ForEachMeshResolver(const Callback& callback) const
+	template <typename T>
+		requires IsMeshResolver<T>
+	ByteStream MeshResolverCollection<T>::GetSerializedMeshData() const
 	{
-		ForEachMeshResolverIMPL<0, const MeshResolverArrayTuple>(mResolverArrTuple, callback);
+		std::vector<ByteStream> serializedMeshDataByteStreamArr{};
+		serializedMeshDataByteStreamArr.resize(GetMeshResolverCount());
+
+		Brawler::JobGroup serializeMeshDataGroup{};
+		serializeMeshDataGroup.Reserve(GetMeshResolverCount());
+
+		for (const auto i : std::views::iota(0u, GetMeshResolverCount()))
+		{
+			auto& currByteStream{ serializedMeshDataByteStreamArr[i] };
+			auto& currMeshResolver{ mMeshResolverArr[i] };
+
+			serializeMeshDataGroup.AddJob([&currByteStream, &currMeshResolver] ()
+			{
+				currByteStream << currMeshResolver.SerializeMeshData();
+			});
+		}
+
+		serializeMeshDataGroup.ExecuteJobs();
+
+		ByteStream meshDataByteStream{};
+
+		for (auto& byteStream : serializedMeshDataByteStreamArr)
+			meshDataByteStream << byteStream;
+
+		return meshDataByteStream;
 	}
 
-	template <typename MeshResolverType, typename... Args>
-	void MeshResolverCollection::EmplaceMeshResolver(Args&&... args)
+	template <typename T>
+		requires IsMeshResolver<T>
+	std::size_t MeshResolverCollection<T>::GetMeshResolverCount() const
 	{
-		std::get<std::vector<MeshResolverType>>(mResolverArrTuple).emplace_back(std::forward<Args>(args)...);
+		return mMeshResolverArr.size();
 	}
 }

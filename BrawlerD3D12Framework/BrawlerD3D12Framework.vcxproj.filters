@@ -196,6 +196,24 @@
     <Filter Include="Source Files\Win32">
       <UniqueIdentifier>{14c10506-731b-4aa9-889c-f7283dfcfe8f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Threading\Event Handles">
+      <UniqueIdentifier>{50e64646-8481-492f-9213-f27d9620120d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Threading\Event Handles">
+      <UniqueIdentifier>{87a0c87f-fb04-4e67-b5c6-f3f45871a27a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Resources\Buffer Resource Types\Buffer Snapshot Types">
+      <UniqueIdentifier>{6e1270b4-7f94-4d19-9244-d9a933f73764}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Resources\Buffer Resource Types\Buffer Snapshot Types">
+      <UniqueIdentifier>{f0e8971f-6747-4869-b3fc-4225cc2955d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\File I/O">
+      <UniqueIdentifier>{e09d18c8-86a9-4c43-a8d9-65715a0c549d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File I/O">
+      <UniqueIdentifier>{db9c111c-9688-4b77-ae05-586181768420}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GeneralUtil.ixx">
@@ -726,9 +744,6 @@
     <ClCompile Include="src\BufferResourceInitializationInfo.ixx">
       <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
     </ClCompile>
-    <ClCompile Include="src\BufferSubAllocationManager.ixx">
-      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
-    </ClCompile>
     <ClCompile Include="src\I_BufferSubAllocation.ixx">
       <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
     </ClCompile>
@@ -915,26 +930,11 @@
     <ClCompile Include="src\GPUResourceStateTracker.cpp">
       <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
     </ClCompile>
-    <ClCompile Include="src\I_GPUResourceStateTrackerState.ixx">
+    <ClCompile Include="src\GPUSubResourceStateBarrierMerger.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
     </ClCompile>
-    <ClCompile Include="src\GPUResourceStateTrackingContext.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUResourceStateBarrierMerger.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ImplicitBarrierGPUResourceStateTrackerState.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUResourceStateBarrierMerger.cpp">
+    <ClCompile Include="src\GPUSubResourceStateBarrierMerger.cpp">
       <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUResourceStateTrackerStateID.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ExplicitBarrierGPUResourceStateTrackerState.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
     </ClCompile>
     <ClCompile Include="src\BarrierMergerStateContainer.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management\GPU Resource State Tracker</Filter>
@@ -960,9 +960,111 @@
     <ClCompile Include="src\DLLManager.cpp">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
+    <ClCompile Include="src\DelayedJobGroup.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DelayedJobSubmitter.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DelayedJobSubmitter.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DelayedJobGroup.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_EventHandle.ixx">
+      <Filter>Module Files\Threading\Event Handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_EventHandle.cpp">
+      <Filter>Source Files\Threading\Event Handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32EventHandle.ixx">
+      <Filter>Module Files\Threading\Event Handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32EventHandle.cpp">
+      <Filter>Source Files\Threading\Event Handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Finally.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CustomEventHandle.ixx">
+      <Filter>Module Files\Threading\Event Handles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSubResourceStateManager.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSubResourceStateManager.cpp">
+      <Filter>Source Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphSyncPointFactory.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphSyncPointFactory.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NZStringView.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_GENERIC_DOWNSAMPLE.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_BufferSnapshot.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_BufferSnapshot.cpp">
+      <Filter>Source Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TextureCopyBufferSnapshot.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types\Buffer Snapshot Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TextureCopyBufferSnapshot.cpp">
+      <Filter>Source Files\GPU Resources\Buffer Resource Types\Buffer Snapshot Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StructuredBufferViewGenerator.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StructuredBufferElementRange.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GenericBufferSnapshots.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types\Buffer Snapshot Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_GENERIC_DOWNSAMPLE_SRGB.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ScopedCPUPIXEvent.ixx">
+      <Filter>Module Files\Profiling</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DebugScopedCPUPIXEvent.ixx">
+      <Filter>Module Files\Profiling</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DebugScopedCPUPIXEvent.cpp">
+      <Filter>Source Files\Profiling</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSOLibrary.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileAccessMode.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MappedFileView.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSOLibrary.cpp">
+      <Filter>Source Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MappedFileView.cpp">
+      <Filter>Source Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceEventCollection.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EngineConstantsDef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

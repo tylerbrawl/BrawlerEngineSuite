@@ -366,5 +366,8 @@ FodyWeavers.xsd
 # Brawler Shader Compiler Symbolic Link/Directory Junction
 /BrawlerD3D12Framework/src/ShaderCompilerFiles
 
+# Brawler Engine Constants Symbolic Link
+/BrawlerD3D12Framework/src/EngineConstantsDef.h
+
 # Weird Auto-Generated Windows Files
 desktop.ini

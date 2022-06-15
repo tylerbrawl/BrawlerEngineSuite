@@ -35,8 +35,6 @@ namespace Brawler
 
 	void Application::Initialize()
 	{
-		Util::Win32::EnableConsoleFormatting();
-		
 		mThreadPool.SetInitialized();
 	}
 

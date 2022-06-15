@@ -47,6 +47,8 @@ export namespace Brawler
 			template <GPUCommandQueueType QueueType>
 			std::span<const EventContainer<QueueType>> GetGPUResourceEvents() const;
 
+			void MergeGPUResourceEventCollection(GPUResourceEventCollection&& mergedCollection);
+
 		private:
 			std::vector<EventContainer<GPUCommandQueueType::DIRECT>> mDirectEventArr;
 			std::vector<EventContainer<GPUCommandQueueType::COMPUTE>> mComputeEventArr;

@@ -52,6 +52,21 @@ namespace Brawler
 			GetCommandList().Dispatch(numThreadGroupsX, numThreadGroupsY, numThreadGroupsZ);
 		}
 
+		void DirectContext::Dispatch1D(const std::uint32_t numThreadGroups) const
+		{
+			Dispatch(numThreadGroups, 1, 1);
+		}
+
+		void DirectContext::Dispatch2D(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY) const
+		{
+			Dispatch(numThreadGroupsX, numThreadGroupsY, 1);
+		}
+
+		void DirectContext::Dispatch3D(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY, const std::uint32_t numThreadGroupsZ) const
+		{
+			Dispatch(numThreadGroupsX, numThreadGroupsY, numThreadGroupsZ);
+		}
+
 		void DirectContext::PerformSpecialGPUResourceInitialization(I_GPUResource& resource)
 		{
 			const GPUResourceSpecialInitializationMethod initializationMethod = resource.GetPreferredSpecialInitializationMethod();
@@ -64,7 +79,7 @@ namespace Brawler
 					.NumRects = 0,
 					.pRects = nullptr,
 					.FirstSubresource = 0,
-					.NumSubresources = static_cast<std::uint32_t>(resource.GetSubresourceCount())
+					.NumSubresources = static_cast<std::uint32_t>(resource.GetSubResourceCount())
 				};
 
 				GetCommandList().DiscardResource(&(resource.GetD3D12Resource()), &discardRegion);

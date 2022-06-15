@@ -1,11 +1,11 @@
 module;
 
 export module Util.Threading;
+import Brawler.ThreadLocalResources;
 
 export namespace Brawler
 {
 	class WorkerThread;
-	struct ThreadLocalResources;
 }
 
 export namespace Util

@@ -53,6 +53,10 @@ export namespace Brawler
 
 			void Dispatch(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY, const std::uint32_t numThreadGroupsZ) const;
 
+			void Dispatch1D(const std::uint32_t numThreadGroups) const;
+			void Dispatch2D(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY) const;
+			void Dispatch3D(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY, const std::uint32_t numThreadGroupsZ) const;
+
 		private:
 			void PerformSpecialGPUResourceInitialization(I_GPUResource& resource);
 

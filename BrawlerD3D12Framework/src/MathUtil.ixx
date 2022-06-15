@@ -3,6 +3,7 @@ module;
 #include <type_traits>
 #include <intrin.h>
 #include <cassert>
+#include <optional>
 
 export module Util.Math;
 
@@ -66,6 +67,10 @@ export namespace Util
 		template <typename T, typename U>
 			requires OnlyIntegralArguments<T, U>
 		__forceinline constexpr std::uint64_t AlignToPowerOfTwo(const T valueToAlign, const U alignment);
+
+		template <typename T>
+			requires (std::is_integral_v<T> && sizeof(T) <= sizeof(std::uint64_t))
+		__forceinline constexpr std::uint32_t GetFirstSetBit(const T valueToScan);
 	}
 }
 
@@ -190,6 +195,43 @@ namespace Util
 			const std::uint64_t largeAlignment = static_cast<std::uint64_t>(alignment);
 			
 			return ((largeValueToAlign + (largeAlignment - 1)) & ~(largeAlignment - 1));
+		}
+
+		template <typename T>
+			requires (std::is_integral_v<T> && sizeof(T) <= sizeof(std::uint64_t))
+		__forceinline constexpr std::uint32_t GetFirstSetBit(const T valueToScan)
+		{
+			assert(valueToScan != 0 && "ERROR: A value of 0 was provided to Util::Math::GetFirstSetBit()!");
+			
+			if (std::is_constant_evaluated())
+			{
+				std::uint32_t currIndex = 0;
+
+				while (valueToScan != 0)
+				{
+					if ((valueToScan & 0x1) != 0)
+						return currIndex;
+
+					++currIndex;
+				}
+
+				// We shouldn't ever get here.
+				assert(false);
+			}
+			else
+			{
+				auto bitScanResult = 0;
+				unsigned long index = 0;
+
+				if constexpr (sizeof(valueToScan) <= sizeof(std::uint32_t))
+					bitScanResult = _BitScanForward(&index, valueToScan);
+
+				else
+					bitScanResult = _BitScanForward64(&index, valueToScan);
+
+				assert(bitScanResult != 0);
+				return index;
+			}
 		}
 	}
 }

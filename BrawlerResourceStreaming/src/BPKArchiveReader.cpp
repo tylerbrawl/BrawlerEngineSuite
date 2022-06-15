@@ -142,6 +142,22 @@ namespace
 
 		const std::size_t numTOCEntries = versionedHeader->TableOfContentsSizeInBytes / sizeof(BPKTableOfContentsEntry);
 
+		std::vector<BPKTableOfContentsEntry> tocEntryArr{};
+		tocEntryArr.resize(numTOCEntries);
+
+		// Rather than sequentially reading each individual ToC entry, we can just read the entire ToC at once.
+		// This can be significantly faster.
+		bpkFileStream.read(reinterpret_cast<char*>(tocEntryArr.data()), versionedHeader->TableOfContentsSizeInBytes);
+
+		for (const auto& tocEntry : tocEntryArr)
+			tableOfContents.try_emplace(
+				tocEntry.FileIdentifierHash,
+				tocEntry.FileOffsetInBytes,
+				tocEntry.CompressedSizeInBytes,
+				tocEntry.UncompressedSizeInBytes
+			);
+
+		/*
 		for (std::size_t i = 0; i < numTOCEntries; ++i)
 		{
 			BPKTableOfContentsEntry rawTOCEntry{};
@@ -154,6 +170,7 @@ namespace
 				rawTOCEntry.UncompressedSizeInBytes
 			);
 		}
+		*/
 
 		return tableOfContents;
 	}
@@ -163,7 +180,7 @@ namespace Brawler
 {
 	BPKArchiveReader::BPKArchiveReader() :
 		mTableOfContents(CreateTableOfContents()),
-		mBPKMapper(std::filesystem::path{ std::filesystem::current_path() / DATA_SUBDIRECTORY }, FileAccessMode::READ_ONLY)
+		mBPKMapper(std::filesystem::path{ BPK_ARCHIVE_PATH }, FileAccessMode::READ_ONLY)
 	{}
 
 	const BPKArchiveReader::TOCEntry& BPKArchiveReader::GetTableOfContentsEntry(const FilePathHash& pathHash) const

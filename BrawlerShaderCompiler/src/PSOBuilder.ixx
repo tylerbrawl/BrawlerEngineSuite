@@ -15,6 +15,7 @@ import Brawler.FileWriterNode;
 import Brawler.I_PSOFieldResolver;
 import Util.Reflection;
 import Util.FileWrite;
+import Brawler.AppParams;
 
 export namespace Brawler
 {
@@ -149,6 +150,22 @@ namespace Brawler
 				Brawler::FileWriterNode rootSignatureIDNode{};
 				rootSignatureIDNode.SetOutputText(std::move(rootSignatureIDStr));
 				psoDefinitionRootNode.AddChildNode(std::move(rootSignatureIDNode));
+			}
+
+			// Write out a unique name for this PSO. We don't want to directly write the name of the PSO into the
+			// source file, so we'll instead write out the following string:
+			//
+			// [Underlying Shader Profile ID Value]_[Underlying PSO Identifier Value]
+			//
+			// This string is guaranteed to be unique among PSOs within the same Shader Profile.
+			{
+				std::string uniquePSONameStr{ "\t\t\tstatic constexpr Brawler::NZWStringView UNIQUE_PSO_NAME{L\"" };
+				uniquePSONameStr += std::to_string(std::to_underlying(Util::General::GetLaunchParameters().ShaderProfile)) + "_" + std::to_string(std::to_underlying(PSOIdentifier));
+				uniquePSONameStr += "\"};\n\n";
+
+				Brawler::FileWriterNode uniquePSONameNode{};
+				uniquePSONameNode.SetOutputText(std::move(uniquePSONameStr));
+				psoDefinitionRootNode.AddChildNode(std::move(uniquePSONameNode));
 			}
 
 			// Each of this PSOBuilder's I_PSOFieldResolver instances may have an additional field which they wish

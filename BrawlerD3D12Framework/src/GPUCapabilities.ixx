@@ -15,6 +15,13 @@ export namespace Brawler
 			TIER_2
 		};
 
+		enum class ResourceBindingTier
+		{
+			TIER_1,
+			TIER_2,
+			TIER_3
+		};
+
 		enum class TypedUAVFormat
 		{
 			// Guaranteed - These formats are guaranteed to always support typed UAV loads
@@ -81,6 +88,7 @@ export namespace Brawler
 		struct GPUCapabilities
 		{
 			ResourceHeapTier GPUResourceHeapTier;
+			ResourceBindingTier GPUResourceBindingTier;
 			Brawler::CompositeEnum<TypedUAVFormat> SupportedTypedUAVLoadFormats;
 			std::uint32_t MaxGPUVirtualAddressBitsPerProcess;
 			std::size_t DedicatedVideoMemorySizeInBytes;

@@ -1,13 +1,16 @@
 module;
 #include <filesystem>
 #include <stdexcept>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include <cassert>
 #include <algorithm>
 #include <span>
 #include <format>
+#include <memory>
+#include <optional>
+#include <ranges>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 module Brawler.LODResolver;
 import Brawler.ImportedMesh;
@@ -15,13 +18,31 @@ import Util.ModelExport;
 import Brawler.LaunchParams;
 import Brawler.LODScene;
 import Util.Win32;
+import Util.General;
+import Brawler.MeshTypeID;
+import Brawler.StaticMeshResolver;
+
+namespace
+{
+	Brawler::MeshTypeID GetMeshTypeID(const aiMesh& mesh)
+	{
+		// TODO: Add support for skinned meshes. For now, we assert that the mesh is not
+		// skinned and simply create StaticMeshResolvers.
+
+		if (mesh.HasBones()) [[unlikely]]
+			throw std::runtime_error{ std::string{ "ERROR: The mesh " } + mesh.mName.C_Str() + " is a skinned mesh. Skinned meshes are currently unsupported." };
+
+		return Brawler::MeshTypeID::STATIC;
+	}
+}
 
 namespace Brawler
 {
 	LODResolver::LODResolver(const std::uint32_t lodLevel) :
 		mImporter(),
 		mAIScenePtr(nullptr),
-		mMeshResolverCollection(),
+		mMeshResolverCollectionPtr(nullptr),
+		mMeshTypeID(MeshTypeID::COUNT_OR_ERROR),
 		mLODLevel(lodLevel)
 	{}
 
@@ -35,19 +56,36 @@ namespace Brawler
 		Util::Win32::WriteFormattedConsoleMessage(std::format(L"LOD {} Mesh Import Finished (Mesh File: {})", mLODLevel, lodMeshFilePath.c_str()));
 	}
 
-	ModelTextureBuilderCollection LODResolver::CreateModelTextureBuilders()
-	{
-		return mMeshResolverCollection.CreateModelTextureBuilders();
-	}
-
 	void LODResolver::Update()
 	{
-		mMeshResolverCollection.Update();
+		mMeshResolverCollectionPtr->Update();
 	}
 
 	bool LODResolver::IsReadyForSerialization() const
 	{
-		return mMeshResolverCollection.IsReadyForSerialization();
+		return mMeshResolverCollectionPtr->IsReadyForSerialization();
+	}
+
+	ByteStream LODResolver::GetSerializedLODMeshData() const
+	{
+		assert(IsReadyForSerialization());
+
+		ByteStream lodMeshByteStream{};
+
+		// Before adding the actual mesh data, specify the MeshTypeID for the LODResolver and the number
+		// of meshes.
+		assert(mMeshTypeID != MeshTypeID::COUNT_OR_ERROR);
+		lodMeshByteStream << static_cast<std::uint32_t>(mMeshTypeID);
+
+		assert(mMeshResolverCollectionPtr->GetMeshResolverCount() <= std::numeric_limits<std::uint32_t>::max());
+		lodMeshByteStream << static_cast<std::uint32_t>(mMeshResolverCollectionPtr->GetMeshResolverCount());
+
+		{
+			ByteStream serializedMeshDataByteStream{ mMeshResolverCollectionPtr->GetSerializedMeshData() };
+			lodMeshByteStream << serializedMeshDataByteStream;
+		}
+
+		return lodMeshByteStream;
 	}
 
 	const aiScene& LODResolver::GetScene() const
@@ -83,16 +121,14 @@ namespace Brawler
 		}
 		
 		mImporter.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType::aiPrimitiveType_LINE | aiPrimitiveType::aiPrimitiveType_POINT);
+		mImporter.SetPropertyFloat(AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, 0.01f);
 
 		mAIScenePtr = mImporter.ReadFile(
 			fbxFile.string(),
+			aiProcessPreset_TargetRealtime_MaxQuality |
 			aiProcess_ConvertToLeftHanded |
-			aiPostProcessSteps::aiProcess_CalcTangentSpace |
-			aiPostProcessSteps::aiProcess_RemoveRedundantMaterials |
-			aiPostProcessSteps::aiProcess_JoinIdenticalVertices |
-			aiPostProcessSteps::aiProcess_Triangulate |
-			aiPostProcessSteps::aiProcess_SortByPType |
-			aiPostProcessSteps::aiProcess_OptimizeMeshes |
+			aiPostProcessSteps::aiProcess_TransformUVCoords |
+			aiPostProcessSteps::aiProcess_GlobalScale |
 			aiPostProcessSteps::aiProcess_OptimizeGraph
 		);
 
@@ -104,7 +140,48 @@ namespace Brawler
 	{
 		const std::span<const aiMesh*> meshSpan{ const_cast<const aiMesh**>(mAIScenePtr->mMeshes), mAIScenePtr->mNumMeshes };
 
+		// Dynamically determine the type of MeshResolverCollection which we will use.
+		std::optional<MeshTypeID> lodMeshTypeID{};
+
 		for (const auto meshPtr : meshSpan)
-			mMeshResolverCollection.CreateMeshResolverForImportedMesh(ImportedMesh{ *meshPtr, LODScene{ *mAIScenePtr, mLODLevel } });
+		{
+			const MeshTypeID currTypeID = GetMeshTypeID(*meshPtr);
+
+			if (!lodMeshTypeID.has_value()) [[unlikely]]
+				lodMeshTypeID = currTypeID;
+
+			else if (*lodMeshTypeID != currTypeID) [[unlikely]]
+				throw std::runtime_error{ Util::General::WStringToString(std::format(LR"(ERROR: Multiple mesh types were detected in the LOD mesh file "{}!")", Util::ModelExport::GetLaunchParameters().GetLODFilePath(mLODLevel).c_str())) };
+		}
+
+		mMeshTypeID = *lodMeshTypeID;
+		switch (mMeshTypeID)
+		{
+		case MeshTypeID::STATIC:
+		{
+			mMeshResolverCollectionPtr = std::make_unique<MeshResolverCollection<StaticMeshResolver>>();
+			break;
+		}
+
+		// TODO: Add support for skinned meshes. For now, we assert that the mesh is not
+		// skinned and simply create StaticMeshResolvers.
+
+		case MeshTypeID::SKINNED: [[fallthrough]];
+		default:
+		{
+			assert(false);
+			std::unreachable();
+
+			return;
+		}
+		}
+
+		// Have the MeshResolverCollection create a mesh resolver for each aiMesh which we
+		// imported.
+		for (const auto i : std::views::iota(0u, meshSpan.size()))
+		{
+			assert(meshSpan[i] != nullptr);
+			mMeshResolverCollectionPtr->CreateMeshResolverForImportedMesh(std::make_unique<ImportedMesh>(*(meshSpan[i]), static_cast<std::uint32_t>(i), LODScene{ *mAIScenePtr, GetLODLevel() }));
+		}			
 	}
 }

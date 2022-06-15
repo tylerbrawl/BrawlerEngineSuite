@@ -7,6 +7,8 @@ export module Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.D3D12.I_BufferSubAllocation;
 import Util.Math;
 
+export import :TextureCopyBufferSnapshot;
+
 export namespace Brawler
 {
 	namespace D3D12

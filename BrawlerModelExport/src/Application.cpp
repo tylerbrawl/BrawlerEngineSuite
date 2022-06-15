@@ -6,10 +6,9 @@ module;
 #include <DirectXTex.h>
 
 module Brawler.Application;
-import Brawler.BC7CompressionRenderModule;
+import Brawler.ModelTextureResolutionRenderModule;
 import Util.Win32;
 import Brawler.JobGroup;
-import Brawler.ModelTextureDatabase;
 
 #pragma push_macro("AddJob")
 #undef AddJob
@@ -40,7 +39,7 @@ namespace Brawler
 		mRenderer.Initialize();
 
 		// Add the I_RenderModules used by the application.
-		mRenderer.AddRenderModule<BC7CompressionRenderModule>();
+		mRenderer.AddRenderModule<ModelTextureResolutionRenderModule>();
 	}
 
 	void Application::Run(LaunchParams&& launchParams)
@@ -50,10 +49,13 @@ namespace Brawler
 		Util::Win32::WriteFormattedConsoleMessage(L"Beginning LOD mesh imports...");
 		mModelResolver.Initialize();
 
-		Util::Win32::WriteFormattedConsoleMessage(L"All LOD meshes have been imported. Initiating conversion sequence...");
+		Util::Win32::WriteFormattedConsoleMessage(L"\nAll LOD meshes have been imported. Initiating conversion sequence...");
 		ExecuteModelConversionLoop();
 
-		Util::Win32::WriteFormattedConsoleMessage(std::format(L"Conversion process completed. Exporting {}...", mLaunchParams.GetModelName()));
+		Util::Win32::WriteFormattedConsoleMessage(std::format(L"Conversion process completed. Exporting {}...\n", mLaunchParams.GetModelName()));
+		mModelResolver.SerializeModelData();
+
+		Util::Win32::WriteFormattedConsoleMessage(L"[MODEL EXPORT SUCCESSFUL]", Util::Win32::ConsoleFormat::SUCCESS);
 	}
 
 	const LaunchParams& Application::GetLaunchParameters() const
@@ -107,20 +109,7 @@ namespace Brawler
 
 	void Application::UpdateModelConversionComponents()
 	{
-		Brawler::JobGroup updateComponentsGroup{};
-		updateComponentsGroup.Reserve(2);
-
-		updateComponentsGroup.AddJob([this] ()
-		{
-			mModelResolver.Update();
-		});
-
-		updateComponentsGroup.AddJob([] ()
-		{
-			ModelTextureDatabase::GetInstance().UpdateModelTextures();
-		});
-
-		updateComponentsGroup.ExecuteJobs();
+		mModelResolver.Update();
 	}
 
 	void Application::ProcessFrame()
@@ -131,7 +120,7 @@ namespace Brawler
 
 	bool Application::IsModelReadyForSerialization() const
 	{
-		return (mModelResolver.IsReadyForSerialization() && ModelTextureDatabase::GetInstance().AreModelTexturesReadyForSerialization());
+		return mModelResolver.IsReadyForSerialization();
 	}
 
 	Application& GetApplication()

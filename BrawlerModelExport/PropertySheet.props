@@ -2,7 +2,8 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
-    <CopyBrawlerShaderCompilerFiles>rmdir /S /Q "$(SolutionDir)BrawlerD3D12Framework\src\ShaderCompilerFiles" &amp; mklink /J "$(SolutionDir)BrawlerD3D12Framework\src\ShaderCompilerFiles" "$(ProjectDir)src\ShaderCompilerFiles</CopyBrawlerShaderCompilerFiles>
+    <CopyBrawlerShaderCompilerFiles>rmdir /S /Q "$(SolutionDir)BrawlerD3D12Framework\src\ShaderCompilerFiles" &amp; mklink /J "$(SolutionDir)BrawlerD3D12Framework\src\ShaderCompilerFiles" "$(ProjectDir)src\ShaderCompilerFiles"</CopyBrawlerShaderCompilerFiles>
+    <CopyEngineConstants>del /Q "$(SolutionDir)BrawlerD3D12Framework\src\EngineConstantsDef.h" &amp; mklink "$(SolutionDir)BrawlerD3D12Framework\src\EngineConstantsDef.h" "$(ProjectDir)src\EngineConstantsDef.h"</CopyEngineConstants>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />
@@ -10,6 +11,9 @@
     <BuildMacro Include="CopyBrawlerShaderCompilerFiles">
       <Value>$(CopyBrawlerShaderCompilerFiles)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="CopyEngineConstants">
+      <Value>$(CopyEngineConstants)</Value>
     </BuildMacro>
   </ItemGroup>
 </Project>

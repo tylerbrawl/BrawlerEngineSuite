@@ -11,6 +11,8 @@ export namespace Brawler
 		BC7_TRY_MODE_137,
 		BC7_TRY_MODE_02,
 		BC7_ENCODE_BLOCK,
+		GENERIC_DOWNSAMPLE,
+		GENERIC_DOWNSAMPLE_SRGB,
 
 		// Test Shader Profile
 		TEST_PSO,

@@ -12,6 +12,7 @@ export namespace Brawler
 		{
 			I_GPUResource* ResourcePtr;
 			D3D12_RESOURCE_STATES RequiredState;
+			std::uint32_t SubResourceIndex;
 		};
 	}
 }

@@ -1,11 +1,11 @@
 module;
 #include <assimp/material.h>
-#include <dxgiformat.h>
 #include <DirectXTex.h>
 
 export module Brawler.TextureTypeMap;
-import Brawler.MipMapGeneration;
-import Brawler.AssimpMaterialKeyID;
+import Brawler.AssimpMaterials;
+import Brawler.ModelTextureID;
+import Brawler.NZStringView;
 
 export namespace Brawler
 {
@@ -54,33 +54,21 @@ namespace Brawler
 {
 	namespace IMPL
 	{
-		template <typename MipMapGeneratorType>
-		concept IsMipMapGenerator = requires (MipMapGeneratorType generator, const DirectX::ScratchImage& srcTexture)
-		{
-			// void MipMapGeneratorType::Update(const DirectX::ScratchImage& srcTexture)
-			{ generator.Update(srcTexture) } -> std::same_as<void>;
-
-			// bool-ish MipMapGeneratorType::IsMipMapGenerationFinished() const
-			{ std::as_const(generator).IsMipMapGenerationFinished() } -> std::convertible_to<bool>;
-
-			// DirectX::ScratchImage MipMapGeneratorType::ExtractGeneratedMipMaps()
-			{ generator.ExtractGeneratedMipMaps() } -> std::same_as<DirectX::ScratchImage>;
-		};
-		
 		template <
-			DXGI_FORMAT IntermediateFormat, 
-			DXGI_FORMAT DesiredFormat,
-			Brawler::AssimpMaterialKeyID MaterialKeyID,
-			typename MipMapGeneratorType_
+			DXGI_FORMAT IntermediateFormat,
+			Brawler::AssimpMaterialKeyID MaterialKeyID
 		>
-			requires !Brawler::IsBlockCompressedFormat<IntermediateFormat>() && IsMipMapGenerator<MipMapGeneratorType_>
-		struct TextureTypeMapInstantiation
+			requires !Brawler::IsBlockCompressedFormat<IntermediateFormat>()
+		struct AssimpTextureTypeMapInstantiation
 		{
 			static constexpr DXGI_FORMAT INTERMEDIATE_FORMAT = IntermediateFormat;
-			static constexpr DXGI_FORMAT DESIRED_FORMAT = DesiredFormat;
 			static constexpr Brawler::AssimpMaterialKeyID MATERIAL_KEY_ID{ MaterialKeyID };
+		};
 
-			using MipMapGeneratorType = MipMapGeneratorType_;
+		template <DXGI_FORMAT DesiredFormat>
+		struct ModelTextureIDTypeMapInstantiation
+		{
+			static constexpr DXGI_FORMAT DESIRED_FORMAT = DesiredFormat;
 		};
 	}
 }
@@ -88,21 +76,32 @@ namespace Brawler
 export namespace Brawler
 {
 	template <aiTextureType TextureType>
-	struct TextureTypeMap
+	struct AssimpTextureTypeMap
 	{
-		static_assert(sizeof(TextureType) != sizeof(TextureType), "ERROR: An explicit instantiation for Brawler::TextureTypeMap for a particular aiTextureType was never provided! (See TextureTypeMap.ixx.)");
+		static_assert(sizeof(TextureType) != sizeof(TextureType), "ERROR: An explicit instantiation for Brawler::AssimpTextureTypeMap for a particular aiTextureType was never provided! (See TextureTypeMap.ixx.)");
 	};
 
 	template <>
-	struct TextureTypeMap<aiTextureType::aiTextureType_DIFFUSE> : public IMPL::TextureTypeMapInstantiation<
+	struct AssimpTextureTypeMap<aiTextureType::aiTextureType_DIFFUSE> : public IMPL::AssimpTextureTypeMapInstantiation<
 		DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
-		DXGI_FORMAT::DXGI_FORMAT_BC7_UNORM_SRGB,
-		AssimpMaterialKeyID::COLOR_DIFFUSE,
-
-		// Albedo textures *CAN* have mip-maps created in the default fashion.
-		GenericMipMapGenerator
+		AssimpMaterialKeyID::COLOR_DIFFUSE
 	>
 	{};
+}
+
+export namespace Brawler
+{
+	template <ModelTextureID TextureType>
+	struct ModelTextureIDTypeMap
+	{
+		static_assert(sizeof(TextureType) != sizeof(TextureType), "ERROR: An explicit instantiation for Brawler::ModelTextureIDTypeMap for a particular aiTextureType was never provided! (See TextureTypeMap.ixx.)");
+	};
+
+	template <>
+	struct ModelTextureIDTypeMap<ModelTextureID::DIFFUSE_ALBEDO> : public IMPL::ModelTextureIDTypeMapInstantiation<DXGI_FORMAT::DXGI_FORMAT_BC7_UNORM_SRGB>
+	{
+		static constexpr Brawler::NZWStringView TEXTURE_NAME_FORMAT_STR{ L"LOD{}_{}_DiffuseAlbedo" };
+	};
 }
 
 export namespace Brawler
@@ -110,23 +109,26 @@ export namespace Brawler
 	template <aiTextureType TextureType>
 	consteval DXGI_FORMAT GetIntermediateTextureFormat()
 	{
-		static_assert(!IsBlockCompressedFormat<TextureTypeMap<TextureType>::INTERMEDIATE_FORMAT>(), "ERROR: Intermediate texture formats cannot be block compressed, because many DirectXTex functions do not work directly with block-compressed formats, and compression/decompression on the CPU can be incredibly slow.");
+		static_assert(!IsBlockCompressedFormat<AssimpTextureTypeMap<TextureType>::INTERMEDIATE_FORMAT>(), "ERROR: Intermediate texture formats cannot be block compressed, because many DirectXTex functions do not work directly with block-compressed formats, and compression/decompression on the CPU can be incredibly slow.");
 		
-		return TextureTypeMap<TextureType>::INTERMEDIATE_FORMAT;
-	}
-	
-	template <aiTextureType TextureType>
-	consteval DXGI_FORMAT GetDesiredTextureFormat()
-	{
-		return TextureTypeMap<TextureType>::DESIRED_FORMAT;
+		return AssimpTextureTypeMap<TextureType>::INTERMEDIATE_FORMAT;
 	}
 
 	template <aiTextureType TextureType>
 	consteval AssimpMaterialKeyID GetTextureMaterialKeyID()
 	{
-		return TextureTypeMap<TextureType>::MATERIAL_KEY_ID;
+		return AssimpTextureTypeMap<TextureType>::MATERIAL_KEY_ID;
 	}
 
-	template <aiTextureType TextureType>
-	using ModelTextureMipMapGeneratorType = typename TextureTypeMap<TextureType>::MipMapGeneratorType;
+	template <ModelTextureID TextureType>
+	consteval DXGI_FORMAT GetDesiredTextureFormat()
+	{
+		return ModelTextureIDTypeMap<TextureType>::DESIRED_FORMAT;
+	}
+
+	template <ModelTextureID TextureType>
+	consteval NZWStringView GetTextureNameFormatString()
+	{
+		return ModelTextureIDTypeMap<TextureType>::TEXTURE_NAME_FORMAT_STR;
+	}
 }

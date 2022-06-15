@@ -58,9 +58,6 @@
     <Filter Include="Source Files\Animations">
       <UniqueIdentifier>{0ad48a27-0843-4553-83da-dc613e0ea645}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module Files\Convenience Types">
-      <UniqueIdentifier>{11866207-1d0b-4fb1-98b9-94ab48ddfbc5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Textures">
       <UniqueIdentifier>{18ee58e7-ebbe-4f33-aed5-de131425427d}</UniqueIdentifier>
     </Filter>
@@ -70,35 +67,53 @@
     <Filter Include="Module Files\Render Modules">
       <UniqueIdentifier>{272f588e-9adc-4c59-8690-b01baa7ea7f4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module Files\File I/O\Mesh Attribute Pointers %28MAPs%29">
-      <UniqueIdentifier>{33599010-e8d6-45cf-b96a-de1469d2bd26}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Module Files\Command Line Parsing">
       <UniqueIdentifier>{87cf4233-9db8-444b-b7e6-4c9aed189576}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Command Line Parsing">
       <UniqueIdentifier>{5ca79dfb-240b-467d-97c3-01af256b049d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module Files\Textures\Texture Update States">
-      <UniqueIdentifier>{0c2d3c21-68c9-47e5-88b4-b733a77a4b74}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Module Files\Textures\Mip-Map Generators">
       <UniqueIdentifier>{47a5f549-eb19-4a46-9578-244887a5c9e3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Module Files\Polymorphism Traits">
-      <UniqueIdentifier>{1e0d6f00-38b1-4a4e-be01-e799c7be4a54}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Render Modules">
       <UniqueIdentifier>{915515ab-d8e8-45c0-9b7d-82f2fc15dc4a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module Files\Textures\Model Texture Builders">
-      <UniqueIdentifier>{02b5e01a-f8a6-43cf-a8af-d8d68afa8945}</UniqueIdentifier>
+    <Filter Include="Module Files\Model Texture Resolvers">
+      <UniqueIdentifier>{a18d667c-ebd9-4952-9972-af26ca339766}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Textures\Model Texture Builders">
-      <UniqueIdentifier>{fcd83040-3197-4b69-ad1b-27a8cb3b23b5}</UniqueIdentifier>
+    <Filter Include="Module Files\Textures\Assimp Texture Conversion">
+      <UniqueIdentifier>{7177c306-6e9d-4f6a-a4f0-eb90a16d3dfd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Textures\Texture Update States">
-      <UniqueIdentifier>{c4d5379b-ad8a-4e7f-99b9-8be806d4a519}</UniqueIdentifier>
+    <Filter Include="Source Files\Model Texture Resolvers">
+      <UniqueIdentifier>{b799c220-cd9d-4afd-adca-3b97e09e4068}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Model Texture Resolvers\Opaque Diffuse">
+      <UniqueIdentifier>{748eee15-661e-41e9-ba79-c1e80cf13a05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Model Texture Resolvers\Opaque Diffuse">
+      <UniqueIdentifier>{2f514f87-f98c-4717-90a8-a4f7edaf6daa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Mesh Parsing\Normal Bounding Cones">
+      <UniqueIdentifier>{90dafcb6-245d-4b42-a863-35c199236854}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Mesh Parsing\Normal Bounding Cones">
+      <UniqueIdentifier>{d09ca4a1-01ea-4e17-a0cb-cff81231f631}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Textures\Model Texture Serialization">
+      <UniqueIdentifier>{b2470c6e-04d0-4719-b3b8-42462fcc782b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Textures\Model Texture Serialization">
+      <UniqueIdentifier>{4c78b39d-2f59-4615-bf64-6273cf58c61a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\File I/O\SHA-512 Hashing">
+      <UniqueIdentifier>{b3503302-25e7-4759-9df7-5887be1039d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File I/O">
+      <UniqueIdentifier>{01c83128-6099-4e94-94bf-fbee6ad8f423}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File I/O\SHA-512 Hashing">
+      <UniqueIdentifier>{cbc9e8a8-9b98-4f5f-b1de-d54d40c34a1a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -126,15 +141,6 @@
     <ClCompile Include="src\TextureTypeMap.ixx">
       <Filter>Module Files\Textures</Filter>
     </ClCompile>
-    <ClCompile Include="src\ModelTextureUtil.ixx">
-      <Filter>Module Files\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ModelTexture.ixx">
-      <Filter>Module Files\Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ModelTextureUtil.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="src\BTEXFileAttributes.ixx">
       <Filter>Module Files\File I/O</Filter>
     </ClCompile>
@@ -156,9 +162,6 @@
     <ClCompile Include="src\IndexBuffer.ixx">
       <Filter>Module Files\Static Mesh Data</Filter>
     </ClCompile>
-    <ClCompile Include="src\IndexBuffer.cpp">
-      <Filter>Source Files\Static Mesh Data</Filter>
-    </ClCompile>
     <ClCompile Include="src\OpaqueMaterialDefinition.ixx">
       <Filter>Module Files\Materials</Filter>
     </ClCompile>
@@ -169,9 +172,6 @@
       <Filter>Module Files\Materials</Filter>
     </ClCompile>
     <ClCompile Include="src\I_MaterialDefinition.ixx">
-      <Filter>Module Files\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MaterialIDMap.ixx">
       <Filter>Module Files\Materials</Filter>
     </ClCompile>
     <ClCompile Include="src\Skeleton.ixx">
@@ -201,20 +201,11 @@
     <ClCompile Include="src\ModelResolver.cpp">
       <Filter>Source Files\Mesh Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\BCTextureCompressionContext.ixx">
-      <Filter>Module Files\Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BCTextureCompressor.ixx">
-      <Filter>Module Files\Textures</Filter>
-    </ClCompile>
     <ClCompile Include="src\BC7ImageCompressor.ixx">
       <Filter>Module Files\Textures</Filter>
     </ClCompile>
     <ClCompile Include="src\BC7ImageCompressor.cpp">
       <Filter>Source Files\Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CompositeEnum.ixx">
-      <Filter>Module Files\Convenience Types</Filter>
     </ClCompile>
     <ClCompile Include="src\ModelExportUtil.ixx">
       <Filter>Module Files\Utilities</Filter>
@@ -222,20 +213,8 @@
     <ClCompile Include="src\ModelExportUtil.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="src\BC7CompressionRenderModule.ixx">
-      <Filter>Module Files\Render Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MeshAttributePointerDescriptor.ixx">
-      <Filter>Module Files\File I/O\Mesh Attribute Pointers %28MAPs%29</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MeshAttributeID.ixx">
-      <Filter>Module Files\File I/O\Mesh Attribute Pointers %28MAPs%29</Filter>
-    </ClCompile>
     <ClCompile Include="src\I_MeshResolver.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
-    </ClCompile>
-    <ClCompile Include="src\SerializedMeshAttributeChunk.ixx">
-      <Filter>Module Files\File I/O\Mesh Attribute Pointers %28MAPs%29</Filter>
     </ClCompile>
     <ClCompile Include="src\LODResolver.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
@@ -243,14 +222,8 @@
     <ClCompile Include="src\LODResolver.cpp">
       <Filter>Source Files\Mesh Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\ModelTextureDatabase.ixx">
-      <Filter>Module Files\Textures</Filter>
-    </ClCompile>
     <ClCompile Include="src\MeshResolverCollection.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MeshResolverCollection.cpp">
-      <Filter>Source Files\Mesh Parsing</Filter>
     </ClCompile>
     <ClCompile Include="src\CommandLineParser.ixx">
       <Filter>Module Files\Command Line Parsing</Filter>
@@ -267,53 +240,17 @@
     <ClCompile Include="src\ImportedMesh.cpp">
       <Filter>Source Files\Mesh Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\ModelTextureLUT.ixx">
-      <Filter>Module Files\Textures</Filter>
-    </ClCompile>
     <ClCompile Include="src\LODScene.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
     </ClCompile>
     <ClCompile Include="src\LaunchParams.cpp">
       <Filter>Source Files\Command Line Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\MipMapGeneration.ixx">
-      <Filter>Module Files\Textures\Mip-Map Generators</Filter>
-    </ClCompile>
     <ClCompile Include="src\GenericMipMapGenerator.ixx">
       <Filter>Module Files\Textures\Mip-Map Generators</Filter>
     </ClCompile>
     <ClCompile Include="src\I_MaterialDefinition.cpp">
       <Filter>Source Files\Materials</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ModelTextureHandle.ixx">
-      <Filter>Module Files\Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\I_ModelTextureUpdateState.ixx">
-      <Filter>Module Files\Textures\Texture Update States</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ModelTextureUpdateStateID.ixx">
-      <Filter>Module Files\Textures\Texture Update States</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MipMapGenerationModelTextureUpdateState.ixx">
-      <Filter>Module Files\Textures\Texture Update States</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FormatConversionModelTextureUpdateState.ixx">
-      <Filter>Module Files\Textures\Texture Update States</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AwaitingSerializationModelTextureUpdateState.ixx">
-      <Filter>Module Files\Textures\Texture Update States</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ModelTextureUpdateStateTraits.ixx">
-      <Filter>Module Files\Polymorphism Traits</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BC7CompressionEventHandle.ixx">
-      <Filter>Module Files\Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BC7CompressionEventHandle.cpp">
-      <Filter>Source Files\Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BC7CompressionRenderModule.cpp">
-      <Filter>Source Files\Render Modules</Filter>
     </ClCompile>
     <ClCompile Include="src\MeshResolverBase.cpp">
       <Filter>Source Files\Mesh Parsing</Filter>
@@ -330,31 +267,135 @@
     <ClCompile Include="src\AssimpMaterialKeyID.ixx">
       <Filter>Module Files\Materials</Filter>
     </ClCompile>
-    <ClCompile Include="src\I_ModelTextureBuilder.ixx">
-      <Filter>Module Files\Textures\Model Texture Builders</Filter>
+    <ClCompile Include="src\AssimpMaterials.ixx">
+      <Filter>Module Files\Materials</Filter>
     </ClCompile>
-    <ClCompile Include="src\ExternalTextureModelTextureBuilder.ixx">
-      <Filter>Module Files\Textures\Model Texture Builders</Filter>
+    <ClCompile Include="src\AssimpTextureConverter.ixx">
+      <Filter>Module Files\Textures\Assimp Texture Conversion</Filter>
     </ClCompile>
-    <ClCompile Include="src\EmbeddedTextureModelTextureBuilder.ixx">
-      <Filter>Module Files\Textures\Model Texture Builders</Filter>
+    <ClCompile Include="src\AssimpTextureMaterialColorMap.ixx">
+      <Filter>Module Files\Textures\Assimp Texture Conversion</Filter>
     </ClCompile>
-    <ClCompile Include="src\MaterialColorModelTextureBuilder.ixx">
-      <Filter>Module Files\Textures\Model Texture Builders</Filter>
+    <ClCompile Include="src\ModelTextureResolutionRenderModule.ixx">
+      <Filter>Module Files\Render Modules</Filter>
     </ClCompile>
-    <ClCompile Include="src\ModelTextureBuilderCollection.ixx">
-      <Filter>Module Files\Textures\Model Texture Builders</Filter>
+    <ClCompile Include="src\ModelTextureResolutionRenderModule.cpp">
+      <Filter>Source Files\Render Modules</Filter>
     </ClCompile>
-    <ClCompile Include="src\FormatConversionModelTextureUpdateState.cpp">
-      <Filter>Source Files\Textures\Texture Update States</Filter>
+    <ClCompile Include="src\ModelTextureResolutionEventHandle.ixx">
+      <Filter>Module Files\Model Texture Resolvers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelTextureResolutionEventHandle.cpp">
+      <Filter>Source Files\Model Texture Resolvers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpaqueDiffuseModelTextureResolver.ixx">
+      <Filter>Module Files\Model Texture Resolvers\Opaque Diffuse</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpaqueDiffuseModelTextureResolver.cpp">
+      <Filter>Source Files\Model Texture Resolvers\Opaque Diffuse</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpaqueDiffuseSourceTextureUpload.cpp">
+      <Filter>Source Files\Model Texture Resolvers\Opaque Diffuse</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpaqueDiffuseBC7Compression.cpp">
+      <Filter>Source Files\Model Texture Resolvers\Opaque Diffuse</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpaqueDiffuseMipMapping.cpp">
+      <Filter>Source Files\Model Texture Resolvers\Opaque Diffuse</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpaqueDiffuseReadBackBufferCopy.cpp">
+      <Filter>Source Files\Model Texture Resolvers\Opaque Diffuse</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MipMapGeneration.ixx">
+      <Filter>Module Files\Textures\Mip-Map Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NormalBoundingConeSolver.ixx">
+      <Filter>Module Files\Mesh Parsing\Normal Bounding Cones</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NormalBoundingConeSolver.cpp">
+      <Filter>Source Files\Mesh Parsing\Normal Bounding Cones</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NormalBoundingConeTypes.ixx">
+      <Filter>Module Files\Mesh Parsing\Normal Bounding Cones</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StaticVertexData.ixx">
+      <Filter>Module Files\Static Mesh Data</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NormalBoundingConeTriangleGrouper.ixx">
+      <Filter>Module Files\Mesh Parsing\Normal Bounding Cones</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NormalBoundingCones.ixx">
+      <Filter>Module Files\Mesh Parsing\Normal Bounding Cones</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileMagicHandler.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IndexBuffer.cpp">
+      <Filter>Source Files\Static Mesh Data</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SerializedMaterialDefinition.ixx">
+      <Filter>Module Files\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelTextureID.ixx">
+      <Filter>Module Files\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelTextureSerializer.ixx">
+      <Filter>Module Files\Textures\Model Texture Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelTextureSerializer.cpp">
+      <Filter>Source Files\Textures\Model Texture Serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512Hasher.ixx">
+      <Filter>Module Files\File I/O\SHA-512 Hashing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512Hashing.ixx">
+      <Filter>Module Files\File I/O\SHA-512 Hashing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512Hash.ixx">
+      <Filter>Module Files\File I/O\SHA-512 Hashing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512Hasher.cpp">
+      <Filter>Source Files\File I/O\SHA-512 Hashing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512AlgorithmProvider.ixx">
+      <Filter>Module Files\File I/O\SHA-512 Hashing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SHA512AlgorithmProvider.cpp">
+      <Filter>Source Files\File I/O\SHA-512 Hashing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SerializedStaticMeshData.ixx">
+      <Filter>Module Files\Static Mesh Data</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ByteStream.ixx">
+      <Filter>Module Files\File I/O</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\Shaders\BC7Encode.hlsl">
       <Filter>Shader Files</Filter>
     </FxCompile>
+    <FxCompile Include="src\Shaders\GenerateMipMaps.hlsl">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\StaticIndirectPrepare.hlsl">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="src\Shaders\GeometryTypes.hlsli">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="src\Shaders\BindlessDescriptors.hlsli">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="src\Shaders\GeneralUtil.hlsli">
+      <Filter>Shader Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\EngineConstantsDef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

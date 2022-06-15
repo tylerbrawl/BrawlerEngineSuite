@@ -21,7 +21,7 @@ export namespace Brawler
 
 		// Adds a job to the JobGroup. The job will not be executed until either
 		// JobGroup::ExecuteJobs() or JobGroup::ExecuteJobsAsync() is called.
-		void AddJob(std::function<void()>&& job);
+		void AddJob(std::move_only_function<void()>&& job);
 
 		// Allocates memory for the specified number of jobs.
 		void Reserve(std::size_t jobCount);

@@ -2,6 +2,7 @@ module;
 #include <optional>
 #include <cassert>
 #include <span>
+#include <ranges>
 #include "DxDef.h"
 
 module Brawler.D3D12.GPUResourceStateTracker;
@@ -22,11 +23,36 @@ namespace Brawler
 	namespace D3D12
 	{
 		GPUResourceStateTracker::GPUResourceStateTracker(I_GPUResource& trackedResource) :
-			mBarrierMerger(trackedResource),
+			mBarrierMergerArr(),
 			mResourceAlwaysDecays(DoesResourceAlwaysDecay(trackedResource))
-		{}
+		{
+			const std::size_t subResourceCount = trackedResource.GetSubResourceCount();
+
+			mBarrierMergerArr.reserve(subResourceCount);
+
+			for (auto i : std::views::iota(0u, subResourceCount))
+				mBarrierMergerArr.emplace_back(trackedResource, i);
+		}
 
 		void GPUResourceStateTracker::TrackGPUExecutionModule(const GPUExecutionModule& executionModule)
+		{
+			for (auto& barrierMerger : mBarrierMergerArr)
+				TrackGPUExecutionModuleForSubResource(executionModule, barrierMerger);
+			
+			CheckForResourceStateDecay(executionModule);
+		}
+
+		GPUResourceEventCollection GPUResourceStateTracker::FinalizeStateTracking()
+		{
+			GPUResourceEventCollection eventCollection{};
+
+			for (auto& barrierMerger : mBarrierMergerArr)
+				eventCollection.MergeGPUResourceEventCollection(barrierMerger.FinalizeStateTracking());
+			
+			return eventCollection;
+		}
+
+		void GPUResourceStateTracker::TrackGPUExecutionModuleForSubResource(const GPUExecutionModule& executionModule, GPUSubResourceStateBarrierMerger& barrierMerger)
 		{
 			// Each time multiple queues are being used simultaneously, a sync point containing
 			// a combination of all of the states of resources used across the queues is added.
@@ -37,56 +63,43 @@ namespace Brawler
 			// In addition, most resources won't be used in a lot of render passes. By filtering 
 			// out GPUExecutionModules which do not use the given resource, we can drastically
 			// improve performance.
-			const Brawler::CompositeEnum<GPUCommandQueueType> queuesUsingResource{ executionModule.GetQueuesUsingResource(mBarrierMerger.GetGPUResource()) };
-			const std::uint32_t numQueuesUsingResource = queuesUsingResource.CountOneBits();
+			const Brawler::CompositeEnum<GPUCommandQueueType> queuesUsingSubResource{ executionModule.GetQueuesUsingResource(barrierMerger.GetGPUResource(), barrierMerger.GetSubResourceIndex()) };
+			const std::uint32_t numQueuesUsingSubResource = queuesUsingSubResource.CountOneBits();
 
-			if (numQueuesUsingResource == 1) [[unlikely]]
+			if (numQueuesUsingSubResource == 1) [[unlikely]]
 			{
-				const auto trackRenderPassesLambda = [this]<GPUCommandQueueType QueueType>(const GPUExecutionModule& executionModule)
+				const auto trackRenderPassesLambda = [&barrierMerger]<GPUCommandQueueType QueueType>(const GPUExecutionModule& executionModule)
 				{
 					const std::span<const std::unique_ptr<I_RenderPass<QueueType>>> renderPassSpan{ executionModule.GetRenderPassSpan<QueueType>() };
 
-					if (executionModule.IsResourceUsedInQueue<QueueType>(mBarrierMerger.GetGPUResource()))
+					if (executionModule.IsResourceUsedInQueue<QueueType>(barrierMerger.GetGPUResource(), barrierMerger.GetSubResourceIndex()))
 					{
-						if constexpr (QueueType == GPUCommandQueueType::COPY)
-						{
-							if (mBarrierMerger.GetGPUResource().GetResourceDescription().Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE2D)
-								int breakHere = -1;
-						}
-						
 						for (const auto& renderPassPtr : renderPassSpan)
-							mBarrierMerger.TrackRenderPass(*renderPassPtr);
+							barrierMerger.TrackRenderPass(*renderPassPtr);
 					}
 				};
 
-				trackRenderPassesLambda.operator() < GPUCommandQueueType::DIRECT > (executionModule);
-				trackRenderPassesLambda.operator() < GPUCommandQueueType::COMPUTE > (executionModule);
-				trackRenderPassesLambda.operator() < GPUCommandQueueType::COPY > (executionModule);
+				trackRenderPassesLambda.operator()<GPUCommandQueueType::DIRECT>(executionModule);
+				trackRenderPassesLambda.operator()<GPUCommandQueueType::COMPUTE>(executionModule);
+				trackRenderPassesLambda.operator()<GPUCommandQueueType::COPY>(executionModule);
 			}
-			else if (numQueuesUsingResource == 0) [[likely]]
+			else if (barrierMerger.CanUseAdditionalBeginBarrierRenderPasses() && numQueuesUsingSubResource == 0) [[unlikely]]
 			{
 				// Of course, even if a GPUExecutionModule is not using a resource, we may still
 				// be able to use its render passes as the beginning of split barriers.
 
-				const auto addBeginBarrierPassLambda = [this]<GPUCommandQueueType QueueType>(const GPUExecutionModule & executionModule)
+				const auto addBeginBarrierPassLambda = [&barrierMerger]<GPUCommandQueueType QueueType>(const GPUExecutionModule& executionModule)
 				{
 					const std::span<const std::unique_ptr<I_RenderPass<QueueType>>> renderPassSpan{ executionModule.GetRenderPassSpan<QueueType>() };
 
 					if (!renderPassSpan.empty())
-						mBarrierMerger.AddPotentialBeginBarrierRenderPass(*(renderPassSpan[0]));
+						barrierMerger.AddPotentialBeginBarrierRenderPass(*(renderPassSpan[0]));
 				};
 
-				addBeginBarrierPassLambda.operator() < GPUCommandQueueType::DIRECT > (executionModule);
-				addBeginBarrierPassLambda.operator() < GPUCommandQueueType::COMPUTE > (executionModule);
-				addBeginBarrierPassLambda.operator() < GPUCommandQueueType::COPY > (executionModule);
+				addBeginBarrierPassLambda.operator()<GPUCommandQueueType::DIRECT>(executionModule);
+				addBeginBarrierPassLambda.operator()<GPUCommandQueueType::COMPUTE>(executionModule);
+				addBeginBarrierPassLambda.operator()<GPUCommandQueueType::COPY>(executionModule);
 			}
-			
-			CheckForResourceStateDecay(executionModule);
-		}
-
-		GPUResourceEventCollection GPUResourceStateTracker::FinalizeStateTracking()
-		{
-			return mBarrierMerger.FinalizeStateTracking();
 		}
 
 		void GPUResourceStateTracker::CheckForResourceStateDecay(const GPUExecutionModule& executionModule)
@@ -103,19 +116,25 @@ namespace Brawler
 			//   state if the decay still occurs if this implicit promotion happened after an
 			//   explicit transition to the COMMON state, but we assume that it does.)
 
-			const bool resourceUsedInCopyQueue = executionModule.IsResourceUsedInQueue<GPUCommandQueueType::COPY>(mBarrierMerger.GetGPUResource());
+			const bool resourceUsedInCopyQueue = executionModule.IsResourceUsedInQueue<GPUCommandQueueType::COPY>(mBarrierMergerArr[0].GetGPUResource());
 
 			if constexpr (Util::General::IsDebugModeEnabled())
 			{
 				if (resourceUsedInCopyQueue)
 				{
-					const Brawler::CompositeEnum<GPUCommandQueueType> queuesUsingResource{ executionModule.GetQueuesUsingResource(mBarrierMerger.GetGPUResource()) };
-					assert(queuesUsingResource.CountOneBits() == 1 && "ERROR: It is an error to use an I_GPUResource simultaneously in both a COPY queue and either a DIRECT or a COMPUTE queue! This will result in *undefined behavior* in Release builds!");
+					for (auto& barrierMerger : mBarrierMergerArr)
+					{
+						const Brawler::CompositeEnum<GPUCommandQueueType> queuesUsingResource{ executionModule.GetQueuesUsingResource(barrierMerger.GetGPUResource(), barrierMerger.GetSubResourceIndex()) };
+						assert(queuesUsingResource.CountOneBits() == 1 && "ERROR: It is an error to use an I_GPUResource simultaneously in both a COPY queue and either a DIRECT or a COMPUTE queue, even if the uses are for different sub-resources! This will result in *undefined behavior*!");
+					}
 				}
 			}
 
-			if (mResourceAlwaysDecays || resourceUsedInCopyQueue || mBarrierMerger.DoImplicitReadStateTransitionsAllowStateDecay())
-				mBarrierMerger.DecayResourceState();
+			for (auto& barrierMerger : mBarrierMergerArr)
+			{
+				if (mResourceAlwaysDecays || resourceUsedInCopyQueue || barrierMerger.DoImplicitReadStateTransitionsAllowStateDecay())
+					barrierMerger.DecayResourceState();
+			}
 		}
 	}
 }

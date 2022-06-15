@@ -15,8 +15,8 @@ export namespace Brawler
 {
 	namespace PackerSettings
 	{
-		static constexpr std::uint32_t TARGET_BCA_VERSION = 1;
-		static constexpr std::uint32_t TARGET_BPK_VERSION = 1;
+		constexpr std::uint32_t TARGET_BCA_VERSION = 1;
+		constexpr std::uint32_t TARGET_BPK_VERSION = 1;
 
 		enum class BuildMode : std::uint8_t
 		{
@@ -39,19 +39,19 @@ export namespace Brawler
 			FilePackerSwitchID SwitchID;
 		};
 
-		static constexpr FilePackerSwitch BUILD_FOR_DEBUG_SWITCH{
+		constexpr FilePackerSwitch BUILD_FOR_DEBUG_SWITCH{
 			.CmdLineSwitch = "/D",
 			.Description = "Compresses data files using a zstandard compression level suitable for Debug builds. Files will compress *MUCH* faster, but with a smaller compression ratio and slower decompression time.",
 			.SwitchID = FilePackerSwitchID::BUILD_FOR_DEBUG
 		};
 
-		static constexpr FilePackerSwitch BUILD_FOR_RELEASE_SWITCH{
+		constexpr FilePackerSwitch BUILD_FOR_RELEASE_SWITCH{
 			.CmdLineSwitch = "/R",
 			.Description = "Compresses data files using a zstandard compression level suitable for Release builds. Files will compress *MUCH* slower, but with a larger compression ratio and faster decompression time. This is the default setting if neither /D nor /R is specified.",
 			.SwitchID = FilePackerSwitchID::BUILD_FOR_RELEASE
 		};
 
-		static constexpr std::array<FilePackerSwitch, 2> SWITCH_DESCRIPTION_ARR{
+		constexpr std::array<FilePackerSwitch, 2> SWITCH_DESCRIPTION_ARR{
 			BUILD_FOR_DEBUG_SWITCH,
 			BUILD_FOR_RELEASE_SWITCH
 		};

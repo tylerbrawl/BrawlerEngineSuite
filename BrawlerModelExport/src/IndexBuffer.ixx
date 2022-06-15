@@ -1,15 +1,16 @@
 module;
 #include <vector>
-#include <assimp/mesh.h>
 
 export module Brawler.IndexBuffer;
+import Brawler.FilePathHash;
+import Brawler.ImportedMesh;
 
 export namespace Brawler
 {
 	class IndexBuffer
 	{
 	public:
-		explicit IndexBuffer(const aiMesh& mesh);
+		explicit IndexBuffer(const ImportedMesh& mesh);
 
 		IndexBuffer(const IndexBuffer& rhs) = delete;
 		IndexBuffer& operator=(const IndexBuffer& rhs) = delete;
@@ -17,7 +18,15 @@ export namespace Brawler
 		IndexBuffer(IndexBuffer&& rhs) noexcept = default;
 		IndexBuffer& operator=(IndexBuffer&& rhs) noexcept = default;
 
+		void Update();
+		bool IsReadyForSerialization() const;
+
+		FilePathHash SerializeIndexBuffer() const;
+
+		std::size_t GetIndexCount() const;
+
 	private:
-		std::vector<std::uint16_t> mIndices;
+		std::vector<std::uint32_t> mIndexArr;
+		const ImportedMesh* mMeshPtr;
 	};
 }

@@ -3,10 +3,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommandArguments>/ModelName Sponza D:\repos\DeferredTexturing\Content\Models\Sponza\Sponza.fbx D:\SponzaExport</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)$(Platform)\$(Configuration)\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerCommandArguments>/ModelName Sponza D:\repos\DeferredTexturing\Content\Models\Sponza\Sponza.fbx D:\SponzaExport</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)$(Platform)\$(Configuration)\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">
     <LocalDebuggerCommandArguments>D:\repos\DeferredTexturing\Content\Models\Sponza\Sponza.fbx D:\SponzaExport</LocalDebuggerCommandArguments>
@@ -15,5 +17,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">
     <LocalDebuggerCommandArguments>/ModelName Sponza D:\repos\DeferredTexturing\Content\Models\Sponza\Sponza.fbx D:\SponzaExport</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)$(Platform)\$(Configuration)\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
 </Project>

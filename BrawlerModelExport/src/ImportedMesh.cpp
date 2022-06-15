@@ -7,9 +7,10 @@ module Brawler.ImportedMesh;
 
 namespace Brawler
 {
-	ImportedMesh::ImportedMesh(const aiMesh& mesh, LODScene&& owningScene) :
+	ImportedMesh::ImportedMesh(const aiMesh& mesh, const std::uint32_t meshIDForLOD, LODScene&& owningScene) :
 		mAIMeshPtr(&mesh),
-		mOwningScene(std::move(owningScene))
+		mOwningScene(std::move(owningScene)),
+		mMeshIDForLOD(meshIDForLOD)
 	{}
 
 	const aiMesh& ImportedMesh::GetMesh() const
@@ -21,6 +22,11 @@ namespace Brawler
 	const aiScene& ImportedMesh::GetOwningScene() const
 	{
 		return mOwningScene.GetScene();
+	}
+
+	std::uint32_t ImportedMesh::GetMeshIDForLOD() const
+	{
+		return mMeshIDForLOD;
 	}
 
 	const aiMaterial& ImportedMesh::GetMeshMaterial() const

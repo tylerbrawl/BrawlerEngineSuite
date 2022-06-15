@@ -1,10 +1,12 @@
 module;
 #include <memory>
+#include <cassert>
 
 export module Brawler.MeshResolverBase;
 import Brawler.I_MaterialDefinition;
 import Brawler.ImportedMesh;
-import Brawler.ModelTextureBuilderCollection;
+import Brawler.JobSystem;
+import Brawler.SerializedMaterialDefinition;
 
 export namespace Brawler
 {
@@ -13,8 +15,18 @@ export namespace Brawler
 	template <typename DerivedClass>
 	class MeshResolverBase
 	{
+	public:
+#pragma pack(push)
+#pragma pack(1)
+		struct CompleteSerializedMeshData
+		{
+			SerializedMaterialDefinition MaterialDefinition;
+			typename DerivedClass::SerializedMeshData MeshData;
+		};
+#pragma pack(pop)
+
 	protected:
-		explicit MeshResolverBase(ImportedMesh&& mesh);
+		explicit MeshResolverBase(std::unique_ptr<ImportedMesh>&& meshPtr);
 
 	public:
 		virtual ~MeshResolverBase() = default;
@@ -25,10 +37,10 @@ export namespace Brawler
 		MeshResolverBase(MeshResolverBase&& rhs) noexcept = default;
 		MeshResolverBase& operator=(MeshResolverBase&& rhs) noexcept = default;
 
-		ModelTextureBuilderCollection CreateModelTextureBuilders();
-
 		void Update();
 		bool IsReadyForSerialization() const;
+
+		CompleteSerializedMeshData SerializeMeshData() const;
 
 	protected:
 		const ImportedMesh& GetImportedMesh() const;
@@ -40,7 +52,7 @@ export namespace Brawler
 		/// </summary>
 		std::unique_ptr<I_MaterialDefinition> mMaterialDefinitionPtr;
 
-		ImportedMesh mImportedMesh;
+		std::unique_ptr<ImportedMesh> mImportedMeshPtr;
 	};
 }
 
@@ -54,23 +66,28 @@ namespace Brawler
 namespace Brawler
 {
 	template <typename DerivedClass>
-	MeshResolverBase<DerivedClass>::MeshResolverBase(ImportedMesh&& mesh) :
-		mMaterialDefinitionPtr(CreateMaterialDefinition(mesh)),
-		mImportedMesh(std::move(mesh))
+	MeshResolverBase<DerivedClass>::MeshResolverBase(std::unique_ptr<ImportedMesh>&& meshPtr) :
+		mMaterialDefinitionPtr(CreateMaterialDefinition(*meshPtr)),
+		mImportedMeshPtr(std::move(meshPtr))
 	{}
-
-	template <typename DerivedClass>
-	ModelTextureBuilderCollection MeshResolverBase<DerivedClass>::CreateModelTextureBuilders()
-	{
-		return mMaterialDefinitionPtr->CreateModelTextureBuilders();
-	}
 	
 	template <typename DerivedClass>
 	void MeshResolverBase<DerivedClass>::Update()
 	{
-		mMaterialDefinitionPtr->Update();
-		
-		static_cast<DerivedClass*>(this)->UpdateIMPL();
+		Brawler::JobGroup meshResolverUpdateGroup{};
+		meshResolverUpdateGroup.Reserve(2);
+
+		meshResolverUpdateGroup.AddJob([this] ()
+		{
+			mMaterialDefinitionPtr->Update();
+		});
+
+		meshResolverUpdateGroup.AddJob([this] ()
+		{
+			static_cast<DerivedClass*>(this)->UpdateIMPL();
+		});
+
+		meshResolverUpdateGroup.ExecuteJobs();
 	}
 
 	template <typename DerivedClass>
@@ -80,8 +97,37 @@ namespace Brawler
 	}
 
 	template <typename DerivedClass>
+	MeshResolverBase<DerivedClass>::CompleteSerializedMeshData MeshResolverBase<DerivedClass>::SerializeMeshData() const
+	{
+		Brawler::JobGroup meshSerializationGroup{};
+		meshSerializationGroup.Reserve(2);
+
+		SerializedMaterialDefinition materialDefinition{};
+
+		meshSerializationGroup.AddJob([this, &materialDefinition] ()
+		{
+			materialDefinition = mMaterialDefinitionPtr->SerializeMaterial();
+		});
+
+		typename DerivedClass::SerializedMeshData partialMeshData{};
+
+		meshSerializationGroup.AddJob([this, &partialMeshData] ()
+		{
+			partialMeshData = static_cast<const DerivedClass*>(this)->SerializeMeshDataIMPL();
+		});
+
+		meshSerializationGroup.ExecuteJobs();
+
+		return CompleteSerializedMeshData{
+			.MaterialDefinition{std::move(materialDefinition)},
+			.MeshData{std::move(partialMeshData)}
+		};
+	}
+
+	template <typename DerivedClass>
 	const ImportedMesh& MeshResolverBase<DerivedClass>::GetImportedMesh() const
 	{
-		return mImportedMesh;
+		assert(mImportedMeshPtr.get() != nullptr);
+		return *mImportedMeshPtr;
 	}
 }

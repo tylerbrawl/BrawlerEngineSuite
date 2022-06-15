@@ -94,7 +94,7 @@ namespace
 		const Brawler::D3D12_RESOURCE_DESC& resourceDesc{ texture2D.GetResourceDescription() };
 
 		std::vector<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> subresourceFootprintArr{};
-		subresourceFootprintArr.resize(texture2D.GetSubresourceCount());
+		subresourceFootprintArr.resize(texture2D.GetSubResourceCount());
 
 		std::uint32_t numRows = 0;
 		std::uint64_t rowSizeInBytesWithoutPadding = 0;
@@ -105,7 +105,7 @@ namespace
 		d3dDevice.GetCopyableFootprints1(
 			&resourceDesc,
 			0,
-			static_cast<std::uint32_t>(texture2D.GetSubresourceCount()),
+			static_cast<std::uint32_t>(texture2D.GetSubResourceCount()),
 			0,
 			subresourceFootprintArr.data(),
 			&numRows,

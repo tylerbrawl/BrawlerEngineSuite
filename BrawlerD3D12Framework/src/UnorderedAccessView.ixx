@@ -102,9 +102,9 @@ namespace Brawler
 				return false;
 			}
 
-			consteval Brawler::OptionalRef<const UAVCounterSubAllocation> GetUAVCounterSubAllocation() const
+			consteval Brawler::OptionalRef<Brawler::D3D12Resource> GetUAVCounterResource() const
 			{
-				return Brawler::OptionalRef<const UAVCounterSubAllocation>{};
+				return Brawler::OptionalRef<Brawler::D3D12Resource>{};
 			}
 		};
 
@@ -120,22 +120,21 @@ namespace Brawler
 				return true;
 			}
 
-			void SetUAVCounterSubAllocation(const UAVCounterSubAllocation& uavCounter)
+			void SetUAVCounterResource(Brawler::D3D12Resource& uavCounterResource)
 			{
-				assert(uavCounter.HasReservation() && "ERROR: An attempt was made to provide an UnorderedAccessView with a UAV counter, but this counter was never given a reservation within a BufferResource!");
-				mUAVCounterPtr = &uavCounter;
+				mUAVCounterResourcePtr = &uavCounterResource;
 			}
 
-			Brawler::OptionalRef<const UAVCounterSubAllocation> GetUAVCounterSubAllocation() const
+			Brawler::OptionalRef<Brawler::D3D12Resource> GetUAVCounterResource() const
 			{
-				if (mUAVCounterPtr == nullptr)
-					return Brawler::OptionalRef<const UAVCounterSubAllocation>{};
+				if (mUAVCounterResourcePtr == nullptr) [[likely]]
+					return Brawler::OptionalRef<Brawler::D3D12Resource>{};
 
-				return Brawler::OptionalRef<const UAVCounterSubAllocation>{ *mUAVCounterPtr };
+				return Brawler::OptionalRef<Brawler::D3D12Resource>{ *mUAVCounterResourcePtr };
 			}
 
 		private:
-			const UAVCounterSubAllocation* mUAVCounterPtr;
+			Brawler::D3D12Resource* mUAVCounterResourcePtr;
 		};
 	}
 }
@@ -169,8 +168,8 @@ export namespace Brawler
 			const I_GPUResource& GetGPUResource() const;
 			Brawler::D3D12Resource& GetD3D12Resource() const;
 
-			void SetUAVCounter(const UAVCounterSubAllocation& uavCounter) requires ALLOW_UAV_COUNTER;
-			Brawler::OptionalRef<const UAVCounterSubAllocation> GetUAVCounter() const;
+			void SetUAVCounterResource(Brawler::D3D12Resource& uavCounterResource) requires ALLOW_UAV_COUNTER;
+			Brawler::OptionalRef<Brawler::D3D12Resource> GetUAVCounterResource() const;
 
 			D3D12_UNORDERED_ACCESS_VIEW_DESC CreateUAVDescription() const;
 
@@ -210,15 +209,19 @@ namespace Brawler
 		}
 
 		template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
-		void UnorderedAccessView<Format, ViewDimension>::SetUAVCounter(const UAVCounterSubAllocation& uavCounter) requires ALLOW_UAV_COUNTER
+		void UnorderedAccessView<Format, ViewDimension>::SetUAVCounterResource(Brawler::D3D12Resource& uavCounterResource) requires ALLOW_UAV_COUNTER
 		{
-			this->SetUAVCounterSubAllocation(uavCounter);
+			UAVCounterContainer<Format, ViewDimension>::SetUAVCounterResource(uavCounterResource);
 		}
 
 		template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
-		Brawler::OptionalRef<const UAVCounterSubAllocation> UnorderedAccessView<Format, ViewDimension>::GetUAVCounter() const
+		Brawler::OptionalRef<Brawler::D3D12Resource> UnorderedAccessView<Format, ViewDimension>::GetUAVCounterResource() const
 		{
-			return this->GetUAVCounterSubAllocation();
+			if constexpr (ALLOW_UAV_COUNTER)
+				return UAVCounterContainer<Format, ViewDimension>::GetUAVCounterResource();
+
+			else
+				return Brawler::OptionalRef<Brawler::D3D12Resource>{};
 		}
 
 		template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>

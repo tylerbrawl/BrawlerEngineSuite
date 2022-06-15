@@ -12,6 +12,8 @@ import Brawler.D3D12.GPUResourceViews;
 import Brawler.D3D12.I_BufferSubAllocation;
 import Brawler.D3D12.I_GPUResource;
 import Brawler.D3D12.UAVCounterSubAllocation;
+import Brawler.D3D12.GPUCapabilities;
+import Util.Engine;
 
 namespace Brawler
 {
@@ -31,12 +33,6 @@ export namespace Brawler
 			friend class GPUResourceDescriptorHeap;
 
 		private:
-			struct CBVInfo
-			{
-				const I_BufferSubAllocation* BufferSubAllocationPtr;
-				std::size_t OffsetFromSubAllocationStart;
-			};
-
 			struct SRVInfo
 			{
 				const I_GPUResource* GPUResourcePtr;
@@ -57,12 +53,12 @@ export namespace Brawler
 				/// about this can be found at 
 				/// https://docs.microsoft.com/en-us/windows/win32/direct3d12/uav-counters#using-uav-counters.
 				/// </summary>
-				Brawler::OptionalRef<const UAVCounterSubAllocation> UAVCounter;
+				Brawler::OptionalRef<Brawler::D3D12Resource> UAVCounterResource;
 
 				D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc;
 			};
 
-			using DescriptorInfoVariant = std::variant<std::monostate, CBVInfo, SRVInfo, UAVInfo>;
+			using DescriptorInfoVariant = std::variant<std::monostate, D3D12_CONSTANT_BUFFER_VIEW_DESC, SRVInfo, UAVInfo>;
 
 		public:
 			DescriptorTableBuilder() = delete;
@@ -77,11 +73,16 @@ export namespace Brawler
 			template <typename DataElementType>
 			void CreateConstantBufferView(const std::uint32_t index, const ConstantBufferView<DataElementType> cbv);
 
+			void NullifyConstantBufferView(const std::uint32_t index);
+
 			template <DXGI_FORMAT Format, D3D12_SRV_DIMENSION ViewDimension>
 			void CreateShaderResourceView(const std::uint32_t index, const ShaderResourceView<Format, ViewDimension>& srv);
 
 			template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
 			void CreateUnorderedAccessView(const std::uint32_t index, const UnorderedAccessView<Format, ViewDimension>& uav);
+
+			template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
+			void NullifyUnorderedAccessView(const std::uint32_t index);
 
 			/// <summary>
 			/// If this is the first time which this function is called for this DescriptorTableBuilder
@@ -133,7 +134,7 @@ export namespace Brawler
 		private:
 			void CreateDescriptorTable();
 
-			void CreateConstantBufferView(const std::uint32_t index, const CBVInfo& cbvInfo);
+			void CreateConstantBufferView(const std::uint32_t index, const D3D12_CONSTANT_BUFFER_VIEW_DESC& cbvInfo);
 			void CreateShaderResourceView(const std::uint32_t index, const SRVInfo& srvInfo);
 			void CreateUnorderedAccessView(const std::uint32_t index, const UAVInfo& uavInfo);
 
@@ -155,6 +156,137 @@ namespace Brawler
 {
 	namespace D3D12
 	{
+		// Even if we bind a NULL UAV descriptor to the pipeline, we still need to provide a UAV description
+		// which could theoretically be used to create an actual UAV. We define these descriptions here.
+		
+		template <DXGI_FORMAT ViewFormat, D3D12_UAV_DIMENSION Dimension>
+		struct NullUAVDescInfo
+		{};
+
+		template <DXGI_FORMAT ViewFormat>
+		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_BUFFER>
+		{
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+			{
+				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
+				nullUAVDesc.Format = ViewFormat;
+				nullUAVDesc.ViewDimension = D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_BUFFER;
+				nullUAVDesc.Buffer = D3D12_BUFFER_UAV{
+					.FirstElement = 0,
+					.NumElements = 0,
+
+					// According to the MSDN, StructureByteStride can only be 0 when the buffer
+					// SRV is *NOT* for a StructuredBuffer. A StructuredBuffer view both has a
+					// non-zero StructureByteStride and a Format of DXGI_FORMAT_UNKNOWN.
+					.StructureByteStride = (ViewFormat == DXGI_FORMAT::DXGI_FORMAT_UNKNOWN ? 1 : 0),
+
+					.CounterOffsetInBytes = 0
+				};
+
+				return nullUAVDesc;
+			}
+		};
+
+		template <DXGI_FORMAT ViewFormat>
+		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE1D>
+		{
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+			{
+				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
+				nullUAVDesc.Format = ViewFormat;
+				nullUAVDesc.ViewDimension = D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE1D;
+				nullUAVDesc.Texture1D = D3D12_TEX1D_UAV{
+					.MipSlice = 0
+				};
+
+				return nullUAVDesc;
+			}
+		};
+
+		template <DXGI_FORMAT ViewFormat>
+		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE1DARRAY>
+		{
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+			{
+				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
+				nullUAVDesc.Format = ViewFormat;
+				nullUAVDesc.ViewDimension = D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE1DARRAY;
+				nullUAVDesc.Texture1DArray = D3D12_TEX1D_ARRAY_UAV{
+					.MipSlice = 0,
+					.FirstArraySlice = 0,
+					.ArraySize = 0
+				};
+
+				return nullUAVDesc;
+			}
+		};
+
+		template <DXGI_FORMAT ViewFormat>
+		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2D>
+		{
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+			{
+				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc;
+				nullUAVDesc.Format = ViewFormat;
+				nullUAVDesc.ViewDimension = D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2D;
+				nullUAVDesc.Texture2D = D3D12_TEX2D_UAV{
+					.MipSlice = 0,
+					.PlaneSlice = 0
+				};
+
+				return nullUAVDesc;
+			}
+		};
+
+		template <DXGI_FORMAT ViewFormat>
+		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2DARRAY>
+		{
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+			{
+				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
+				nullUAVDesc.Format = ViewFormat;
+				nullUAVDesc.ViewDimension = D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
+				nullUAVDesc.Texture2DArray = D3D12_TEX2D_ARRAY_UAV{
+					.MipSlice = 0,
+					.FirstArraySlice = 0,
+					.ArraySize = 0,
+					.PlaneSlice = 0
+				};
+
+				return nullUAVDesc;
+			}
+		};
+
+		template <DXGI_FORMAT ViewFormat>
+		struct NullUAVDescInfo<ViewFormat, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE3D>
+		{
+		public:
+			static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNullUAVDescription()
+			{
+				D3D12_UNORDERED_ACCESS_VIEW_DESC nullUAVDesc{};
+				nullUAVDesc.Format = ViewFormat;
+				nullUAVDesc.ViewDimension = D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE3D;
+				nullUAVDesc.Texture3D = D3D12_TEX3D_UAV{
+					.MipSlice = 0,
+					.FirstWSlice = 0,
+					.WSize = 0
+				};
+
+				return nullUAVDesc;
+			}
+		};
+	}
+}
+
+namespace Brawler
+{
+	namespace D3D12
+	{
 		template <typename DataElementType>
 		void DescriptorTableBuilder::CreateConstantBufferView(const std::uint32_t index, const ConstantBufferView<DataElementType> cbv)
 		{
@@ -163,10 +295,7 @@ namespace Brawler
 
 			const std::scoped_lock<std::mutex> lock{ mTableCreationCritSection };
 			
-			mDescriptorInfoArr[index] = CBVInfo{
-				.BufferSubAllocationPtr{ &(cbv.GetBufferSubAllocation()) },
-				.OffsetFromSubAllocationStart = cbv.GetOffsetFromSubAllocationStart()
-			};
+			mDescriptorInfoArr[index] = cbv.GetCBVDescription();
 		}
 
 		template <DXGI_FORMAT Format, D3D12_SRV_DIMENSION ViewDimension>
@@ -193,8 +322,33 @@ namespace Brawler
 
 			mDescriptorInfoArr[index] = UAVInfo{
 				.GPUResourcePtr{ &(uav.GetGPUResource()) },
-				.UAVCounter{ uav.GetUAVCounter() },
+				.UAVCounterResource{ uav.GetUAVCounterResource() },
 				.UAVDesc{ uav.CreateUAVDescription() }
+			};
+		}
+
+		template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
+		void DescriptorTableBuilder::NullifyUnorderedAccessView(const std::uint32_t index)
+		{
+			assert(!mDescriptorTable.has_value() && "ERROR: DescriptorTableBuilder::NullifyUnorderedAccessView() was called after DescriptorTableBuilder::GetDescriptorTable()!");
+			assert(index < mDescriptorInfoArr.size());
+
+			// Don't bother setting a NULL descriptor if we do not need to.
+			if (Util::Engine::GetGPUCapabilities().GPUResourceBindingTier == ResourceBindingTier::TIER_3) [[likely]]
+				return;
+
+			// The MSVC refuses to let this be constexpr, even though it could/should be. There's some type
+			// of bug with the compiler which causes it to write out more data than is necessary for some
+			// structures, resulting in a buffer overflow. However, this bug only occurs in a constant-evaluated
+			// context.
+			const auto nullUAVDesc = NullUAVDescInfo<Format, ViewDimension>::CreateNullUAVDescription();
+
+			const std::scoped_lock<std::mutex> lock{ mTableCreationCritSection };
+
+			mDescriptorInfoArr[index] = UAVInfo{
+				.GPUResourcePtr = nullptr,
+				.UAVCounterResource{},
+				.UAVDesc{ nullUAVDesc }
 			};
 		}
 	}
