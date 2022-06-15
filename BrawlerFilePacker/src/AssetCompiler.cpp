@@ -4,6 +4,7 @@ module;
 #include <ranges>
 #include <memory>
 #include <format>
+#include <cwctype>
 
 module Brawler.AssetCompiler;
 import Brawler.AppParams;
@@ -90,14 +91,13 @@ namespace Brawler
 			// case, we use it to initialize BCAInfo structures for the other
 			// files.
 			std::filesystem::path filePath{ fileDirectory.path() };
+			const bool isBCAInfoFile = [&filePath] ()
+			{
+				std::wstring fileExtensionStr{ filePath.filename().wstring() };
+				std::ranges::transform(fileExtensionStr, fileExtensionStr.begin(), [] (const wchar_t c) { return std::towupper(c); });
 
-			std::filesystem::path parentPath{ filePath.parent_path() };
-
-			std::error_code errorCode{};
-			const bool isBCAInfoFile = std::filesystem::equivalent(filePath, std::filesystem::path{ parentPath / GetBCAInfoFilePath() }, errorCode);
-
-			if (errorCode) [[unlikely]]
-				throw std::runtime_error{ std::format("ERROR: The attempt to check if the file \"{}\" was a .BCAINFO file failed with the following error: {}", filePath.string(), errorCode.message()) };
+				return fileExtensionStr == GetBCAInfoFilePath().c_str();
+			}();
 
 			if (isBCAInfoFile)
 			{

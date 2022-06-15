@@ -63,5 +63,57 @@ the definition of SerializedMaterialDefinition:
 
 struct SerializedMaterialDefinition
 {
-	
-}
+	MaterialID Identifier;  // This takes up the same space as a std::uint32_t.
+
+	std::uint64_t DiffuseAlbedoTextureHash;
+};
+
+Rather than including any texture data, SerializedMaterialDefinition instances only provide FilePathHash values for their textures. (To
+reiterate, a FilePathHash of 0 means that the texture slot is unused for this material definition.) The actual texture data can be found
+by searching the .BPK archive for the virtual file corresponding to a given FilePathHash.
+
+Textures referenced by SerializedMaterialDefinition instances are known as "model textures." Much like the primary model (.bmdl) file, model
+texture files have both a header and data. The following structure describes the header of a model texture file:
+
+struct ModelTextureFileHeader
+{
+	// Common Header Contents
+	std::uint32_t Magic;
+	std::uint32_t Version;
+
+	// Current (V1) Versioned Header Contents
+	Brawler::D3D12_RESOURCE_DESC ResourceDescription;
+	MipLevelTableOfContents TableOfContents;
+};
+
+The correct magic string is "BMTX," and the current version number is 1. The TableOfContents field in the structure is a list of offsets
+from the start of the model texture file at which the texture data for a given mip level can be found. Each offset is a std::uint64_t
+value, and the number of offsets is equal to the number of mip levels. The mip level count can be verified by checking the value of
+ResourceDescription.MipLevels (that is, the MipLevels field in the included Brawler::D3D12_RESOURCE_DESC structure).
+
+The texture data itself is written to the file such that it can be immediately uploaded to the GPU. While it is possible to get the size
+of a mip level's texture data by calling ID3D12Device8::GetCopyableFootprints1() with the provided Brawler::D3D12_RESOURCE_DESC instance,
+the size can be calculated in a much simpler way as follows:
+
+if (mipLevel < (ResourceDescription.MipLevels - 1))
+	subResourceSizeInBytes = TableOfContents.OffsetForMipLevel(mipLevel + 1) - TableOfContents.OffsetForMipLevel(mipLevel);
+else
+	subResourceSizeInBytes = modelTextureFile.UncompressedSizeInBytes - TableOfContents.OffsetForMipLevel(mipLevel);
+
+Here, MipLevelTableOfContents::OffsetForMipLevel(const std::size_t mipLevel) is a hypothetical member function of MipLevelTableOfContents
+which returns the offset from the start of the model texture file at which the texture data for a given mip level starts. The texture data
+itself immediately follows the TableOfContents field of the header, and consists of the remainder of the texture file.
+
+Lastly, here are some important notes which should be kept in mind when de-serializing the model data:
+
+- Each LOD mesh has all of its mesh data listed immediately before that of the next mesh. Once the MeshTypeID of an LOD mesh is known, the
+  size of all of its mesh data is also known, and can be calculated as (sizeof(MeshDefinition<Identifier>) * MeshCount). (Refer to the
+  LODMeshInfo structure above for details regarding these fields.)
+
+- Vertex and index buffer files do *NOT* have any associated header. The relevant data begins immediately at the start of the file and extends
+  to its end.
+
+- As mentioned previously, index buffers are *NOT* padded to ensure that an entire triangle cluster of 128 triangles can be filled. This
+  must be done during de-serialization, as a part of the preparation for uploading the data to the GPU.
+
+- The Brawler Engine uses 32-bit indices, and these are what get written into the exported index buffer files.
