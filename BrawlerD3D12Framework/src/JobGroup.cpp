@@ -24,7 +24,7 @@ namespace Brawler
 		mJobArr.reserve(initialReservedCount);
 	}
 
-	void JobGroup::AddJob(std::function<void()>&& job)
+	void JobGroup::AddJob(std::move_only_function<void()>&& job)
 	{
 		mJobArr.push_back(Job{ std::move(job), mCounter, mPriority });
 	}

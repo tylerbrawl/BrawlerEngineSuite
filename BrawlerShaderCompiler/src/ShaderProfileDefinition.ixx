@@ -25,11 +25,14 @@ namespace Brawler
 				Brawler::PSOID::BC7_TRY_MODE_456,
 				Brawler::PSOID::BC7_TRY_MODE_137,
 				Brawler::PSOID::BC7_TRY_MODE_02,
-				Brawler::PSOID::BC7_ENCODE_BLOCK
+				Brawler::PSOID::BC7_ENCODE_BLOCK,
+				Brawler::PSOID::GENERIC_DOWNSAMPLE,
+				Brawler::PSOID::GENERIC_DOWNSAMPLE_SRGB
 			> RELEVANT_PSO_IDS_ARR{};
 
 			static constexpr Brawler::EnumSequence<Brawler::RootSignatureID,
-				Brawler::RootSignatureID::BC6H_BC7_COMPRESSION
+				Brawler::RootSignatureID::BC6H_BC7_COMPRESSION,
+				Brawler::RootSignatureID::GENERIC_DOWNSAMPLE
 			> RELEVANT_ROOT_SIGNATURE_IDS_ARR{};
 			
 			static constexpr std::string_view CMD_LINE_SELECTION_STR{ "model" };

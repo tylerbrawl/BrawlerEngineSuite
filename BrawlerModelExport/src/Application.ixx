@@ -4,8 +4,8 @@ module;
 
 export module Brawler.Application;
 import Brawler.WorkerThreadPool;
-import Brawler.SceneLoader;
-import Brawler.AppParams;
+import Brawler.ModelResolver;
+import Brawler.LaunchParams;
 import Brawler.D3D12.Renderer;
 
 export namespace Brawler
@@ -19,10 +19,9 @@ export namespace Brawler
 		void Initialize();
 
 	public:
-		void Run(AppParams&& appParams);
+		void Run(LaunchParams&& launchParams);
 
-		const SceneLoader& GetSceneLoader() const;
-		const AppParams& GetLaunchParameters() const;
+		const LaunchParams& GetLaunchParameters() const;
 
 		WorkerThreadPool& GetWorkerThreadPool();
 		const WorkerThreadPool& GetWorkerThreadPool() const;
@@ -31,11 +30,21 @@ export namespace Brawler
 		const D3D12::Renderer& GetRenderer() const;
 
 	private:
+		void ExecuteModelConversionLoop();
+
+		void UpdateModelConversionComponents();
+		void ProcessFrame();
+
+		bool IsModelReadyForSerialization() const;
+
+	private:
 		WorkerThreadPool mThreadPool;
 		D3D12::Renderer mRenderer;
-		std::unique_ptr<SceneLoader> mSceneLoader;
-		AppParams mLaunchParams;
+		ModelResolver mModelResolver;
+		LaunchParams mLaunchParams;
 	};
 
 	Application& GetApplication();
+	WorkerThreadPool& GetWorkerThreadPool();
+	D3D12::Renderer& GetRenderer();
 }

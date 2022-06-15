@@ -47,7 +47,7 @@ export namespace Brawler
 		//
 		// What defines "proper usage," you ask? Just follow these rules:
 		//
-		//   1. Whenever you would ordinarily use a file path string, take a const FilePathHash&
+		//   1. Whenever you would ordinarily use a file path string, take a const FilePathHash
 		//      instead.
 		//
 		//   2. Create all FilePathHash instances using the std::wstring_view constructor as

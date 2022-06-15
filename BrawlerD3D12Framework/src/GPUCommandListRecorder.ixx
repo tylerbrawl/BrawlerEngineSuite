@@ -5,7 +5,10 @@ module;
 #include <variant>
 #include <unordered_map>
 #include <ranges>
+#include <array>
 #include <span>
+#include <string_view>
+#include <optional>
 #include "DxDef.h"
 
 export module Brawler.D3D12.GPUCommandListRecorder;
@@ -19,7 +22,8 @@ import Brawler.D3D12.I_RenderPass;
 import Brawler.D3D12.I_GPUResource;
 import Brawler.D3D12.AliasedGPUMemoryManager;
 import Brawler.D3D12.FrameGraphResourceDependency;
-import Brawler.D3D12.GPUResourceStateManagement;
+import Brawler.D3D12.GPUResourceEvent;
+import Brawler.D3D12.GPUResourceEventManager;
 
 export namespace Brawler
 {
@@ -232,7 +236,6 @@ namespace Brawler
 		void GPUCommandListRecorder<QueueType>::RecordCommandList()
 		{
 			assert(mContext != nullptr && "ERROR: A GPUCommandListRecorder was never assigned any I_RenderPass instances to record into an ID3D12GraphicsCommandList!");
-			assert(mContext->ReadyForUse() && "ERROR: A GPUCommandListRecorder was given a context which was not ready to have commands recorded into it!");
 
 			mContext->ResetCommandList();
 
@@ -251,10 +254,26 @@ namespace Brawler
 		template <GPUCommandQueueType QueueType>
 		void GPUCommandListRecorder<QueueType>::RecordRenderPass(const I_RenderPass<QueueType>& renderPass)
 		{
-			RecordGPUResourceEventsForRenderPass(renderPass);
+			const auto recordRenderPassLambda = [this, &renderPass] ()
+			{
+				RecordGPUResourceEventsForRenderPass(renderPass);
+
+				if (renderPass.RecordRenderPassCommands(*mContext)) [[likely]]
+					mContext->MarkAsUseful();
+			};
 			
-			if (renderPass.RecordRenderPassCommands(*mContext)) [[likely]]
-				mContext->MarkAsUseful();
+			if constexpr (Util::D3D12::IsPIXRuntimeSupportEnabled())
+			{
+				const std::string_view renderPassName{ renderPass.GetRenderPassName() };
+				std::optional<PIXScopedEventObject<Brawler::D3D12GraphicsCommandList>> scopedPixEvent{};
+
+				if (!renderPassName.empty())
+					scopedPixEvent.emplace(&(mContext->GetCommandList()), Util::D3D12::PIX_EVENT_COLOR_CPU_GPU, renderPassName.data());
+
+				recordRenderPassLambda();
+			}
+			else
+				recordRenderPassLambda();
 		}
 
 		template <GPUCommandQueueType QueueType>
@@ -315,7 +334,7 @@ namespace Brawler
 						&(resourceEvent->GPUResource->GetD3D12Resource()),
 						transitionEvent.BeforeState,
 						transitionEvent.AfterState,
-						D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+						transitionEvent.SubResourceIndex,
 						transitionEvent.Flags
 					));
 
@@ -336,7 +355,8 @@ namespace Brawler
 
 				default:
 					assert(false);
-					__assume(false);
+					std::unreachable();
+
 					break;
 				}
 
@@ -372,7 +392,8 @@ namespace Brawler
 
 					default:
 						assert(false);
-						__assume(false);
+						std::unreachable();
+
 						break;
 					}
 

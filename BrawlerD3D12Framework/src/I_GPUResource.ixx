@@ -2,6 +2,7 @@ module;
 #include <optional>
 #include <shared_mutex>
 #include <memory>
+#include <span>
 #include "DxDef.h"
 
 export module Brawler.D3D12.I_GPUResource;
@@ -13,13 +14,14 @@ import Brawler.D3D12.GPUResourceUsageTracker;
 import Brawler.D3D12.D3D12ResourceContainer;
 import Brawler.D3D12.GPUResourceCreationType;
 import Brawler.D3D12.BindlessSRVAllocation;
+import Brawler.D3D12.GPUSubResourceStateManager;
 
 namespace Brawler
 {
 	namespace D3D12
 	{
 		class GPUResourceStateTracker;
-		class GPUResourceSpecialInitializationState;
+		class GPUSubResourceStateBarrierMerger;
 		class FrameGraphBuilder;
 	}
 }
@@ -32,7 +34,7 @@ export namespace Brawler
 		{
 		private:
 			friend class GPUResourceStateTracker;
-			friend class GPUResourceSpecialInitializationState;
+			friend class GPUSubResourceStateBarrierMerger;
 			friend class FrameGraphBuilder;
 
 		protected:
@@ -55,7 +57,7 @@ export namespace Brawler
 			/// The function returns the number of D3D12 subresources which comprise this 
 			/// I_GPUResource instance.
 			/// </returns>
-			std::size_t GetSubresourceCount() const;
+			std::uint32_t GetSubResourceCount() const;
 
 			virtual std::optional<D3D12_CLEAR_VALUE> GetOptimizedClearValue() const;
 
@@ -161,8 +163,10 @@ export namespace Brawler
 			/// </returns>
 			virtual bool CanAliasAfterUseOnGPU() const;
 
-			D3D12_RESOURCE_STATES GetCurrentResourceState() const;
-			void SetCurrentResourceState(const D3D12_RESOURCE_STATES newState);
+			D3D12_RESOURCE_STATES GetSubResourceState(const std::uint32_t subResourceIndex) const;
+			std::span<const D3D12_RESOURCE_STATES> GetAllSubResourceStates() const;
+
+			void SetSubResourceState(const D3D12_RESOURCE_STATES newState, const std::uint32_t subResourceIndex);
 
 			const Brawler::D3D12_RESOURCE_DESC& GetResourceDescription() const;
 			void SetResourceDescription(Brawler::D3D12_RESOURCE_DESC&& resourceDesc);
@@ -234,7 +238,7 @@ export namespace Brawler
 			GPUResourceLifetimeType mLifetimeType;
 			GPUResourceInitializationInfo mInitInfo;
 			GPUResourceUsageTracker mUsageTracker;
-			D3D12_RESOURCE_STATES mCurrState;
+			GPUSubResourceStateManager mStateManager;
 			bool mRequiresSpecialInitialization;
 			GPUResourceBindlessSRVManager mBindlessSRVManager;
 			mutable std::shared_mutex mResourceCritSection;

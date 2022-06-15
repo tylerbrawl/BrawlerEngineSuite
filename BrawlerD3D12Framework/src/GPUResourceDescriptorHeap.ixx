@@ -4,12 +4,14 @@ module;
 #include <mutex>
 #include <cassert>
 #include <memory>
+#include <array>
 #include "DxDef.h"
 
 export module Brawler.D3D12.GPUResourceDescriptorHeap;
 import Brawler.D3D12.PerFrameDescriptorTable;
 import Brawler.D3D12.DescriptorHandleInfo;
 import Brawler.D3D12.BindlessSRVSentinel;
+import Util.Engine;
 
 export namespace Brawler
 {
@@ -61,7 +63,8 @@ export namespace Brawler
 			GPUResourceDescriptorHeap(GPUResourceDescriptorHeap&& rhs) noexcept = default;
 			GPUResourceDescriptorHeap& operator=(GPUResourceDescriptorHeap&& rhs) noexcept = default;
 
-			void Initialize();
+			void InitializeBindlessSRVQueue();
+			void InitializeD3D12DescriptorHeap();
 
 			std::unique_ptr<BindlessSRVSentinel> AllocateBindlessSRV();
 			void ReClaimBindlessSRV(BindlessSRVSentinel& srvAllocation);
@@ -69,6 +72,8 @@ export namespace Brawler
 			PerFrameDescriptorTable CreatePerFrameDescriptorTable(const DescriptorTableBuilder& tableBuilder);
 
 			void ResetPerFrameDescriptorHeapIndex();
+
+			Brawler::D3D12DescriptorHeap& GetD3D12DescriptorHeap() const;
 
 			__forceinline CD3DX12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(const std::uint32_t offsetInDescriptors = 0) const;
 			__forceinline CD3DX12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(const std::uint32_t offsetInDescriptors = 0) const;
@@ -81,7 +86,7 @@ export namespace Brawler
 		private:
 			Microsoft::WRL::ComPtr<Brawler::D3D12DescriptorHeap> mHeap;
 			BindlessIndexInfo mBindlessIndexQueue;
-			std::atomic<std::uint32_t> mPerFrameIndex;
+			std::array<std::atomic<std::uint32_t>, Util::Engine::MAX_FRAMES_IN_FLIGHT> mPerFrameIndexArr;
 			std::uint32_t mDescriptorHandleIncrementSize;
 		};
 	}

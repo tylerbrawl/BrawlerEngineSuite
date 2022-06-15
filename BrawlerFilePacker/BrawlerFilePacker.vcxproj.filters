@@ -40,6 +40,18 @@
     <Filter Include="Module Files\Asset Pipeline">
       <UniqueIdentifier>{e1e9dfb3-0472-44cb-ac6c-2cc03e7407da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Asset Pipeline\BCA Files">
+      <UniqueIdentifier>{edff3dc6-5c9f-47db-926c-c369b2b4b875}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Asset Pipeline\BCA Files">
+      <UniqueIdentifier>{b8800303-7217-4e09-95bb-778e842e6f61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Asset Pipeline\BCA Info Parsing">
+      <UniqueIdentifier>{204917f6-02d4-4d56-aee9-9ad5d38ea8c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Asset Pipeline\BCA Info Parsing">
+      <UniqueIdentifier>{51dfab72-2aa6-4ce6-9b09-63d17bb1eba3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -171,15 +183,6 @@
     <ClCompile Include="src\AssetCompilerContext.ixx">
       <Filter>Module Files\Asset Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="src\BCAArchive.ixx">
-      <Filter>Module Files\Asset Pipeline</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BCAMetadata.ixx">
-      <Filter>Module Files\Asset Pipeline</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BCAArchive.cpp">
-      <Filter>Source Files\Asset Pipeline</Filter>
-    </ClCompile>
     <ClCompile Include="src\ZSTDFrame.ixx">
       <Filter>Module Files\File I/O</Filter>
     </ClCompile>
@@ -192,9 +195,6 @@
     <ClCompile Include="src\ZSTDFrame.cpp">
       <Filter>Source Files\File I/O</Filter>
     </ClCompile>
-    <ClCompile Include="src\BCALinker.ixx">
-      <Filter>Module Files\Asset Pipeline</Filter>
-    </ClCompile>
     <ClCompile Include="src\BCALinker.cpp">
       <Filter>Source Files\Asset Pipeline</Filter>
     </ClCompile>
@@ -204,10 +204,58 @@
     <ClCompile Include="src\BPKFactory.cpp">
       <Filter>Source Files\Asset Pipeline</Filter>
     </ClCompile>
+    <ClCompile Include="src\BCAArchive.ixx">
+      <Filter>Module Files\Asset Pipeline\BCA Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCALinker.ixx">
+      <Filter>Module Files\Asset Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAMetadata.ixx">
+      <Filter>Module Files\Asset Pipeline\BCA Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAArchive.cpp">
+      <Filter>Source Files\Asset Pipeline\BCA Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAInfo.ixx">
+      <Filter>Module Files\Asset Pipeline\BCA Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAInfoParser.ixx">
+      <Filter>Module Files\Asset Pipeline\BCA Info Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAInfoParser.cpp">
+      <Filter>Source Files\Asset Pipeline\BCA Info Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAInfoParserContext.ixx">
+      <Filter>Module Files\Asset Pipeline\BCA Info Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAInfoParserContext.cpp">
+      <Filter>Source Files\Asset Pipeline\BCA Info Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SourceAssetInfoParser.ixx">
+      <Filter>Module Files\Asset Pipeline\BCA Info Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SourceAssetInfoParser.cpp">
+      <Filter>Source Files\Asset Pipeline\BCA Info Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AttributeParser.ixx">
+      <Filter>Module Files\Asset Pipeline\BCA Info Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AttributeParser.cpp">
+      <Filter>Source Files\Asset Pipeline\BCA Info Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAInfoDatabase.ixx">
+      <Filter>Module Files\Asset Pipeline\BCA Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAInfoDatabase.cpp">
+      <Filter>Source Files\Asset Pipeline\BCA Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Win32Def.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,8 @@
 module;
 #include <string>
-#include <Windows.h>
+#include <source_location>
+#include <system_error>
+#include "DxDef.h"
 
 export module Util.General;
 import Brawler.Functional;
@@ -20,6 +22,14 @@ export namespace Util
 		template <typename T>
 			requires std::is_enum_v<T>
 		constexpr std::underlying_type_t<T> EnumCast(const T enumValue);
+
+#ifdef _DEBUG
+		__forceinline void CheckHRESULT(const HRESULT hr, const std::source_location srcLocation = std::source_location::current());
+		__forceinline void CheckErrorCode(const std::error_code errorCode, const std::source_location srcLocation = std::source_location::current());
+#else
+		__forceinline void CheckHRESULT(const HRESULT hr);
+		__forceinline void CheckErrorCode(const std::error_code errorCode);
+#endif // _DEBUG
 
 		enum class BuildMode
 		{
@@ -68,6 +78,37 @@ namespace Util
 		{
 			return static_cast<std::underlying_type_t<T>>(enumValue);
 		}
+
+#ifdef _DEBUG
+		__forceinline void CheckHRESULT(const HRESULT hr, const std::source_location srcLocation)
+		{
+			if (FAILED(hr)) [[unlikely]]
+			{
+				const _com_error comErr{ hr };
+				throw std::runtime_error{ std::string{ "An HRESULT check failed!\n\nHRESULT Returned: " } + WStringToString(comErr.ErrorMessage()) +
+					"\nFunction: " + std::string{ srcLocation.function_name() } + "\nFile: " + std::string{ srcLocation.file_name() } + " (Line Number: " + std::to_string(srcLocation.line()) + ")" };
+			}
+		}
+
+		__forceinline void CheckErrorCode(const std::error_code errorCode, const std::source_location srcLocation)
+		{
+			if (errorCode) [[unlikely]]
+				throw std::runtime_error{ std::string{ "A std::error_code check failed!\n\nstd::error_code Returned: " } + errorCode.message() +
+					"\nFunction: " + std::string{ srcLocation.function_name() } + "\nFile: " + std::string{ srcLocation.file_name() } + " (Line Number: " + std::to_string(srcLocation.line()) + ")" };
+		}
+#else
+		__forceinline void CheckHRESULT(const HRESULT hr)
+		{
+			if (FAILED(hr)) [[unlikely]]
+				throw std::runtime_error{ "" };
+		}
+
+		__forceinline void CheckErrorCode(const std::error_code errorCode)
+		{
+			if (errorCode) [[unlikely]]
+				throw std::runtime_error{ "" };
+		}
+#endif // _DEBUG
 
 		consteval BuildMode GetBuildMode()
 		{

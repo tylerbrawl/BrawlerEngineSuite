@@ -8,9 +8,11 @@ module;
 export module Brawler.BC7ImageCompressor;
 import Brawler.D3D12.StructuredBufferSubAllocation;
 import Brawler.D3D12.ConstantBufferSubAllocation;
-import Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.D3D12.RenderPassBundle;
 import Brawler.D3D12.Texture2D;
+import Brawler.D3D12.DescriptorTableBuilder;
+import Brawler.D3D12.BufferResource;
+import Brawler.D3D12.BufferSubAllocationReservationHandle;
 
 namespace Brawler
 {
@@ -50,31 +52,45 @@ export namespace Brawler
 			// ============================================
 			// v Default Heap
 			// ============================================
-			D3D12::Texture2D* SourceTexturePtr;
-
 			D3D12::StructuredBufferSubAllocation<BufferBC7> OutputBufferSubAllocation;
 			D3D12::StructuredBufferSubAllocation<BufferBC7> Error1BufferSubAllocation;
 			D3D12::StructuredBufferSubAllocation<BufferBC7> Error2BufferSubAllocation;
+
+			// NOTE: Even though this is a sub-allocation for a constant buffer, we
+			// are going to put it into a default heap, since its contents are only
+			// ever set once but are read from multiple times.
+			D3D12::ConstantBufferSubAllocation<ConstantsBC7> ConstantBufferSubAllocation;
 
 			// ============================================
 			// ^ Default Heap | Upload Heap v
 			// ============================================
 
-			D3D12::ConstantBufferSubAllocation<ConstantsBC7> ConstantBufferSubAllocation;
-			D3D12::TextureCopyBufferSubAllocation SourceTextureCopySubAllocation;
+			D3D12::StructuredBufferSubAllocation<ConstantsBC7> ConstantBufferCopySubAllocation;
+		};
 
-			// ============================================
-			// ^ Upload Heap | Readback Heap v
-			// ============================================
+		struct DescriptorTableBuilderInfo
+		{
+			D3D12::DescriptorTableBuilder SourceTextureTableBuilder;
+			D3D12::DescriptorTableBuilder Error1SRVTableBuilder;
+			D3D12::DescriptorTableBuilder Error1UAVTableBuilder;
+			D3D12::DescriptorTableBuilder Error2SRVTableBuilder;
+			D3D12::DescriptorTableBuilder Error2UAVTableBuilder;
+			D3D12::DescriptorTableBuilder OutputTableBuilder;
 
-			D3D12::StructuredBufferSubAllocation<BufferBC7> CPUOutputBufferSubAllocation;
+			DescriptorTableBuilderInfo() :
+				SourceTextureTableBuilder(1),
+				Error1SRVTableBuilder(1),
+				Error1UAVTableBuilder(1),
+				Error2SRVTableBuilder(1),
+				Error2UAVTableBuilder(1),
+				OutputTableBuilder(1)
+			{}
 		};
 
 	public:
 		struct InitInfo
 		{
-			DirectX::Image& DestImage;
-			const DirectX::Image& SrcImage;
+			D3D12::Texture2DSubResource SrcTextureSubResource;
 			DXGI_FORMAT DesiredFormat;
 		};
 
@@ -87,34 +103,24 @@ export namespace Brawler
 		BC7ImageCompressor(BC7ImageCompressor&& rhs) noexcept = default;
 		BC7ImageCompressor& operator=(BC7ImageCompressor&& rhs) noexcept = default;
 
-		void CreateTransientResources(D3D12::FrameGraphBuilder& frameGraphBuilder);
-		std::vector<D3D12::RenderPassBundle> GetImageCompressionRenderPassBundles() const;
-
-		//void CompressImage(DirectX::Image& destImage);
+		D3D12::BufferSubAllocationReservationHandle AddCompressionRenderPasses(D3D12::FrameGraphBuilder& frameGraphBuilder);
 
 	private:
-		void InitializeBufferResources(D3D12::FrameGraphBuilder& frameGraphBuilder);
-		void InitializeSourceTextureResource(D3D12::FrameGraphBuilder& frameGraphBuilder);
+		void CreateTransientResources(D3D12::FrameGraphBuilder& frameGraphBuilder);
+		void AddImageCompressionRenderPassBundles(D3D12::FrameGraphBuilder& frameGraphBuilder);
 
-		D3D12::RenderPassBundle CreateSourceTextureInitializationRenderPassBundle() const;
+		void InitializeBufferResources(D3D12::FrameGraphBuilder& frameGraphBuilder);
+
+		void InitializeDescriptorTableBuilders();
+
+		D3D12::RenderPassBundle CreateResourceUploadRenderPassBundle();
+		D3D12::RenderPassBundle CreateCompressionRenderPassBundle();
+
+		std::size_t GetTotalBlockCount() const;
 
 	private:
 		InitInfo mInitInfo;
 		ResourceInfo mResourceInfo;
-
-
-		//std::unique_ptr<D3D12::StructuredBuffer<BufferBC7>> mOutputBuffer;
-		//std::unique_ptr<D3D12::StructuredBuffer<BufferBC7>> mError1Buffer;
-		//std::unique_ptr<D3D12::StructuredBuffer<BufferBC7>> mError2Buffer;
-
-		//std::unique_ptr<D3D12::ConstantBuffer<ConstantsBC7>> mConstantBuffer;
-		
-		//std::unique_ptr<D3D12::StructuredBuffer<BufferBC7>> mOutputCPUBuffer;
-
-		//D3D12::PerFrameDescriptorTable mError1SRV;
-		//D3D12::PerFrameDescriptorTable mError2SRV;
-		//D3D12::PerFrameDescriptorTable mOutputUAV;
-		//D3D12::PerFrameDescriptorTable mError1UAV;
-		//D3D12::PerFrameDescriptorTable mError2UAV;
+		DescriptorTableBuilderInfo mTableBuilderInfo;
 	};
 }

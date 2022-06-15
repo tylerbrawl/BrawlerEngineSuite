@@ -7,12 +7,65 @@ import Brawler.D3D12.GPUResourceDescriptorHeap;
 import Brawler.D3D12.GPUCapabilities;
 import Brawler.D3D12.GPUResidencyManager;
 import Brawler.D3D12.GPUVendor;
+import Util.General;
+
+namespace Brawler
+{
+	namespace D3D12
+	{
+		class ReleaseModeDebugLayerEnabler
+		{
+		public:
+			constexpr ReleaseModeDebugLayerEnabler() = default;
+
+			static consteval bool IsDebugLayerAllowed()
+			{
+				return false;
+			}
+
+			static consteval void TryEnableDebugLayer()
+			{}
+
+			static consteval bool IsDebugLayerEnabled()
+			{
+				return false;
+			}
+		};
+
+		class DebugModeDebugLayerEnabler
+		{
+		public:
+			constexpr DebugModeDebugLayerEnabler() = default;
+
+			static consteval bool IsDebugLayerAllowed();
+			void TryEnableDebugLayer();
+			bool IsDebugLayerEnabled() const;
+
+		private:
+			bool mIsDebugLayerEnabled;
+		};
+
+		template <Util::General::BuildMode BuildMode>
+		struct DebugLayerEnablerSelector
+		{
+			using LayerType = ReleaseModeDebugLayerEnabler;
+		};
+
+		template <>
+		struct DebugLayerEnablerSelector<Util::General::BuildMode::DEBUG>
+		{
+			using LayerType = DebugModeDebugLayerEnabler;
+		};
+
+		using CurrentDebugLayerEnabler = typename DebugLayerEnablerSelector<Util::General::GetBuildMode()>::LayerType;
+	}
+}
 
 export namespace Brawler
 {
 	namespace D3D12
 	{
-		class GPUDevice
+		class GPUDevice final : private CurrentDebugLayerEnabler
 		{
 		public:
 			GPUDevice() = default;
@@ -43,11 +96,16 @@ export namespace Brawler
 
 			const GPUCapabilities& GetGPUCapabilities() const;
 
+			bool IsDebugLayerEnabled() const;
+
 		private:
 			void InitializeD3D12Device();
 			void InitializeGPUVendor();
 			void InitializeGPUCapabilities();
 			void InitializeDescriptorHandleIncrementSizeArray();
+
+			void CreateHardwareD3D12Device();
+			void CreateWARPD3D12Device();
 
 		private:
 			Microsoft::WRL::ComPtr<Brawler::DXGIFactory> mDXGIFactory;

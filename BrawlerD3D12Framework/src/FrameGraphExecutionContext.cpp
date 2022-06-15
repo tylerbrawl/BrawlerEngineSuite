@@ -18,8 +18,12 @@ import Util.D3D12;
 import Util.Math;
 import Brawler.D3D12.RenderPass;
 import Util.Engine;
+import Util.General;
 import Brawler.D3D12.GPUCommandManager;
 import Brawler.D3D12.GPUExecutionModuleRecordContext;
+import Brawler.D3D12.GPUResourceUsageAnalyzer;
+import Brawler.D3D12.GPUResourceEventCollection;
+import Brawler.D3D12.ScopedCPUPIXEvent;
 
 namespace
 {
@@ -51,7 +55,9 @@ namespace Brawler
 			mAliasTracker = std::move(aliasTracker);
 			
 			CreateGPUExecutionModules(builderSpan);
-			PerformGPUResourceAnalysis();
+
+			if (mExecutionModuleArr.size() > 0) [[likely]]
+				PerformGPUResourceAnalysis();
 		}
 
 		void FrameGraphExecutionContext::SubmitFrameGraph(FrameGraphFenceCollection& fenceCollection)
@@ -74,38 +80,41 @@ namespace Brawler
 			// Now we can create a CPU job for each GPUExecutionModule to submit that
 			// module's jobs to the GPU. We do this asynchronously so that the calling thread
 			// can proceed to prepare for the next frame.
-			Brawler::JobGroup executionModuleSubmitGroup{};
-			executionModuleSubmitGroup.Reserve(mExecutionModuleArr.size());
-
-			struct GPUExecutionModuleRecordInfo
+			if (mExecutionModuleArr.size() > 0) [[likely]]
 			{
-				GPUExecutionModule* ExecutionModulePtr;
-				GPUExecutionModuleRecordContext RecordContext;
-			};
+				Brawler::JobGroup executionModuleSubmitGroup{};
+				executionModuleSubmitGroup.Reserve(mExecutionModuleArr.size());
 
-			GPUExecutionModuleRecordInfo recordInfo{
-				.ExecutionModulePtr = nullptr,
-				.RecordContext{
-					.AliasTracker = &mAliasTracker,
-					.EventManager = &mEventManager,
-					.SubmitPoint = nullptr
-				}
-			};
-
-			for (std::size_t i = 0; i < mExecutionModuleArr.size(); ++i)
-			{
-				recordInfo.ExecutionModulePtr = &(mExecutionModuleArr[i]);
-				recordInfo.RecordContext.SubmitPoint = &(submitPointSpan[i]);
-
-				// We need to capture this structure by value, since we are executing these
-				// jobs fully asynchronously.
-				executionModuleSubmitGroup.AddJob([recordInfo] ()
+				struct GPUExecutionModuleRecordInfo
 				{
-					recordInfo.ExecutionModulePtr->SubmitCommandListsForRenderPasses(recordInfo.RecordContext);
-				});
-			}
+					GPUExecutionModule* ExecutionModulePtr;
+					GPUExecutionModuleRecordContext RecordContext;
+				};
 
-			executionModuleSubmitGroup.ExecuteJobsAsync();
+				GPUExecutionModuleRecordInfo recordInfo{
+					.ExecutionModulePtr = nullptr,
+					.RecordContext{
+						.AliasTracker = &mAliasTracker,
+						.EventManager = &mEventManager,
+						.SubmitPoint = nullptr
+					}
+				};
+
+				for (std::size_t i = 0; i < mExecutionModuleArr.size(); ++i)
+				{
+					recordInfo.ExecutionModulePtr = &(mExecutionModuleArr[i]);
+					recordInfo.RecordContext.SubmitPoint = &(submitPointSpan[i]);
+
+					// We need to capture this structure by value, since we are executing these
+					// jobs fully asynchronously.
+					executionModuleSubmitGroup.AddJob([recordInfo] ()
+					{
+						recordInfo.ExecutionModulePtr->SubmitCommandListsForRenderPasses(recordInfo.RecordContext);
+					});
+				}
+
+				executionModuleSubmitGroup.ExecuteJobsAsync();
+			}
 		}
 		
 		void FrameGraphExecutionContext::CreateGPUExecutionModules(const std::span<FrameGraphBuilder> builderSpan)
@@ -155,30 +164,45 @@ namespace Brawler
 				}
 			}
 
-			mExecutionModuleArr.push_back(std::move(currExecutionModule));
+			if (currExecutionModule.GetRenderPassCount() > 0) [[likely]]
+				mExecutionModuleArr.push_back(std::move(currExecutionModule));
 		}
 
 		void FrameGraphExecutionContext::PerformGPUResourceAnalysis()
 		{
-			// Get a list of all of the used I_GPUResource instances in the FrameGraph.
-			std::unordered_map<I_GPUResource*, GPUResourceEventManager> resourceEventManagerMap{};
+			// Get a list of all of the used I_GPUResource instances in the FrameGraph which are
+			// located in a D3D12_HEAP_TYPE_DEFAULT heap. We restrict the search to only this heap
+			// type because resources created in either D3D12_HEAP_TYPE_UPLOAD heaps or
+			// D3D12_HEAP_TYPE_READBACK heaps are never to transition out of their initial state.
+			std::unordered_map<I_GPUResource*, GPUResourceEventCollection> resourceEventManagerMap{};
+			std::size_t numDirectPasses = 0;
+			std::size_t numComputePasses = 0;
+			std::size_t numCopyPasses = 0;
 
-			for (const auto& executionModule : mExecutionModuleArr)
+			for (auto& executionModule : mExecutionModuleArr)
 			{
+				numDirectPasses += executionModule.GetRenderPassSpan<GPUCommandQueueType::DIRECT>().size();
+				numComputePasses += executionModule.GetRenderPassSpan<GPUCommandQueueType::COMPUTE>().size();
+				numCopyPasses += executionModule.GetRenderPassSpan<GPUCommandQueueType::COPY>().size();
+				
 				const Brawler::SortedVector<I_GPUResource*> moduleResourceDependencies{ executionModule.GetResourceDependencies() };
 
 				moduleResourceDependencies.ForEach([&resourceEventManagerMap] (I_GPUResource* const& resourceDependency)
 				{
-					resourceEventManagerMap.try_emplace(resourceDependency);
+					const D3D12_HEAP_TYPE heapType{ resourceDependency->GetHeapType() };
+
+					if (heapType == D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_DEFAULT)
+						resourceEventManagerMap.try_emplace(resourceDependency);
 				});
 			}
 
+			mEventManager.SetRenderPassCount<GPUCommandQueueType::DIRECT>(numDirectPasses);
+			mEventManager.SetRenderPassCount<GPUCommandQueueType::COMPUTE>(numComputePasses);
+			mEventManager.SetRenderPassCount<GPUCommandQueueType::COPY>(numCopyPasses);
+
 			// Resource tracking can be a long-running task, especially since the algorithm currently
 			// does it on a per-resource basis. We want to multithread this as much as possible.
-			//
-			// (NOTE: We use (std::thread::hardware_concurrency() - 1) because one thread is busy allocating
-			// GPU memory for the transient resources in the FrameGraph.)
-			const std::uint32_t numJobsToCreate = std::max<std::uint32_t>((std::thread::hardware_concurrency() - 1), 1);
+			const std::uint32_t numJobsToCreate = std::thread::hardware_concurrency();
 			const std::size_t numResourcesPerJob = static_cast<std::size_t>(std::ceilf(static_cast<float>(resourceEventManagerMap.size()) / static_cast<float>(numJobsToCreate)));
 
 			Brawler::JobGroup resourceTrackingJobGroup{};
@@ -192,23 +216,40 @@ namespace Brawler
 
 				resourceTrackingJobGroup.AddJob([this, &resourceEventManagerMap, numResourcesThisJob, startIndex = numResourcesAdded] ()
 				{
-					for (auto& [resourcePtr, resourceEventManager] : resourceEventManagerMap | std::views::drop(startIndex) | std::views::take(numResourcesThisJob))
+					for (auto& [resourcePtr, resourceEventCollection] : resourceEventManagerMap | std::views::drop(startIndex) | std::views::take(numResourcesThisJob))
 					{
 						GPUResourceUsageAnalyzer resourceAnalyzer{ *resourcePtr };
 						resourceAnalyzer.TraverseFrameGraph(std::span<const GPUExecutionModule>{ mExecutionModuleArr });
 
-						resourceEventManager = resourceAnalyzer.ExtractGPUResourceEventManager();
+						resourceEventCollection = resourceAnalyzer.ExtractGPUResourceEventCollection();
 					}
 				});
 
 				numResourcesAdded += numResourcesThisJob;
 			}
 
-			resourceTrackingJobGroup.ExecuteJobs();
+			{
+				ScopedCPUPIXEvent resourceTrackingPIXEvent{ L"Brawler Engine - GPU Resource State Analysis" };
+				resourceTrackingJobGroup.ExecuteJobs();
+			}
+
+			// Before we begin merging GPUResourceEvent instances, we can allocate all of the
+			// memory required for the GPUResourceEventManager.
+			//
+			// However, simple and inextensive benchmarking shows this to improve performance in
+			// Debug builds, but decrease performance in Release builds. If we want to, we can
+			// try it in different cases later on.
+			if constexpr (Util::General::IsDebugModeEnabled())
+			{
+				for (const auto& [resourcePtr, resourceEventCollection] : resourceEventManagerMap)
+					mEventManager.CountGPUResourceEvents(resourceEventCollection);
+
+				mEventManager.AllocateEventQueueMemory();
+			}
 
 			// Merge all of the created GPUResourceEvent instances into one GPUResourceEventManager.
-			for (auto&& [resourcePtr, resourceEventManager] : resourceEventManagerMap)
-				mEventManager.MergeGPUResourceEventManager(std::move(resourceEventManager));
+			for (auto&& [resourcePtr, resourceEventCollection] : resourceEventManagerMap)
+				mEventManager.MergeGPUResourceEventCollection(std::move(resourceEventCollection));
 		}
 	}
 }

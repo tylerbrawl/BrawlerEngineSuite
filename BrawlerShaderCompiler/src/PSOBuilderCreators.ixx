@@ -85,6 +85,31 @@ export namespace Brawler
 		}
 
 		template <>
+		PSOBuilder<Brawler::PSOID::GENERIC_DOWNSAMPLE> CreatePSOBuilder<Brawler::PSOID::GENERIC_DOWNSAMPLE>()
+		{
+			return CreateGeneralComputePSOBuilder<Brawler::PSOID::GENERIC_DOWNSAMPLE>(Brawler::ShaderCompilationParams{
+				.FilePath{ L"Shaders\\GenerateMipMaps.hlsl" },
+				.EntryPoint{ L"main" },
+				.MacroDefinitionArr{}
+			});
+		}
+
+		template <>
+		PSOBuilder<Brawler::PSOID::GENERIC_DOWNSAMPLE_SRGB> CreatePSOBuilder<Brawler::PSOID::GENERIC_DOWNSAMPLE_SRGB>()
+		{
+			return CreateGeneralComputePSOBuilder<Brawler::PSOID::GENERIC_DOWNSAMPLE_SRGB>(Brawler::ShaderCompilationParams{
+				.FilePath{ L"Shaders\\GenerateMipMaps.hlsl" },
+				.EntryPoint{ L"main" },
+				.MacroDefinitionArr{
+					// For tools like the Brawler Model Exporter, we might as well just use the exact sRGB
+					// curve.
+					{ L"__EXACT_SRGB__", L"1" },
+					{ L"__USING_SRGB_DATA__", L"1" }
+				}
+			});
+		}
+
+		template <>
 		PSOBuilder<Brawler::PSOID::TEST_PSO> CreatePSOBuilder<Brawler::PSOID::TEST_PSO>()
 		{
 			Brawler::PSOStreamType<Brawler::PSOID::TEST_PSO> psoStream{};

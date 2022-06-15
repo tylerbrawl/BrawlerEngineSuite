@@ -1,13 +1,14 @@
 module;
-#include <unordered_map>
 #include <span>
 #include <vector>
 #include <optional>
 #include <cassert>
 
-export module Brawler.D3D12.GPUResourceStateManagement:GPUResourceEventManager;
-import :GPUResourceEvent;
+export module Brawler.D3D12.GPUResourceEventManager;
+import Brawler.D3D12.GPUResourceEvent;
 import Brawler.D3D12.GPUCommandQueueType;
+import Brawler.D3D12.GPUResourceEventCollection;
+import Brawler.FastUnorderedMap;
 
 export namespace Brawler
 {
@@ -29,11 +30,12 @@ export namespace Brawler
 			{
 				std::vector<GPUResourceEvent> EventQueue;
 				std::size_t CurrIndex;
+				std::size_t EventQueueSize;
 			};
 
 		private:
 			template <GPUCommandQueueType QueueType>
-			using RenderPassEventQueueMap_T = std::unordered_map<const I_RenderPass<QueueType>*, EventQueueContainer>;
+			using RenderPassEventQueueMap_T = Brawler::FastUnorderedMap<const I_RenderPass<QueueType>*, EventQueueContainer>;
 
 		public:
 			GPUResourceEventManager() = default;
@@ -43,6 +45,9 @@ export namespace Brawler
 
 			GPUResourceEventManager(GPUResourceEventManager&& rhs) noexcept = default;
 			GPUResourceEventManager& operator=(GPUResourceEventManager&& rhs) noexcept = default;
+
+			template <GPUCommandQueueType QueueType>
+			void SetRenderPassCount(const std::size_t numRenderPasses);
 
 			template <GPUCommandQueueType QueueType>
 			void AddGPUResourceEvent(const I_RenderPass<QueueType>& renderPass, GPUResourceEvent&& resourceEvent);
@@ -68,7 +73,10 @@ export namespace Brawler
 			template <GPUCommandQueueType QueueType>
 			std::optional<GPUResourceEvent> ExtractGPUResourceEvent(const I_RenderPass<QueueType>& renderPass);
 
-			void MergeGPUResourceEventManager(GPUResourceEventManager&& eventManagerToMerge);
+			void CountGPUResourceEvents(const GPUResourceEventCollection& eventCollection);
+			void AllocateEventQueueMemory();
+
+			void MergeGPUResourceEventCollection(GPUResourceEventCollection&& eventCollection);
 
 		private:
 			template <GPUCommandQueueType QueueType>
@@ -94,6 +102,18 @@ namespace Brawler
 	namespace D3D12
 	{
 		template <GPUCommandQueueType QueueType>
+		void GPUResourceEventManager::SetRenderPassCount(const std::size_t numRenderPasses)
+		{
+			// We don't actually need to set anything here. This is just an optimization to try to
+			// reserve memory for the maps up front.
+			//
+			// We specify (1.25 * numRenderPasses) in order to try to reduce the chances of a
+			// re-hash occurring, since these can be expensive.
+			const float reservationInElements = (1.25f * static_cast<float>(numRenderPasses));
+			GetRenderPassEventQueueMap<QueueType>().Reserve(static_cast<std::size_t>(reservationInElements));
+		}
+
+		template <GPUCommandQueueType QueueType>
 		void GPUResourceEventManager::AddGPUResourceEvent(const I_RenderPass<QueueType>& renderPass, GPUResourceEvent&& resourceEvent)
 		{
 			RenderPassEventQueueMap_T<QueueType>& eventQueueMap{ GetRenderPassEventQueueMap(renderPass) };
@@ -105,10 +125,10 @@ namespace Brawler
 		{
 			RenderPassEventQueueMap_T<QueueType>& eventQueueMap{ GetRenderPassEventQueueMap(renderPass) };
 
-			if (!eventQueueMap.contains(&renderPass))
+			if (!eventQueueMap.Contains(&renderPass))
 				return std::optional<GPUResourceEvent>{};
 
-			EventQueueContainer& eventQueueContainer{ eventQueueMap.at(&renderPass) };
+			EventQueueContainer& eventQueueContainer{ eventQueueMap.At(&renderPass) };
 
 			if (eventQueueContainer.CurrIndex == eventQueueContainer.EventQueue.size())
 				return std::optional<GPUResourceEvent>{};
@@ -116,26 +136,50 @@ namespace Brawler
 			return std::optional<GPUResourceEvent>{ std::move(eventQueueContainer.EventQueue[eventQueueContainer.CurrIndex++]) };
 		}
 
-		void GPUResourceEventManager::MergeGPUResourceEventManager(GPUResourceEventManager&& eventManagerToMerge)
+		void GPUResourceEventManager::CountGPUResourceEvents(const GPUResourceEventCollection& eventCollection)
 		{
-			const auto mergeMapLambda = [this]<GPUCommandQueueType QueueType>(GPUResourceEventManager& mergedEventManager)
+			const auto countEventsLambda = [this]<GPUCommandQueueType QueueType>(const GPUResourceEventCollection & eventCollection)
 			{
 				RenderPassEventQueueMap_T<QueueType>& thisEventQueueMap{ GetRenderPassEventQueueMap<QueueType>() };
-				RenderPassEventQueueMap_T<QueueType>& mergedEventQueueMap{ mergedEventManager.GetRenderPassEventQueueMap<QueueType>() };
 
-				for (auto&& [renderPass, mergedEventQueueContainer] : mergedEventQueueMap)
-				{
-					std::vector<GPUResourceEvent>& thisEventQueue{ thisEventQueueMap[renderPass].EventQueue };
-					thisEventQueue.reserve(mergedEventQueueContainer.EventQueue.size());
-
-					for (auto&& resourceEvent : mergedEventQueueContainer.EventQueue)
-						thisEventQueue.push_back(std::move(resourceEvent));
-				}
+				for (const auto& eventContainer : eventCollection.GetGPUResourceEvents<QueueType>())
+					++(thisEventQueueMap[eventContainer.RenderPassPtr].EventQueueSize);
 			};
 
-			mergeMapLambda.operator()<GPUCommandQueueType::DIRECT>(eventManagerToMerge);
-			mergeMapLambda.operator()<GPUCommandQueueType::COMPUTE>(eventManagerToMerge);
-			mergeMapLambda.operator()<GPUCommandQueueType::COPY>(eventManagerToMerge);
+			countEventsLambda.operator()<GPUCommandQueueType::DIRECT>(eventCollection);
+			countEventsLambda.operator()<GPUCommandQueueType::COMPUTE>(eventCollection);
+			countEventsLambda.operator()<GPUCommandQueueType::COPY>(eventCollection);
+		}
+
+		void GPUResourceEventManager::AllocateEventQueueMemory()
+		{
+			const auto allocateMemoryLambda = [this]<GPUCommandQueueType QueueType>()
+			{
+				GetRenderPassEventQueueMap<QueueType>().ForEach([] (EventQueueContainer& eventQueueContainer)
+				{
+					eventQueueContainer.EventQueue.reserve(eventQueueContainer.EventQueueSize);
+				});
+			};
+
+			allocateMemoryLambda.operator()<GPUCommandQueueType::DIRECT>();
+			allocateMemoryLambda.operator()<GPUCommandQueueType::COMPUTE>();
+			allocateMemoryLambda.operator()<GPUCommandQueueType::COPY>();
+		}
+
+		void GPUResourceEventManager::MergeGPUResourceEventCollection(GPUResourceEventCollection&& eventCollection)
+		{
+			const auto mergeMapLambda = [this]<GPUCommandQueueType QueueType>(GPUResourceEventCollection& eventCollection)
+			{
+				RenderPassEventQueueMap_T<QueueType>& thisEventQueueMap{ GetRenderPassEventQueueMap<QueueType>() };
+				const std::span<GPUResourceEventCollection::EventContainer<QueueType>> mergedEventContainerSpan{ eventCollection.GetGPUResourceEvents<QueueType>() };
+
+				for (auto&& eventContainer : mergedEventContainerSpan)
+					thisEventQueueMap[eventContainer.RenderPassPtr].EventQueue.push_back(std::move(eventContainer.Event));
+			};
+
+			mergeMapLambda.operator()<GPUCommandQueueType::DIRECT>(eventCollection);
+			mergeMapLambda.operator()<GPUCommandQueueType::COMPUTE>(eventCollection);
+			mergeMapLambda.operator()<GPUCommandQueueType::COPY>(eventCollection);
 		}
 
 		template <GPUCommandQueueType QueueType>

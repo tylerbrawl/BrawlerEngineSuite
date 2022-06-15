@@ -4,6 +4,8 @@ module;
 #include <optional>
 #include <functional>
 #include <string>
+#include <ranges>
+#include <cassert>
 #include "DxDef.h"
 
 export module Brawler.D3D12.RenderPass;
@@ -14,6 +16,9 @@ import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.D3D12.GPUCommandQueueContextType;
 import Brawler.D3D12.GPUCommandContexts;
 import Util.D3D12;
+import Util.General;
+import Brawler.D3D12.I_BufferSubAllocation;
+import Brawler.D3D12.TextureSubResource;
 
 namespace Brawler
 {
@@ -36,12 +41,84 @@ namespace Brawler
 	}
 }
 
+namespace Brawler
+{
+	namespace D3D12
+	{
+		class ReleaseModeRenderPassNameContainer
+		{
+		public:
+			ReleaseModeRenderPassNameContainer() = default;
+
+			static constexpr void SetRenderPassName(const std::string_view name)
+			{}
+
+			static consteval std::string_view GetRenderPassName()
+			{
+				return std::string_view{};
+			}
+
+			static constexpr void SetPIXEventColor(const Util::D3D12::PIXEventColor_T eventColor)
+			{}
+
+			static consteval Util::D3D12::PIXEventColor_T GetPIXEventColor()
+			{
+				return Util::D3D12::PIXEventColor_T{};
+			}
+		};
+
+		class DebugModeRenderPassNameContainer
+		{
+		public:
+			DebugModeRenderPassNameContainer() = default;
+
+			void SetRenderPassName(const std::string_view name)
+			{
+				mRenderPassName = name;
+			}
+
+			const std::string_view GetRenderPassName() const
+			{
+				return mRenderPassName;
+			}
+
+			void SetPIXEventColor(const Util::D3D12::PIXEventColor_T eventColor)
+			{
+				mEventColor = eventColor;
+			}
+
+			Util::D3D12::PIXEventColor_T GetPIXEventColor() const
+			{
+				return (mEventColor.has_value() ? *mEventColor : Util::D3D12::PIX_EVENT_COLOR_CPU_GPU);
+			}
+
+		private:
+			std::string_view mRenderPassName;
+			std::optional<Util::D3D12::PIXEventColor_T> mEventColor;
+		};
+
+		template <Util::General::BuildMode BuildMode>
+		struct RenderPassNameContainerSelector
+		{
+			using ContainerType = DebugModeRenderPassNameContainer;
+		};
+
+		template <>
+		struct RenderPassNameContainerSelector<Util::General::BuildMode::RELEASE>
+		{
+			using ContainerType = ReleaseModeRenderPassNameContainer;
+		};
+
+		using CurrentRenderPassNameContainer = typename RenderPassNameContainerSelector<Util::General::GetBuildMode()>::ContainerType;
+	}
+}
+
 export namespace Brawler
 {
 	namespace D3D12
 	{
 		template <GPUCommandQueueType QueueType, typename InputDataType = EmptyInput>
-		class RenderPass final : public I_RenderPass<QueueType>
+		class RenderPass final : public I_RenderPass<QueueType>, private CurrentRenderPassNameContainer
 		{
 		public:
 			RenderPass() = default;
@@ -58,7 +135,7 @@ export namespace Brawler
 				requires (!std::is_same_v<InputDataType, EmptyInput> && std::is_same_v<std::decay_t<InputDataType>, std::decay_t<InputDataType_>>)
 			void SetInputData(InputDataType_&& inputData);
 
-			void SetRenderPassCommands(CallbackInfo<QueueType, InputDataType>::CallbackType&& callback);
+			void SetRenderPassCommands(typename CallbackInfo<QueueType, InputDataType>::CallbackType&& callback);
 
 			/// <summary>
 			/// Declares that this RenderPass instance will need access to the I_GPUResource instance
@@ -79,30 +156,30 @@ export namespace Brawler
 			/// use of an I_GPUResource instance (or a handle corresponding to said instance) without
 			/// marking the resource as a dependency by calling this function.
 			/// </summary>
-			/// <param name="resource">
-			/// - The I_GPUResource instance which this RenderPass is requesting access for.
+			/// <param name="resourceDependency">
+			/// - The FrameGraphResourceDependency which describes the I_GPUResource being used (or, to be
+			///   more precise, the sub-resource of the I_GPUResource), along with the required
+			///   D3D12_RESOURCE_STATES which the sub-resource must be in. Note that the actual state of
+			///   a sub-resource may be a combination of both this value and some other set of states,
+			///   depending on how the sub-resource is used in other RenderPasses.
 			/// </param>
-			/// <param name="requiredState">
-			/// - The resource state which the I_GPUResource instance must be in before it can be used in
-			///   the commands specified by this RenderPass instance. Note that the actual state of
-			///   a resource may be a combination of both this value and some other set of states, depending
-			///   on how the resource is used in other RenderPasses.
-			/// </param>
-			void AddResourceDependency(I_GPUResource& resource, const D3D12_RESOURCE_STATES requiredState);
+			void AddResourceDependency(FrameGraphResourceDependency&& resourceDependency);
+
+			void AddResourceDependency(I_BufferSubAllocation& bufferSubAllocation, const D3D12_RESOURCE_STATES requiredState);
+			void AddResourceDependency(TextureSubResource& textureSubResource, const D3D12_RESOURCE_STATES requiredState);
 
 			std::span<const FrameGraphResourceDependency> GetResourceDependencies() const override;
 
 			void SetRenderPassName(const std::string_view name);
-			const std::string_view GetRenderPassName() const;
+			const std::string_view GetRenderPassName() const override;
+
+			void SetPIXEventColor(const Util::D3D12::PIXEventColor_T eventColor);
+			Util::D3D12::PIXEventColor_T GetPIXEventColor() const;
 
 		private:
 			std::optional<typename CallbackInfo<QueueType, InputDataType>::CallbackType> mCmdRecordCallback;
 			std::optional<InputDataType> mInputData;
 			std::vector<FrameGraphResourceDependency> mResourceDependencyArr;
-
-#ifdef _DEBUG
-			std::string_view mRenderPassName;
-#endif
 		};
 	}
 }
@@ -160,28 +237,77 @@ namespace Brawler
 			requires (!std::is_same_v<InputDataType, EmptyInput>&& std::is_same_v<std::decay_t<InputDataType>, std::decay_t<InputDataType_>>)
 		void RenderPass<QueueType, InputDataType>::SetInputData(InputDataType_&& inputData)
 		{
-			mInputData = std::forward<InputDataType_>(inputData);
+			mInputData.emplace(std::forward<InputDataType_>(inputData));
 		}
 
 		template <GPUCommandQueueType QueueType, typename InputDataType>
-		void RenderPass<QueueType, InputDataType>::SetRenderPassCommands(CallbackInfo<QueueType, InputDataType>::CallbackType&& callback)
+		void RenderPass<QueueType, InputDataType>::SetRenderPassCommands(typename CallbackInfo<QueueType, InputDataType>::CallbackType&& callback)
 		{
 			mCmdRecordCallback = std::move(callback);
 		}
 
 		template <GPUCommandQueueType QueueType, typename InputDataType>
-		void RenderPass<QueueType, InputDataType>::AddResourceDependency(I_GPUResource& resource, const D3D12_RESOURCE_STATES requiredState)
+		void RenderPass<QueueType, InputDataType>::AddResourceDependency(FrameGraphResourceDependency&& resourceDependency)
 		{
-#ifdef _DEBUG
-			assert(std::ranges::find_if(mResourceDependencyArr, [resourcePtr = &resource] (const FrameGraphResourceDependency& dependency) { return (dependency.ResourcePtr == resourcePtr); }) == mResourceDependencyArr.end() &&
-				"ERROR: An attempt was made to define a resource dependency for an I_GPUResource more than once within the same RenderPass!");
+			const auto checkForExistingDependencyLambda = [this] (const I_GPUResource& resource, const std::uint32_t subResourceIndex)
+			{
+				assert(std::ranges::find_if(mResourceDependencyArr, [&resource, subResourceIndex] (const FrameGraphResourceDependency& dependency) { return (dependency.ResourcePtr == std::addressof(resource) && dependency.SubResourceIndex == subResourceIndex); }) == mResourceDependencyArr.end() &&
+					"ERROR: An attempt was made to define a resource dependency for a sub-resource of an I_GPUResource more than once within the same RenderPass!");
+			};
 
-			assert(Util::D3D12::CanQueuePerformResourceTransition(QueueType, requiredState) && "ERROR: An attempt was made to declare a resource dependency in a RenderPass, but the queue to which said RenderPass will be sent does not support the required resource state! (For instance, the COMPUTE queue does not support the D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE state.)");
-#endif // _DEBUG
+			assert(Util::D3D12::IsResourceStateValid(resourceDependency.RequiredState) && "ERROR: An invalid D3D12_RESOURCE_STATES value was provided in a call to RenderPass::AddResourceDependency()!");
+			
+			if (resourceDependency.SubResourceIndex == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
+			{
+				const std::size_t subResourceCount = resourceDependency.ResourcePtr->GetSubResourceCount();
+				
+				if constexpr (Util::General::IsDebugModeEnabled())
+				{
+					for (auto i : std::views::iota(0u, subResourceCount))
+						checkForExistingDependencyLambda(*(resourceDependency.ResourcePtr), i);
 
-			mResourceDependencyArr.push_back(FrameGraphResourceDependency{
-				.ResourcePtr = &resource,
-				.RequiredState = requiredState
+					assert(Util::D3D12::CanQueuePerformResourceTransition(QueueType, resourceDependency.RequiredState) && "ERROR: An attempt was made to declare a resource dependency in a RenderPass, but the queue to which said RenderPass will be sent does not support the required resource state! (For instance, the COMPUTE queue does not support the D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE state.)");
+				}
+
+				mResourceDependencyArr.reserve(mResourceDependencyArr.size() + subResourceCount);
+
+				for (auto i : std::views::iota(0u, subResourceCount))
+					mResourceDependencyArr.push_back(FrameGraphResourceDependency{
+						.ResourcePtr = resourceDependency.ResourcePtr,
+						.RequiredState = resourceDependency.RequiredState,
+						.SubResourceIndex = i
+					});
+			}
+			else
+			{
+				if constexpr (Util::General::IsDebugModeEnabled())
+				{
+					assert(resourceDependency.SubResourceIndex < resourceDependency.ResourcePtr->GetSubResourceCount() && "ERROR: An out-of-bounds sub-resource index was specified in a FrameGraphResourceDependency sent to RenderPass::AddResourceDependency()!");
+					checkForExistingDependencyLambda(*(resourceDependency.ResourcePtr), resourceDependency.SubResourceIndex);
+					assert(Util::D3D12::CanQueuePerformResourceTransition(QueueType, resourceDependency.RequiredState) && "ERROR: An attempt was made to declare a resource dependency in a RenderPass, but the queue to which said RenderPass will be sent does not support the required resource state! (For instance, the COMPUTE queue does not support the D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE state.)");
+				}
+
+				mResourceDependencyArr.push_back(std::move(resourceDependency));
+			}
+		}
+
+		template <GPUCommandQueueType QueueType, typename InputDataType>
+		void RenderPass<QueueType, InputDataType>::AddResourceDependency(I_BufferSubAllocation& bufferSubAllocation, const D3D12_RESOURCE_STATES requiredState)
+		{
+			AddResourceDependency(FrameGraphResourceDependency{
+				.ResourcePtr = std::addressof(bufferSubAllocation.GetBufferResource()),
+				.RequiredState = requiredState,
+				.SubResourceIndex = 0
+			});
+		}
+
+		template <GPUCommandQueueType QueueType, typename InputDataType>
+		void RenderPass<QueueType, InputDataType>::AddResourceDependency(TextureSubResource& textureSubResource, const D3D12_RESOURCE_STATES requiredState)
+		{
+			AddResourceDependency(FrameGraphResourceDependency{
+				.ResourcePtr = std::addressof(textureSubResource.GetGPUResource()),
+				.RequiredState = requiredState,
+				.SubResourceIndex = textureSubResource.GetSubResourceIndex()
 			});
 		}
 
@@ -194,19 +320,25 @@ namespace Brawler
 		template <GPUCommandQueueType QueueType, typename InputDataType>
 		void RenderPass<QueueType, InputDataType>::SetRenderPassName(const std::string_view name)
 		{
-#ifdef _DEBUG
-			mRenderPassName = name;
-#endif
+			CurrentRenderPassNameContainer::SetRenderPassName(name);
 		}
 
 		template <GPUCommandQueueType QueueType, typename InputDataType>
 		const std::string_view RenderPass<QueueType, InputDataType>::GetRenderPassName() const
 		{
-#ifdef _DEBUG
-			return mRenderPassName;
-#else
-			return std::string_view{};
-#endif
+			return CurrentRenderPassNameContainer::GetRenderPassName();
+		}
+
+		template <GPUCommandQueueType QueueType, typename InputDataType>
+		void RenderPass<QueueType, InputDataType>::SetPIXEventColor(const Util::D3D12::PIXEventColor_T eventColor)
+		{
+			CurrentRenderPassNameContainer::SetPIXEventColor(eventColor);
+		}
+
+		template <GPUCommandQueueType QueueType, typename InputDataType>
+		Util::D3D12::PIXEventColor_T RenderPass<QueueType, InputDataType>::GetPIXEventColor() const
+		{
+			return CurrentRenderPassNameContainer::GetPIXEventColor();
 		}
 	}
 }

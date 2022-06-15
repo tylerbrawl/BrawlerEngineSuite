@@ -1,7 +1,9 @@
 module;
-#include <cstddef>
+#include <memory>
+#include <atomic>
 
 export module Brawler.D3D12.BufferSubAllocationReservation;
+import Brawler.D3D12.BufferSubAllocationReservationHandle;
 
 export namespace Brawler
 {
@@ -20,9 +22,10 @@ export namespace Brawler
 		{
 		private:
 			friend class BufferSubAllocationManager;
+			friend class BufferSubAllocationReservationHandle;
 
 		public:
-			BufferSubAllocationReservation() = default;
+			BufferSubAllocationReservation();
 			~BufferSubAllocationReservation();
 
 			BufferSubAllocationReservation(const BufferSubAllocationReservation& rhs) = delete;
@@ -36,7 +39,14 @@ export namespace Brawler
 			std::size_t GetReservationSize() const;
 			std::size_t GetOffsetFromBufferStart() const;
 
+			BufferSubAllocationReservationHandle CreateHandle();
+
 		private:
+			void UpdateValidity();
+
+			void MarkForDestruction();
+			bool ReadyForDestruction() const;
+
 			void ReturnReservation();
 
 			void SetOwningManager(BufferSubAllocationManager& owningManager);
@@ -47,6 +57,8 @@ export namespace Brawler
 		private:
 			BufferSubAllocationManager* mOwningManagerPtr;
 			TLSFMemoryBlock* mMemoryBlockPtr;
+			std::atomic<bool> mReadyForDestruction;
+			std::shared_ptr<std::atomic<bool>> mIsValidPtr;
 		};
 	}
 }

@@ -5,7 +5,7 @@ module;
 #include <cassert>
 #include <optional>
 
-module Brawler.D3D12.FrameGraphCompilation:GPUExecutionModule;
+module Brawler.D3D12.GPUExecutionModule;
 import Brawler.D3D12.RenderPassBundle;
 import Util.Engine;
 import Brawler.D3D12.GPUExecutionModuleRecordContext;
@@ -30,7 +30,7 @@ namespace
 	/// (per queue).
 	/// 
 	/// To allow for greater multithreading, each GPUExecutionModule can create multiple
-	/// command lists (per queue) for recording
+	/// command lists (per queue) for recording.
 	/// </summary>
 	static constexpr std::size_t MAX_RENDER_PASSES_PER_COMMAND_LIST = 50;
 }
@@ -86,13 +86,22 @@ namespace Brawler
 		void GPUExecutionModule::AddRenderPassBundle(RenderPassBundle&& bundle)
 		{
 			for (auto&& directPass : bundle.GetRenderPassSpan<GPUCommandQueueType::DIRECT>())
+			{
+				mDirectPassContainer.ResourceMap.AddResourceDependenciesForRenderPass(*directPass);
 				mDirectPassContainer.RenderPassArr.push_back(std::move(directPass));
+			}
 
 			for (auto&& computePass : bundle.GetRenderPassSpan<GPUCommandQueueType::COMPUTE>())
+			{
+				mComputePassContainer.ResourceMap.AddResourceDependenciesForRenderPass(*computePass);
 				mComputePassContainer.RenderPassArr.push_back(std::move(computePass));
+			}
 
 			for (auto&& copyPass : bundle.GetRenderPassSpan<GPUCommandQueueType::COPY>())
+			{
+				mCopyPassContainer.ResourceMap.AddResourceDependenciesForRenderPass(*copyPass);
 				mCopyPassContainer.RenderPassArr.push_back(std::move(copyPass));
+			}
 		}
 
 		std::size_t GPUExecutionModule::GetRenderPassCount() const
@@ -114,6 +123,50 @@ namespace Brawler
 				usedQueues |= GPUCommandQueueType::COPY;
 
 			return usedQueues;
+		}
+
+		bool GPUExecutionModule::IsResourceUsed(const I_GPUResource& resource) const
+		{
+			return (mDirectPassContainer.ResourceMap.DoesResourceHaveDependentRenderPasses(resource) || mComputePassContainer.ResourceMap.DoesResourceHaveDependentRenderPasses(resource) ||
+				mCopyPassContainer.ResourceMap.DoesResourceHaveDependentRenderPasses(resource));
+		}
+
+		Brawler::CompositeEnum<GPUCommandQueueType> GPUExecutionModule::GetQueuesUsingResource(const I_GPUResource& resource) const
+		{
+			Brawler::CompositeEnum<GPUCommandQueueType> queuesUsingResource{};
+
+			if (IsResourceUsedInQueue<GPUCommandQueueType::DIRECT>(resource))
+				queuesUsingResource |= GPUCommandQueueType::DIRECT;
+
+			if (IsResourceUsedInQueue<GPUCommandQueueType::COMPUTE>(resource))
+				queuesUsingResource |= GPUCommandQueueType::COMPUTE;
+
+			if (IsResourceUsedInQueue<GPUCommandQueueType::COPY>(resource))
+				queuesUsingResource |= GPUCommandQueueType::COPY;
+
+			return queuesUsingResource;
+		}
+
+		bool GPUExecutionModule::IsResourceUsed(const I_GPUResource& resource, const std::uint32_t subResourceIndex) const
+		{
+			return (mDirectPassContainer.ResourceMap.DoesResourceHaveDependentRenderPasses(resource, subResourceIndex) || mComputePassContainer.ResourceMap.DoesResourceHaveDependentRenderPasses(resource, subResourceIndex) ||
+				mCopyPassContainer.ResourceMap.DoesResourceHaveDependentRenderPasses(resource, subResourceIndex));
+		}
+
+		Brawler::CompositeEnum<GPUCommandQueueType> GPUExecutionModule::GetQueuesUsingResource(const I_GPUResource& resource, const std::uint32_t subResourceIndex) const
+		{
+			Brawler::CompositeEnum<GPUCommandQueueType> queuesUsingResource{};
+
+			if (IsResourceUsedInQueue<GPUCommandQueueType::DIRECT>(resource, subResourceIndex))
+				queuesUsingResource |= GPUCommandQueueType::DIRECT;
+
+			if (IsResourceUsedInQueue<GPUCommandQueueType::COMPUTE>(resource, subResourceIndex))
+				queuesUsingResource |= GPUCommandQueueType::COMPUTE;
+
+			if (IsResourceUsedInQueue<GPUCommandQueueType::COPY>(resource, subResourceIndex))
+				queuesUsingResource |= GPUCommandQueueType::COPY;
+
+			return queuesUsingResource;
 		}
 
 		Brawler::SortedVector<I_GPUResource*> GPUExecutionModule::GetResourceDependencies() const

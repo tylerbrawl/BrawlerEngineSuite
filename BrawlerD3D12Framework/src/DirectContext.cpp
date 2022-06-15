@@ -8,6 +8,7 @@ module;
 module Brawler.D3D12.DirectContext;
 import Brawler.D3D12.I_GPUResource;
 import Util.Engine;
+import Util.General;
 
 namespace
 {
@@ -22,7 +23,7 @@ namespace
 		};
 
 		Microsoft::WRL::ComPtr<Brawler::D3D12DescriptorHeap> descriptorHeap{};
-		CheckHRESULT(Util::Engine::GetD3D12Device().CreateDescriptorHeap(&HEAP_DESC, IID_PPV_ARGS(&descriptorHeap)));
+		Util::General::CheckHRESULT(Util::Engine::GetD3D12Device().CreateDescriptorHeap(&HEAP_DESC, IID_PPV_ARGS(&descriptorHeap)));
 
 		return descriptorHeap;
 	}
@@ -37,6 +38,11 @@ namespace Brawler
 			recordJob(*this);
 		}
 
+		void DirectContext::PrepareCommandListIMPL()
+		{
+			mCurrPSOID.reset();
+		}
+
 		void DirectContext::Dispatch(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY, const std::uint32_t numThreadGroupsZ) const
 		{
 			assert(numThreadGroupsX <= D3D12_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION && "ERROR: Too many thread groups were dispatched in the X-dimension in a call to DirectContext::Dispatch()!");
@@ -44,6 +50,21 @@ namespace Brawler
 			assert(numThreadGroupsZ <= D3D12_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION && "ERROR: Too many thread groups were dispatched in the Z-dimension in a call to DirectContext::Dispatch()!");
 
 			GetCommandList().Dispatch(numThreadGroupsX, numThreadGroupsY, numThreadGroupsZ);
+		}
+
+		void DirectContext::Dispatch1D(const std::uint32_t numThreadGroups) const
+		{
+			Dispatch(numThreadGroups, 1, 1);
+		}
+
+		void DirectContext::Dispatch2D(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY) const
+		{
+			Dispatch(numThreadGroupsX, numThreadGroupsY, 1);
+		}
+
+		void DirectContext::Dispatch3D(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY, const std::uint32_t numThreadGroupsZ) const
+		{
+			Dispatch(numThreadGroupsX, numThreadGroupsY, numThreadGroupsZ);
 		}
 
 		void DirectContext::PerformSpecialGPUResourceInitialization(I_GPUResource& resource)
@@ -58,7 +79,7 @@ namespace Brawler
 					.NumRects = 0,
 					.pRects = nullptr,
 					.FirstSubresource = 0,
-					.NumSubresources = static_cast<std::uint32_t>(resource.GetSubresourceCount())
+					.NumSubresources = static_cast<std::uint32_t>(resource.GetSubResourceCount())
 				};
 
 				GetCommandList().DiscardResource(&(resource.GetD3D12Resource()), &discardRegion);

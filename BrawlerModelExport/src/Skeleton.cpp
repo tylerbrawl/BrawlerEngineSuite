@@ -11,6 +11,7 @@ module;
 module Brawler.Skeleton;
 import Brawler.JobSystem;
 import Util.General;
+import Util.ModelExport;
 
 namespace
 {
@@ -25,7 +26,7 @@ namespace
 	/// </returns>
 	std::unordered_set<std::string_view> GetBoneNameSet()
 	{
-		const aiScene& scene{ Util::General::GetScene() };
+		const aiScene& scene{ Util::ModelExport::GetScene() };
 
 		// For every mesh in the scene, create a std::unordered_set containing the names 
 		// of all of the bones relevant to it. (We assume that models are imported such 
@@ -83,7 +84,7 @@ namespace Brawler
 		assert(mRootBone == nullptr && "ERROR: An attempt was made to initialize a Brawler::Skeleton twice!");
 		
 		const std::unordered_set<std::string_view> boneNameSet{ GetBoneNameSet() };
-		const aiNode& rootSceneNode{ *(Util::General::GetScene().mRootNode) };
+		const aiNode& rootSceneNode{ *(Util::ModelExport::GetScene().mRootNode) };
 
 		const std::optional<Math::Matrix4x4> worldToLocalTransform{ Math::Matrix4x4{ rootSceneNode.mTransformation }.Inverse() };
 		assert(worldToLocalTransform.has_value());

@@ -11,6 +11,7 @@ module Brawler.D3D12.GPUResidencyManager;
 import Brawler.D3D12.I_PageableGPUObject;
 import Util.Engine;
 import Util.D3D12;
+import Util.General;
 import Brawler.D3D12.GPUMemoryBudgetInfo;
 import Brawler.D3D12.GPUCapabilities;
 import Brawler.PolymorphicAdapter;
@@ -176,13 +177,13 @@ namespace Brawler
 
 			{
 				Microsoft::WRL::ComPtr<ID3D12Fence> oldFenceVersion{};
-				CheckHRESULT(Util::Engine::GetD3D12Device().CreateFence(
+				Util::General::CheckHRESULT(Util::Engine::GetD3D12Device().CreateFence(
 					0,
 					D3D12_FENCE_FLAGS::D3D12_FENCE_FLAG_NONE,
 					IID_PPV_ARGS(&oldFenceVersion)
 				));
 
-				CheckHRESULT(oldFenceVersion.As(&d3dFence));
+				Util::General::CheckHRESULT(oldFenceVersion.As(&d3dFence));
 			}
 			
 			// ID3D12Device3::EnqueueMakeResident() will asynchronously make the specified ID3D12Pageable
@@ -227,7 +228,7 @@ namespace Brawler
 
 			default:
 			{
-				CheckHRESULT(hr);
+				Util::General::CheckHRESULT(hr);
 
 				assert(false);
 				std::unreachable();

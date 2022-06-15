@@ -10,7 +10,6 @@ export namespace Brawler
 		struct BufferResourceInitializationInfo
 		{
 			std::size_t SizeInBytes;
-			D3D12_RESOURCE_STATES InitialResourceState;
 			D3D12_HEAP_TYPE HeapType;
 		};
 	}

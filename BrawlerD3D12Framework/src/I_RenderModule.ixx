@@ -43,7 +43,7 @@ export namespace Brawler
 			/// </returns>
 			virtual bool IsRenderModuleEnabled() const;
 
-			FrameGraphBuilder CreateFrameGraphBuilder();
+			void CreateFrameGraphBuilder(FrameGraphBuilder& builder);
 
 		protected:
 			virtual void BuildFrameGraph(FrameGraphBuilder& builder) = 0;

@@ -23,7 +23,7 @@ namespace Brawler
 			mLifetimeType(GPUResourceLifetimeType::PERSISTENT),
 			mInitInfo(std::move(initInfo)),
 			mUsageTracker(),
-			mCurrState(mInitInfo.InitialResourceState),
+			mStateManager(initInfo.InitialResourceState, GetSubResourceCount()),
 			mRequiresSpecialInitialization((mInitInfo.ResourceDesc.Flags & (D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)) != 0),
 			mBindlessSRVManager(),
 			mResourceCritSection()
@@ -55,10 +55,21 @@ namespace Brawler
 
 			// It is not valid for a texture to be both a render target and a depth/stencil texture.
 			assert(Util::Math::CountOneBits(std::to_underlying(mInitInfo.ResourceDesc.Flags & (D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL))) <= 1 && "ERROR: It is not valid for a resource to be both a render target and a depth/stencil texture!");
+
+			// Buffers and simultaneous-access textures created in a DEFAULT heap are implicitly promoted on
+			// their first use on the GPU. This implies that they actually start in the COMMON state in this
+			// case. (This doesn't seem to be mentioned anywhere on the MSDN, of course. PIX points this
+			// out as a warning.)
+			{
+				const bool implicitlyPromotedOnFirstUse = (mInitInfo.ResourceDesc.Dimension == D3D12_RESOURCE_DIMENSION::D3D12_RESOURCE_DIMENSION_BUFFER || (mInitInfo.ResourceDesc.Flags & D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS) != 0);
+
+				if (implicitlyPromotedOnFirstUse && mInitInfo.HeapType == D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_DEFAULT)
+					assert(mInitInfo.InitialResourceState == D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON && "ERROR: Buffers and simultaneous-access textures are implicitly promoted on their first use on the GPU during a call to ExecuteCommandLists() (including the first call to this function, before the resource has ever been used). Thus, to ensure optimal barrier creation, resources of either of these types should start in the D3D12_RESOURCE_STATE_COMMON state!");
+			}
 #endif // _DEBUG
 		}
 
-		std::size_t I_GPUResource::GetSubresourceCount() const
+		std::uint32_t I_GPUResource::GetSubResourceCount() const
 		{
 			const Brawler::D3D12_RESOURCE_DESC& resourceDesc{ GetResourceDescription() };
 			
@@ -76,7 +87,7 @@ namespace Brawler
 				resourceDesc.DepthOrArraySize
 			);
 
-			return (static_cast<std::size_t>(maxIndex) + 1);
+			return (maxIndex + 1);
 		}
 
 		std::optional<D3D12_CLEAR_VALUE> I_GPUResource::GetOptimizedClearValue() const
@@ -172,18 +183,23 @@ namespace Brawler
 			return true;
 		}
 
-		D3D12_RESOURCE_STATES I_GPUResource::GetCurrentResourceState() const
+		D3D12_RESOURCE_STATES I_GPUResource::GetSubResourceState(const std::uint32_t subResourceIndex) const
 		{
-			return mCurrState;
+			return mStateManager.GetSubResourceState(subResourceIndex);
 		}
 
-		void I_GPUResource::SetCurrentResourceState(const D3D12_RESOURCE_STATES newState)
+		std::span<const D3D12_RESOURCE_STATES> I_GPUResource::GetAllSubResourceStates() const
+		{
+			return mStateManager.GetAllSubResourceStates();
+		}
+
+		void I_GPUResource::SetSubResourceState(const D3D12_RESOURCE_STATES newState, const std::uint32_t subResourceIndex)
 		{
 			// Resources in UPLOAD or READBACK heaps can never (explicitly?) transition out of
 			// the state which they start in.
 			assert(mInitInfo.HeapType == D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_DEFAULT && "ERROR: Resources created in either D3D12_HEAP_TYPE_UPLOAD or D3D12_HEAP_TYPE_READBACK heaps can never (explicitly) transition out of their initial state!");
 
-			mCurrState = newState;
+			mStateManager.SetSubResourceState(newState, subResourceIndex);
 		}
 
 		const Brawler::D3D12_RESOURCE_DESC& I_GPUResource::GetResourceDescription() const

@@ -18,6 +18,7 @@ import Brawler.AppParams;
 import Util.General;
 import Brawler.ThreadLocalResources;
 import Util.FileWrite;
+import Brawler.CondensedByteArrayInfo;
 import Brawler.FileStrings;
 
 namespace Brawler
@@ -35,6 +36,7 @@ namespace Brawler
 		{
 			static constexpr std::wstring_view SHADER_TARGET{ L"vs_6_0" };
 			static constexpr std::string_view SHADER_BYTECODE_ARRAY_FIELD_NAME{ "VERTEX_SHADER_BYTECODE" };
+			static constexpr std::string_view SHADER_BYTECODE_SIZE_FIELD_NAME{ "VERTEX_SHADER_BYTECODE_SIZE" };
 		};
 
 		template <>
@@ -42,6 +44,7 @@ namespace Brawler
 		{
 			static constexpr std::wstring_view SHADER_TARGET{ L"ps_6_0" };
 			static constexpr std::string_view SHADER_BYTECODE_ARRAY_FIELD_NAME{ "PIXEL_SHADER_BYTECODE" };
+			static constexpr std::string_view SHADER_BYTECODE_SIZE_FIELD_NAME{ "PIXEL_SHADER_BYTECODE_SIZE" };
 		};
 
 		template <>
@@ -49,6 +52,7 @@ namespace Brawler
 		{
 			static constexpr std::wstring_view SHADER_TARGET{ L"cs_6_0" };
 			static constexpr std::string_view SHADER_BYTECODE_ARRAY_FIELD_NAME{ "COMPUTE_SHADER_BYTECODE" };
+			static constexpr std::string_view SHADER_BYTECODE_SIZE_FIELD_NAME{ "COMPUTE_SHADER_BYTECODE_SIZE" };
 		};
 
 		template <>
@@ -56,6 +60,7 @@ namespace Brawler
 		{
 			static constexpr std::wstring_view SHADER_TARGET{ L"ds_6_0" };
 			static constexpr std::string_view SHADER_BYTECODE_ARRAY_FIELD_NAME{ "DOMAIN_SHADER_BYTECODE" };
+			static constexpr std::string_view SHADER_BYTECODE_SIZE_FIELD_NAME{ "DOMAIN_SHADER_BYTECODE_SIZE" };
 		};
 
 		template <>
@@ -63,6 +68,7 @@ namespace Brawler
 		{
 			static constexpr std::wstring_view SHADER_TARGET{ L"gs_6_0" };
 			static constexpr std::string_view SHADER_BYTECODE_ARRAY_FIELD_NAME{ "GEOMETRY_SHADER_BYTECODE" };
+			static constexpr std::string_view SHADER_BYTECODE_SIZE_FIELD_NAME{ "GEOMETRY_SHADER_BYTECODE_SIZE" };
 		};
 
 		template <>
@@ -70,6 +76,7 @@ namespace Brawler
 		{
 			static constexpr std::wstring_view SHADER_TARGET{ L"hs_6_0" };
 			static constexpr std::string_view SHADER_BYTECODE_ARRAY_FIELD_NAME{ "HULL_SHADER_BYTECODE" };
+			static constexpr std::string_view SHADER_BYTECODE_SIZE_FIELD_NAME{ "HULL_SHADER_BYTECODE_SIZE" };
 		};
 
 		template <typename PSOSubObjectType>
@@ -113,8 +120,9 @@ namespace Brawler
 			};
 
 			static constexpr std::array<std::wstring_view, 11> RELEASE_HLSL_COMPILE_ARGUMENTS_ARR{
-				// Enable aggressive flattening. (I assume this means adding the [flatten] attribute
-				// to as many if-statements in shader code as possible, but I could be wrong.)
+				// Enable aggressive flattening. This enables optimizations by allowing the
+				// hardware to assume that all resources which will be accessed by the shader
+				// are, in fact, actually bound as a root parameter.
 				L"-all-resources-bound",
 
 				// Enable strict mode (whatever that means...).
@@ -149,7 +157,7 @@ namespace Brawler
 		{
 			/*
 			psoDesc.[PSOField<PSOSubObjectType>::FIELD_NAME].pShaderBytecode = reinterpret_cast<const void*>([ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_ARRAY_FIELD_NAME].data());
-			psoDesc.[PSOField<PSOSubObjectType>::FIELD_NAME].BytecodeLength = [ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_ARRAY_FIELD_NAME].size();
+			psoDesc.[PSOField<PSOSubObjectType>::FIELD_NAME].BytecodeLength = [ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_SIZE_FIELD_NAME];
 			*/
 
 			std::string resolutionStr{ "\t\t\t\tD3D12_SHADER_BYTECODE& "};
@@ -165,8 +173,8 @@ namespace Brawler
 
 			resolutionStr += PSOField<PSOSubObjectType>::FIELD_NAME;
 			resolutionStr += ".BytecodeLength = ";
-			resolutionStr += ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_ARRAY_FIELD_NAME;
-			resolutionStr += ".size();\n";
+			resolutionStr += ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_SIZE_FIELD_NAME;
+			resolutionStr += ";\n";
 
 			return resolutionStr;
 		}
@@ -221,6 +229,19 @@ namespace Brawler
 		// represents the shader bytecode. However, to prevent excessive code bloat (as
 		// well as for security), we don't want to include the bytecode for Debug shaders
 		// in Release builds and vice versa.
+		// 
+		// Unfortunately, the MSVC (specifically, CL.exe) crashes with a stack overflow
+		// error when creating an array of bytes with a sufficiently long initializer list.
+		// (This only appears to be a problem with C++20 modules; it seems to work just fine
+		// with standard .cpp files.) To work around this, we will instead pack the individual
+		// bytes into 64-bit unsigned integers and specify as a separate field how large the
+		// data actually is.
+		// 
+		// To be perfectly clear, the problem isn't with the size of the std::array, but with
+		// the size of the initializer list. Creating a static constexpr 
+		// std::array<std::uint8_t, 500000> with a default constructor works fine, but initializing
+		// it with 500,000 unique byte values does not. This is why we aim to "pack" the
+		// bytes into 64-bit integers.
 		//
 		// We don't use std::stringstream because it is implemented with a global
 		// critical section in the MSVC STL.
@@ -230,31 +251,48 @@ namespace Brawler
 		{
 			/*
 			#ifdef _DEBUG
-			static constexpr std::array<std::uint8_t, [Shader Size]> [IMPL::ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_ARRAY_FIELD_NAME]{[Incomprehensible Byte List]};
+			static constexpr std::array<std::uint64_t, [64-Bit Integer Initializer List Length]> [IMPL::ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_ARRAY_FIELD_NAME]{[Incomprehensible Byte List]};
+			static constexpr std::size_t [IMPL::ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_SIZE_FIELD_NAME] = [Shader Size in Bytes];
 			*/
-			bytecodeStr += "#ifdef _DEBUG\n\t\t\tstatic constexpr std::array<std::uint8_t, ";
-			bytecodeStr += std::to_string(mDebugShaderBlob->GetBufferSize());
+			const LPVOID blobData = mDebugShaderBlob->GetBufferPointer();
+			const std::size_t blobSize = mDebugShaderBlob->GetBufferSize();
+
+			Brawler::CondensedByteArrayInfo debugShaderBytecodeArrayInfo{ Util::FileWrite::CreateSTDUInt64ArrayContentsStringFromBuffer(std::span<const std::uint8_t>{ reinterpret_cast<const std::uint8_t*>(mDebugShaderBlob->GetBufferPointer()), mDebugShaderBlob->GetBufferSize() }) };
+
+			bytecodeStr += "#ifdef _DEBUG\n\t\t\tstatic constexpr std::array<std::uint64_t, ";
+			bytecodeStr += std::to_string(debugShaderBytecodeArrayInfo.InitializerListLengthInElements);
 			bytecodeStr += "> ";
 			bytecodeStr += IMPL::ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_ARRAY_FIELD_NAME;
 			bytecodeStr += "{";
-			bytecodeStr += Util::FileWrite::CreateSTDArrayContentsStringFromBuffer(std::span<const std::uint8_t>{reinterpret_cast<const std::uint8_t*>(mDebugShaderBlob->GetBufferPointer()), mDebugShaderBlob->GetBufferSize()});
-			bytecodeStr += "};\n";
+			bytecodeStr += std::move(debugShaderBytecodeArrayInfo.UInt64ByteArrayInitializerListContents);
+			bytecodeStr += "};\n\t\t\tstatic constexpr std::size_t ";
+			bytecodeStr += IMPL::ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_SIZE_FIELD_NAME;
+			bytecodeStr += " = ";
+			bytecodeStr += std::to_string(debugShaderBytecodeArrayInfo.ActualDataSizeInBytes);
+			bytecodeStr += ";\n";
 		}
 
 		// Add the Release shader bytecode, but only in Release builds.
 		{
 			/*
 			#else
-			static constexpr std::array<std::uint8_t, [Shader Size]> [IMPL::ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_ARRAY_FIELD_NAME]{[Incomprehensible Byte List]};
+			static constexpr std::array<std::uint64_t, [64-Bit Integer Initializer List Length]> [IMPL::ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_ARRAY_FIELD_NAME]{[Incomprehensible Byte List]};
+			static constexpr std::size_t [IMPL::ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_SIZE_FIELD_NAME] = [Shader Size in Bytes];
 			#endif
 			*/
-			bytecodeStr += "#else\n\t\t\tstatic constexpr std::array<std::uint8_t, ";
-			bytecodeStr += std::to_string(mReleaseShaderBlob->GetBufferSize());
+			Brawler::CondensedByteArrayInfo releaseShaderBytecodeArrayInfo{ Util::FileWrite::CreateSTDUInt64ArrayContentsStringFromBuffer(std::span<const std::uint8_t>{ reinterpret_cast<const std::uint8_t*>(mReleaseShaderBlob->GetBufferPointer()), mReleaseShaderBlob->GetBufferSize() }) };
+
+			bytecodeStr += "#else\n\t\t\tstatic constexpr std::array<std::uint64_t, ";
+			bytecodeStr += std::to_string(releaseShaderBytecodeArrayInfo.InitializerListLengthInElements);
 			bytecodeStr += "> ";
 			bytecodeStr += IMPL::ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_ARRAY_FIELD_NAME;
 			bytecodeStr += "{";
-			bytecodeStr += Util::FileWrite::CreateSTDArrayContentsStringFromBuffer(std::span<const std::uint8_t>{reinterpret_cast<const std::uint8_t*>(mReleaseShaderBlob->GetBufferPointer()), mReleaseShaderBlob->GetBufferSize()});
-			bytecodeStr += "};\n#endif\n\n";
+			bytecodeStr += std::move(releaseShaderBytecodeArrayInfo.UInt64ByteArrayInitializerListContents);
+			bytecodeStr += "};\n\t\t\tstatic constexpr std::size_t ";
+			bytecodeStr += IMPL::ShaderInfo<PSOSubObjectType>::SHADER_BYTECODE_SIZE_FIELD_NAME;
+			bytecodeStr += " = ";
+			bytecodeStr += std::to_string(releaseShaderBytecodeArrayInfo.ActualDataSizeInBytes);
+			bytecodeStr += ";\n#endif\n\n";
 		}
 
 		FileWriterNode fileWriterNode{};
@@ -305,7 +343,7 @@ namespace Brawler
 		const DxcBuffer sourceBuffer{
 			.Ptr = sourceBlob->GetBufferPointer(),
 			.Size = sourceBlob->GetBufferSize(),
-			.Encoding = DXC_CP_ACP
+			.Encoding = DXC_CP_UTF8
 		};
 
 		auto compilationLambda = [&absoluteShaderPath]<ShaderCompilationMode CompileMode>(const ShaderCompilationParams& params, const DxcBuffer& srcBuffer, IDxcIncludeHandler& includeHandler) -> Microsoft::WRL::ComPtr<IDxcBlob>

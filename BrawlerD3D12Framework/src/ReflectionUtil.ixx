@@ -84,9 +84,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 1>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1] = T{};
+			auto& [f1] = val;
+			return std::tie(f1);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1] = val;
 			return std::tie(f1);
 		}
 	};
@@ -94,9 +104,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 2>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2] = T{};
+			auto& [f1, f2] = val;
+			return std::tie(f1, f2);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2] = val;
 			return std::tie(f1, f2);
 		}
 	};
@@ -104,9 +124,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 3>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3] = T{};
+			auto& [f1, f2, f3] = val;
+			return std::tie(f1, f2, f3);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3] = val;
 			return std::tie(f1, f2, f3);
 		}
 	};
@@ -114,9 +144,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 4>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4] = T{};
+			auto& [f1, f2, f3, f4] = val;
+			return std::tie(f1, f2, f3, f4);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4] = val;
 			return std::tie(f1, f2, f3, f4);
 		}
 	};
@@ -124,9 +164,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 5>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4, f5] = T{};
+			auto& [f1, f2, f3, f4, f5] = val;
+			return std::tie(f1, f2, f3, f4, f5);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5] = val;
 			return std::tie(f1, f2, f3, f4, f5);
 		}
 	};
@@ -134,9 +184,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 6>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4, f5, f6] = T{};
+			auto& [f1, f2, f3, f4, f5, f6] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5, f6] = val;
 			return std::tie(f1, f2, f3, f4, f5, f6);
 		}
 	};
@@ -144,9 +204,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 7>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4, f5, f6, f7] = T{};
+			auto& [f1, f2, f3, f4, f5, f6, f7] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6, f7);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5, f6, f7] = val;
 			return std::tie(f1, f2, f3, f4, f5, f6, f7);
 		}
 	};
@@ -154,9 +224,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 8>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4, f5, f6, f7, f8] = T{};
+			auto& [f1, f2, f3, f4, f5, f6, f7, f8] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5, f6, f7, f8] = val;
 			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8);
 		}
 	};
@@ -164,9 +244,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 9>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4, f5, f6, f7, f8, f9] = T{};
+			auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9] = val;
 			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9);
 		}
 	};
@@ -174,9 +264,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 10>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10] = T{};
+			auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10] = val;
 			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);
 		}
 	};
@@ -184,9 +284,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 11>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11] = T{};
+			auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11] = val;
 			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);
 		}
 	};
@@ -194,9 +304,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 12>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12] = T{};
+			auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12] = val;
 			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12);
 		}
 	};
@@ -204,9 +324,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 13>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13] = T{};
+			auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13] = val;
 			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13);
 		}
 	};
@@ -214,9 +344,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 14>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14] = T{};
+			auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14] = val;
 			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14);
 		}
 	};
@@ -224,9 +364,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 15>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15] = T{};
+			auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15] = val;
 			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15);
 		}
 	};
@@ -234,9 +384,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 16>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16] = T{};
+			auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16] = val;
 			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16);
 		}
 	};
@@ -244,9 +404,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 17>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17] = T{};
+			auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17] = val;
 			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17);
 		}
 	};
@@ -254,9 +424,19 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 18>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18] = T{};
+			auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18] = val;
 			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18);
 		}
 	};
@@ -264,28 +444,50 @@ namespace IMPL
 	template <typename T>
 	struct TupleCreator<T, 19>
 	{
-		static consteval auto CreateFieldsTuple()
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
 		{
-			const auto [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18, f19] = T{};
+			auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18, f19] = val;
 			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18, f19);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18, f19] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18, f19);
+		}
+	};
+
+	template <typename T>
+	struct TupleCreator<T, 20>
+	{
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(U& val)
+		{
+			auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18, f19, f20] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18, f19, f20);
+		}
+
+		template <typename U>
+			requires std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>
+		static constexpr auto CreateFieldsTuple(const U& val)
+		{
+			const auto& [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18, f19, f20] = val;
+			return std::tie(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16, f17, f18, f19, f20);
 		}
 	};
 
 	template <typename T, std::size_t Index>
 	consteval auto GetDefaultFieldValue()
 	{
-		// It's actually undefined behavior to access the values of the std::tuple returned by
-		// TupleCreator::CreateFieldsTuple(), since std::tie() will create a tuple of references
-		// to values which are shortly thereafter destroyed. However, we do not access the values
-		// of the std::tuple - only their types.
+		T dataInstance{};
+		auto fieldsTuple{ TupleCreator<T, ::Util::Reflection::GetFieldCount<T>()>::CreateFieldsTuple(dataInstance) };
 
-		auto fieldsTuple{ TupleCreator<T, ::Util::Reflection::GetFieldCount<T>()>::CreateFieldsTuple() };
-		
-		// Rather than use std::get to retrieve a value from the fieldsTuple, we create a new
-		// instance of the relevant field type. We do this to avoid undefined behavior. (See the
-		// comment above for more details.)
-		using ElementType = std::remove_cv_t<std::tuple_element_t<Index, decltype(fieldsTuple)>>;
-		return ElementType{};
+		return std::get<Index>(fieldsTuple);
 	}
 }
 
@@ -302,6 +504,22 @@ export namespace Util
 		consteval std::size_t GetFieldSize()
 		{
 			return sizeof(FieldType<T, Index>);
+		}
+
+		template <typename T, std::size_t Index>
+			requires IsReflectable<T>
+		constexpr auto& GetFieldReference(T& data)
+		{
+			auto dataFieldsTuple{ IMPL::TupleCreator<T, Util::Reflection::GetFieldCount<T>()>::CreateFieldsTuple(data) };
+			return std::get<Index>(dataFieldsTuple);
+		}
+
+		template <typename T, std::size_t Index>
+			requires IsReflectable<T>
+		constexpr const auto& GetFieldReference(const T& data)
+		{
+			const auto dataFieldsTuple{ IMPL::TupleCreator<T, Util::Reflection::GetFieldCount<T>()>::CreateFieldsTuple(data) };
+			return std::get<Index>(dataFieldsTuple);
 		}
 	}
 }

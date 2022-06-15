@@ -13,15 +13,19 @@ import Brawler.RootSignatureIDsFileWriter;
 import Brawler.PSOIDsFileWriter;
 import Brawler.PSODefinitionsFileWriter;
 import Brawler.RootParameterEnumsFileWriter;
+import Brawler.PSODefinitionSpecializationFileWriter;
+import Brawler.PSODefinitionsBaseFileWriter;
 import Brawler.ShaderProfileID;
+import Brawler.ShaderProfileDefinition;
 import Brawler.JobSystem;
+import Brawler.PSOID;
 
 namespace
 {
+	static constexpr std::string_view HEX_STR{ "0123456789ABCDEF" };
+	
 	void AddCharactersToCharacterArrayForByte(std::vector<std::uint8_t>& charArr, const std::uint8_t byte)
 	{
-		static constexpr std::string_view HEX_STR{ "0123456789ABCDEF" };
-		
 		charArr.push_back('0');
 		charArr.push_back('x');
 
@@ -32,11 +36,74 @@ namespace
 		charArr.push_back(HEX_STR[lowerFourBits]);
 	}
 
+	void AddCharactersToCharacterArrayFor8Bytes(std::vector<std::uint8_t>& charArr, const std::span<const std::uint8_t> byteSpan)
+	{
+		charArr.push_back('0');
+		charArr.push_back('x');
+
+		// What follows might hurt your brain a little. We need to reverse the order
+		// in which the bytes are written out into a string due to endianness.
+		//
+		// The naive method would write out the bytes in the order in which they appear
+		// in memory. This works fine when writing out binary values, but it does NOT work
+		// when writing out bytes into a string representing an integer larger than a byte.
+		//
+		// As an example, consider the 32-bit integer 0x12345678. If we write out the bytes
+		// directly in the order they appear in memory into a source file, then what we would 
+		// get is as we expect: the hexadecimal literal 0x12345678. This is fine if our intention 
+		// really was to write out this value, but our goal is to write out a set of bytes.
+		//
+		// For our case, the problem comes when using it in the initializer list of a
+		// std::array<std::uint32_t> which is being used to represent an array of bytes, e.g.,
+		// for shader bytecode. The compiler will see that we have written out the literal value
+		// 0x12345678, but since we tell it that it is an array of 32-bit integers, it swaps the 
+		// order of bytes to 0x78563412 when it writes the value out to static data. It does this 
+		// because Windows is a little-endian system, and the compiler is assuming that we are 
+		// going to be using the array as an array of 32-bit integers (and rightfully so).
+		//
+		// However, because the compiler wrote the bytes out as static data in reverse order, if
+		// we then attempt to reinterpret_cast the data pointer of the std::array<std::uint32_t>
+		// to an array of bytes, we will find that each 4 bytes have been reversed from the order
+		// in which they were written out in the source file!
+		//
+		// The solution, then, is to write out the bytes in the *reverse* order in which they
+		// appear in memory. That way, when the compiler swaps the bytes around to account for
+		// endianness, they will be written to static data in the order in which we intended.
+
+		// ---------------------------------------------------------------------------------------------
+
+		// If byteSpan did not have enough bytes to fill a 64-bit integer, then
+		// fill the remaining bits with zeroes.
+		{
+			std::size_t numZeroBytesToAdd = std::max<std::size_t>((8 - byteSpan.size()), 0);
+
+			while (numZeroBytesToAdd > 0)
+			{
+				charArr.push_back('0');
+				charArr.push_back('0');
+
+				--numZeroBytesToAdd;
+			}
+		}
+		
+
+		for (const auto byte : byteSpan | std::views::take(8) | std::views::reverse)
+		{
+			charArr.push_back(HEX_STR[(byte & 0xF0) >> 4]);
+			charArr.push_back(HEX_STR[byte & 0xF]);
+		}
+	}
+
 	template <Brawler::ShaderProfiles::ShaderProfileID CurrProfileID>
 	void AddSerializationJobsForShaderProfile(Brawler::JobGroup& serializationJobGroup)
 	{
 		if (CurrProfileID == Util::General::GetLaunchParameters().ShaderProfile)
 		{
+			constexpr auto RELEVANT_PSO_ID_LIST{ Brawler::ShaderProfiles::GetPSOIdentifiers<CurrProfileID>() };
+
+			constexpr std::size_t RESERVED_JOB_GROUP_ALLOCATION_SIZE = 6 + RELEVANT_PSO_ID_LIST.size();
+			serializationJobGroup.Reserve(RESERVED_JOB_GROUP_ALLOCATION_SIZE);
+			
 			serializationJobGroup.AddJob([] ()
 			{
 				Brawler::SourceFileWriters::RootSignatureDefinitionsFileWriter<CurrProfileID> rootSignaturesWriter{};
@@ -67,6 +134,27 @@ namespace
 				pSODefinitionsWriter.WriteSourceFile();
 			});
 
+			serializationJobGroup.AddJob([] ()
+			{
+				Brawler::SourceFileWriters::PSODefinitionsBaseFileWriter basePSODefinitionWriter{};
+				basePSODefinitionWriter.WriteSourceFile();
+			});
+
+			constexpr auto ADD_PSO_DEFINITION_SPECIALIZATION_JOBS_LAMBDA = []<std::underlying_type_t<Brawler::PSOID>... PSOIdentifierNums>(Brawler::JobGroup& jobGroup, std::integer_sequence<std::underlying_type_t<Brawler::PSOID>, PSOIdentifierNums...> psoSequence)
+			{
+				constexpr auto ADD_SINGLE_JOB_LAMBDA = []<Brawler::PSOID PSOIdentifier>(Brawler::JobGroup& jobGroup)
+				{
+					jobGroup.AddJob([] ()
+					{
+						Brawler::SourceFileWriters::PSODefinitionSpecializationFileWriter<PSOIdentifier> psoDefinitionWriter{};
+						psoDefinitionWriter.WriteSourceFile();
+					});
+				};
+
+				((ADD_SINGLE_JOB_LAMBDA.operator()<static_cast<Brawler::PSOID>(PSOIdentifierNums)>(jobGroup)), ...);
+			};
+			ADD_PSO_DEFINITION_SPECIALIZATION_JOBS_LAMBDA(serializationJobGroup, RELEVANT_PSO_ID_LIST);
+
 			return;
 		}
 
@@ -83,14 +171,12 @@ namespace Util
 		void SerializeSourceFiles()
 		{
 			Brawler::JobGroup serializationJobGroup{};
-			serializationJobGroup.Reserve(5);
-
 			AddSerializationJobsForShaderProfile<static_cast<Brawler::ShaderProfiles::ShaderProfileID>(0)>(serializationJobGroup);
 
 			serializationJobGroup.ExecuteJobs();
 		}
 		
-		std::string CreateSTDArrayContentsStringFromBuffer(std::span<const std::uint8_t> byteSpan)
+		std::string CreateSTDUInt8ArrayContentsStringFromBuffer(std::span<const std::uint8_t> byteSpan)
 		{
 			if (byteSpan.empty()) [[unlikely]]
 				return std::string{};
@@ -122,6 +208,47 @@ namespace Util
 
 			// Return a std::string constructed from these characters.
 			return std::string{ reinterpret_cast<char*>(byteCharArr.data()) };
+		}
+
+		Brawler::CondensedByteArrayInfo CreateSTDUInt64ArrayContentsStringFromBuffer(std::span<const std::uint8_t> byteSpan)
+		{
+			if (byteSpan.empty()) [[unlikely]]
+				return Brawler::CondensedByteArrayInfo{};
+
+			// Much like with the above function, we will allocate a std::vector<std::uint8_t> to hold all of
+			// the required characters.
+			std::vector<std::uint8_t> byteCharArr{};
+
+			const std::size_t numBytes = byteSpan.size_bytes();
+			const std::size_t num64BitIntegers = (numBytes / 8 + (numBytes % 8 == 0 ? 0 : 1));
+
+			// Each 64-bit integer is represented as a hexadecimal value with 18 characters
+			// (0x????????????????). We need a comma after every integer except for the last one,
+			// as well as a null-terminating character at the end. So, we need a total of
+			// (18 * num64BitIntegers) + (num64BitIntegers - 1) + 1 ==
+			// (18 * num64BitIntegers) + num64BitIntegers == (19 * num64BitIntegers) characters
+			// in our array.
+			byteCharArr.reserve(19 * num64BitIntegers);
+
+			AddCharactersToCharacterArrayFor8Bytes(byteCharArr, byteSpan.subspan(0, std::min<std::size_t>(byteSpan.size(), 8)));
+			byteSpan = byteSpan.subspan(std::min<std::size_t>(byteSpan.size(), 8));
+
+			while (!byteSpan.empty())
+			{
+				byteCharArr.push_back(',');
+
+				AddCharactersToCharacterArrayFor8Bytes(byteCharArr, byteSpan.subspan(0, std::min<std::size_t>(byteSpan.size(), 8)));
+				byteSpan = byteSpan.subspan(std::min<std::size_t>(byteSpan.size(), 8));
+			}
+
+			// Add the null-terminating character.
+			byteCharArr.push_back(0);
+
+			return Brawler::CondensedByteArrayInfo{
+				.UInt64ByteArrayInitializerListContents{ reinterpret_cast<char*>(byteCharArr.data()) },
+				.InitializerListLengthInElements = num64BitIntegers,
+				.ActualDataSizeInBytes = numBytes
+			};
 		}
 	}
 }

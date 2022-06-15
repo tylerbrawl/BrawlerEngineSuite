@@ -4,15 +4,8 @@ module;
 #include "DxDef.h"
 
 export module Brawler.D3D12.I_BufferSubAllocation;
-export import Brawler.D3D12.BufferSubAllocationReservation;
-
-export namespace Brawler
-{
-	namespace D3D12
-	{
-		class BufferResource;
-	}
-}
+export import Brawler.D3D12.BufferSubAllocationReservationHandle;
+import Brawler.D3D12.BufferResource;
 
 export namespace Brawler
 {
@@ -32,11 +25,12 @@ export namespace Brawler
 			I_BufferSubAllocation(I_BufferSubAllocation&& rhs) noexcept = default;
 			I_BufferSubAllocation& operator=(I_BufferSubAllocation&& rhs) noexcept = default;
 
-		protected:
+		public:
 			std::size_t GetOffsetFromBufferStart() const;
 
-		public:
 			Brawler::D3D12Resource& GetD3D12Resource() const;
+
+			BufferResource& GetBufferResource();
 			const BufferResource& GetBufferResource() const;
 
 			/// <summary>
@@ -52,11 +46,10 @@ export namespace Brawler
 			virtual std::size_t GetSubAllocationSize() const = 0;
 			virtual std::size_t GetRequiredDataPlacementAlignment() const = 0;
 
-		public:
-			bool IsReservationCompatible(const BufferSubAllocationReservation& reservation) const;
+			bool IsReservationCompatible(const BufferSubAllocationReservationHandle& hReservation) const;
 
-			void AssignReservation(std::unique_ptr<BufferSubAllocationReservation>&& reservation);
-			std::unique_ptr<BufferSubAllocationReservation> RevokeReservation();
+			void AssignReservation(BufferSubAllocationReservationHandle&& hReservation);
+			BufferSubAllocationReservationHandle RevokeReservation();
 
 		protected:
 			/// <summary>
@@ -98,7 +91,7 @@ export namespace Brawler
 		protected:
 			BufferSubAllocationManager& GetOwningManager() const;
 
-		protected:
+		public:
 			/// <summary>
 			/// Writes the data provided in srcDataSpan to the BufferResource. The data is written at an offset
 			/// subAllocationOffsetInBytes away from the start of the *sub-allocation*, and NOT the start 
@@ -166,7 +159,7 @@ export namespace Brawler
 			void ReadFromBufferIMPL(const std::span<std::byte> destDataByteSpan, const std::size_t subAllocationOffsetInBytes) const;
 
 		private:
-			std::unique_ptr<BufferSubAllocationReservation> mReservation;
+			BufferSubAllocationReservationHandle mHReservation;
 		};
 	}
 }

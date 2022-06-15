@@ -1,180 +1,139 @@
 module;
-#include <variant>
-#include <cassert>
 #include <optional>
+#include <cassert>
+#include <span>
+#include <ranges>
 #include "DxDef.h"
 
 module Brawler.D3D12.GPUResourceStateTracker;
-import Brawler.D3D12.ResourceStateZone;
-import Brawler.D3D12.I_GPUResource;
-import Brawler.D3D12.GPUResourceStateManagement;
-import Brawler.D3D12.GPUResourceSpecialInitializationState;
-import Brawler.D3D12.GPUResourceBarrierTypeSelectorState;
-import Brawler.D3D12.ImmediateGPUResourceBarrierState;
-import Brawler.D3D12.SplitGPUResourceBarrierState;
-import Brawler.D3D12.GPUResourceLifetimeType;
+import Brawler.CompositeEnum;
+import Util.General;
+
+namespace
+{
+	bool DoesResourceAlwaysDecay(const Brawler::D3D12::I_GPUResource& resource)
+	{
+		const Brawler::D3D12_RESOURCE_DESC& resourceDesc{ resource.GetResourceDescription() };
+		return (resourceDesc.Dimension == D3D12_RESOURCE_DIMENSION::D3D12_RESOURCE_DIMENSION_BUFFER || (resourceDesc.Flags & D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS) != 0);
+	}
+}
 
 namespace Brawler
 {
 	namespace D3D12
 	{
-		GPUResourceStateTracker::GPUResourceStateTracker(I_GPUResource& resource) :
-			mResourcePtr(&resource),
-			mEventManager(),
-			mCurrState(),
-			mNextStateID()
+		GPUResourceStateTracker::GPUResourceStateTracker(I_GPUResource& trackedResource) :
+			mBarrierMergerArr(),
+			mResourceAlwaysDecays(DoesResourceAlwaysDecay(trackedResource))
 		{
-			if (mResourcePtr->RequiresSpecialInitialization())
-				mCurrState = GPUResourceSpecialInitializationState{};
-			else
-				mCurrState = GPUResourceBarrierTypeSelectorState{};
+			const std::size_t subResourceCount = trackedResource.GetSubResourceCount();
 
-			mCurrState.AccessData([this]<typename StateTrackerState_T>(I_GPUResourceStateTrackerState<StateTrackerState_T>&state)
-			{
-				state.SetTrackedGPUResource(*mResourcePtr);
-				state.SetGPUResourceStateTracker(*this);
-			});
+			mBarrierMergerArr.reserve(subResourceCount);
+
+			for (auto i : std::views::iota(0u, subResourceCount))
+				mBarrierMergerArr.emplace_back(trackedResource, i);
 		}
 
-		void GPUResourceStateTracker::AddNextResourceStateZone(const ResourceStateZone& stateZone)
+		void GPUResourceStateTracker::TrackGPUExecutionModule(const GPUExecutionModule& executionModule)
 		{
-			// Upon further inspection, it becomes apparent that we cannot simply perform
-			// special resource initialization on a resource during the first null ResourceStateZone
-			// on the DIRECT queue. The reason for this is due to aliasing.
-			//
-			// Specifically, if we try to initialize two or more resources which belong to the
-			// same memory region in the same call to ExecuteCommandLists(), then we will need
-			// an aliasing barrier. Suppose that the user wants to use Resource A, which shares
-			// a memory region with Resource B.
-			//
-			// If we try to initialize every resource as early as possible, then we get the 
-			// following:
-			//
-			// Initialize Resource A > Aliasing Barrier: A/B > Initialize Resource B >
-			// Aliasing Barrier: B/A > Initialize Resource A
-			//
-			// Not only do we need two aliasing barriers (one to initialize Resource B and one to
-			// go back to Resource A for the user's RenderPass), but we also have to initialize
-			// Resource A a second time! Clearly, this is not optimal.
-			//
-			// I suppose that the best solution would technically find a GPUExecutionModule in
-			// which none of the aliased resources are being used and initialize one resource
-			// there, but this would add an insufferable amount of complexity for little actual
-			// benefit in practice. So, we'll just postpone special initialization until the
-			// first non-null ResourceStateZone, if it is required.
-			//
-			// ...On second thought, we actually *CAN* do this sometimes. Specifically, since
-			// we do not alias persistent resources, we can indeed initialize these as soon as
-			// possible.
-
-			bool processResult = false;
-			while (!processResult)
-			{
-				processResult = mCurrState.AccessData([&stateZone]<typename StateTrackerState_T>(StateTrackerState_T& state)
-				{
-					return state.ProcessResourceStateZone(stateZone);
-				});
-				ChangeTrackerState();
-			}
-		}
-
-		void GPUResourceStateTracker::OnStateDecayBarrier()
-		{
-			mResourcePtr->SetCurrentResourceState(D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON);
+			for (auto& barrierMerger : mBarrierMergerArr)
+				TrackGPUExecutionModuleForSubResource(executionModule, barrierMerger);
 			
-			mCurrState.AccessData([]<typename StateTrackerState_T>(StateTrackerState_T& state)
-			{
-				state.OnStateDecayBarrier();
-			});
-			ChangeTrackerState();
+			CheckForResourceStateDecay(executionModule);
 		}
 
-		GPUResourceEventManager GPUResourceStateTracker::FinalizeStateTracking()
+		GPUResourceEventCollection GPUResourceStateTracker::FinalizeStateTracking()
 		{
-			return std::move(mEventManager);
+			GPUResourceEventCollection eventCollection{};
+
+			for (auto& barrierMerger : mBarrierMergerArr)
+				eventCollection.MergeGPUResourceEventCollection(barrierMerger.FinalizeStateTracking());
+			
+			return eventCollection;
 		}
 
-		void GPUResourceStateTracker::RequestTrackerStateChange(const GPUResourceStateTrackerStateID stateID)
+		void GPUResourceStateTracker::TrackGPUExecutionModuleForSubResource(const GPUExecutionModule& executionModule, GPUSubResourceStateBarrierMerger& barrierMerger)
 		{
-			mNextStateID = stateID;
+			// Each time multiple queues are being used simultaneously, a sync point containing
+			// a combination of all of the states of resources used across the queues is added.
+			// This means that we do not need to actually track the state of a resource across
+			// a GPUExecutionModule if said resource is being used in that module across more than
+			// one queue.
+			// 
+			// In addition, most resources won't be used in a lot of render passes. By filtering 
+			// out GPUExecutionModules which do not use the given resource, we can drastically
+			// improve performance.
+			const Brawler::CompositeEnum<GPUCommandQueueType> queuesUsingSubResource{ executionModule.GetQueuesUsingResource(barrierMerger.GetGPUResource(), barrierMerger.GetSubResourceIndex()) };
+			const std::uint32_t numQueuesUsingSubResource = queuesUsingSubResource.CountOneBits();
+
+			if (numQueuesUsingSubResource == 1) [[unlikely]]
+			{
+				const auto trackRenderPassesLambda = [&barrierMerger]<GPUCommandQueueType QueueType>(const GPUExecutionModule& executionModule)
+				{
+					const std::span<const std::unique_ptr<I_RenderPass<QueueType>>> renderPassSpan{ executionModule.GetRenderPassSpan<QueueType>() };
+
+					if (executionModule.IsResourceUsedInQueue<QueueType>(barrierMerger.GetGPUResource(), barrierMerger.GetSubResourceIndex()))
+					{
+						for (const auto& renderPassPtr : renderPassSpan)
+							barrierMerger.TrackRenderPass(*renderPassPtr);
+					}
+				};
+
+				trackRenderPassesLambda.operator()<GPUCommandQueueType::DIRECT>(executionModule);
+				trackRenderPassesLambda.operator()<GPUCommandQueueType::COMPUTE>(executionModule);
+				trackRenderPassesLambda.operator()<GPUCommandQueueType::COPY>(executionModule);
+			}
+			else if (barrierMerger.CanUseAdditionalBeginBarrierRenderPasses() && numQueuesUsingSubResource == 0) [[unlikely]]
+			{
+				// Of course, even if a GPUExecutionModule is not using a resource, we may still
+				// be able to use its render passes as the beginning of split barriers.
+
+				const auto addBeginBarrierPassLambda = [&barrierMerger]<GPUCommandQueueType QueueType>(const GPUExecutionModule& executionModule)
+				{
+					const std::span<const std::unique_ptr<I_RenderPass<QueueType>>> renderPassSpan{ executionModule.GetRenderPassSpan<QueueType>() };
+
+					if (!renderPassSpan.empty())
+						barrierMerger.AddPotentialBeginBarrierRenderPass(*(renderPassSpan[0]));
+				};
+
+				addBeginBarrierPassLambda.operator()<GPUCommandQueueType::DIRECT>(executionModule);
+				addBeginBarrierPassLambda.operator()<GPUCommandQueueType::COMPUTE>(executionModule);
+				addBeginBarrierPassLambda.operator()<GPUCommandQueueType::COPY>(executionModule);
+			}
 		}
 
-		void GPUResourceStateTracker::AddGPUResourceEventForResourceStateZone(const ResourceStateZone& stateZone, GPUResourceEvent&& resourceEvent)
+		void GPUResourceStateTracker::CheckForResourceStateDecay(const GPUExecutionModule& executionModule)
 		{
-			switch (stateZone.QueueType)
+			// According to the MSDN, a resource's state will decay upon a call to 
+			// ID3D12CommandQueue::ExecuteCommandLists() if any of the following conditions are
+			// met:
+			//
+			// - The resource is either a buffer or a simultaneous-access texture.
+			// - The resource is being used in a COPY queue. (I believe that it is an error to
+			//   use a resource simultaneously in both a COPY queue and a DIRECT or COMPUTE
+			//   queue in the D3D12 API. Regardless, we disallow that in the Brawler Engine.)
+			// - The resource was implicitly promoted to a read-only state. (The MSDN does not
+			//   state if the decay still occurs if this implicit promotion happened after an
+			//   explicit transition to the COMMON state, but we assume that it does.)
+
+			const bool resourceUsedInCopyQueue = executionModule.IsResourceUsedInQueue<GPUCommandQueueType::COPY>(mBarrierMergerArr[0].GetGPUResource());
+
+			if constexpr (Util::General::IsDebugModeEnabled())
 			{
-			case GPUCommandQueueType::DIRECT:
-			{
-				mEventManager.AddGPUResourceEvent(*(std::get<const I_RenderPass<GPUCommandQueueType::DIRECT>*>(stateZone.EntranceRenderPass)), std::move(resourceEvent));
-				return;
+				if (resourceUsedInCopyQueue)
+				{
+					for (auto& barrierMerger : mBarrierMergerArr)
+					{
+						const Brawler::CompositeEnum<GPUCommandQueueType> queuesUsingResource{ executionModule.GetQueuesUsingResource(barrierMerger.GetGPUResource(), barrierMerger.GetSubResourceIndex()) };
+						assert(queuesUsingResource.CountOneBits() == 1 && "ERROR: It is an error to use an I_GPUResource simultaneously in both a COPY queue and either a DIRECT or a COMPUTE queue, even if the uses are for different sub-resources! This will result in *undefined behavior*!");
+					}
+				}
 			}
 
-			case GPUCommandQueueType::COMPUTE:
+			for (auto& barrierMerger : mBarrierMergerArr)
 			{
-				mEventManager.AddGPUResourceEvent(*(std::get<const I_RenderPass<GPUCommandQueueType::COMPUTE>*>(stateZone.EntranceRenderPass)), std::move(resourceEvent));
-				return;
-			}
-
-			case GPUCommandQueueType::COPY:
-			{
-				mEventManager.AddGPUResourceEvent(*(std::get<const I_RenderPass<GPUCommandQueueType::COPY>*>(stateZone.EntranceRenderPass)), std::move(resourceEvent));
-				return;
-			}
-
-			default:
-			{
-				__assume(false);
-				break;
-			}
-			}
-		}
-
-		void GPUResourceStateTracker::ChangeTrackerState()
-		{
-			if (mNextStateID.has_value())
-			{
-				switch (*mNextStateID)
-				{
-				case GPUResourceStateTrackerStateID::GPU_RESOURCE_SPECIAL_INITIALIZATION:
-				{
-					mCurrState = GPUResourceSpecialInitializationState{};
-					break;
-				}
-
-				case GPUResourceStateTrackerStateID::BARRIER_TYPE_SELECTOR:
-				{
-					mCurrState = GPUResourceBarrierTypeSelectorState{};
-					break;
-				}
-
-				case GPUResourceStateTrackerStateID::IMMEDIATE_BARRIER:
-				{
-					mCurrState = ImmediateGPUResourceBarrierState{};
-					break;
-				}
-
-				case GPUResourceStateTrackerStateID::SPLIT_BARRIER:
-				{
-					mCurrState = SplitGPUResourceBarrierState{};
-					break;
-				}
-
-				default:
-				{
-					assert(false);
-					std::unreachable();
-
-					break;
-				}
-				}
-
-				mCurrState.AccessData([this]<typename StateTrackerState_T>(StateTrackerState_T & state)
-				{
-					state.SetTrackedGPUResource(*mResourcePtr);
-					state.SetGPUResourceStateTracker(*this);
-				});
-
-				mNextStateID.reset();
+				if (mResourceAlwaysDecays || resourceUsedInCopyQueue || barrierMerger.DoImplicitReadStateTransitionsAllowStateDecay())
+					barrierMerger.DecayResourceState();
 			}
 		}
 	}

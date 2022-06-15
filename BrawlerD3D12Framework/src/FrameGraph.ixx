@@ -10,6 +10,8 @@ import Brawler.D3D12.FrameGraphBlackboard;
 import Brawler.D3D12.TransientGPUResourceManager;
 import Brawler.D3D12.FrameGraphExecutionContext;
 import Brawler.D3D12.FrameGraphFenceCollection;
+import Brawler.D3D12.CommandAllocatorStorage;
+import Brawler.D3D12.GPUCommandQueueType;
 
 namespace Brawler
 {
@@ -36,26 +38,29 @@ export namespace Brawler
 
 			void Initialize();
 
-			void GenerateFrameGraph();
-			void SubmitFrameGraph();
+			void ProcessCurrentFrame(const std::span<const std::unique_ptr<I_RenderModule>> renderModuleSpan);
 
 			FrameGraphBlackboard& GetBlackboard();
 			const FrameGraphBlackboard& GetBlackboard() const;
 
+			Brawler::D3D12CommandAllocator& GetD3D12CommandAllocator(const GPUCommandQueueType queueType);
+
 		private:
-			void CreateRenderModules();
+			void GenerateFrameGraph(const std::span<const std::unique_ptr<I_RenderModule>> renderModuleSpan);
+			void SubmitFrameGraph();
+
 			void WaitForPreviousFrameGraphExecution() const;
 			void ResetFrameGraph();
 
-			std::vector<FrameGraphBuilder> CreateFrameGraphBuilders();
+			std::vector<FrameGraphBuilder> CreateFrameGraphBuilders(const std::span<const std::unique_ptr<I_RenderModule>> renderModuleSpan);
 			FrameGraphExecutionContext CompileFrameGraph(const std::span<FrameGraphBuilder> builderSpan);
 
 		private:
 			FrameGraphFenceCollection mFenceCollection;
 			TransientGPUResourceManager mTransientResourceManager;
-			std::vector<std::unique_ptr<I_RenderModule>> mRenderModuleArr;
 			FrameGraphBlackboard mBlackboard;
 			FrameGraphExecutionContext mExecutionContext;
+			CommandAllocatorStorage mCmdAllocatorStorage;
 		};
 	}
 }

@@ -11,6 +11,7 @@ import Brawler.PSOID;
 import Brawler.JobSystem;
 import Brawler.PSOBuilder;
 import Brawler.PSOBuilderCreators;
+import Brawler.PSODefinition;
 
 /*
 Source File Name: PSODefinition.ixx
@@ -21,46 +22,26 @@ Contents:
 // wrath of God if you dare touch it.
 
 module;
-#include <array>
-#include "DxDef.h"
+#include "../DxDef.h"
 
 export module Brawler.PSOs.PSODefinition;
+
+import :PSODefinitionBase;
+
+\\ Immediately after that, every module partition unit containing a specialization of
+\\ the PSODefinition structure is also imported.
+
 import Brawler.PSOs.PSOID;
 import Brawler.RootSignatures.RootSignatureID;
 import Util.Engine;
-import Brawler.D3D12.RootSignatureDatabase;
 import Util.Reflection;
+import Brawler.PSOs.PipelineType;
+import Brawler.NZStringView;
 
 namespace Brawler
 {
 	namespace PSOs
 	{
-		template <Brawler::PSOID PSOIdentifier>
-		struct PSODefinition
-		{};
-
-		template <>
-		struct PSODefinition<PSOID::X>
-		{
-			struct PSOStreamType
-			{
-				\\ This will contain the contents of the PSO description stream used in ID3D12Device2::CreatePipelineState().
-			};
-
-			static constexpr std::array<std::uint8_t, sizeof(PSOStreamType)> DEFAULT_PSO_VALUE{...};
-			static constexpr Brawler::RootSignatures::RootSignatureID ROOT_SIGNATURE_ID = {...};
-
-			\\ Additional fields are added to this stucture as specified by the corresponding PSOBuilder's I_PSOFieldResolver
-			\\ instances.
-
-			static void ExecuteRuntimePSOResolution(PSOStreamType& psoDesc)
-			{
-				\\ This function's contents are filled out by the corresponding PSOBuilder's I_PSOFieldResolver instances.
-			}
-		};
-
-		\\ This continues on for the rest of the required pipeline state objects.
-
 		template <typename PSOStreamType, std::size_t FieldIndex>
 		consteval bool IsComputePSOStream()
 		{
@@ -79,12 +60,6 @@ export namespace Brawler
 {
 	namespace PSOs
 	{
-		enum class PipelineType
-		{
-			GRAPHICS,
-			COMPUTE
-		};
-
 		template <Brawler::PSOs::PSOID PSOIdentifier>
 		using PSOStreamType = PSODefinition<PSOIdentifier>::PSOStreamType;
 
@@ -112,6 +87,12 @@ export namespace Brawler
 		consteval PipelineType GetPipelineType()
 		{
 			return (IsComputePSOStream<PSOStreamType<PSOIdentifier>, 0>() ? PipelineType::COMPUTE : PipelineType::GRAPHICS);
+		}
+
+		template <Brawler::PSOs::PSOID PSOIdentifier>
+		consteval Brawler::NZWStringView GetUniquePSOName()
+		{
+			return PSODefinition<PSOIdentifier>::UNIQUE_PSO_NAME;
 		}
 	}
 }
@@ -143,39 +124,23 @@ export namespace Brawler
 
 namespace
 {
-	template <Brawler::PSOID PSOIdentifier>
-	static void AddPSODefinitionJob(std::vector<Brawler::FileWriterNode>& nodeArr, Brawler::JobGroup& jobGroup, std::size_t& currIndex)
+	template <Brawler::ShaderProfiles::ShaderProfileID ProfileID>
+	Brawler::FileWriterNode CreatePSODefinitionSpecializationImportsNode()
 	{
-		Brawler::FileWriterNode& currNode{ nodeArr[currIndex++] };
+		Brawler::FileWriterNode rootImportsNode{};
+		std::string importsText{ "import :PSODefinitionBase;\n" };
 
-		jobGroup.AddJob([&currNode] ()
+		static constexpr auto APPEND_IMPORT_LAMBDA = []<std::underlying_type_t<Brawler::PSOID>... PSOIdentifierNums>(std::string& importsStr, std::integer_sequence<std::underlying_type_t<Brawler::PSOID>, PSOIdentifierNums...> psoSequence)
 		{
-			Brawler::PSOs::PSOBuilder<PSOIdentifier> psoBuilder{ Brawler::PSOs::CreatePSOBuilder<PSOIdentifier>() };
-			currNode = psoBuilder.CreatePSODefinitionFileWriterNode();
-		});
-	}
+			((importsStr += std::string{ "export import :" } + std::string{ Brawler::GetPSOIDString<static_cast<Brawler::PSOID>(PSOIdentifierNums)>() } + ";\n"), ...);
+		};
 
-	template <std::underlying_type_t<Brawler::PSOID>... PSOIdentifierNums>
-	Brawler::FileWriterNode CreatePSODefinitionInstantiationsNode(std::integer_sequence<std::underlying_type_t<Brawler::PSOID>, PSOIdentifierNums...> psoSequence)
-	{
-		Brawler::FileWriterNode rootDefinitionsNode{};
+		APPEND_IMPORT_LAMBDA(importsText, Brawler::ShaderProfiles::GetPSOIdentifiers<ProfileID>());
 
-		Brawler::JobGroup psoDefinitionInstantiationsJobGroup{};
-		psoDefinitionInstantiationsJobGroup.Reserve(psoSequence.size());
+		importsText += "\n";
+		rootImportsNode.SetOutputText(std::move(importsText));
 
-		std::vector<Brawler::FileWriterNode> psoDefinitionNodeArr{};
-		psoDefinitionNodeArr.resize(psoSequence.size());
-
-		// Create a CPU job to instantiate every PSODefinition.
-		std::size_t nodeArrIndex = 0;
-
-		((AddPSODefinitionJob<static_cast<Brawler::PSOID>(PSOIdentifierNums)>(psoDefinitionNodeArr, psoDefinitionInstantiationsJobGroup, nodeArrIndex)), ...);
-		psoDefinitionInstantiationsJobGroup.ExecuteJobs();
-
-		for (auto&& childNode : psoDefinitionNodeArr)
-			rootDefinitionsNode.AddChildNode(std::move(childNode));
-
-		return rootDefinitionsNode;
+		return rootImportsNode;
 	}
 }
 
@@ -196,10 +161,25 @@ namespace Brawler
 			{
 				Brawler::FileWriterNode headerNode{};
 
-				std::string headerStr{ Brawler::FileStrings::AUTO_GENERATED_WARNING_COMMENT };
-				headerStr += "module;\n#include <array>\n#include \"DxDef.h\"\n\nexport module Brawler.PSOs.PSODefinition;\nimport Brawler.PSOs.PSOID;\nimport Brawler.RootSignatures.RootSignatureID;\nimport Util.Engine;\nimport Brawler.D3D12.RootSignatureDatabase;\nimport Util.Reflection;\n\n";
+				{
+					Brawler::FileWriterNode beginHeaderNode{};
 
-				headerNode.SetOutputText(std::move(headerStr));
+					std::string beginHeaderStr{ Brawler::FileStrings::AUTO_GENERATED_WARNING_COMMENT };
+					beginHeaderStr += "module;\n#include \"../DxDef.h\"\n\nexport module Brawler.PSOs.PSODefinition;\n\n";
+
+					beginHeaderNode.SetOutputText(std::move(beginHeaderStr));
+					headerNode.AddChildNode(std::move(beginHeaderNode));
+				}
+
+				headerNode.AddChildNode(CreatePSODefinitionSpecializationImportsNode<ProfileID>());
+
+				{
+					Brawler::FileWriterNode endHeaderNode{};
+					endHeaderNode.SetOutputText("import Brawler.PSOs.PSOID;\nimport Brawler.RootSignatures.RootSignatureID;\nimport Util.Engine;\nimport Util.Reflection;\nimport Brawler.D3D12.PipelineType;\nimport Brawler.NZStringView;\n\n");
+
+					headerNode.AddChildNode(std::move(endHeaderNode));
+				}
+
 				rootNode.AddChildNode(std::move(headerNode));
 			}
 
@@ -214,17 +194,8 @@ namespace Brawler
 				}
 
 				{
-					Brawler::FileWriterNode defaultPSODefinitionNode{};
-					defaultPSODefinitionNode.SetOutputText("\t\ttemplate <Brawler::PSOs::PSOID PSOIdentifier>\n\t\tstruct PSODefinition\n\t\t{};\n");
-
-					internalNamespaceNode.AddChildNode(std::move(defaultPSODefinitionNode));
-				}
-
-				internalNamespaceNode.AddChildNode(CreatePSODefinitionInstantiationsNode(Brawler::ShaderProfiles::GetPSOIdentifiers<ProfileID>()));
-
-				{
 					Brawler::FileWriterNode isComputePSOStreamSubObjectNode{};
-					isComputePSOStreamSubObjectNode.SetOutputText("\n\t\ttemplate <typename PSOStreamType, std::size_t FieldIndex>\n\t\tconsteval bool IsComputePSOStream()\n\t\t{\n\t\t\tif constexpr (std::is_same_v<Util::Reflection::FieldType<PSOStreamType, FieldIndex>, CD3DX12_PIPELINE_STATE_STREAM_CS>)\n\t\t\t\treturn true;\n\n\t\t\tif constexpr ((FieldIndex + 1) != Util::Reflection::GetFieldCount<PSOStreamType>())\n\t\t\t\treturn IsComputePSOStream<PSOStreamType, (FieldIndex + 1)>();\n\t\t\telse\n\t\t\t\treturn false;\n\t\t}\n");
+					isComputePSOStreamSubObjectNode.SetOutputText("\t\ttemplate <typename PSOStreamType, std::size_t FieldIndex>\n\t\tconsteval bool IsComputePSOStream()\n\t\t{\n\t\t\tif constexpr (std::is_same_v<Util::Reflection::FieldType<PSOStreamType, FieldIndex>, CD3DX12_PIPELINE_STATE_STREAM_CS>)\n\t\t\t\treturn true;\n\n\t\t\tif constexpr ((FieldIndex + 1) != Util::Reflection::GetFieldCount<PSOStreamType>())\n\t\t\t\treturn IsComputePSOStream<PSOStreamType, (FieldIndex + 1)>();\n\t\t\telse\n\t\t\t\treturn false;\n\t\t}\n");
 
 					internalNamespaceNode.AddChildNode(std::move(isComputePSOStreamSubObjectNode));
 				}
@@ -247,13 +218,6 @@ namespace Brawler
 					beginExportedNamespaceNode.SetOutputText("export namespace Brawler\n{\n\tnamespace PSOs\n\t{\n");
 
 					exportedNamespaceNode.AddChildNode(std::move(beginExportedNamespaceNode));
-				}
-
-				{
-					Brawler::FileWriterNode pipelineTypeNode{};
-					pipelineTypeNode.SetOutputText("\t\tenum class PipelineType\n\t\t{\n\t\t\tGRAPHICS,\n\t\t\tCOMPUTE\n\t\t};\n\n");
-
-					exportedNamespaceNode.AddChildNode(std::move(pipelineTypeNode));
 				}
 
 				{
@@ -295,9 +259,16 @@ namespace Brawler
 
 				{
 					Brawler::FileWriterNode getPipelineTypeNode{};
-					getPipelineTypeNode.SetOutputText("\t\ttemplate <Brawler::PSOs::PSOID PSOIdentifier>\n\t\tconsteval PipelineType GetPipelineType()\n\t\t{\n\t\t\treturn (IsComputePSOStream<PSOStreamType<PSOIdentifier>, 0>() ? PipelineType::COMPUTE : PipelineType::GRAPHICS);\n\t\t}\n");
+					getPipelineTypeNode.SetOutputText("\t\ttemplate <Brawler::PSOs::PSOID PSOIdentifier>\n\t\tconsteval PipelineType GetPipelineType()\n\t\t{\n\t\t\treturn (IsComputePSOStream<PSOStreamType<PSOIdentifier>, 0>() ? PipelineType::COMPUTE : PipelineType::GRAPHICS);\n\t\t}\n\n");
 
 					exportedNamespaceNode.AddChildNode(std::move(getPipelineTypeNode));
+				}
+
+				{
+					Brawler::FileWriterNode getUniquePSONameNode{};
+					getUniquePSONameNode.SetOutputText("\t\ttemplate <Brawler::PSOs::PSOID PSOIdentifier>\n\t\tconsteval Brawler::NZWStringView GetUniquePSOName()\n\t\t{\n\t\t\treturn PSODefinition<PSOIdentifier>::UNIQUE_PSO_NAME;\n\t\t}\n");
+
+					exportedNamespaceNode.AddChildNode(std::move(getUniquePSONameNode));
 				}
 
 				{

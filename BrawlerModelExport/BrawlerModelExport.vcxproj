@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -81,21 +81,27 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -109,12 +115,21 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
+    <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
+    <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
+    <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -173,13 +188,23 @@
       <AdditionalBMIDirectories>
       </AdditionalBMIDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UndefinePreprocessorDefinitions>__D3D12_FRAMEWORK__;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
+      <AdditionalOptions>/Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>windowscodecs.lib;D3D12.lib;DXGI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>windowscodecs.lib;Bcrypt.lib;D3D12.lib;DXGI.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Message>Copying Brawler Shader Compiler files...</Message>
+      <Command>$(CopyBrawlerShaderCompilerFiles) &amp; $(CopyEngineConstants)</Command>
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -187,7 +212,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_HAS_STATIC_RTTI=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
@@ -197,14 +222,24 @@
       </AdditionalBMIDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <UndefinePreprocessorDefinitions>__D3D12_FRAMEWORK__;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
+      <AdditionalOptions>/Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>windowscodecs.lib;D3D12.lib;DXGI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>windowscodecs.lib;Bcrypt.lib;D3D12.lib;DXGI.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Message>Copying Brawler Shader Compiler files...</Message>
+      <Command>$(CopyBrawlerShaderCompilerFiles) &amp; $(CopyEngineConstants)</Command>
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">
     <ClCompile>
@@ -221,69 +256,127 @@
       <AdditionalBMIDirectories>
       </AdditionalBMIDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UndefinePreprocessorDefinitions>__D3D12_FRAMEWORK__;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
+      <AdditionalOptions>/Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>windowscodecs.lib;D3D12.lib;DXGI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>windowscodecs.lib;Bcrypt.lib;D3D12.lib;DXGI.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Message>Copying Brawler Shader Compiler files...</Message>
+      <Command>$(CopyBrawlerShaderCompilerFiles) &amp; $(CopyEngineConstants)</Command>
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\AABB.cpp" />
     <ClCompile Include="src\AABB.ixx" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Application.ixx" />
-    <ClCompile Include="src\AppParams.ixx" />
+    <ClCompile Include="src\AssimpMaterialKey.ixx" />
+    <ClCompile Include="src\AssimpMaterialKeyID.ixx" />
+    <ClCompile Include="src\AssimpMaterials.ixx" />
+    <ClCompile Include="src\AssimpTextureConverter.ixx" />
+    <ClCompile Include="src\AssimpTextureMaterialColorMap.ixx" />
+    <ClCompile Include="src\ByteStream.ixx" />
+    <ClCompile Include="src\FileMagicHandler.ixx" />
+    <ClCompile Include="src\IndexBuffer.cpp" />
+    <ClCompile Include="src\LaunchParams.cpp" />
+    <ClCompile Include="src\LaunchParams.ixx" />
     <ClCompile Include="src\BC7ImageCompressor.cpp" />
     <ClCompile Include="src\BC7ImageCompressor.ixx" />
-    <ClCompile Include="src\BCTextureCompressionContext.ixx" />
-    <ClCompile Include="src\BCTextureCompressor.ixx" />
     <ClCompile Include="src\BTEXFileAttributes.ixx" />
-    <ClCompile Include="src\CompositeEnum.ixx" />
+    <ClCompile Include="src\CommandLineParser.cpp" />
+    <ClCompile Include="src\CommandLineParser.ixx" />
     <ClCompile Include="src\FileAttributes.ixx" />
     <ClCompile Include="src\FilePathHash.ixx" />
-    <ClCompile Include="src\Functional.ixx" />
-    <ClCompile Include="src\IndexBuffer.cpp" />
+    <ClCompile Include="src\GenericMipMapGenerator.ixx" />
+    <ClCompile Include="src\ImportedMesh.cpp" />
+    <ClCompile Include="src\ImportedMesh.ixx" />
     <ClCompile Include="src\IndexBuffer.ixx" />
+    <ClCompile Include="src\I_MaterialDefinition.cpp" />
     <ClCompile Include="src\I_MaterialDefinition.ixx" />
     <ClCompile Include="src\I_MeshManager.ixx" />
+    <ClCompile Include="src\I_MeshResolver.ixx" />
+    <ClCompile Include="src\LODResolver.cpp" />
+    <ClCompile Include="src\LODResolver.ixx" />
+    <ClCompile Include="src\LODScene.cpp" />
+    <ClCompile Include="src\LODScene.ixx" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MaterialID.ixx" />
-    <ClCompile Include="src\MaterialIDMap.ixx" />
-    <ClCompile Include="src\MaterialManager.cpp" />
-    <ClCompile Include="src\MaterialManager.ixx" />
     <ClCompile Include="src\Matrix.ixx" />
+    <ClCompile Include="src\MeshResolverBase.cpp" />
+    <ClCompile Include="src\MeshResolverBase.ixx" />
+    <ClCompile Include="src\MeshResolverCollection.ixx" />
     <ClCompile Include="src\MeshTypeID.ixx" />
+    <ClCompile Include="src\MipMapGeneration.ixx" />
+    <ClCompile Include="src\ModelExportUtil.cpp" />
+    <ClCompile Include="src\ModelExportUtil.ixx" />
     <ClCompile Include="src\ModelResolver.cpp" />
     <ClCompile Include="src\ModelResolver.ixx" />
+    <ClCompile Include="src\ModelTextureID.ixx" />
+    <ClCompile Include="src\ModelTextureResolutionEventHandle.cpp" />
+    <ClCompile Include="src\ModelTextureResolutionEventHandle.ixx" />
+    <ClCompile Include="src\ModelTextureResolutionRenderModule.cpp" />
+    <ClCompile Include="src\ModelTextureResolutionRenderModule.ixx" />
+    <ClCompile Include="src\ModelTextureSerializer.cpp" />
+    <ClCompile Include="src\ModelTextureSerializer.ixx" />
+    <ClCompile Include="src\NormalBoundingConeTypes.ixx" />
+    <ClCompile Include="src\NormalBoundingCones.ixx" />
+    <ClCompile Include="src\NormalBoundingConeSolver.ixx" />
+    <ClCompile Include="src\NormalBoundingConeSolver.cpp" />
+    <ClCompile Include="src\NormalBoundingConeTriangleGrouper.ixx" />
+    <ClCompile Include="src\OpaqueDiffuseBC7Compression.cpp" />
+    <ClCompile Include="src\OpaqueDiffuseMipMapping.cpp" />
+    <ClCompile Include="src\OpaqueDiffuseModelTextureResolver.cpp" />
+    <ClCompile Include="src\OpaqueDiffuseModelTextureResolver.ixx" />
+    <ClCompile Include="src\OpaqueDiffuseReadBackBufferCopy.cpp" />
+    <ClCompile Include="src\OpaqueDiffuseSourceTextureUpload.cpp" />
     <ClCompile Include="src\OpaqueMaterialDefinition.cpp" />
     <ClCompile Include="src\OpaqueMaterialDefinition.ixx" />
-    <ClCompile Include="src\PipelineEnums.ixx" />
-    <ClCompile Include="src\PSODefinition.ixx" />
-    <ClCompile Include="src\PSOID.ixx" />
-    <ClCompile Include="src\RootParameterEnums.ixx" />
-    <ClCompile Include="src\RootSignatureDefinition.ixx" />
-    <ClCompile Include="src\RootSignatureID.ixx" />
-    <ClCompile Include="src\SceneLoader.cpp" />
-    <ClCompile Include="src\SceneLoader.ixx" />
     <ClCompile Include="src\SerializationContext.ixx" />
-    <ClCompile Include="src\Skeleton.cpp" />
-    <ClCompile Include="src\Skeleton.ixx" />
-    <ClCompile Include="src\SkeletonBone.cpp" />
-    <ClCompile Include="src\SkeletonBone.ixx" />
-    <ClCompile Include="src\StaticMesh.cpp" />
-    <ClCompile Include="src\StaticMesh.ixx" />
-    <ClCompile Include="src\StaticMeshManager.cpp" />
-    <ClCompile Include="src\StaticMeshManager.ixx" />
+    <ClCompile Include="src\SerializedMaterialDefinition.ixx" />
+    <ClCompile Include="src\SerializedStaticMeshData.ixx" />
+    <ClCompile Include="src\SHA512AlgorithmProvider.cpp" />
+    <ClCompile Include="src\SHA512AlgorithmProvider.ixx" />
+    <ClCompile Include="src\SHA512Hash.ixx" />
+    <ClCompile Include="src\SHA512Hasher.cpp" />
+    <ClCompile Include="src\SHA512Hasher.ixx" />
+    <ClCompile Include="src\SHA512Hashing.ixx" />
+    <ClCompile Include="src\Skeleton.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\Skeleton.ixx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\SkeletonBone.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\SkeletonBone.ixx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\StaticMeshResolver.cpp" />
+    <ClCompile Include="src\StaticMeshResolver.ixx" />
     <ClCompile Include="src\StaticVertexBuffer.cpp" />
     <ClCompile Include="src\StaticVertexBuffer.ixx" />
-    <ClCompile Include="src\Texture.ixx" />
+    <ClCompile Include="src\StaticVertexData.ixx" />
     <ClCompile Include="src\TextureTypeMap.ixx" />
-    <ClCompile Include="src\TextureUtil.cpp" />
-    <ClCompile Include="src\TextureUtil.ixx" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\Shaders\BC7Encode.hlsl">
@@ -291,13 +384,69 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="src\Shaders\GenerateMipMaps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\StaticIndirectPrepare.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BrawlerD3D12Framework\BrawlerD3D12Framework.vcxproj">
       <Project>{946e57e2-22c5-438b-a589-f64012d33873}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="src\Shaders\BindlessDescriptors.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="src\Shaders\GeneralUtil.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="src\Shaders\GeometryTypes.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\EngineConstantsDef.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets" Condition="Exists('..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets')" />
+    <Import Project="..\packages\Microsoft.Direct3D.DirectStorage.1.0.2\build\native\targets\Microsoft.Direct3D.DirectStorage.targets" Condition="Exists('..\packages\Microsoft.Direct3D.DirectStorage.1.0.2\build\native\targets\Microsoft.Direct3D.DirectStorage.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WinPixEventRuntime.1.0.220124001\build\WinPixEventRuntime.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Direct3D.DirectStorage.1.0.2\build\native\targets\Microsoft.Direct3D.DirectStorage.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.DirectStorage.1.0.2\build\native\targets\Microsoft.Direct3D.DirectStorage.targets'))" />
+  </Target>
 </Project>

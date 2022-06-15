@@ -41,9 +41,7 @@ export namespace Brawler
 			bool IsDescriptorTableValid() const override;
 
 		private:
-#ifdef _DEBUG
 			std::uint64_t mCreationFrameNum;
-#endif // _DEBUG
 		};
 	}
 }

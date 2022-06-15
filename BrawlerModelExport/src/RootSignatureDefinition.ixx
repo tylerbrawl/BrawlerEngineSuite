@@ -8,6 +8,7 @@ module;
 export module Brawler.RootSignatures.RootSignatureDefinition;
 import Brawler.RootSignatures.RootSignatureID;
 import Brawler.RootParameters.RootParameterEnums;
+import Brawler.D3D12.RootParameterType;
 
 namespace Brawler
 {
@@ -25,7 +26,7 @@ namespace Brawler
 
 			using RootParamEnumType = Brawler::RootParameters::BC6HBC7Compression;
 
-			static constexpr std::array<Brawler::RootParameters::RootParameterType, std::to_underlying(RootParamEnumType::COUNT_OR_ERROR)> ROOT_PARAM_TYPES_ARR{Brawler::RootParameters::RootParameterType::DESCRIPTOR_TABLE,Brawler::RootParameters::RootParameterType::DESCRIPTOR_TABLE,Brawler::RootParameters::RootParameterType::DESCRIPTOR_TABLE,Brawler::RootParameters::RootParameterType::CBV,Brawler::RootParameters::RootParameterType::ROOT_CONSTANT};
+			static constexpr std::array<Brawler::D3D12::RootParameterType, std::to_underlying(RootParamEnumType::COUNT_OR_ERROR)> ROOT_PARAM_TYPES_ARR{Brawler::D3D12::RootParameterType::DESCRIPTOR_TABLE,Brawler::D3D12::RootParameterType::DESCRIPTOR_TABLE,Brawler::D3D12::RootParameterType::DESCRIPTOR_TABLE,Brawler::D3D12::RootParameterType::CBV,Brawler::D3D12::RootParameterType::ROOT_CONSTANT};
 		};
 
 	}
@@ -39,21 +40,39 @@ export namespace Brawler
 		using RootParamEnumType = RootSignatureDefinition<RSIdentifier>::RootParamEnumType;
 
 		template <RootSignatureID RSIdentifier>
-		consteval auto GetSerializedRootSignature1_0()
+		consteval std::size_t GetSerializedRootSignature1_0Size()
 		{
-			return std::span<const std::uint8_t, RootSignatureDefinition<RSIdentifier>::SERIALIZED_ROOT_SIGNATURE_VERSION_1_0.size()>{ RootSignatureDefinition<RSIdentifier>::SERIALIZED_ROOT_SIGNATURE_VERSION_1_0 };
+			return RootSignatureDefinition<RSIdentifier>::SERIALIZED_ROOT_SIGNATURE_VERSION_1_0.size();
 		}
 
 		template <RootSignatureID RSIdentifier>
-		consteval auto GetSerializedRootSignature1_1()
+		std::span<const std::uint8_t> GetSerializedRootSignature1_0()
 		{
-			return std::span<const std::uint8_t, RootSignatureDefinition<RSIdentifier>::SERIALIZED_ROOT_SIGNATURE_VERSION_1_1.size()>{ RootSignatureDefinition<RSIdentifier>::SERIALIZED_ROOT_SIGNATURE_VERSION_1_1 };
+			return std::span<const std::uint8_t>{ RootSignatureDefinition<RSIdentifier>::SERIALIZED_ROOT_SIGNATURE_VERSION_1_0.data(), RootSignatureDefinition<RSIdentifier>::SERIALIZED_ROOT_SIGNATURE_VERSION_1_0.size() };
+		}
+
+		template <RootSignatureID RSIdentifier>
+		consteval std::size_t GetSerializedRootSignature1_1Size()
+		{
+			return RootSignatureDefinition<RSIdentifier>::SERIALIZED_ROOT_SIGNATURE_VERSION_1_1.size();
+		}
+
+		template <RootSignatureID RSIdentifier>
+		std::span<const std::uint8_t> GetSerializedRootSignature1_1()
+		{
+			return std::span<const std::uint8_t>{ RootSignatureDefinition<RSIdentifier>::SERIALIZED_ROOT_SIGNATURE_VERSION_1_1.data(), RootSignatureDefinition<RSIdentifier>::SERIALIZED_ROOT_SIGNATURE_VERSION_1_1.size() };
 		}
 
 		template <RootSignatureID RSIdentifier, RootParamEnumType<RSIdentifier> RootParam>
-		consteval Brawler::RootParameters::RootParameterType GetRootParameterType()
+		consteval Brawler::D3D12::RootParameterType GetRootParameterType()
 		{
 			return RootSignatureDefinition<RSIdentifier>::ROOT_PARAM_TYPES_ARR[std::to_underlying(RootParam)];
+		}
+
+		template <RootSignatureID RSIdentifier>
+		consteval std::size_t GetRootParameterCount()
+		{
+			return static_cast<std::size_t>(RootParamEnumType<RSIdentifier>::COUNT_OR_ERROR);
 		}
 	}
 }

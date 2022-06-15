@@ -2,6 +2,7 @@ module;
 #include <mutex>
 #include <shared_mutex>
 #include <ranges>
+#include <algorithm>
 #include <cassert>
 
 export module Brawler.ThreadSafeVector;
@@ -88,6 +89,9 @@ export namespace Brawler
 
 		template <typename Callback>
 		void AccessData(const std::size_t index, const Callback& callback) const;
+
+		template <typename Callback>
+		void ForEach(const Callback& callback);
 
 		template <typename Callback>
 		void ForEach(const Callback& callback) const;
@@ -256,12 +260,21 @@ namespace Brawler
 	template <typename T, typename LockType>
 		requires Lockable<LockType>
 	template <typename Callback>
+	void ThreadSafeVector<T, LockType>::ForEach(const Callback& callback)
+	{
+		ScopedReadLockType readLock{ mCritSection };
+
+		std::ranges::for_each(mDataArr, callback);
+	}
+
+	template <typename T, typename LockType>
+		requires Lockable<LockType>
+	template <typename Callback>
 	void ThreadSafeVector<T, LockType>::ForEach(const Callback& callback) const
 	{
 		ScopedReadLockType readLock{ mCritSection };
 
-		for (auto& val : mDataArr)
-			callback(val);
+		std::ranges::for_each(mDataArr, callback);
 	}
 
 	template <typename T, typename LockType>

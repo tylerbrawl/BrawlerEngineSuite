@@ -79,6 +79,12 @@ export namespace Brawler
 		{
 			return RootSignatureDefinition<RSIdentifier>::ROOT_PARAM_TYPES_ARR[std::to_underlying(RootParam)];
 		}
+
+		template <RootSignatureID RSIdentifier>
+		consteval std::size_t GetRootParameterCount()
+		{
+			return static_cast<std::size_t>(RootParamEnumType<RSIdentifier>::COUNT_OR_ERROR);
+		}
 	}
 }
 */
@@ -242,9 +248,16 @@ namespace Brawler
 
 				{
 					Brawler::FileWriterNode getRootParameterTypeNode{};
-					getRootParameterTypeNode.SetOutputText("\t\ttemplate <RootSignatureID RSIdentifier, RootParamEnumType<RSIdentifier> RootParam>\n\t\tconsteval Brawler::RootParameters::RootParameterType GetRootParameterType()\n\t\t{\n\t\t\treturn RootSignatureDefinition<RSIdentifier>::ROOT_PARAM_TYPES_ARR[std::to_underlying(RootParam)];\n\t\t}\n");
+					getRootParameterTypeNode.SetOutputText("\t\ttemplate <RootSignatureID RSIdentifier, RootParamEnumType<RSIdentifier> RootParam>\n\t\tconsteval Brawler::RootParameters::RootParameterType GetRootParameterType()\n\t\t{\n\t\t\treturn RootSignatureDefinition<RSIdentifier>::ROOT_PARAM_TYPES_ARR[std::to_underlying(RootParam)];\n\t\t}\n\n");
 
 					exportedNamespaceNode.AddChildNode(std::move(getRootParameterTypeNode));
+				}
+
+				{
+					Brawler::FileWriterNode getRootParameterCountNode{};
+					getRootParameterCountNode.SetOutputText("\t\ttemplate <RootSignatureID RSIdentifier>\n\t\tconsteval std::size_t GetRootParameterCount()\n\t\t{\n\t\t\treturn static_cast<std::size_t>(RootParamEnumType<RSIdentifier>::COUNT_OR_ERROR);\n\t\t}\n");
+
+					exportedNamespaceNode.AddChildNode(std::move(getRootParameterCountNode));
 				}
 
 				{

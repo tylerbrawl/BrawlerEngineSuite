@@ -56,6 +56,27 @@ export namespace Brawler
 			COUNT_OR_ERROR
 		};
 
+		// Brawler Model Exporter
+		enum class GenericDownsample
+		{
+			/// <summary>
+			/// Root Parameter 0: DescriptorTable
+			/// {
+			///		STATIC_AT_EXECUTE SRV InputTexture -> Space0[t0];
+			///		VOLATILE UAV OutputTexture1 -> Space0[u0];
+			///		VOLATILE UAV OutputTexture2 -> Space0[u1];
+			/// };
+			/// </summary>
+			TEXTURES_TABLE,
+
+			/// <summary>
+			/// Root Parameter 1: RootConstants<4> -> Space0[b0];
+			/// </summary>
+			MIP_MAP_CONSTANTS,
+
+			COUNT_OR_ERROR
+		};
+
 		// Test Shader Profile
 		enum class TestRootSignature
 		{

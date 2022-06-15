@@ -11,6 +11,7 @@ module;
 module Brawler.D3D12.FrameGraph;
 import Util.Coroutine;
 import Util.Engine;
+import Util.General;
 import Brawler.JobSystem;
 import Brawler.D3D12.TransientGPUResourceAliasTracker;
 import Brawler.D3D12.FrameGraphBuilder;
@@ -19,8 +20,7 @@ import Brawler.SortedVector;
 import Brawler.D3D12.PersistentGPUResourceManager;
 import Brawler.D3D12.GPUResidencyManager;
 import Brawler.D3D12.GPUFence;
-
-import Tests.ResourceStateTrackingTestModule;
+import Brawler.D3D12.GPUResourceDescriptorHeap;
 
 namespace
 {
@@ -126,15 +126,35 @@ namespace Brawler
 		{
 			mFenceCollection.Initialize();
 			mTransientResourceManager.Initialize();
-			
-			CreateRenderModules();
+			mCmdAllocatorStorage.Initialize();
 		}
 
-		void FrameGraph::GenerateFrameGraph()
+		void FrameGraph::ProcessCurrentFrame(const std::span<const std::unique_ptr<I_RenderModule>> renderModuleSpan)
+		{
+			GenerateFrameGraph(renderModuleSpan);
+			SubmitFrameGraph();
+		}
+
+		FrameGraphBlackboard& FrameGraph::GetBlackboard()
+		{
+			return mBlackboard;
+		}
+
+		const FrameGraphBlackboard& FrameGraph::GetBlackboard() const
+		{
+			return mBlackboard;
+		}
+
+		Brawler::D3D12CommandAllocator& FrameGraph::GetD3D12CommandAllocator(const GPUCommandQueueType queueType)
+		{
+			return mCmdAllocatorStorage.GetD3D12CommandAllocator(queueType);
+		}
+
+		void FrameGraph::GenerateFrameGraph(const std::span<const std::unique_ptr<I_RenderModule>> renderModuleSpan)
 		{
 			ResetFrameGraph();
 
-			std::vector<FrameGraphBuilder> frameGraphBuilderArr{ CreateFrameGraphBuilders() };
+			std::vector<FrameGraphBuilder> frameGraphBuilderArr{ CreateFrameGraphBuilders(renderModuleSpan) };
 
 			// Move all of the transient GPU resources into the TransientGPUResourceManager.
 			for (auto& builder : frameGraphBuilderArr)
@@ -152,25 +172,6 @@ namespace Brawler
 			mExecutionContext.SubmitFrameGraph(mFenceCollection);
 		}
 
-		FrameGraphBlackboard& FrameGraph::GetBlackboard()
-		{
-			return mBlackboard;
-		}
-
-		const FrameGraphBlackboard& FrameGraph::GetBlackboard() const
-		{
-			return mBlackboard;
-		}
-
-		void FrameGraph::CreateRenderModules()
-		{
-			// Add I_RenderModule instances to the FrameGraph here. The order in which
-			// they are added will be the order in which their commands will eventually be
-			// submitted to the GPU.
-
-			mRenderModuleArr.push_back(std::make_unique<Tests::ResourceStateTrackingTestModule>());
-		}
-
 		void FrameGraph::WaitForPreviousFrameGraphExecution() const
 		{
 			mFenceCollection.WaitForFrameGraphCompletion();
@@ -185,12 +186,18 @@ namespace Brawler
 			// has fully executed on the GPU.
 			WaitForPreviousFrameGraphExecution();
 			
+			// All of the commands from the previous frame represented by this FrameGraph
+			// instance have been executed on the GPU. It is now safe to perform various
+			// clean-up actions as necessary.
+
+			Util::Engine::GetGPUResourceDescriptorHeap().ResetPerFrameDescriptorHeapIndex();
 			mBlackboard.ClearBlackboard();
 			mTransientResourceManager.DeleteTransientResources();
 			mFenceCollection.Reset();
+			mCmdAllocatorStorage.ResetCommandAllocators();
 		}
 
-		std::vector<FrameGraphBuilder> FrameGraph::CreateFrameGraphBuilders()
+		std::vector<FrameGraphBuilder> FrameGraph::CreateFrameGraphBuilders(const std::span<const std::unique_ptr<I_RenderModule>> renderModuleSpan)
 		{
 			// Create a CPU job to get a FrameGraphBuilder from each enabled render
 			// module.
@@ -199,7 +206,7 @@ namespace Brawler
 				return renderModule->IsRenderModuleEnabled();
 			};
 
-			const std::size_t enabledRenderModulesCount = std::ranges::count_if(mRenderModuleArr, isRenderModuleEnabledLambda);
+			const std::size_t enabledRenderModulesCount = std::ranges::count_if(renderModuleSpan, isRenderModuleEnabledLambda);
 
 			Brawler::JobGroup builderCreationGroup{};
 			builderCreationGroup.Reserve(enabledRenderModulesCount);
@@ -211,14 +218,14 @@ namespace Brawler
 				builderArr.push_back(FrameGraphBuilder{ *this });
 
 			std::size_t currBuilderIndex = 0;
-			for (auto& renderModule : mRenderModuleArr | std::views::filter(isRenderModuleEnabledLambda))
+			for (auto& renderModule : renderModuleSpan | std::views::filter(isRenderModuleEnabledLambda))
 			{
 				FrameGraphBuilder& currBuilder{ builderArr[currBuilderIndex++] };
 				I_RenderModule* const currModulePtr = renderModule.get();
 
 				builderCreationGroup.AddJob([&currBuilder, currModulePtr] ()
 				{
-					currBuilder = currModulePtr->CreateFrameGraphBuilder();
+					currModulePtr->CreateFrameGraphBuilder(currBuilder);
 				});
 			}
 
@@ -370,7 +377,7 @@ namespace Brawler
 				
 			default:
 			{
-				CheckHRESULT(hAllocationResult);
+				Util::General::CheckHRESULT(hAllocationResult);
 				break;
 			}
 			}

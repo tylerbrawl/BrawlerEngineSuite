@@ -29,7 +29,11 @@ namespace Brawler
 		// their own core automatically.
 		for (std::uint32_t i = 0; i < numWorkerThreads; ++i)
 		{
-			mThreadArr.push_back(std::make_unique<Brawler::WorkerThread>(*this));
+			// We start counting the thread indices here from 1 because index 0 is reserved for
+			// the main thread.
+			const std::uint32_t currThreadIndex = (i + 1);
+			
+			mThreadArr.push_back(std::make_unique<Brawler::WorkerThread>(*this, currThreadIndex));
 			mThreadMap[mThreadArr[i]->GetThreadID()] = mThreadArr[i].get();
 		}
 	}
@@ -54,20 +58,30 @@ namespace Brawler
 
 	void WorkerThreadPool::DispatchJob(Job&& job)
 	{
+		// On attempting to add a job to the queue, we can notify the other threads to wake up
+		// if they were waiting. We do this instead of having the threads check the queue
+		// continuously in order to increase efficiency, as the OS will then have an easier time
+		// understanding how to make good use of the application's threads.
+		//
+		// Linus Torvalds gave a good rant about this very subject for Linux, and I'd be surprised
+		// if the same doesn't hold on other operating systems.
+		
 		// If we cannot store the job in the queue, then we must execute it immediately. (Alternatively,
 		// we could just do a spin lock for some time to see if space opens up, but wouldn't that time
 		// spent waiting be better spent executing actual work?)
+		//
+		// We also make sure to notify every thread which is currently waiting, because if this is
+		// happening, then the threads probably aren't getting any jobs for some stupid reason.
 		if (!mJobQueueArr[std::to_underlying(job.GetPriority())].PushBack(std::move(job))) [[unlikely]]
+		{
+			mJobQueueNotifier.fetch_add(1, std::memory_order::relaxed);
+			mJobQueueNotifier.notify_all();
+			
 			job.Execute();
+		}
 		else
 		{
-			// On successfully adding a job to the queue, we can notify the other threads to wake up
-			// if they were waiting. We do this instead of having the threads check the queue
-			// continuously in order to increase efficiency, as the OS will then have an easier time
-			// understanding how to make good use of the application's threads.
-			//
-			// Linus Torvalds gave a good rant about this very subject for Linux, and I'd be surprised
-			// if the same doesn't hold on other operating systems.
+			// If we did add a job to the queue, then we only need to notify one thread.
 
 			mJobQueueNotifier.fetch_add(1, std::memory_order::relaxed);
 			mJobQueueNotifier.notify_one();

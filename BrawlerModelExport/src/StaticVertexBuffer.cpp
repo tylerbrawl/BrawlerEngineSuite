@@ -4,10 +4,16 @@ module;
 #include <limits>
 #include <stdexcept>
 #include <span>
+#include <format>
+#include <filesystem>
+#include <fstream>
 #include <assimp/mesh.h>
 #include <DirectXMath/DirectXMath.h>
 
 module Brawler.StaticVertexBuffer;
+import Util.ModelExport;
+import Util.General;
+import Brawler.LaunchParams;
 
 namespace
 {
@@ -87,21 +93,95 @@ namespace
 
 namespace Brawler
 {
-	StaticVertexBuffer::StaticVertexBuffer(const aiMesh& mesh) :
+	StaticVertexBuffer::StaticVertexBuffer(const ImportedMesh& mesh) :
 		mUnpackedVertices(),
 		mPackedVertices(),
-		mBoundingBox(DirectX::XMFLOAT3{ AABB_MINIMUM_POINT_INIT }, DirectX::XMFLOAT3{ AABB_MAXIMUM_POINT_INIT })
+		mBoundingBox(DirectX::XMFLOAT3{ AABB_MINIMUM_POINT_INIT }, DirectX::XMFLOAT3{ AABB_MAXIMUM_POINT_INIT }),
+		mMeshPtr(&mesh)
 	{
+		const aiMesh& assimpMesh{ mesh.GetMesh() };
+
 		// We will only support 16-bit indices... well, at least for now, anyways.
-		const std::size_t vertexCount = static_cast<std::size_t>(mesh.mNumVertices);
+		const std::size_t vertexCount = static_cast<std::size_t>(assimpMesh.mNumVertices);
 
 		if (vertexCount > std::numeric_limits<std::uint16_t>::max()) [[unlikely]]
-			throw std::runtime_error{ std::string{ "ERROR: The mesh " } + mesh.mName.C_Str() + " has more vertices than can be represented with 16-bit indices (i.e., it has more than 65,536 vertices)!" };
+			throw std::runtime_error{ std::format("ERROR: The mesh {} has more vertices than can be represented with 16-bit indices (i.e., it has more than 65,536 vertices)!", assimpMesh.mName.C_Str()) };
+
+		if (vertexCount == 0) [[unlikely]]
+			throw std::runtime_error{ std::format("ERROR: The mesh {} has no vertices!", assimpMesh.mName.C_Str()) };
 
 		mUnpackedVertices.reserve(vertexCount);
 		mPackedVertices.reserve(vertexCount);
 
-		InitializeUnpackedData(mesh);
+		InitializeUnpackedData(assimpMesh);
+	}
+
+	void StaticVertexBuffer::Update()
+	{
+		// TODO: Create the equivalent GPU implementation. It should run much faster than
+		// a CPU version. For now, however, during the first update, we can just initialize
+		// all of the packed data.
+		//
+		// TODO 2: Do we actually need a GPU implementation? We seem to be bottlenecked on
+		// the GPU already by texture compression.
+
+		if (mPackedVertices.empty()) [[unlikely]]
+			InitializePackedData();
+	}
+
+	bool StaticVertexBuffer::IsReadyForSerialization() const
+	{
+		// TODO: Create the equivalent GPU implementation. It should run much faster than
+		// a CPU version. However, since we know that all of the data was prepared by the
+		// time this function gets called, we can go ahead and return true.
+		//
+		// TODO 2: Do we actually need a GPU implementation? We seem to be bottlenecked on
+		// the GPU already by texture compression.
+
+		return true;
+	}
+
+	FilePathHash StaticVertexBuffer::SerializeVertexBuffer() const
+	{
+		assert(IsReadyForSerialization());
+		assert(mMeshPtr != nullptr);
+
+		const Brawler::LaunchParams& launchParams{ Util::ModelExport::GetLaunchParameters() };
+		
+		const std::filesystem::path outputFileSubDirectory{ L"Models" / std::filesystem::path{ launchParams.GetModelName() } / std::format(L"LOD{}_{}_VertexBuffer.vb", mMeshPtr->GetLODScene().GetLODLevel(), mMeshPtr->GetMeshIDForLOD()) };
+		const FilePathHash outputPathHash{ outputFileSubDirectory.c_str() };
+
+		const std::filesystem::path fullOutputPath{ launchParams.GetRootOutputDirectory() / outputFileSubDirectory };
+		std::error_code errorCode{};
+		
+		std::filesystem::create_directories(fullOutputPath.parent_path(), errorCode);
+		Util::General::CheckErrorCode(errorCode);
+
+		{
+			std::ofstream packedVertexDataFileStream{ fullOutputPath, std::ios::out | std::ios::binary };
+			const std::span<const PackedStaticVertex> packedVertexDataSpan{ mPackedVertices };
+
+			packedVertexDataFileStream.write(reinterpret_cast<const char*>(packedVertexDataSpan.data()), packedVertexDataSpan.size_bytes());
+		}
+		
+		return outputPathHash;
+	}
+
+	std::span<const UnpackedStaticVertex> StaticVertexBuffer::GetUnpackedVertexSpan() const
+	{
+		return std::span<const UnpackedStaticVertex>{ mUnpackedVertices };
+	}
+
+	const Math::AABB& StaticVertexBuffer::GetBoundingBox() const
+	{
+		return mBoundingBox;
+	}
+
+	std::size_t StaticVertexBuffer::GetVertexCount() const
+	{
+		assert(mPackedVertices.empty() || mPackedVertices.size() == mUnpackedVertices.size());
+
+		return mUnpackedVertices.size();
 	}
 
 	void StaticVertexBuffer::InitializePackedData()
@@ -110,6 +190,9 @@ namespace Brawler
 		{
 			// TODO: Create the equivalent GPU implementation. It should run much faster than
 			// a CPU version.
+			//
+			// TODO 2: Do we actually need a GPU implementation? We seem to be bottlenecked on
+			// the GPU already by texture compression.
 
 			const TangentFrame tangentFrame{ CreateTangentFrame(DirectX::XMLoadFloat3(&(unpackedVertex.Normal)), DirectX::XMLoadFloat3(&(unpackedVertex.Tangent))) };
 

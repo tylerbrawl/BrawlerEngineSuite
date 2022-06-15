@@ -1,13 +1,19 @@
 module;
 #include <memory>
-#include <mutex>
-#include <ranges>
-#include <vector>
 
 export module Brawler.D3D12.GPUCommandContextVault;
 import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.D3D12.GPUCommandContexts;
 import Brawler.D3D12.GPUCommandQueueContextType;
+import Brawler.ThreadSafeQueue;
+
+namespace Brawler
+{
+	namespace D3D12
+	{
+		static constexpr std::size_t CONTEXT_QUEUE_SIZE = 500;
+	}
+}
 
 export namespace Brawler
 {
@@ -17,11 +23,7 @@ export namespace Brawler
 		{
 		private:
 			template <typename T>
-			struct ContextLocker
-			{
-				std::vector<std::unique_ptr<T>> ContextList;
-				std::mutex CritSection;
-			};
+			using ContextQueue = Brawler::ThreadSafeQueue<std::unique_ptr<T>, CONTEXT_QUEUE_SIZE>;
 
 		public:
 			GPUCommandContextVault() = default;
@@ -65,15 +67,15 @@ export namespace Brawler
 
 		private:
 			template <GPUCommandQueueType QueueType>
-			ContextLocker<GPUCommandQueueContextType<QueueType>>& GetContextLocker();
+			auto& GetContextQueue();
 
 			template <GPUCommandQueueType QueueType>
-			const ContextLocker<GPUCommandQueueContextType<QueueType>>& GetContextLocker() const;
+			const auto& GetContextQueue() const;
 
 		private:
-			ContextLocker<DirectContext> mDirectContextLocker;
-			ContextLocker<ComputeContext> mComputeContextLocker;
-			ContextLocker<CopyContext> mCopyContextLocker;
+			ContextQueue<DirectContext> mDirectContextQueue;
+			ContextQueue<ComputeContext> mComputeContextQueue;
+			ContextQueue<CopyContext> mCopyContextQueue;
 		};
 	}
 }
@@ -87,67 +89,49 @@ namespace Brawler
 		template <GPUCommandQueueType QueueType>
 		std::unique_ptr<GPUCommandQueueContextType<QueueType>> GPUCommandContextVault::AcquireCommandContext()
 		{
-			using ContextPtr_T = std::unique_ptr<GPUCommandQueueContextType<QueueType>>;
-			
-			ContextPtr_T contextPtr{ nullptr };
-			ContextLocker<GPUCommandQueueContextType<QueueType>>& contextLocker{ GetContextLocker<QueueType>() };
-
-			// Try to acquire a command context from the ContextLocker. We only consider those whose
-			// commands were already executed by the GPU.
-			{
-				std::scoped_lock<std::mutex> lock{ contextLocker.CritSection };
-
-				auto itr = std::ranges::find_if(contextLocker.ContextList, [] (const ContextPtr_T& context) { return context->ReadyForUse(); });
-				if (itr != contextLocker.ContextList.end())
-				{
-					// We found a context which we can use.
-					contextPtr = std::move(*itr);
-					contextLocker.ContextList.erase(itr);
-				}
-			}
+			// Try to acquire a command context from the ContextQueue.
+			std::optional<std::unique_ptr<GPUCommandQueueContextType<QueueType>>> contextPtr{ GetContextQueue<QueueType>().TryPop() };
 
 			// If we do not have a free command context, then we need to create one.
-			if (contextPtr == nullptr)
-				contextPtr = std::make_unique<GPUCommandQueueContextType<QueueType>>();
-
-			return contextPtr;
+			return (contextPtr.has_value() ? std::move(*contextPtr) : std::make_unique<GPUCommandQueueContextType<QueueType>>());
 		}
 
 		template <GPUCommandQueueType QueueType>
 		void GPUCommandContextVault::ReturnCommandContext(std::unique_ptr<GPUCommandQueueContextType<QueueType>>&& cmdContext)
 		{
-			ContextLocker<GPUCommandQueueContextType<QueueType>>& contextLocker{ GetContextLocker<QueueType>() };
-
-			{
-				std::scoped_lock<std::mutex> lock{ contextLocker.CritSection };
-				contextLocker.ContextList.push_back(std::move(cmdContext));
-			}
+			// We can just ignore the return result of ThreadSafeQueue::TryPop(). A GPUCommandContext
+			// instance only contains a closed command list at this point.
+			// 
+			// TODO: Is it okay to just destroy an ID3D12GraphicsCommandList object immediately after
+			// closing it? It's the ID3D12CommandAllocator which stores the commands, so it should be
+			// fine.
+			std::ignore = GetContextQueue<QueueType>().PushBack(std::move(cmdContext));
 		}
 
 		template <GPUCommandQueueType QueueType>
-		GPUCommandContextVault::ContextLocker<GPUCommandQueueContextType<QueueType>>& GPUCommandContextVault::GetContextLocker()
+		auto& GPUCommandContextVault::GetContextQueue()
 		{
 			if constexpr (QueueType == GPUCommandQueueType::DIRECT)
-				return mDirectContextLocker;
+				return mDirectContextQueue;
 
 			if constexpr (QueueType == GPUCommandQueueType::COMPUTE)
-				return mComputeContextLocker;
+				return mComputeContextQueue;
 
 			if constexpr (QueueType == GPUCommandQueueType::COPY)
-				return mCopyContextLocker;
+				return mCopyContextQueue;
 		}
 
 		template <GPUCommandQueueType QueueType>
-		const GPUCommandContextVault::ContextLocker<GPUCommandQueueContextType<QueueType>>& GPUCommandContextVault::GetContextLocker() const
+		const auto& GPUCommandContextVault::GetContextQueue() const
 		{
 			if constexpr (QueueType == GPUCommandQueueType::DIRECT)
-				return mDirectContextLocker;
+				return mDirectContextQueue;
 
 			if constexpr (QueueType == GPUCommandQueueType::COMPUTE)
-				return mComputeContextLocker;
+				return mComputeContextQueue;
 
 			if constexpr (QueueType == GPUCommandQueueType::COPY)
-				return mCopyContextLocker;
+				return mCopyContextQueue;
 		}
 	}
 }

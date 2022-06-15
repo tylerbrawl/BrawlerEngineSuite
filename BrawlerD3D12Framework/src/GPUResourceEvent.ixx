@@ -2,7 +2,7 @@ module;
 #include <variant>
 #include "DxDef.h"
 
-export module Brawler.D3D12.GPUResourceStateManagement:GPUResourceEvent;
+export module Brawler.D3D12.GPUResourceEvent;
 
 export namespace Brawler
 {
@@ -18,6 +18,7 @@ export namespace Brawler
 	{
 		struct ResourceTransitionEvent
 		{
+			std::uint32_t SubResourceIndex;
 			D3D12_RESOURCE_STATES BeforeState;
 			D3D12_RESOURCE_STATES AfterState;
 			D3D12_RESOURCE_BARRIER_FLAGS Flags;

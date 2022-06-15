@@ -30,3 +30,16 @@ export namespace Brawler
 		using SafeHandle = std::unique_ptr<std::remove_pointer_t<HANDLE>, HandleDeleter>;
 	}
 }
+
+export
+{
+	bool operator==(const Brawler::Win32::SafeHandle& lhs, const HANDLE rhs)
+	{
+		return (lhs.get() == rhs);
+	}
+
+	bool operator==(const HANDLE lhs, const Brawler::Win32::SafeHandle& rhs)
+	{
+		return (rhs == lhs);
+	}
+}

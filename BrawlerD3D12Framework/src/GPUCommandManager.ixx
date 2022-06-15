@@ -73,7 +73,7 @@ export namespace Brawler
 			Brawler::CompositeEnum<GPUCommandQueueType> mLastSubmissionQueues;
 			std::array<GPUCommandContextSink, Util::Engine::MAX_FRAMES_IN_FLIGHT> mCmdContextSinkArr;
 			GPUCommandContextSinkInfo mSinkInfo;
-			GPUCommandContextVault mCmdContextVault;
+			std::unique_ptr<GPUCommandContextVault> mCmdContextVaultPtr;
 		};
 	}
 }

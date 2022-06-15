@@ -8,7 +8,9 @@ import Util.Math;
 import Brawler.D3D12.GPUMemoryBudgetInfo;
 import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.D3D12.I_GPUResource;
+import Util.General;
 import Util.Engine;
+import Brawler.D3D12.GPUDevice;
 
 export namespace Util
 {
@@ -27,6 +29,44 @@ export namespace Util
 {
 	namespace D3D12
 	{
+		using PIXEventColor_T = std::int32_t;
+		
+		/// <summary>
+		/// Given a red, green, and blue value, each as a single byte, this function returns a PIXEventColor_T
+		/// which encodes the corresponding color in a format which PIX can interpret. This is used to set the
+		/// displayed color of an event in PIX.
+		/// 
+		/// The returned value is actually the same as that of the PIX_COLOR function found in the pix3.h
+		/// header file. The only real difference between that function and this one is that
+		/// Util::D3D12::CalculatePIXColor() is constexpr, whereas PIX_COLOR, for some unholy reason, is not.
+		/// </summary>
+		/// <param name="r">
+		/// - The red component of the event color, represented as a single byte.
+		/// </param>
+		/// <param name="g">
+		/// - The green component of the event color, represented as a single byte.
+		/// </param>
+		/// <param name="b">
+		/// - The blue component of the event color, represented as a single byte.
+		/// </param>
+		/// <returns>
+		/// The function returns a PIXEventColor_T which encodes the corresponding color in a format which PIX 
+		/// can interpret. This is used to set the displayed color of an event in PIX.
+		/// </returns>
+		__forceinline constexpr PIXEventColor_T CalculatePIXColor(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b)
+		{
+			PIXEventColor_T colorValue = 0xFF000000;
+
+			colorValue |= (static_cast<std::uint32_t>(r) << 16);
+			colorValue |= (static_cast<std::uint32_t>(g) << 8);
+			colorValue |= static_cast<std::uint32_t>(b);
+
+			return colorValue;
+		}
+
+		constexpr PIXEventColor_T PIX_EVENT_COLOR_CPU_ONLY = CalculatePIXColor(0x00, 0x00, 0xFF);
+		constexpr PIXEventColor_T PIX_EVENT_COLOR_CPU_GPU = CalculatePIXColor(0x00, 0xFF, 0x00);
+		
 		/// <summary>
 		/// This function can be used to check if a particular resource state is valid.
 		/// </summary>
@@ -50,6 +90,9 @@ export namespace Util
 		__forceinline constexpr D3D12_RESOURCE_STATES GetAlwaysPromotableResourceStatesMask();
 
 		Brawler::D3D12::GPUMemoryBudgetInfo GetGPUMemoryBudgetInfo();
+
+		bool IsDebugLayerEnabled();
+		consteval bool IsPIXRuntimeSupportEnabled();
 	}
 }
 
@@ -151,8 +194,8 @@ namespace Util
 				return ((involvedState & ALLOWED_STATES_ON_COPY_QUEUE_MASK) == involvedState);
 
 			default:
-				__assume(false);
 				assert(false);
+				std::unreachable();
 
 				return false;
 			}
@@ -176,10 +219,38 @@ namespace Util
 		{
 			Brawler::D3D12::GPUMemoryBudgetInfo budgetInfo{};
 
-			CheckHRESULT(Util::Engine::GetDXGIAdapter().QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP::DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &(budgetInfo.DeviceLocalMemoryInfo)));
-			CheckHRESULT(Util::Engine::GetDXGIAdapter().QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP::DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &(budgetInfo.SystemMemoryInfo)));
+			Util::General::CheckHRESULT(Util::Engine::GetDXGIAdapter().QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP::DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &(budgetInfo.DeviceLocalMemoryInfo)));
+			Util::General::CheckHRESULT(Util::Engine::GetDXGIAdapter().QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP::DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &(budgetInfo.SystemMemoryInfo)));
 
 			return budgetInfo;
+		}
+
+		bool IsDebugLayerEnabled()
+		{
+			// In Release builds, we know that the Debug Layer isn't going to be enabled, so we
+			// can just skip the check entirely. This should allow for better optimization.
+			if constexpr (!Util::General::IsDebugModeEnabled())
+				return false;
+			else
+			{
+				static const bool isDebugLayerEnabled = Util::Engine::GetGPUDevice().IsDebugLayerEnabled();
+				return isDebugLayerEnabled;
+			}
+		}
+
+		consteval bool IsPIXRuntimeSupportEnabled()
+		{
+			// The PIX_EVENTS_ARE_TURNED_ON macro is defined by PIX if it is able to enable PIX events.
+			// This macro is not defined in Release builds, but it *IS* defined in Release with Debugging
+			// builds.
+
+			constexpr bool ENABLE_PIX_RUNTIME_SUPPORT = true;
+
+#ifdef PIX_EVENTS_ARE_TURNED_ON
+			return ENABLE_PIX_RUNTIME_SUPPORT;
+#else
+			return false;
+#endif
 		}
 	}
 }

@@ -1,6 +1,7 @@
 module;
 #include <cassert>
 #include <functional>
+#include <array>
 #include <span>
 #include "DxDef.h"
 
@@ -8,11 +9,14 @@ export module Brawler.D3D12.GPUCommandContext;
 import Brawler.D3D12.GPUCommandQueueType;
 import Util.Engine;
 import Util.General;
+import Util.D3D12;
 import Brawler.D3D12.GPUResourceAccessManager;
 import Brawler.D3D12.GPUFence;
 import Brawler.D3D12.FrameGraphResourceDependency;
 import Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.D3D12.TextureSubResource;
+import Brawler.D3D12.I_BufferSnapshot;
+export import Brawler.D3D12.GPUResourceDescriptorHeap;
 
 export namespace Brawler
 {
@@ -95,7 +99,7 @@ export namespace Brawler
 			GPUCommandContext();
 
 		public:
-			virtual ~GPUCommandContext();
+			virtual ~GPUCommandContext() = default;
 
 			GPUCommandContext(const GPUCommandContext& rhs) = delete;
 			GPUCommandContext& operator=(const GPUCommandContext& rhs) = delete;
@@ -149,21 +153,20 @@ export namespace Brawler
 			/// </summary>
 			void ResetCommandList();
 
+			/// <summary>
+			/// Records commands which must be recorded after the command list is reset, e.g.,
+			/// setting the descriptor heaps. This function is called by 
+			/// GPUCommandContext::ResetCommandList().
+			/// </summary>
+			void PrepareCommandList();
+
+		protected:
+			virtual void PrepareCommandListIMPL();
+
+		private:
 			void CloseCommandList();
 			void MarkAsUseful();
 
-			/// <summary>
-			/// Checks if this GPUCommandContext can be used to record other commands. This
-			/// function will return true only if the GPU has finished executing all of the
-			/// previous commands.
-			/// </summary>
-			/// <returns>
-			/// The function returns true if the GPU has finished executing all of the commands
-			/// of this GPUCommandContext and false otherwise.
-			/// </returns>
-			bool ReadyForUse() const;
-
-			void SetGPUFence(const GPUFence& fence);
 			void ResourceBarrier(const std::span<const CD3DX12_RESOURCE_BARRIER> barrierSpan) const;
 
 			// ==================================================================
@@ -171,15 +174,29 @@ export namespace Brawler
 			// ==================================================================
 
 		public:
-			void CopyBufferToTexture(const TextureSubResource& destTexture, const TextureCopyBufferSubAllocation& srcSubAllocation) const;
-			void CopyTextureToBuffer(const TextureCopyBufferSubAllocation& destSubAllocation, const TextureSubResource& srcTexture) const;
+			void AssertResourceState(const I_BufferSnapshot& bufferSnapshot, const D3D12_RESOURCE_STATES expectedState) const;
+			void AssertResourceState(const TextureSubResource& textureSubResource, const D3D12_RESOURCE_STATES expectedState) const;
+
+			void CopyBufferToTexture(const TextureSubResource& destTexture, const TextureCopyBufferSnapshot& srcSnapshot) const;
+			void CopyTextureToBuffer(const TextureCopyBufferSnapshot& destSnapshot, const TextureSubResource& srcTexture) const;
+
+			void CopyBufferToBuffer(const I_BufferSnapshot& destSnapshot, const I_BufferSnapshot& srcSnapshot) const;
+
+			/// <summary>
+			/// Issues the D3D12 resource barrier specified by barrier immediately on the GPU timeline.
+			/// 
+			/// This function is meant for debugging the Brawler Engine's resource state tracking system. It
+			/// should never be necessary to call this function for *ANY* barrier type if the system is working
+			/// correctly, and this function does nothing in Release builds.
+			/// </summary>
+			/// <param name="barrier">
+			/// - The CD3DX12_RESOURCE_BARRIER which is to be immediately issued on the GPU timeline.
+			/// </param>
+			void DebugResourceBarrier(const CD3DX12_RESOURCE_BARRIER& barrier) const;
 
 		private:
-			Microsoft::WRL::ComPtr<Brawler::D3D12CommandAllocator> mCmdAllocator;
 			Microsoft::WRL::ComPtr<Brawler::D3D12GraphicsCommandList> mCmdList;
 			GPUResourceAccessManager mResourceAccessManager;
-			const GPUFence* mFencePtr;
-			std::uint64_t mRequiredFenceValue;
 			bool mHasCommands;
 		};
 	}
@@ -193,41 +210,24 @@ namespace Brawler
 	{
 		template <GPUCommandQueueType CmdListType>
 		GPUCommandContext<CmdListType>::GPUCommandContext() :
-			mCmdAllocator(nullptr),
 			mCmdList(nullptr),
 			mResourceAccessManager(),
-			mFencePtr(nullptr),
-			mRequiredFenceValue(0),
 			mHasCommands(false)
 		{
 			Brawler::D3D12Device& d3dDevice{ Util::Engine::GetD3D12Device() };
 
 			{
-				// Create the command allocator.
-				CheckHRESULT(d3dDevice.CreateCommandAllocator(
-					GPUCommandContextInfo<CmdListType>::D3D_CMD_LIST_TYPE,
-					IID_PPV_ARGS(&mCmdAllocator)
-				));
-			}
-
-			{
 				// Create the command list in the closed state.
 				Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList{};
-				CheckHRESULT(d3dDevice.CreateCommandList1(
+				Util::General::CheckHRESULT(d3dDevice.CreateCommandList1(
 					0,
 					GPUCommandContextInfo<CmdListType>::D3D_CMD_LIST_TYPE,
 					D3D12_COMMAND_LIST_FLAGS::D3D12_COMMAND_LIST_FLAG_NONE,
 					IID_PPV_ARGS(&cmdList)
 				));
 
-				CheckHRESULT(cmdList.As(&mCmdList));
+				Util::General::CheckHRESULT(cmdList.As(&mCmdList));
 			}
-		}
-
-		template <GPUCommandQueueType CmdListType>
-		GPUCommandContext<CmdListType>::~GPUCommandContext()
-		{
-			assert(ReadyForUse() && "ERROR: A command context was destroyed before the GPU could execute all of its commands!");
 		}
 
 		template <GPUCommandQueueType CmdListType>
@@ -267,41 +267,48 @@ namespace Brawler
 		template <GPUCommandQueueType CmdListType>
 		void GPUCommandContext<CmdListType>::ResetCommandList()
 		{
-			assert(ReadyForUse() && "ERROR: An attempt was made to record commands into a command context, but the GPU was not finished executing all of its previous commands!");
-
 			// Reset the command list so that we can record commands into it.
-			CheckHRESULT(mCmdAllocator->Reset());
-			CheckHRESULT(mCmdList->Reset(mCmdAllocator.Get(), nullptr));
+			Util::General::CheckHRESULT(mCmdList->Reset(&(Util::Engine::GetD3D12CommandAllocator(CmdListType)), nullptr));
+
+			PrepareCommandList();
 
 			// At the beginning of a command list, it has no commands recorded into it.
 			mHasCommands = false;
 		}
 
 		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::PrepareCommandList()
+		{
+			// For command lists which will be sent to either the direct or the compute
+			// queue, we should set the descriptor heaps before recording any commands.
+			if constexpr (CmdListType != GPUCommandQueueType::COPY)
+			{
+				static const std::array<Brawler::D3D12DescriptorHeap*, 1> shaderVisibleDescriptorHeapArr{
+					&(Util::Engine::GetGPUResourceDescriptorHeap().GetD3D12DescriptorHeap())
+				};
+
+				mCmdList->SetDescriptorHeaps(static_cast<std::uint32_t>(shaderVisibleDescriptorHeapArr.size()), shaderVisibleDescriptorHeapArr.data());
+			}
+
+			PrepareCommandListIMPL();
+		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::PrepareCommandListIMPL()
+		{}
+
+		template <GPUCommandQueueType CmdListType>
 		void GPUCommandContext<CmdListType>::CloseCommandList()
 		{
 			// Close the command list. This lets D3D12 know that we are finished recording commands
 			// into it.
-			CheckHRESULT(mCmdList->Close());
+			Util::General::CheckHRESULT(mCmdList->Close());
 		}
 
 		template <GPUCommandQueueType CmdListType>
 		void GPUCommandContext<CmdListType>::MarkAsUseful()
 		{
 			mHasCommands = true;
-		}
-
-		template <GPUCommandQueueType CmdListType>
-		bool GPUCommandContext<CmdListType>::ReadyForUse() const
-		{
-			return (mFencePtr == nullptr || mFencePtr->HasFenceCompletedValue(mRequiredFenceValue));
-		}
-
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::SetGPUFence(const GPUFence& fence)
-		{
-			mFencePtr = &fence;
-			mRequiredFenceValue = fence.GetLastSignalValue();
 		}
 
 		template <GPUCommandQueueType CmdListType>
@@ -316,13 +323,41 @@ namespace Brawler
 		// ==================================================================
 
 		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::CopyBufferToTexture(const TextureSubResource& destTexture, const TextureCopyBufferSubAllocation& srcSubAllocation) const
+		void GPUCommandContext<CmdListType>::AssertResourceState(const I_BufferSnapshot& bufferSnapshot, const D3D12_RESOURCE_STATES expectedState) const
+		{
+			if (Util::D3D12::IsDebugLayerEnabled())
+			{
+				assert(Util::D3D12::IsResourceStateValid(expectedState) && "ERROR: An attempt was made to check if a resource is in a given state using GPUCommandContext::AssertResourceState(), but the provided resource state was invalid!");
+
+				Microsoft::WRL::ComPtr<Brawler::D3D12DebugCommandList> debugCmdList{};
+				Util::General::CheckHRESULT(mCmdList.As(&debugCmdList));
+
+				assert(debugCmdList->AssertResourceState(&(bufferSnapshot.GetD3D12Resource()), 0, static_cast<std::uint32_t>(expectedState)) && "ERROR: A D3D12 resource state assertion failed! (See GPUCommandContext::AssertResourceState().)");
+			}
+		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::AssertResourceState(const TextureSubResource& textureSubResource, const D3D12_RESOURCE_STATES expectedState) const
+		{
+			if (Util::D3D12::IsDebugLayerEnabled())
+			{
+				assert(Util::D3D12::IsResourceStateValid(expectedState) && "ERROR: An attempt was made to check if a resource is in a given state using GPUCommandContext::AssertResourceState(), but the provided resource state was invalid!");
+
+				Microsoft::WRL::ComPtr<Brawler::D3D12DebugCommandList> debugCmdList{};
+				Util::General::CheckHRESULT(mCmdList.As(&debugCmdList));
+
+				assert(debugCmdList->AssertResourceState(&(textureSubResource.GetD3D12Resource()), textureSubResource.GetSubResourceIndex(), static_cast<std::uint32_t>(expectedState)) && "ERROR: A D3D12 resource state assertion failed! (See GPUCommandContext::AssertResourceState().)");
+			}
+		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::CopyBufferToTexture(const TextureSubResource& destTexture, const TextureCopyBufferSnapshot& srcSnapshot) const
 		{
 			assert(IsResourceAccessValid(destTexture.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination texture resource in a call to GPUCommandContext::CopyBufferToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
-			assert(IsResourceAccessValid(srcSubAllocation.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source buffer resource in a call to GPUCommandContext::CopyBufferToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
+			assert(IsResourceAccessValid(srcSnapshot.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source buffer resource in a call to GPUCommandContext::CopyBufferToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
 
 			const CD3DX12_TEXTURE_COPY_LOCATION destCopyLocation{ &(destTexture.GetD3D12Resource()), destTexture.GetSubResourceIndex() };
-			const CD3DX12_TEXTURE_COPY_LOCATION srcCopyLocation{ srcSubAllocation.GetBufferTextureCopyLocation() };
+			const CD3DX12_TEXTURE_COPY_LOCATION& srcCopyLocation{ srcSnapshot.GetBufferTextureCopyLocation() };
 
 			mCmdList->CopyTextureRegion(
 				&destCopyLocation,
@@ -335,12 +370,12 @@ namespace Brawler
 		}
 
 		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::CopyTextureToBuffer(const TextureCopyBufferSubAllocation& destSubAllocation, const TextureSubResource& srcTexture) const
+		void GPUCommandContext<CmdListType>::CopyTextureToBuffer(const TextureCopyBufferSnapshot& destSnapshot, const TextureSubResource& srcTexture) const
 		{
-			assert(IsResourceAccessValid(destSubAllocation.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination buffer resource in a call to GPUCommandContext::CopyTextureToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
+			assert(IsResourceAccessValid(destSnapshot.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination buffer resource in a call to GPUCommandContext::CopyTextureToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
 			assert(IsResourceAccessValid(srcTexture.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source texture resource in a call to GPUCommandContext::CopyTextureToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
 
-			const CD3DX12_TEXTURE_COPY_LOCATION destCopyLocation{ destSubAllocation.GetBufferTextureCopyLocation() };
+			const CD3DX12_TEXTURE_COPY_LOCATION& destCopyLocation{ destSnapshot.GetBufferTextureCopyLocation() };
 			const CD3DX12_TEXTURE_COPY_LOCATION srcCopyLocation{ &(srcTexture.GetD3D12Resource()), srcTexture.GetSubResourceIndex() };
 
 			mCmdList->CopyTextureRegion(
@@ -351,6 +386,30 @@ namespace Brawler
 				&srcCopyLocation,
 				nullptr
 			);
+		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::CopyBufferToBuffer(const I_BufferSnapshot& destSnapshot, const I_BufferSnapshot& srcSnapshot) const
+		{
+			assert(IsResourceAccessValid(destSnapshot.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination buffer resource in a call to GPUCommandContext::CopyBufferToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
+			assert(IsResourceAccessValid(srcSnapshot.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source buffer resource in a call to GPUCommandContext::CopyBufferToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
+
+			assert(destSnapshot.GetSubAllocationSize() == srcSnapshot.GetSubAllocationSize() && "ERROR: An attempt was made to call GPUCommandContext::CopyBufferToBuffer() with two buffer sub-allocations which did not have equivalent sizes!");
+			
+			mCmdList->CopyBufferRegion(
+				&(destSnapshot.GetD3D12Resource()),
+				destSnapshot.GetOffsetFromBufferStart(),
+				&(srcSnapshot.GetD3D12Resource()),
+				srcSnapshot.GetOffsetFromBufferStart(),
+				srcSnapshot.GetSubAllocationSize()
+			);
+		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::DebugResourceBarrier(const CD3DX12_RESOURCE_BARRIER& barrier) const
+		{
+			if constexpr (Util::General::IsDebugModeEnabled())
+				mCmdList->ResourceBarrier(1, &barrier);
 		}
 	}
 }

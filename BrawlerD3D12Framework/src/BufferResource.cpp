@@ -25,6 +25,13 @@ namespace
 			},
 			.Layout = D3D12_TEXTURE_LAYOUT::D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
 
+			// *IMPORTANT UPDATE*: The MSDN lied again! As it turns out, buffers cannot be used as either
+			// a render target (D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) or with an unordered access
+			// view (D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS) if it is being created in either a
+			// D3D12_HEAP_TYPE_UPLOAD or a D3D12_HEAP_TYPE_READBACK heap. Failing to follow this rule
+			// results in a debug layer error (State Creation Error #638). I'll leave the original
+			// comment below for historical purposes.
+			//
 			// The MSDN states that we must still correctly fill out the Flags parameter, even though
 			// D3D12_RESOURCE_FLAGS are meant to control texture properties. However, it also states
 			// that we can "use the most amount of capability support without concern about the
@@ -38,9 +45,25 @@ namespace
 		Brawler::D3D12_RESOURCE_DESC bufferDesc{ REQUIRED_BUFFER_DESC };
 		bufferDesc.Width = initInfo.SizeInBytes;
 
+		// Buffers created in DEFAULT heaps are implicitly promoted on their first use. Thus, it makes
+		// sense to start them in the COMMON state. Indeed, PIX shows that regardless of what initial
+		// state you provide for a buffer during resource creation, its initial state is always set to
+		// the COMMON state internally.
+		D3D12_RESOURCE_STATES initialResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON;
+
+		if (initInfo.HeapType != D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_DEFAULT)
+		{
+			bufferDesc.Flags = D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_NONE;
+
+			if (initInfo.HeapType == D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_UPLOAD)
+				initialResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_GENERIC_READ;
+			else
+				initialResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST;
+		}
+
 		return Brawler::D3D12::GPUResourceInitializationInfo{
 			.ResourceDesc{std::move(bufferDesc)},
-			.InitialResourceState = initInfo.InitialResourceState,
+			.InitialResourceState = initialResourceState,
 			.HeapType = initInfo.HeapType
 		};
 	}

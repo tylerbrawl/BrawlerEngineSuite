@@ -16,6 +16,7 @@ import Brawler.AssetCompilerContext;
 import Brawler.BCAMetadata;
 import Brawler.PackerSettings;
 import Brawler.ZSTDFrame;
+import Brawler.BCAInfo;
 
 namespace
 {
@@ -51,8 +52,9 @@ namespace
 		std::uint64_t FileOffsetInBytes;
 
 		/// <summary>
-		/// This is the size, in bytes, of the compressed data within the BPK file
-		/// archive.
+		/// If the data is compressed, then this is the size, in bytes, of the
+		/// compressed data represented by this ToC entry. Otherwise, if the data is
+		/// *NOT* compressed, then this value *MUST* be zero (0).
 		/// </summary>
 		std::uint64_t CompressedSizeInBytes;
 
@@ -125,16 +127,21 @@ namespace Brawler
 
 		for (const auto& bcaArchivePtr : mBCAArchiveArr)
 		{
+			// Change the compressed size in the ToC entry depending on whether or not the
+			// data was actually compressed.
+			const bool isDataCompressed = !(bcaArchivePtr->GetBCAInfo().DoNotCompress);
+			const std::uint64_t compressedDataSize = (isDataCompressed ? bcaArchivePtr->GetCompressedAssetFrame().GetByteArray().size_bytes() : 0);
+			
 			VersionedBPKFileHeaderV1::TableOfContentsEntry tocEntry{
 				.FileIdentifierHash{bcaArchivePtr->GetMetadata().SourceAssetDirectoryHash},
 				.FileOffsetInBytes{currFileOffset},
-				.CompressedSizeInBytes{bcaArchivePtr->GetCompressedAssetFrame().GetByteArray().size_bytes()},
+				.CompressedSizeInBytes{compressedDataSize},
 				.UncompressedSizeInBytes{bcaArchivePtr->GetMetadata().UncompressedSizeInBytes}
 			};
 			bpkFileStream << tocEntry;
 
 			// TODO: Should we add padding for alignment? If so, how much?
-			currFileOffset += tocEntry.CompressedSizeInBytes;
+			currFileOffset += (isDataCompressed ? tocEntry.CompressedSizeInBytes : tocEntry.UncompressedSizeInBytes);
 		}
 	}
 

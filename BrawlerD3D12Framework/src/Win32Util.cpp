@@ -2,6 +2,8 @@ module;
 #include <string>
 #include <iostream>
 #include <stdexcept>
+#include <cassert>
+#include <format>
 #include <io.h>
 #include <fcntl.h>
 #include "DxDef.h"
@@ -11,34 +13,10 @@ module;
 
 module Util.Win32;
 import Util.General;
+import Brawler.Win32.SafeHandle;
 
 namespace
 {
-	constexpr std::wstring GetConsoleFormatString(const Util::Win32::ConsoleFormat format)
-	{
-		// Visit the MSDN at https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences#text-formatting
-		// for documentation regarding the various virtual terminal sequences used for
-		// text formatting.
-
-		switch (format)
-		{
-		case Util::Win32::ConsoleFormat::SUCCESS:
-			return std::wstring{ L"\x1b[22;32m" };  // Normal Green Foreground Text
-
-		case Util::Win32::ConsoleFormat::WARNING:
-			return std::wstring{ L"\x1b[22;33m" };  // Normal Yellow Foreground Text
-
-		case Util::Win32::ConsoleFormat::CRITICAL_FAILURE:
-			return std::wstring{ L"\x1b[1;31m" };   // Bold Red Foreground Text
-
-		case Util::Win32::ConsoleFormat::NORMAL:
-			[[fallthrough]];
-
-		default:
-			return std::wstring{ L"\x1b[0m" };	  // Default Text Format
-		}
-	}
-
 	void EnableConsoleFormatting()
 	{
 		HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -63,7 +41,7 @@ namespace
 
 	void InitializeCOM()
 	{
-		CheckHRESULT(CoInitializeEx(nullptr, COINIT_MULTITHREADED));
+		Util::General::CheckHRESULT(CoInitializeEx(nullptr, COINIT_MULTITHREADED));
 	}
 }
 
@@ -75,6 +53,21 @@ namespace Util
 		{
 			EnableConsoleFormatting();
 			InitializeCOM();
+		}
+
+		void WriteDebugMessage(const std::string_view msg)
+		{
+			if constexpr (Util::General::IsDebugModeEnabled())
+				WriteDebugMessage(Util::General::StringToWString(msg));
+		}
+
+		void WriteDebugMessage(const std::wstring_view msg)
+		{
+			if constexpr (Util::General::IsDebugModeEnabled())
+			{
+				const std::wstring formattedMsg{ std::format(L"{}\n", msg) };
+				OutputDebugString(formattedMsg.c_str());
+			}
 		}
 
 		void WriteFormattedConsoleMessage(const std::string_view msg, const ConsoleFormat format)
@@ -90,8 +83,37 @@ namespace Util
 			// be atomic without the need for us to use critical sections. (Windows might itself use
 			// these, but that isn't for us to worry about.)
 
-			const std::wstring formattedMsg{ GetConsoleFormatString(format) + std::wstring{ msg } + GetConsoleFormatString(ConsoleFormat::NORMAL) + L"\n" };
+			const std::wstring formattedMsg{ Brawler::Win32::GetConsoleFormatString(format) + std::wstring{ msg } + Brawler::Win32::GetConsoleFormatString(ConsoleFormat::NORMAL) + L"\n" };
 			std::wcout << formattedMsg;
+		}
+
+		std::wstring GetLastErrorString()
+		{
+			LPWSTR messageStrBuffer = nullptr;
+			
+			const std::uint32_t formatMessageResult = FormatMessage(
+				FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER,
+				nullptr,
+				GetLastError(),
+				0,
+				reinterpret_cast<LPWSTR>(&messageStrBuffer),
+				0,
+				nullptr
+			);
+
+			if (formatMessageResult == 0) [[unlikely]]
+				throw std::runtime_error{ "ERROR: FormatMessage() failed to allocate a buffer to get the string equivalent of a GetLastError() error code!" };
+
+			const std::wstring errMsgString{ messageStrBuffer };
+
+			{
+				const HLOCAL hFreeResult = LocalFree(messageStrBuffer);
+
+				if (hFreeResult != nullptr) [[unlikely]]
+					throw std::runtime_error{ "ERROR: LocalFree() failed to deallocate the buffer allocated by FormatMessage()!" };
+			}
+			
+			return errMsgString;
 		}
 	}
 }

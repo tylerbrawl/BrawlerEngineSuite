@@ -8,10 +8,11 @@ import Brawler.JobPriority;
 import Brawler.WorkerThreadPool;
 import Util.General;
 import Util.Coroutine;
+import Brawler.DelayedJobSubmitter;
 
 namespace Brawler
 {
-	WorkerThread::WorkerThread(WorkerThreadPool& threadPool) :
+	WorkerThread::WorkerThread(WorkerThreadPool& threadPool, const std::uint32_t threadIndex) :
 		mThread(),
 		mPool(&threadPool),
 		mResources(),
@@ -19,6 +20,7 @@ namespace Brawler
 	{
 		std::atomic<bool> isThreadInitialized = false;
 
+		mResources.SetThreadIndex(threadIndex);
 		mThread = std::thread{ [this, &isThreadInitialized, &threadPool]()
 		{
 			Initialize();
@@ -66,8 +68,10 @@ namespace Brawler
 				const std::uint32_t previousJobQueueNotifierValue = mPool->GetCurrentJobQueueNotifierValue();
 				const bool jobExecuted = Util::Coroutine::TryExecuteJob();
 
-				if (!jobExecuted) [[likely]]
+				if (!jobExecuted && IsWorkerThreadPoolWaitAcceptable()) [[likely]]
 					mPool->WaitForJobDispatch(previousJobQueueNotifierValue);
+				else [[unlikely]]
+					OnWorkerThreadPoolWaitDenied();
 			}
 			catch (...)
 			{
@@ -75,5 +79,24 @@ namespace Brawler
 				KillThread();
 			}
 		}
+	}
+
+	bool WorkerThread::IsWorkerThreadPoolWaitAcceptable() const
+	{
+		// The following list of scenarios are undesirable to perform an atomic wait in:
+
+		//   - The WorkerThread has any delayed CPU jobs to check for.
+		if (mResources.GetDelayedJobSubmitter().HasDelayedJobsToCheck()) [[unlikely]]
+			return false;
+
+		// Add more scenarios here as necessary.
+
+		return true;
+	}
+
+	void WorkerThread::OnWorkerThreadPoolWaitDenied()
+	{
+		// Check for any delayed CPU jobs which can be submitted to the WorkerThreadPool.
+		mResources.GetDelayedJobSubmitter().CheckForDelayedJobSubmissions();
 	}
 }

@@ -14,7 +14,7 @@ export namespace Brawler
 		namespace BTEX
 		{
 			/*
-			Brawler Texture File (BTEX) Format
+			Brawler ModelTexture File (BTEX) Format
 			Documentation - Version 1
 
 			First, a CommonBTEXHeader is appropriately filled out and written to the file. Then, a

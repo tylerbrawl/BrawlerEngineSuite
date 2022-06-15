@@ -5,6 +5,7 @@ module;
 module Brawler.D3D12.GPUFence;
 import Util.Engine;
 import Util.Win32;
+import Util.General;
 
 namespace Brawler
 {
@@ -13,13 +14,13 @@ namespace Brawler
 		void GPUFence::Initialize()
 		{
 			Microsoft::WRL::ComPtr<ID3D12Fence> oldVersionFence{};
-			CheckHRESULT(Util::Engine::GetD3D12Device().CreateFence(
+			Util::General::CheckHRESULT(Util::Engine::GetD3D12Device().CreateFence(
 				mCurrSignalValue,
 				D3D12_FENCE_FLAGS::D3D12_FENCE_FLAG_NONE,
 				IID_PPV_ARGS(&oldVersionFence)
 			));
 
-			CheckHRESULT(oldVersionFence.As(&mFence));
+			Util::General::CheckHRESULT(oldVersionFence.As(&mFence));
 		}
 
 		void GPUFence::Initialize(Microsoft::WRL::ComPtr<Brawler::D3D12Fence>&& d3dFence, const std::uint64_t signalValue)
@@ -30,7 +31,7 @@ namespace Brawler
 
 		void GPUFence::SignalOnCPUTimeline()
 		{
-			CheckHRESULT(mFence->Signal(++mCurrSignalValue));
+			Util::General::CheckHRESULT(mFence->Signal(++mCurrSignalValue));
 		}
 
 		void GPUFence::SignalOnGPUTimeline(Brawler::D3D12CommandQueue& cmdQueue)
@@ -48,12 +49,12 @@ namespace Brawler
 			// implemented internally with a synchronization primitive, rather than a busy
 			// wait.
 
-			CheckHRESULT(mFence->SetEventOnCompletion(mCurrSignalValue, nullptr));
+			Util::General::CheckHRESULT(mFence->SetEventOnCompletion(mCurrSignalValue, nullptr));
 		}
 
 		void GPUFence::WaitOnGPUTimeline(Brawler::D3D12CommandQueue& cmdQueue) const
 		{
-			cmdQueue.Wait(mFence.Get(), mCurrSignalValue);
+			Util::General::CheckHRESULT(cmdQueue.Wait(mFence.Get(), mCurrSignalValue));
 		}
 
 		std::uint64_t GPUFence::GetLastSignalValue() const
@@ -70,7 +71,7 @@ namespace Brawler
 		{
 			assert(Util::Win32::IsHandleValid(hEvent));
 
-			CheckHRESULT(mFence->SetEventOnCompletion(mCurrSignalValue, hEvent));
+			Util::General::CheckHRESULT(mFence->SetEventOnCompletion(mCurrSignalValue, hEvent));
 		}
 	}
 }

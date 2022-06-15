@@ -36,6 +36,17 @@ namespace Brawler
 		};
 
 		template <>
+		struct RootParameterDefinition<Brawler::RootParameters::GenericDownsample>
+		{
+			static constexpr std::string_view ROOT_PARAMETER_ENUM_CLASS_NAME{ "GenericDownsample" };
+
+			static constexpr std::array<std::string_view, std::to_underlying(GenericDownsample::COUNT_OR_ERROR)> ROOT_PARAMETER_ENUM_VALUE_STRINGS_ARR{
+				"TEXTURES_TABLE",
+				"MIP_MAP_CONSTANTS"
+			};
+		};
+
+		template <>
 		struct RootParameterDefinition<Brawler::RootParameters::TestRootSignature>
 		{
 			static constexpr std::string_view ROOT_PARAMETER_ENUM_CLASS_NAME{ "TestRootSignature" };
@@ -73,9 +84,9 @@ export namespace Brawler
 			RootParameterDefinition<T>::ROOT_PARAMETER_ENUM_VALUE_STRINGS_ARR;
 			T::COUNT_OR_ERROR;
 		}
-		consteval std::span<const std::string_view> GetEnumValueStrings()
+		consteval auto GetEnumValueStrings()
 		{
-			return RootParameterDefinition<T>::ROOT_PARAMETER_ENUM_VALUE_STRINGS_ARR;
+			return std::span<const std::string_view, std::to_underlying(T::COUNT_OR_ERROR)>{ RootParameterDefinition<T>::ROOT_PARAMETER_ENUM_VALUE_STRINGS_ARR };
 		}
 	}
 }

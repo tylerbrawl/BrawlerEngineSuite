@@ -6,6 +6,7 @@ module;
 module Brawler.D3D12.CommittedD3D12ResourceContainer;
 import Brawler.D3D12.GPUResourceInitializationInfo;
 import Util.Engine;
+import Util.General;
 import Brawler.D3D12.I_GPUResource;
 import Brawler.D3D12.GPUResourceUsageTracker;
 
@@ -40,7 +41,7 @@ namespace Brawler
 			SetResidencyStatus((heapFlags & D3D12_HEAP_FLAGS::D3D12_HEAP_FLAG_CREATE_NOT_RESIDENT) == 0);
 
 			Microsoft::WRL::ComPtr<Brawler::D3D12Resource> d3dResource{};
-			CheckHRESULT(Util::Engine::GetD3D12Device().CreateCommittedResource2(
+			Util::General::CheckHRESULT(Util::Engine::GetD3D12Device().CreateCommittedResource2(
 				&heapProperties,
 
 				// Try to always elide zeroing the heap as an optimization.

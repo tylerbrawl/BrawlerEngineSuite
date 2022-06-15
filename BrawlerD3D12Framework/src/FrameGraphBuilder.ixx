@@ -30,7 +30,7 @@ export namespace Brawler
 			friend class I_RenderModule;
 
 		public:
-			FrameGraphBuilder() = default;
+			FrameGraphBuilder() = delete;
 			explicit FrameGraphBuilder(FrameGraph& frameGraph);
 
 			FrameGraphBuilder(const FrameGraphBuilder& rhs) = delete;
@@ -65,10 +65,15 @@ export namespace Brawler
 
 			std::size_t GetRenderPassBundleCount() const;
 
+			FrameGraph& GetFrameGraph();
+			const FrameGraph& GetFrameGraph() const;
+
 			FrameGraphBlackboard& GetBlackboard();
 			const FrameGraphBlackboard& GetBlackboard() const;
 
 			std::span<RenderPassBundle> GetRenderPassBundleSpan();
+
+			void MergeFrameGraphBuilder(FrameGraphBuilder&& mergedBuilder);
 
 		private:
 			std::vector<std::unique_ptr<I_GPUResource>> ExtractTransientResources();

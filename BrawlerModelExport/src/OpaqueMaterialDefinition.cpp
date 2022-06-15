@@ -1,44 +1,45 @@
 module;
-#include <string>
-#include <stdexcept>
-#include <cassert>
-#include <assimp/material.h>
-#include "DxDef.h"
+#include <format>
+#include <dxgiformat.h>
 
 module Brawler.OpaqueMaterialDefinition;
-import Brawler.MaterialIDMap;
+import Brawler.ModelTextureSerializer;
+import Brawler.ModelTextureID;
+import Brawler.MaterialID;
+import Brawler.FilePathHash;
 
 namespace Brawler
 {
-	OpaqueMaterialDefinition::OpaqueMaterialDefinition(const aiMaterial& material) :
-		mDiffuseTexture()
+	OpaqueMaterialDefinition::OpaqueMaterialDefinition(ImportedMesh&& mesh) :
+		I_MaterialDefinition(std::move(mesh)),
+		mDiffuseTextureResolver(GetImportedMesh())
+	{}
+
+	void OpaqueMaterialDefinition::Update()
 	{
-		// For now, we will only worry about the diffuse albedo texture.
-
-		if (material.GetTextureCount(aiTextureType_DIFFUSE) == 0) [[unlikely]]
-		{
-			// For some reason, aiMaterial.GetName() is not const, even though it says that it is
-			// in the documentation.
-			aiString materialName{};
-			const aiReturn materialNameResult{ material.Get(AI_MATKEY_NAME, materialName) };
-			assert(materialNameResult == aiReturn_SUCCESS);
-
-			std::string errMsg{ "ERROR: The material " + std::string{ materialName.C_Str() } + " does not have a diffuse albedo texture!" };
-			throw std::runtime_error{ std::move(errMsg) };
-		}
-
-		aiString diffuseTextureName{};
-		const aiReturn diffuseResult{ material.GetTexture(aiTextureType_DIFFUSE, 0, &diffuseTextureName) };
-		assert(diffuseResult == aiReturn_SUCCESS);
-
-		mDiffuseTexture = Texture<aiTextureType::aiTextureType_DIFFUSE>{ diffuseTextureName };
-		mDiffuseTexture.GenerateMipMaps();
-
-		mDiffuseTexture.WriteToFileSystem();
+		// If multiple model texture resolvers are being used, it could be a good idea to
+		// use a CPU job for each update. However, since we are only using one (for now),
+		// we just update that one directly.
+		mDiffuseTextureResolver.Update();
 	}
 
-	MaterialID OpaqueMaterialDefinition::GetMaterialID() const
+	bool OpaqueMaterialDefinition::IsReadyForSerialization() const
 	{
-		return Brawler::GetMaterialID<OpaqueMaterialDefinition>();
+		// Serializing the OpaqueMaterialDefinition involves both writing out the
+		// FilePathHash for each texture used by the material and serializing the texture
+		// data itself. These tasks cannot be completed until the model texture
+		// resolvers all report that they are ready for serialization.
+
+		return mDiffuseTextureResolver.IsReadyForSerialization();
+	}
+
+	SerializedMaterialDefinition OpaqueMaterialDefinition::SerializeMaterial() const
+	{
+		const ModelTextureSerializer<ModelTextureID::DIFFUSE_ALBEDO> opaqueDiffuseSerializer{ GetImportedMesh(), mDiffuseTextureResolver.GetFinalOpaqueDiffuseTexture() };
+
+		return SerializedMaterialDefinition{
+			.Identifier = MaterialID::OPAQUE,
+			.DiffuseAlbedoTextureHash = opaqueDiffuseSerializer.GetModelTextureFilePathHash().GetHash()
+		};
 	}
 }

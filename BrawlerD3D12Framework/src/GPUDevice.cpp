@@ -2,23 +2,52 @@ module;
 #include <cassert>
 #include <stdexcept>
 #include <array>
+#include <string_view>
+#include <optional>
+#include <format>
 #include "DxDef.h"
 
 module Brawler.D3D12.GPUDevice;
 import Brawler.CompositeEnum;
+import Util.General;
+import Util.D3D12;
+import Util.Win32;
+import Brawler.Win32.DLLManager;
+import Brawler.Win32.SafeModule;
 
 namespace
 {
 	static constexpr D3D_FEATURE_LEVEL MINIMUM_D3D_FEATURE_LEVEL = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0;
 	
+	static constexpr bool ALLOW_WARP_DEVICE = false;
+	
 	bool VerifyD3D12DeviceFeatureSupport(const Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice)
 	{
+		// Ensure ID3D12PipelineLibrary1 support. According to the D3D12 Pipeline State Cache sample,
+		// this should be only a software requirement, as it only requires an updated OS and graphics
+		// driver. Nevertheless, we still need to check for it.
+		{
+			D3D12_FEATURE_DATA_SHADER_CACHE shaderCacheData{};
+			Util::General::CheckHRESULT(d3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_SHADER_CACHE, &shaderCacheData, sizeof(shaderCacheData)));
+
+			// TODO: If the D3D12_SHADER_CACHE_SUPPORT_AUTOMATIC_DISK_CACHE bit is set in
+			// shaderCacheData.SupportFlags, then the MSDN states that "the driver supports an OS-
+			// managed shader cache that stores compiled shaders on disk to accelerate future runs
+			// of the program."
+			//
+			// If this is true, then do we even need to cache PSOs ourselves? Is this bit even set
+			// in practice?
+
+			if ((shaderCacheData.SupportFlags & D3D12_SHADER_CACHE_SUPPORT_FLAGS::D3D12_SHADER_CACHE_SUPPORT_LIBRARY) == 0)
+				return false;
+		}
+		
 		// Ensure Shader Model 6.0 support.
 		{
 			D3D12_FEATURE_DATA_SHADER_MODEL shaderModelData{
 				.HighestShaderModel = D3D_SHADER_MODEL::D3D_SHADER_MODEL_6_0
 			};
-			CheckHRESULT(d3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_SHADER_MODEL, &shaderModelData, sizeof(shaderModelData)));
+			Util::General::CheckHRESULT(d3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_SHADER_MODEL, &shaderModelData, sizeof(shaderModelData)));
 
 			if (shaderModelData.HighestShaderModel < D3D_SHADER_MODEL::D3D_SHADER_MODEL_6_0)
 				return false;
@@ -27,7 +56,7 @@ namespace
 		// Ensure Resource Binding Tier 2 support.
 		{
 			D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12OptionsData{};
-			CheckHRESULT(d3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_D3D12_OPTIONS, &d3d12OptionsData, sizeof(d3d12OptionsData)));
+			Util::General::CheckHRESULT(d3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_D3D12_OPTIONS, &d3d12OptionsData, sizeof(d3d12OptionsData)));
 
 			if (d3d12OptionsData.ResourceBindingTier < D3D12_RESOURCE_BINDING_TIER::D3D12_RESOURCE_BINDING_TIER_2)
 				return false;
@@ -110,7 +139,7 @@ case TypedUAVFormat::formatName:		\
 			.Support2{}
 		};
 
-		CheckHRESULT(d3dDevice.CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_FORMAT_SUPPORT, &formatSupport, sizeof(formatSupport)));
+		Util::General::CheckHRESULT(d3dDevice.CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_FORMAT_SUPPORT, &formatSupport, sizeof(formatSupport)));
 		return ((formatSupport.Support2 & D3D12_FORMAT_SUPPORT2::D3D12_FORMAT_SUPPORT2_UAV_TYPED_LOAD) != 0);
 	}
 
@@ -129,6 +158,125 @@ case TypedUAVFormat::formatName:		\
 
 		supportCheckLambda.operator()<Brawler::D3D12::TypedUAVFormat::R16G16B16A16_UNORM>(d3dDevice, deviceCapabilities);
 	}
+
+	// #including pix3.h is causing compile times in Release builds to become miserably slow. (I'm talking, like,
+	// hours for a single module interface unit here.) I blame C++20 modules and the MSVC's support for them.
+	//
+	// So, if PIX isn't included, then we'll just define what we need here ourselves to allow the program to
+	// compile.
+
+#ifndef PIX_EVENTS_ARE_TURNED_ON
+	static __forceinline HMODULE PIXLoadLatestWinPixGpuCapturerLibrary()
+	{}
+#endif // !ARE_PIX_EVENTS_TURNED_ON
+
+	void VerifyPIXCapturerLoaded()
+	{
+		if constexpr (Util::D3D12::IsPIXRuntimeSupportEnabled())
+		{
+			// First, check to see if the capturer DLL was already loaded. This will be the case if the
+			// application is launched directly from PIX.
+			const std::optional<HMODULE> hPIXModule{ Brawler::Win32::DLLManager::GetInstance().GetExistingModule(L"WinPixGpuCapturer.dll") };
+
+			// If that failed, then we need to load it ourselves. PIX provides a helper function to do
+			// just that.
+			if (!hPIXModule.has_value())
+			{
+				Brawler::Win32::SafeModule pixModule{ PIXLoadLatestWinPixGpuCapturerLibrary() };
+
+				if (pixModule == nullptr) [[unlikely]]
+					throw std::runtime_error{ std::format("ERROR: PIX failed to load the WinPixGpuCapturer.dll file at runtime with the following error: {}", Util::General::WStringToString(Util::Win32::GetLastErrorString())) };
+
+				Brawler::Win32::DLLManager::GetInstance().RegisterModule(std::move(pixModule));
+			}
+		}
+	}
+}
+
+namespace Brawler
+{
+	namespace D3D12
+	{
+		consteval bool DebugModeDebugLayerEnabler::IsDebugLayerAllowed()
+		{
+			// The NVIDIA debug layer driver sucks. It seems to shoot out debug layer errors and dereference nullptrs for no
+			// good reason. So, even if we are building for Debug mode, this setting can be toggled to either enable or
+			// disable the D3D12 debug layer.
+			// 
+			// Honestly, I have a really shaky relationship with this debug layer. As of writing this, I just tried out
+			// PIX's debug layer, and it seems to be leaps and bounds ahead of this buggy mess. My current recommendation
+			// is to just capture a frame with PIX and use its debug layer offline, setting ALLOW_D3D12_DEBUG_LAYER to be
+			// false.
+			// 
+			// (It's honestly incredibly discomforting that the PIX and NVIDIA debug layers produce different results.
+			// After the jank which I've dealt with using the NVIDIA debug layer, I'm inclined to trust the PIX debug layer
+			// messages more, but who really knows which is better?)
+			//
+			// NOTE: The debug layer is never enabled in Release builds, even if this value is set to true.
+			constexpr bool ALLOW_D3D12_DEBUG_LAYER = true;
+
+			return ALLOW_D3D12_DEBUG_LAYER;
+		}
+
+		void DebugModeDebugLayerEnabler::TryEnableDebugLayer()
+		{
+			// If we get to this point, then the Debug Layer must be allowed for this build. So, we
+			// will make a best effort to enable it here.
+
+			// PIX does not play nicely with the D3D12 Debug Layer. If we detect that PIX is trying
+			// to capture the application, then we will not enable the Debug Layer. (I am not aware
+			// of a way to detect PIX timing captures, but this should work for GPU captures.)
+			static constexpr bool DISABLE_DEBUG_LAYER_WHEN_USING_PIX = false;
+
+			if constexpr (DISABLE_DEBUG_LAYER_WHEN_USING_PIX)
+			{
+				static constexpr std::wstring_view PIX_CAPTURER_DLL_NAME{ L"WinPixGpuCapturer.dll" };
+
+				HMODULE hPixCapturerModule = nullptr;
+				const bool getPixModuleResult = GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, PIX_CAPTURER_DLL_NAME.data(), &hPixCapturerModule);
+
+				// If we found the PIX capturer module, then do not load the D3D12 Debug Layer.
+				if (getPixModuleResult) [[unlikely]]
+				{
+					Util::Win32::WriteDebugMessage(L"WARNING: The D3D12 Debug Layer was set to be enabled (see DebugLayerEnabler<Util::General::BuildMode::DEBUG>::IsDebugLayerAllowed()), but PIX is attempting to perform a GPU capture. Thus, the request to enable the D3D12 Debug Layer has been ignored. If you wish, you may use PIX's Debug Layer after the capture has completed.");
+					mIsDebugLayerEnabled = false;
+
+					return;
+				}
+			}
+
+			{
+				Microsoft::WRL::ComPtr<ID3D12Debug> oldDebugController{};
+				HRESULT hr = D3D12GetDebugInterface(IID_PPV_ARGS(&oldDebugController));
+
+				if (FAILED(hr)) [[unlikely]]
+					mIsDebugLayerEnabled = false;
+
+				Microsoft::WRL::ComPtr<Brawler::D3D12Debug> latestDebugController{};
+				hr = oldDebugController.As(&latestDebugController);
+
+				if (FAILED(hr)) [[unlikely]]
+					mIsDebugLayerEnabled = false;
+
+				latestDebugController->EnableDebugLayer();
+
+				// They weren't kidding when they said that GPU-based validation slows down your
+				// program significantly. Enable this at your own risk. Honestly, you're probably
+				// better off just using GPU-based validation on a PIX capture, going to sleep, and
+				// then looking at the results when you wake up.
+				static constexpr bool ENABLE_GPU_BASED_VALIDATION = false;
+
+				latestDebugController->SetEnableGPUBasedValidation(ENABLE_GPU_BASED_VALIDATION);
+			}
+
+			mIsDebugLayerEnabled = true;
+		}
+
+		bool DebugModeDebugLayerEnabler::IsDebugLayerEnabled() const
+		{
+			return mIsDebugLayerEnabled;
+		}
+	}
 }
 
 namespace Brawler
@@ -142,7 +290,7 @@ namespace Brawler
 			InitializeGPUCapabilities();
 			InitializeDescriptorHandleIncrementSizeArray();
 
-			mDescriptorHeap.Initialize();
+			mDescriptorHeap.InitializeD3D12DescriptorHeap();
 		}
 		
 		Brawler::D3D12Device& GPUDevice::GetD3D12Device()
@@ -200,20 +348,23 @@ namespace Brawler
 			return mDeviceCapabilities;
 		}
 
+		bool GPUDevice::IsDebugLayerEnabled() const
+		{
+			if constexpr (!CurrentDebugLayerEnabler::IsDebugLayerAllowed())
+				return false;
+			else
+				return CurrentDebugLayerEnabler::IsDebugLayerEnabled();
+		}
+
 		void GPUDevice::InitializeD3D12Device()
 		{
+			// Enable PIX captures in Debug and Release with Debugging builds.
+			if constexpr (Util::D3D12::IsPIXRuntimeSupportEnabled())
+				VerifyPIXCapturerLoaded();
+			
 			// Enable the debug layer in Debug builds.
-			if constexpr (Util::General::IsDebugModeEnabled()) 
-			{
-				Microsoft::WRL::ComPtr<ID3D12Debug> debugController{};
-				CheckHRESULT(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
-
-				Microsoft::WRL::ComPtr<ID3D12Debug3> latestDebugController{};
-				CheckHRESULT(debugController.As(&latestDebugController));
-
-				latestDebugController->EnableDebugLayer();
-				latestDebugController->SetEnableGPUBasedValidation(true);
-			}
+			if constexpr (CurrentDebugLayerEnabler::IsDebugLayerAllowed())
+				CurrentDebugLayerEnabler::TryEnableDebugLayer();
 
 			// Initialize the DXGI factory.
 			{
@@ -223,42 +374,61 @@ namespace Brawler
 				if constexpr (Util::General::IsDebugModeEnabled())
 					factoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 
-				CheckHRESULT(CreateDXGIFactory2(factoryFlags, IID_PPV_ARGS(&dxgiFactory)));
-				CheckHRESULT(dxgiFactory.As(&mDXGIFactory));
+				Util::General::CheckHRESULT(CreateDXGIFactory2(factoryFlags, IID_PPV_ARGS(&dxgiFactory)));
+				Util::General::CheckHRESULT(dxgiFactory.As(&mDXGIFactory));
 			}
 
-			// Get the best possible DXGI adapter and use it to create the D3D12 device.
+			// Create the D3D12 device.
 			{
-				Microsoft::WRL::ComPtr<IDXGIAdapter> bestAdapter{};
-				std::uint32_t currIndex = 0;
+				if constexpr (Util::General::IsDebugModeEnabled() && ALLOW_WARP_DEVICE)
+					CreateWARPD3D12Device();
+				else
+					CreateHardwareD3D12Device();
+			}
 
-				while (mD3dDevice == nullptr)
+			// In Debug builds, edit the Debug Layer messages and breakpoints.
+			if constexpr (CurrentDebugLayerEnabler::IsDebugLayerAllowed())
+			{
+				if (CurrentDebugLayerEnabler::IsDebugLayerEnabled())
 				{
-					HRESULT hr = mDXGIFactory->EnumAdapterByGpuPreference(
-						currIndex++,
-						DXGI_GPU_PREFERENCE::DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
-						IID_PPV_ARGS(&bestAdapter)
-					);
+					// Add D3D12 Debug Layer warnings which you wish to ignore here V. You better have a good reason for
+					// doing so, though, and you should document it well.
 
-					// Terminate the program if we could not find a valid adapter.
-					if (hr == DXGI_ERROR_NOT_FOUND) [[unlikely]]
-						throw std::runtime_error{ "ERROR: None of the DXGI adapters present on the system could be created!" };
+					static std::array<D3D12_MESSAGE_ID, 2> ignoredD3D12DebugLayerMessageArr{
+						// Disable error messages for invalid alignments from ID3D12Device::GetResourceAllocationInfo2().
+						// We already check if an alignment value is invalid when calling that function, and revert
+						// to standard (non-small) alignment when this happens. As a result, this error message becomes
+						// redundant. (In fact, I'm not entirely sure why this is even an error message in the debug
+						// layer in the first place, considering that the function returns an error value if the small
+						// alignment cannot be used, anyways.)
+						D3D12_MESSAGE_ID::D3D12_MESSAGE_ID_CREATERESOURCE_INVALIDALIGNMENT,
 
-					Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice{};
-					hr = D3D12CreateDevice(bestAdapter.Get(), MINIMUM_D3D_FEATURE_LEVEL, IID_PPV_ARGS(&d3dDevice));
+						// Disable warnings for multiple buffer resources having the same GPU virtual address. This is
+						// a natural consequence of the means by which we alias transient resources.
+						//
+						// I'm not entirely sure why this warning exists. The idea is probably to ensure that the
+						// developer is aware that buffers which share GPU memory cannot be used simultaneously in
+						// different states, but the FrameGraph system of the Brawler Engine guarantees that this does
+						// not happen.
+						D3D12_MESSAGE_ID::D3D12_MESSAGE_ID_HEAP_ADDRESS_RANGE_INTERSECTS_MULTIPLE_BUFFERS
+					};
 
-					// If we could not create a D3D12Device with this DXGIAdapter, then move on to
-					// the next one.
-					if (hr != S_OK) [[unlikely]]
-						continue;
+					D3D12_INFO_QUEUE_FILTER infoQueueFilter{};
+					infoQueueFilter.DenyList.NumIDs = static_cast<std::uint32_t>(ignoredD3D12DebugLayerMessageArr.size());
 
-					// If this device does not support all of our required features, then move on
-					// to the next one.
-					if (!VerifyD3D12DeviceFeatureSupport(d3dDevice)) [[unlikely]]
-						continue;
+					// Some genius made pIDList a non-const D3D12_MESSAGE_ID*, so ignoredD3D12DebugLayerMessageArr can't
+					// be constexpr.
+					infoQueueFilter.DenyList.pIDList = ignoredD3D12DebugLayerMessageArr.data();
 
-					CheckHRESULT(bestAdapter.As(&mDXGIAdapter));
-					CheckHRESULT(d3dDevice.As(&mD3dDevice));
+					Microsoft::WRL::ComPtr<ID3D12InfoQueue> d3dInfoQueue{};
+					Util::General::CheckHRESULT(mD3dDevice.As(&d3dInfoQueue));
+
+					Util::General::CheckHRESULT(d3dInfoQueue->AddStorageFilterEntries(&infoQueueFilter));
+
+					// Do a debug break on any D3D12 error messages with a severity >= D3D12_MESSAGE_SEVERITY_WARNING.
+					Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_WARNING, true));
+					Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_ERROR, true));
+					Util::General::CheckHRESULT(d3dInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY::D3D12_MESSAGE_SEVERITY_CORRUPTION, true));
 				}
 			}
 		}
@@ -325,9 +495,43 @@ namespace Brawler
 				// non-depth/stencil texturs can be placed into the same heap.
 
 				D3D12_FEATURE_DATA_D3D12_OPTIONS optionsData{};
-				CheckHRESULT(mD3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_D3D12_OPTIONS, &optionsData, sizeof(optionsData)));
+				Util::General::CheckHRESULT(mD3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_D3D12_OPTIONS, &optionsData, sizeof(optionsData)));
 
 				mDeviceCapabilities.GPUResourceHeapTier = (optionsData.ResourceHeapTier == D3D12_RESOURCE_HEAP_TIER::D3D12_RESOURCE_HEAP_TIER_1 ? ResourceHeapTier::TIER_1 : ResourceHeapTier::TIER_2);
+
+				// Set the GPU Resource Binding Tier. This value describes the capabilities of binding
+				// GPU resources to the pipeline for this device. These capabilities include how large
+				// descriptor heaps can be, how much of a descriptor table can be dedicated to a given
+				// type of view, and whether or not null descriptors need to be used when not binding
+				// a resource to a specific root parameter slot.
+				switch (optionsData.ResourceBindingTier)
+				{
+				case D3D12_RESOURCE_BINDING_TIER::D3D12_RESOURCE_BINDING_TIER_1: [[unlikely]]
+				{
+					mDeviceCapabilities.GPUResourceBindingTier = ResourceBindingTier::TIER_1;
+					break;
+				}
+
+				case D3D12_RESOURCE_BINDING_TIER::D3D12_RESOURCE_BINDING_TIER_2:
+				{
+					mDeviceCapabilities.GPUResourceBindingTier = ResourceBindingTier::TIER_2;
+					break;
+				}
+
+				case D3D12_RESOURCE_BINDING_TIER::D3D12_RESOURCE_BINDING_TIER_3:
+				{
+					mDeviceCapabilities.GPUResourceBindingTier = ResourceBindingTier::TIER_3;
+					break;
+				}
+
+				default: [[unlikely]]
+				{
+					assert(false);
+					std::unreachable();
+
+					break;
+				}
+				}
 
 				// Check for supported typed UAV formats. The set specified by FORMAT_ALWAYS_SUPPORTED
 				// is always guaranteed to exist.
@@ -352,7 +556,7 @@ namespace Brawler
 				// and not the actual GPU memory amount.
 
 				D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT vaSupportData{};
-				CheckHRESULT(mD3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT, &vaSupportData, sizeof(vaSupportData)));
+				Util::General::CheckHRESULT(mD3dDevice->CheckFeatureSupport(D3D12_FEATURE::D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT, &vaSupportData, sizeof(vaSupportData)));
 
 				mDeviceCapabilities.MaxGPUVirtualAddressBitsPerProcess = vaSupportData.MaxGPUVirtualAddressBitsPerProcess;
 			}
@@ -371,6 +575,58 @@ namespace Brawler
 		{
 			for (std::size_t i = 0; i < static_cast<std::size_t>(D3D12_DESCRIPTOR_HEAP_TYPE::D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES); ++i)
 				mHandleIncrementSizeArr[i] = mD3dDevice->GetDescriptorHandleIncrementSize(static_cast<D3D12_DESCRIPTOR_HEAP_TYPE>(i));
+		}
+
+		void GPUDevice::CreateHardwareD3D12Device()
+		{
+			// Get the best possible DXGI adapter and use it to create the D3D12 device.
+			
+			Microsoft::WRL::ComPtr<IDXGIAdapter> bestAdapter{};
+			std::uint32_t currIndex = 0;
+
+			while (mD3dDevice == nullptr)
+			{
+				HRESULT hr = mDXGIFactory->EnumAdapterByGpuPreference(
+					currIndex++,
+					DXGI_GPU_PREFERENCE::DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
+					IID_PPV_ARGS(&bestAdapter)
+				);
+
+				// Terminate the program if we could not find a valid adapter.
+				if (hr == DXGI_ERROR_NOT_FOUND) [[unlikely]]
+					throw std::runtime_error{ "ERROR: None of the DXGI adapters present on the system could be created!" };
+
+				Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice{};
+				hr = D3D12CreateDevice(bestAdapter.Get(), MINIMUM_D3D_FEATURE_LEVEL, IID_PPV_ARGS(&d3dDevice));
+
+				// If we could not create a D3D12Device with this DXGIAdapter, then move on to
+				// the next one.
+				if (hr != S_OK) [[unlikely]]
+					continue;
+
+				// If this device does not support all of our required features, then move on
+				// to the next one.
+				if (!VerifyD3D12DeviceFeatureSupport(d3dDevice)) [[unlikely]]
+					continue;
+
+				Util::General::CheckHRESULT(bestAdapter.As(&mDXGIAdapter));
+				Util::General::CheckHRESULT(d3dDevice.As(&mD3dDevice));
+			}
+		}
+
+		void GPUDevice::CreateWARPD3D12Device()
+		{
+			Microsoft::WRL::ComPtr<IDXGIAdapter> warpAdapter{};
+			Util::General::CheckHRESULT(mDXGIFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
+
+			Microsoft::WRL::ComPtr<ID3D12Device> warpD3dDevice{};
+			Util::General::CheckHRESULT(D3D12CreateDevice(warpAdapter.Get(), MINIMUM_D3D_FEATURE_LEVEL, IID_PPV_ARGS(&warpD3dDevice)));
+
+			if (!VerifyD3D12DeviceFeatureSupport(warpD3dDevice)) [[unlikely]]
+				throw std::runtime_error{ "ERROR: The WARP device could not support all of the required D3D12 features!" };
+
+			Util::General::CheckHRESULT(warpAdapter.As(&mDXGIAdapter));
+			Util::General::CheckHRESULT(warpD3dDevice.As(&mD3dDevice));
 		}
 	}
 }

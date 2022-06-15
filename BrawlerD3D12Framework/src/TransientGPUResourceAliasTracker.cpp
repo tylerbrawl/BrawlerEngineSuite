@@ -1,6 +1,8 @@
 module;
 #include <span>
 #include <unordered_map>
+#include <set>
+#include <algorithm>
 #include <cassert>
 #include <array>
 #include "DxDef.h"
@@ -75,19 +77,22 @@ namespace Brawler
 				// Order the resource information structures from largest corresponding resource to
 				// smallest corresponding resource.
 
-				return (lhs->ResourceSize > rhs->ResourceSize);
+				if (lhs->ResourceSize != rhs->ResourceSize) [[likely]]
+					return (lhs->ResourceSize > rhs->ResourceSize);
+
+				// If they have the same size, then just order them by their underlying pointer values.
+				return (reinterpret_cast<std::size_t>(lhs) < reinterpret_cast<std::size_t>(rhs));
 			};
 
-			Brawler::SortedVector<const TransientGPUResourceInfo*, decltype(SORT_TRANSIENT_GPU_RESOURCE_INFO_LAMBDA)> sortedResourceInfoArr{};
-			sortedResourceInfoArr.Reserve(mResourceLifetimeMap.size());
+			std::set<const TransientGPUResourceInfo*, decltype(SORT_TRANSIENT_GPU_RESOURCE_INFO_LAMBDA)> sortedResourceInfoSet{};
 
 			for (const auto& [resourcePtr, resourceInfo] : mResourceLifetimeMap)
-				sortedResourceInfoArr.Insert(&resourceInfo);
+				sortedResourceInfoSet.insert(&resourceInfo);
 
-			while (!sortedResourceInfoArr.Empty())
+			while (!sortedResourceInfoSet.empty())
 			{
 				std::vector<const TransientGPUResourceInfo*> aliasableResourceInfoArr{};
-				sortedResourceInfoArr.ForEach([this, &aliasableResourceInfoArr] (const TransientGPUResourceInfo* const& currInfo)
+				std::ranges::for_each(sortedResourceInfoSet, [this, &aliasableResourceInfoArr] (const TransientGPUResourceInfo* const& currInfo)
 				{
 					// We can skip all of this logic if aliasableResourceInfoArr is currently empty.
 					if (aliasableResourceInfoArr.empty())
@@ -98,7 +103,7 @@ namespace Brawler
 
 					const bool canCurrentResourceAliasBeforeGPUUse = currInfo->ResourcePtr->CanAliasBeforeUseOnGPU();
 					const bool canCurrentResourceAliasAfterGPUUse = currInfo->ResourcePtr->CanAliasAfterUseOnGPU();
-						
+
 					// Check to make sure that the resource corresponding to currInfo does not overlap with
 					// any of the resources in aliasableResourceInfoArr.
 					for (const auto aliasedResourceInfoPtr : aliasableResourceInfoArr)
@@ -149,7 +154,7 @@ namespace Brawler
 				// and add its ResourcePtr to aliasedResourcePtrArr.
 				for (const auto aliasedResourceInfoPtr : aliasableResourceInfoArr)
 				{
-					sortedResourceInfoArr.Remove(aliasedResourceInfoPtr);
+					sortedResourceInfoSet.erase(aliasedResourceInfoPtr);
 					aliasedResourcePtrArr.push_back(aliasedResourceInfoPtr->ResourcePtr);
 				}
 

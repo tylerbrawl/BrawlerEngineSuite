@@ -4,14 +4,15 @@ module;
 export module Brawler.OpaqueMaterialDefinition;
 import Brawler.I_MaterialDefinition;
 import Brawler.MaterialID;
-import Brawler.Texture;
+import Brawler.OpaqueDiffuseModelTextureResolver;
+import Brawler.SerializedMaterialDefinition;
 
 export namespace Brawler
 {
 	class OpaqueMaterialDefinition final : public I_MaterialDefinition
 	{
 	public:
-		explicit OpaqueMaterialDefinition(const aiMaterial& material);
+		explicit OpaqueMaterialDefinition(ImportedMesh&& mesh);
 
 		OpaqueMaterialDefinition(const OpaqueMaterialDefinition& rhs) = delete;
 		OpaqueMaterialDefinition& operator=(const OpaqueMaterialDefinition& rhs) = delete;
@@ -19,9 +20,12 @@ export namespace Brawler
 		OpaqueMaterialDefinition(OpaqueMaterialDefinition&& rhs) noexcept = default;
 		OpaqueMaterialDefinition& operator=(OpaqueMaterialDefinition&& rhs) noexcept = default;
 
-		MaterialID GetMaterialID() const override;
+		void Update() override;
+		bool IsReadyForSerialization() const override;
+
+		SerializedMaterialDefinition SerializeMaterial() const override;
 
 	private:
-		Texture<aiTextureType::aiTextureType_DIFFUSE> mDiffuseTexture;
+		OpaqueDiffuseModelTextureResolver mDiffuseTextureResolver;
 	};
 }

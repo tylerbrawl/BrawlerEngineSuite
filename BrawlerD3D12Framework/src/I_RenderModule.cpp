@@ -14,10 +14,8 @@ namespace Brawler
 			return true;
 		}
 
-		FrameGraphBuilder I_RenderModule::CreateFrameGraphBuilder()
+		void I_RenderModule::CreateFrameGraphBuilder(FrameGraphBuilder& builder)
 		{
-			FrameGraphBuilder builder{};
-
 			// Allow derived instances to construct the FrameGraphBuilder by adding
 			// RenderPasses, creating transient resources, etc.
 			BuildFrameGraph(builder);
@@ -25,8 +23,6 @@ namespace Brawler
 			// Finalize the FrameGraphBuilder. We do this here to reduce the amount
 			// of work required when adding its components to the FrameGraph.
 			FinalizeFrameGraphBuilder(builder);
-
-			return builder;
 		}
 
 		void I_RenderModule::FinalizeFrameGraphBuilder(FrameGraphBuilder& builder) const

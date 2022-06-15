@@ -174,7 +174,7 @@ export namespace Brawler
 
 		public:
 			ShaderResourceView() = default;
-			ShaderResourceView(I_GPUResource& resource, ViewDescType&& viewDesc);
+			ShaderResourceView(const I_GPUResource& resource, ViewDescType&& viewDesc);
 
 			ShaderResourceView(const ShaderResourceView& rhs) = default;
 			ShaderResourceView& operator=(const ShaderResourceView& rhs) = default;
@@ -182,17 +182,14 @@ export namespace Brawler
 			ShaderResourceView(ShaderResourceView&& rhs) noexcept = default;
 			ShaderResourceView& operator=(ShaderResourceView&& rhs) noexcept = default;
 
-			I_GPUResource& GetGPUResource();
 			const I_GPUResource& GetGPUResource() const;
 
 			Brawler::D3D12Resource& GetD3D12Resource() const;
 
 			D3D12_SHADER_RESOURCE_VIEW_DESC CreateSRVDescription() const;
 
-			BindlessSRVAllocation MakeBindless() const;
-
 		private:
-			I_GPUResource* mResourcePtr;
+			const I_GPUResource* mResourcePtr;
 			ViewDescType mViewDesc;
 		};
 	}
@@ -205,18 +202,11 @@ namespace Brawler
 	namespace D3D12
 	{
 		template <DXGI_FORMAT Format, D3D12_SRV_DIMENSION ViewDimension>
-		ShaderResourceView<Format, ViewDimension>::ShaderResourceView(I_GPUResource& resource, ViewDescType&& viewDesc) :
+		ShaderResourceView<Format, ViewDimension>::ShaderResourceView(const I_GPUResource& resource, ViewDescType&& viewDesc) :
 			mResourcePtr(&resource),
 			mViewDesc(std::move(viewDesc))
 		{
 			assert(Util::D3D12::IsSRVRTVDSVResourceCastLegal(resource.GetResourceDescription().Format, Format) && "ERROR: An attempt was made to create a ShaderResourceView with a different format than that of the I_GPUResource which it was supposed to represent, but the cast from the resource's format to that of the SRV was illegal!");
-		}
-
-		template <DXGI_FORMAT Format, D3D12_SRV_DIMENSION ViewDimension>
-		I_GPUResource& ShaderResourceView<Format, ViewDimension>::GetGPUResource()
-		{
-			assert(mResourcePtr != nullptr);
-			return *mResourcePtr;
 		}
 
 		template <DXGI_FORMAT Format, D3D12_SRV_DIMENSION ViewDimension>
@@ -248,13 +238,6 @@ namespace Brawler
 			ViewDimensionInfo<ViewDimension>::InitializeSRVDescription(srvDesc, mViewDesc);
 
 			return srvDesc;
-		}
-
-		template <DXGI_FORMAT Format, D3D12_SRV_DIMENSION ViewDimension>
-		BindlessSRVAllocation ShaderResourceView<Format, ViewDimension>::MakeBindless() const
-		{
-			assert(mResourcePtr != nullptr);
-			return mResourcePtr->CreateBindlessSRV(CreateSRVDescription());
 		}
 	}
 }

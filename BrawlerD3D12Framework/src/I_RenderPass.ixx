@@ -1,5 +1,6 @@
 module;
 #include <span>
+#include <string_view>
 
 export module Brawler.D3D12.I_RenderPass;
 import Brawler.D3D12.GPUCommandQueueType;
@@ -31,6 +32,7 @@ export namespace Brawler
 
 			virtual bool RecordRenderPassCommands(GPUCommandQueueContextType<QueueType>& context) const = 0;
 			virtual std::span<const FrameGraphResourceDependency> GetResourceDependencies() const = 0;
+			virtual const std::string_view GetRenderPassName() const = 0;
 		};
 	}
 }

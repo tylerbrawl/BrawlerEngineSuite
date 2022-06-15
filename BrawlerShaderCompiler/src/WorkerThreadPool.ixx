@@ -17,7 +17,7 @@ namespace Brawler
 {
 	namespace IMPL
 	{
-		static constexpr std::size_t JOB_QUEUE_SIZE = 2048;
+		static constexpr std::size_t JOB_QUEUE_SIZE = 1024;
 		static constexpr std::size_t EXCEPTION_QUEUE_SIZE = 16;
 	}
 }

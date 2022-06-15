@@ -13,14 +13,14 @@ namespace Brawler
 	class PolymorphicAdapterIMPL
 	{};
 
-	template <template<typename> typename BaseType, typename DerivedType>
-	concept IsDerivedType = std::derived_from<DerivedType, BaseType<DerivedType>>;
+	template <template<typename, auto...> typename BaseType, typename DerivedType, auto... OtherParams>
+	concept IsDerivedType = std::derived_from<DerivedType, BaseType<DerivedType, OtherParams...>>;
 
-	template <template<typename> typename BaseType, typename DummyType>
-	class PolymorphicAdapterIMPL<BaseType<DummyType>>
+	template <template<typename, auto...> typename BaseType, typename DummyType, auto... OtherParams>
+	class PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>
 	{
 	private:
-		using PolymorphismInfo_ = PolymorphismInfo<BaseType<void>>;
+		using PolymorphismInfo_ = PolymorphismInfo<BaseType<void, OtherParams...>>;
 		using FirstType = PolymorphismInfo_::template DerivedType<static_cast<typename PolymorphismInfo_::EnumType>(0)>;
 
 	public:
@@ -33,22 +33,22 @@ namespace Brawler
 		constexpr PolymorphicAdapterIMPL& operator=(PolymorphicAdapterIMPL&& rhs) noexcept = default;
 
 		template <typename DerivedType>
-			requires IsDerivedType<BaseType, DerivedType>
+			requires IsDerivedType<BaseType, DerivedType, OtherParams...>
 		constexpr PolymorphicAdapterIMPL(DerivedType&& derivedValue);
 
 		template <typename DerivedType>
-			requires IsDerivedType<BaseType, DerivedType>
+			requires IsDerivedType<BaseType, DerivedType, OtherParams...>
 		constexpr PolymorphicAdapterIMPL& operator=(DerivedType&& derivedValue);
 
 		template <typename Callback>
-			requires requires (Callback callback, typename PolymorphicAdapterIMPL<BaseType<DummyType>>::FirstType& value)
+			requires requires (Callback callback, typename PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::FirstType& value)
 		{
 			callback(value);
 		}
 		constexpr auto AccessData(const Callback& callback);
 
 		template <typename Callback>
-			requires requires (Callback callback, typename PolymorphicAdapterIMPL<BaseType<DummyType>>::FirstType& value)
+			requires requires (Callback callback, typename PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::FirstType& value)
 		{
 			callback(value);
 		}
@@ -70,85 +70,89 @@ namespace Brawler
 
 namespace Brawler
 {
-	template <template<typename> typename BaseType, typename DummyType>
+	template <template<typename, auto...> typename BaseType, typename DummyType, auto... OtherParams>
 	template <typename DerivedType>
-		requires IsDerivedType<BaseType, DerivedType>
-	constexpr PolymorphicAdapterIMPL<BaseType<DummyType>>::PolymorphicAdapterIMPL(DerivedType&& derivedValue) :
+		requires IsDerivedType<BaseType, DerivedType, OtherParams...>
+	constexpr PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::PolymorphicAdapterIMPL(DerivedType&& derivedValue) :
 		mDataVariant(std::forward<DerivedType>(derivedValue))
 	{}
 
-	template <template<typename> typename BaseType, typename DummyType>
+	template <template<typename, auto...> typename BaseType, typename DummyType, auto... OtherParams>
 	template <typename DerivedType>
-		requires IsDerivedType<BaseType, DerivedType>
-	constexpr PolymorphicAdapterIMPL<BaseType<DummyType>>& PolymorphicAdapterIMPL<BaseType<DummyType>>::operator=(DerivedType&& derivedValue)
+		requires IsDerivedType<BaseType, DerivedType, OtherParams...>
+	constexpr PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>& PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::operator=(DerivedType&& derivedValue)
 	{
 		mDataVariant = std::forward<DerivedType>(derivedValue);
 
 		return *this;
 	}
 
-	template <template<typename> typename BaseType, typename DummyType>
+	template <template<typename, auto...> typename BaseType, typename DummyType, auto... OtherParams>
 	template <typename Callback>
-		requires requires (Callback callback, typename PolymorphicAdapterIMPL<BaseType<DummyType>>::FirstType& value)
+		requires requires (Callback callback, typename PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::FirstType& value)
 	{
 		callback(value);
 	}
-	constexpr auto PolymorphicAdapterIMPL<BaseType<DummyType>>::AccessData(const Callback& callback)
+	constexpr auto PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::AccessData(const Callback& callback)
 	{
 		assert(mDataVariant.index() != 0 && "ERROR: An attempt was made to access a PolymorphicAdapter before it was ever assigned a type!");
-		return AccessDataIMPL<Callback, static_cast<PolymorphismInfo<BaseType<void>>::EnumType>(0)>(callback);
+		return AccessDataIMPL<Callback, static_cast<PolymorphismInfo<BaseType<void, OtherParams...>>::EnumType>(0)>(callback);
 	}
 
-	template <template<typename> typename BaseType, typename DummyType>
+	template <template<typename, auto...> typename BaseType, typename DummyType, auto... OtherParams>
 	template <typename Callback>
-		requires requires (Callback callback, typename PolymorphicAdapterIMPL<BaseType<DummyType>>::FirstType& value)
+		requires requires (Callback callback, typename PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::FirstType& value)
 	{
 		callback(value);
 	}
-	constexpr auto PolymorphicAdapterIMPL<BaseType<DummyType>>::AccessData(const Callback& callback) const
+	constexpr auto PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::AccessData(const Callback& callback) const
 	{
 		assert(mDataVariant.index() != 0 && "ERROR: An attempt was made to access a PolymorphicAdapter before it was ever assigned a type!");
-		return AccessDataIMPL<Callback, static_cast<PolymorphismInfo<BaseType<void>>::EnumType>(0)>(callback);
+		return AccessDataIMPL<Callback, static_cast<PolymorphismInfo<BaseType<void, OtherParams...>>::EnumType>(0)>(callback);
 	}
 
-	template <template<typename> typename BaseType, typename DummyType>
-	template <typename Callback, PolymorphismInfo<BaseType<void>>::EnumType CurrEnum>
-	constexpr auto PolymorphicAdapterIMPL<BaseType<DummyType>>::AccessDataIMPL(const Callback& callback)
+	template <template<typename, auto...> typename BaseType, typename DummyType, auto... OtherParams>
+	template <typename Callback, PolymorphismInfo<BaseType<void, OtherParams...>>::EnumType CurrEnum>
+	constexpr auto PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::AccessDataIMPL(const Callback& callback)
 	{
-		assert(CurrEnum != PolymorphismInfo<BaseType<void>>::EnumType::COUNT_OR_ERROR);
+		using EnumType = typename PolymorphismInfo<BaseType<DummyType, OtherParams...>>::EnumType;
 
-		if constexpr (CurrEnum != PolymorphismInfo<BaseType<void>>::EnumType::COUNT_OR_ERROR)
+		assert(CurrEnum != EnumType::COUNT_OR_ERROR);
+
+		if constexpr (CurrEnum != EnumType::COUNT_OR_ERROR)
 		{
 			if ((mDataVariant.index() - 1) == std::to_underlying(CurrEnum))
 				return callback(std::get<std::to_underlying(CurrEnum) + 1>(mDataVariant));
 			else
-				return AccessDataIMPL<Callback, static_cast<PolymorphismInfo<BaseType<void>>::EnumType>(std::to_underlying(CurrEnum) + 1)>(callback);
+				return AccessDataIMPL<Callback, static_cast<EnumType>(std::to_underlying(CurrEnum) + 1)>(callback);
 		}
 		else
 		{
-			__assume(false);
+			std::unreachable();
 			throw std::runtime_error{ "ERROR: Uh... How did we get here?" };
 
 			return callback(std::get<1>(mDataVariant));
 		}
 	}
 
-	template <template<typename> typename BaseType, typename DummyType>
-	template <typename Callback, PolymorphismInfo<BaseType<void>>::EnumType CurrEnum>
-	constexpr auto PolymorphicAdapterIMPL<BaseType<DummyType>>::AccessDataIMPL(const Callback& callback) const
+	template <template<typename, auto...> typename BaseType, typename DummyType, auto... OtherParams>
+	template <typename Callback, PolymorphismInfo<BaseType<void, OtherParams...>>::EnumType CurrEnum>
+	constexpr auto PolymorphicAdapterIMPL<BaseType<DummyType, OtherParams...>>::AccessDataIMPL(const Callback& callback) const
 	{
-		assert(CurrEnum != PolymorphismInfo<BaseType<void>>::EnumType::COUNT_OR_ERROR);
+		using EnumType = typename PolymorphismInfo<BaseType<DummyType, OtherParams...>>::EnumType;
+		
+		assert(CurrEnum != EnumType::COUNT_OR_ERROR);
 
-		if constexpr (CurrEnum != PolymorphismInfo<BaseType<void>>::EnumType::COUNT_OR_ERROR)
+		if constexpr (CurrEnum != EnumType::COUNT_OR_ERROR)
 		{
 			if ((mDataVariant.index() - 1) == std::to_underlying(CurrEnum))
 				return callback(std::get<std::to_underlying(CurrEnum) + 1>(mDataVariant));
 			else
-				return AccessDataIMPL<Callback, static_cast<PolymorphismInfo<BaseType<void>>::EnumType>(std::to_underlying(CurrEnum) + 1)>(callback);
+				return AccessDataIMPL<Callback, static_cast<EnumType>(std::to_underlying(CurrEnum) + 1)>(callback);
 		}
 		else
 		{
-			__assume(false);
+			std::unreachable();
 			throw std::runtime_error{ "ERROR: Uh... How did we get here?" };
 
 			return callback(std::get<1>(mDataVariant));
@@ -158,6 +162,6 @@ namespace Brawler
 
 export namespace Brawler
 {
-	template <template<typename> typename BaseType>
-	using PolymorphicAdapter = PolymorphicAdapterIMPL<BaseType<void>>;
+	template <template<typename, auto...> typename BaseType, auto... OtherParams>
+	using PolymorphicAdapter = PolymorphicAdapterIMPL<BaseType<void, OtherParams...>>;
 }

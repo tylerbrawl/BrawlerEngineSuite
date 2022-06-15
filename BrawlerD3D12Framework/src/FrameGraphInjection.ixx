@@ -2,7 +2,7 @@ module;
 #include <variant>
 #include "DxDef.h"
 
-export module Brawler.D3D12.FrameGraphCompilation:FrameGraphInjection;
+export module Brawler.D3D12.FrameGraphInjection;
 
 export namespace Brawler
 {

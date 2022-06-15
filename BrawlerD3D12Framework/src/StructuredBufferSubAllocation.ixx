@@ -6,15 +6,18 @@ module;
 #include "DxDef.h"
 
 export module Brawler.D3D12.StructuredBufferSubAllocation;
+import :StructuredBufferViewGenerator;
 import Brawler.D3D12.I_BufferSubAllocation;
+import Brawler.D3D12.I_BufferSnapshot;
 import Util.HLSL;
 import Util.Math;
 import Util.Reflection;
 import Brawler.D3D12.RootDescriptors;
-import Brawler.D3D12.DescriptorTableBuilder;
 import Brawler.D3D12.UAVCounterSubAllocation;
 import Brawler.D3D12.BufferResource;
-import Brawler.D3D12.GPUResourceViews;
+import Brawler.OptionalRef;
+
+export import :StructuredBufferElementRange;
 
 namespace Brawler
 {
@@ -102,9 +105,6 @@ namespace Brawler
 		private:
 			std::size_t mNumElements;
 		};
-
-		template <typename T>
-		concept D3D12ConstantBufferDataPlacementAligned = (sizeof(T) % D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT == 0);
 	}
 }
 
@@ -112,44 +112,56 @@ export namespace Brawler
 {
 	namespace D3D12
 	{
-		template <typename T, std::size_t NumElements = DYNAMIC_BUFFER_SIZE>
+		template <typename T, std::size_t NumElements>
 			requires HLSLStructuredBufferCompatible<T>
-		class StructuredBufferSubAllocation final : public I_BufferSubAllocation, private SizeContainer<T, NumElements>
+		class StructuredBufferSubAllocation;
+	}
+}
+
+export namespace Brawler
+{
+	namespace D3D12
+	{
+		template <typename T>
+			requires HLSLStructuredBufferCompatible<T>
+		class StructuredBufferSnapshot final : public I_BufferSnapshot, public StructuredBufferViewGenerator<StructuredBufferSnapshot<T>, T>
 		{
 		public:
-			struct CBVCreationInfo
-			{
-				DescriptorTableBuilder& TableBuilder;
-				std::uint32_t DescriptorTableIndex;
-				std::uint32_t ElementIndex;
-			};
+			template <std::size_t NumElements>
+			explicit StructuredBufferSnapshot(const StructuredBufferSubAllocation<T, NumElements>& sbSubAllocation);
 
-			struct ElementRange
-			{
-				std::size_t FirstElement;
-				std::size_t NumElements;
-			};
+			StructuredBufferSnapshot(const StructuredBufferSnapshot& rhs) = default;
+			StructuredBufferSnapshot& operator=(const StructuredBufferSnapshot& rhs) = default;
+
+			StructuredBufferSnapshot(StructuredBufferSnapshot&& rhs) noexcept = default;
+			StructuredBufferSnapshot& operator=(StructuredBufferSnapshot&& rhs) noexcept = default;
+
+			Brawler::OptionalRef<const UAVCounterSnapshot> GetUAVCounter() const;
+
+			std::size_t GetElementCount() const;
 
 		private:
-			template <std::uint32_t DummyParam>
-			struct GeneralDescriptorCreationInfo
+			std::optional<UAVCounterSnapshot> mUAVCounterSnapshot;
+		};
+	}
+}
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------
+
+export namespace Brawler
+{
+	namespace D3D12
+	{
+		template <typename T, std::size_t NumElements = DYNAMIC_BUFFER_SIZE>
+			requires HLSLStructuredBufferCompatible<T>
+		class StructuredBufferSubAllocation final : public I_BufferSubAllocation, public StructuredBufferViewGenerator<StructuredBufferSubAllocation<T, NumElements>, T>, private SizeContainer<T, NumElements>
+		{
+		private:
+			struct UAVCounterContainer
 			{
-				DescriptorTableBuilder& TableBuilder;
-				std::uint32_t DescriptorTableIndex;
-
-				/// <summary>
-				/// The range of elements which is to be used. If this std::optional instance is left empty,
-				/// then the entire StructuredBuffer is visible to the range. Otherwise, you can specify
-				/// what is essentially a std::span of elements which will be visible through the view.
-				/// 
-				/// Make sure that indices in shaders take any offsets which you add into account!
-				/// </summary>
-				std::optional<ElementRange> ViewedElementsRange;
+				UAVCounterSubAllocation SubAllocation;
+				UAVCounterSnapshot Snapshot;
 			};
-
-		public:
-			using SRVCreationInfo = GeneralDescriptorCreationInfo<0>;
-			using UAVCreationInfo = GeneralDescriptorCreationInfo<1>;
 
 		public:
 			StructuredBufferSubAllocation() requires (NumElements != DYNAMIC_BUFFER_SIZE) = default;
@@ -208,41 +220,12 @@ export namespace Brawler
 			void ReadStructuredBufferData(const std::uint32_t startElementIndex, const std::span<T> destDataSpan) const;
 
 			void SetUAVCounter(UAVCounterSubAllocation&& uavCounter);
-			UAVCounterSubAllocation& GetUAVCounter() const;
+			Brawler::OptionalRef<const UAVCounterSnapshot> GetUAVCounter() const;
 
-			RootConstantBufferView CreateRootConstantBufferView(const std::uint32_t elementIndex) const requires D3D12ConstantBufferDataPlacementAligned<T>;
-			void CreateConstantBufferViewForDescriptorTable(const CBVCreationInfo& creationInfo) const requires D3D12ConstantBufferDataPlacementAligned<T>;
-
-			RootShaderResourceView CreateRootShaderResourceView() const;
-			StructuredBufferShaderResourceView CreateShaderResourceViewForDescriptorTable() const;
-			StructuredBufferShaderResourceView CreateShaderResourceViewForDescriptorTable(const ElementRange& viewedElementsRange) const;
-
-			RootUnorderedAccessView CreateRootUnorderedAccessView() const;
-			StructuredBufferUnorderedAccessView CreateUnorderedAccessViewForDescriptorTable() const;
-			StructuredBufferUnorderedAccessView CreateUnorderedAccessViewForDescriptorTable(const ElementRange& viewedElementsRange) const;
+			std::size_t GetElementCount() const;
 
 		private:
-			/// <summary>
-			/// Given an ElementRange defining the range of elements relative to the start of this sub-allocation,
-			/// this function calculates and returns the ElementRange defining the range of elements relative to
-			/// the start of the BufferResource in which it is placed in.
-			/// 
-			/// The returned ElementRange can be used to create SRV and UAV descriptions for D3D12.
-			/// </summary>
-			/// <param name="rangeInRelativeUnits">
-			/// - The ElementRange describing elements relative to the start of this sub-allocation.
-			/// </param>
-			/// <returns>
-			/// The function calculates and returns the ElementRange defining the range of elements relative to
-			/// the start of the BufferResource in which it is placed in.
-			/// </returns>
-			ElementRange ConvertElementRangeToAbsoluteUnits(const ElementRange& rangeInRelativeUnits) const;
-
-			D3D12_BUFFER_SRV CreateBufferSRVDescription(const ElementRange& rangeInRelativeUnits) const;
-			D3D12_BUFFER_UAV CreateBufferUAVDescription(const ElementRange& rangeInRelativeUnits) const;
-
-		private:
-			UAVCounterSubAllocation mUAVCounter;
+			std::optional<UAVCounterContainer> mUAVCounterContainer;
 		};
 
 		// NOTE: StructuredBufferSubAllocation inherits privately from SizeContainer not for the sake of any is-a relationship,
@@ -257,11 +240,51 @@ namespace Brawler
 {
 	namespace D3D12
 	{
+		template <typename T>
+			requires HLSLStructuredBufferCompatible<T>
+		template <std::size_t NumElements>
+		StructuredBufferSnapshot<T>::StructuredBufferSnapshot(const StructuredBufferSubAllocation<T, NumElements>& sbSubAllocation) :
+			I_BufferSnapshot(sbSubAllocation),
+			mUAVCounterSnapshot()
+		{
+			const Brawler::OptionalRef<const UAVCounterSnapshot> uavCounterSnapshot{ sbSubAllocation.GetUAVCounter() };
+
+			if (uavCounterSnapshot.HasValue()) [[unlikely]]
+				mUAVCounterSnapshot = *uavCounterSnapshot;
+		}
+
+		template <typename T>
+			requires HLSLStructuredBufferCompatible<T>
+		Brawler::OptionalRef<const UAVCounterSnapshot> StructuredBufferSnapshot<T>::GetUAVCounter() const
+		{
+			if (mUAVCounterSnapshot.has_value()) [[unlikely]]
+				return Brawler::OptionalRef<const UAVCounterSnapshot>{ *mUAVCounterSnapshot };
+
+			return Brawler::OptionalRef<const UAVCounterSnapshot>{};
+		}
+
+		template <typename T>
+			requires HLSLStructuredBufferCompatible<T>
+		std::size_t StructuredBufferSnapshot<T>::GetElementCount() const
+		{
+			return (GetSubAllocationSize() / sizeof(T));
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------
+
+namespace Brawler
+{
+	namespace D3D12
+	{
 		template <typename T, std::size_t NumElements>
 			requires HLSLStructuredBufferCompatible<T>
 		StructuredBufferSubAllocation<T, NumElements>::StructuredBufferSubAllocation(const std::size_t numElements) requires (NumElements == DYNAMIC_BUFFER_SIZE) :
+			I_BufferSubAllocation(),
+			StructuredBufferViewGenerator<StructuredBufferSubAllocation<T, NumElements>, T>(),
 			SizeContainer<T, NumElements>(numElements),
-			mUAVCounter()
+			mUAVCounterContainer()
 		{}
 
 		template <typename T, std::size_t NumElements>
@@ -308,140 +331,27 @@ namespace Brawler
 		void StructuredBufferSubAllocation<T, NumElements>::SetUAVCounter(UAVCounterSubAllocation&& uavCounter)
 		{
 			assert(uavCounter.HasReservation() && "ERROR: An attempt was made to assign a UAV counter to a StructuredBufferSubAllocation object, but the UAVCounterSubAllocation object was never given a BufferSubAllocationReservation!");
-			mUAVCounter = std::move(uavCounter);
-		}
-
-		template <typename T, std::size_t NumElements>
-			requires HLSLStructuredBufferCompatible<T>
-		UAVCounterSubAllocation& StructuredBufferSubAllocation<T, NumElements>::GetUAVCounter() const
-		{
-			assert(mUAVCounter.HasReservation() && "ERROR: An attempt was made to get the UAV counter of a StructuredBufferSubAllocation object, but it was never assigned one by calling StructuredBufferSubAllocation::SetUAVCounter()!");
-			return mUAVCounter;
-		}
-
-		template <typename T, std::size_t NumElements>
-			requires HLSLStructuredBufferCompatible<T>
-		RootConstantBufferView StructuredBufferSubAllocation<T, NumElements>::CreateRootConstantBufferView(const std::uint32_t elementIndex) const requires D3D12ConstantBufferDataPlacementAligned<T>
-		{
-			assert(static_cast<std::size_t>(elementIndex) < this->GetElementCount());
-
-			return RootConstantBufferView{ GetGPUVirtualAddress() + (sizeof(T) * elementIndex) };
-		}
-
-		template <typename T, std::size_t NumElements>
-			requires HLSLStructuredBufferCompatible<T>
-		void StructuredBufferSubAllocation<T, NumElements>::CreateConstantBufferViewForDescriptorTable(const CBVCreationInfo& creationInfo) const requires D3D12ConstantBufferDataPlacementAligned<T>
-		{
-			assert(static_cast<std::size_t>(creationInfo.ElementIndex) < this->GetElementCount());
-
-			creationInfo.TableBuilder.CreateConstantBufferView(creationInfo.ElementIndex, D3D12_CONSTANT_BUFFER_VIEW_DESC{
-				.BufferLocation = GetGPUVirtualAddress() + (sizeof(T) * creationInfo.ElementIndex),
-				.SizeInBytes = sizeof(T)
-			});
-		}
-
-		template <typename T, std::size_t NumElements>
-			requires HLSLStructuredBufferCompatible<T>
-		RootShaderResourceView StructuredBufferSubAllocation<T, NumElements>::CreateRootShaderResourceView() const
-		{
-			return RootShaderResourceView{ *this };
-		}
-
-		template <typename T, std::size_t NumElements>
-			requires HLSLStructuredBufferCompatible<T>
-		StructuredBufferShaderResourceView StructuredBufferSubAllocation<T, NumElements>::CreateShaderResourceViewForDescriptorTable() const
-		{
-			return StructuredBufferShaderResourceView{ GetBufferResource(), CreateBufferSRVDescription(ElementRange{
-				.FirstElement = 0,
-				.NumElements = this->GetElementCount()
-			}) };
-		}
-
-		template <typename T, std::size_t NumElements>
-			requires HLSLStructuredBufferCompatible<T>
-		StructuredBufferShaderResourceView StructuredBufferSubAllocation<T, NumElements>::CreateShaderResourceViewForDescriptorTable(const ElementRange& viewedElementsRange) const
-		{
-			assert(viewedElementsRange.FirstElement + viewedElementsRange.NumElements <= this->GetElementCount() && "ERROR: An invalid ElementRange was provided to StructuredBufferSubAllocation::CreateShaderResourceViewForDescriptorTable()!");
-			return StructuredBufferShaderResourceView{ GetBufferResource(), CreateBufferSRVDescription(viewedElementsRange) };
-		}
-
-		template <typename T, std::size_t NumElements>
-			requires HLSLStructuredBufferCompatible<T>
-		RootUnorderedAccessView StructuredBufferSubAllocation<T, NumElements>::CreateRootUnorderedAccessView() const
-		{
-			return RootUnorderedAccessView{ *this };
-		}
-
-		template <typename T, std::size_t NumElements>
-			requires HLSLStructuredBufferCompatible<T>
-		StructuredBufferUnorderedAccessView StructuredBufferSubAllocation<T, NumElements>::CreateUnorderedAccessViewForDescriptorTable() const
-		{
-			D3D12_BUFFER_UAV viewDesc{ CreateBufferUAVDescription(ElementRange{
-				.FirstElement = 0,
-				.NumElements = this->GetElementCount()
-			}) };
-
-			StructuredBufferUnorderedAccessView bufferUAV{ GetBufferResource(), std::move(viewDesc)};
-
-			if (mUAVCounter.HasReservation())
-				bufferUAV.SetUAVCounter(mUAVCounter);
-
-			return bufferUAV;
-		}
-
-		template <typename T, std::size_t NumElements>
-			requires HLSLStructuredBufferCompatible<T>
-		StructuredBufferUnorderedAccessView StructuredBufferSubAllocation<T, NumElements>::CreateUnorderedAccessViewForDescriptorTable(const ElementRange& viewedElementsRange) const
-		{
-			StructuredBufferUnorderedAccessView bufferUAV{ GetBufferResource(), CreateBufferUAVDescription(viewedElementsRange) };
-
-			if (mUAVCounter.HasReservation())
-				bufferUAV.SetUAVCounter(mUAVCounter);
-
-			return bufferUAV;
-		}
-
-		template <typename T, std::size_t NumElements>
-			requires HLSLStructuredBufferCompatible<T>
-		StructuredBufferSubAllocation<T, NumElements>::ElementRange StructuredBufferSubAllocation<T, NumElements>::ConvertElementRangeToAbsoluteUnits(const ElementRange& rangeInRelativeUnits) const
-		{
-			return ElementRange{
-				.FirstElement = (GetOffsetFromBufferStart() / GetRequiredDataPlacementAlignment()) + rangeInRelativeUnits.FirstElement,
-				.NumElements = rangeInRelativeUnits.NumElements
+			mUAVCounterContainer = UAVCounterContainer{
+				.SubAllocation{std::move(uavCounter)},
+				.Snapshot{ mUAVCounterContainer.SubAllocation }
 			};
 		}
 
 		template <typename T, std::size_t NumElements>
 			requires HLSLStructuredBufferCompatible<T>
-		D3D12_BUFFER_SRV StructuredBufferSubAllocation<T, NumElements>::CreateBufferSRVDescription(const ElementRange& rangeInRelativeUnits) const
+		Brawler::OptionalRef<const UAVCounterSnapshot> StructuredBufferSubAllocation<T, NumElements>::GetUAVCounter() const
 		{
-			const ElementRange absoluteViewedElementsRange{ ConvertElementRangeToAbsoluteUnits(rangeInRelativeUnits) };
+			if (!mUAVCounterContainer.has_value()) [[likely]]
+				return Brawler::OptionalRef<const UAVCounterSnapshot>{};
 
-			return D3D12_BUFFER_SRV{
-				.FirstElement = absoluteViewedElementsRange.FirstElement,
-				.NumElements = static_cast<std::uint32_t>(absoluteViewedElementsRange.NumElements),
-				.StructureByteStride = sizeof(T),
-				.Flags = D3D12_BUFFER_SRV_FLAGS::D3D12_BUFFER_SRV_FLAG_NONE
-			};
+			return Brawler::OptionalRef<const UAVCounterSnapshot>{ mUAVCounterContainer->Snapshot };
 		}
 
 		template <typename T, std::size_t NumElements>
 			requires HLSLStructuredBufferCompatible<T>
-		D3D12_BUFFER_UAV StructuredBufferSubAllocation<T, NumElements>::CreateBufferUAVDescription(const ElementRange& rangeInRelativeUnits) const
+		std::size_t StructuredBufferSubAllocation<T, NumElements>::GetElementCount() const
 		{
-			const ElementRange absoluteViewedElementsRange{ ConvertElementRangeToAbsoluteUnits(rangeInRelativeUnits) };
-
-			return D3D12_BUFFER_UAV{
-				.FirstElement = absoluteViewedElementsRange.FirstElement,
-				.NumElements = static_cast<std::uint32_t>(absoluteViewedElementsRange.NumElements),
-				.StructureByteStride = sizeof(T),
-
-				// Even if we specify nullptr for the UAV counter in ID3D12Device::CreateUnorderedAccessView(), we still
-				// need CounterOffsetInBytes to be 0, as the D3D12 API requires it, for some reason.
-				.CounterOffsetInBytes = (mUAVCounter.HasReservation() ? mUAVCounter.GetOffsetFromBufferStart() : 0),
-
-				.Flags = 0
-			};
+			return SizeContainer<T, NumElements>::GetElementCount();
 		}
 	}
 }

@@ -8,7 +8,6 @@ export namespace Brawler
 	namespace D3D12
 	{
 		class I_GPUResource;
-		class Texture2D;
 	}
 }
 
@@ -32,12 +31,11 @@ export namespace Brawler
 		/// </summary>
 		class TextureSubResource
 		{
-			// To ensure that only texture resource types can be used to create TextureSubResource
-			// instances, we can add a constructor for each base texture type.
+		protected:
+			explicit TextureSubResource(const std::uint32_t subResourceIndex);
 
 		public:
-			TextureSubResource() = default;
-			TextureSubResource(const Texture2D& texture2D, const std::uint32_t subResourceIndex);
+			virtual ~TextureSubResource() = default;
 
 			TextureSubResource(const TextureSubResource& rhs) = default;
 			TextureSubResource& operator=(const TextureSubResource& rhs) = default;
@@ -45,7 +43,8 @@ export namespace Brawler
 			TextureSubResource(TextureSubResource&& rhs) noexcept = default;
 			TextureSubResource& operator=(TextureSubResource&& rhs) noexcept = default;
 
-			const I_GPUResource& GetGPUResource() const;
+			virtual I_GPUResource& GetGPUResource() = 0;
+			virtual const I_GPUResource& GetGPUResource() const = 0;
 
 			Brawler::D3D12Resource& GetD3D12Resource() const;
 			std::uint32_t GetSubResourceIndex() const;
@@ -53,7 +52,6 @@ export namespace Brawler
 			const Brawler::D3D12_RESOURCE_DESC& GetResourceDescription() const;
 
 		private:
-			const I_GPUResource* mResourcePtr;
 			std::uint32_t mSubResourceIndex;
 		};
 	}
