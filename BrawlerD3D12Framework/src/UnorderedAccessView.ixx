@@ -3,6 +3,7 @@ module;
 #include "DxDef.h"
 
 export module Brawler.D3D12.UnorderedAccessView;
+import :UAVDimensionInfo;
 import Brawler.D3D12.I_GPUResource;
 import Util.D3D12;
 import Brawler.OptionalRef;
@@ -12,78 +13,6 @@ namespace Brawler
 {
 	namespace D3D12
 	{
-		template <D3D12_UAV_DIMENSION ViewDimension>
-		struct ViewDimensionInfo
-		{
-			static_assert(sizeof(ViewDimension) != sizeof(ViewDimension));
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_BUFFER>
-		{
-			using ViewDescType = D3D12_BUFFER_UAV;
-
-			__forceinline static constexpr void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
-			{
-				uavDesc.Buffer = viewDesc;
-			}
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE1D>
-		{
-			using ViewDescType = D3D12_TEX1D_UAV;
-
-			__forceinline static constexpr void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
-			{
-				uavDesc.Texture1D = viewDesc;
-			}
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE1DARRAY>
-		{
-			using ViewDescType = D3D12_TEX1D_ARRAY_UAV;
-
-			__forceinline static constexpr void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
-			{
-				uavDesc.Texture1DArray = viewDesc;
-			}
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2D>
-		{
-			using ViewDescType = D3D12_TEX2D_UAV;
-
-			__forceinline static constexpr void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
-			{
-				uavDesc.Texture2D = viewDesc;
-			}
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2DARRAY>
-		{
-			using ViewDescType = D3D12_TEX2D_ARRAY_UAV;
-
-			__forceinline static constexpr void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
-			{
-				uavDesc.Texture2DArray = viewDesc;
-			}
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE3D>
-		{
-			using ViewDescType = D3D12_TEX3D_UAV;
-
-			__forceinline static constexpr void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
-			{
-				uavDesc.Texture3D = viewDesc;
-			}
-		};
-
 		template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
 		class UnorderedAccessView;
 
@@ -147,7 +76,7 @@ export namespace Brawler
 		class UnorderedAccessView final : private UAVCounterContainer<Format, ViewDimension>
 		{
 		private:
-			using ViewDescType = typename ViewDimensionInfo<ViewDimension>::ViewDescType;
+			using ViewDescType = typename UAVDimensionInfo<ViewDimension>::UAVDescType;
 			
 			static constexpr bool ALLOW_UAV_COUNTER = UAVCounterContainer<Format, ViewDimension>::IsUAVCounterValid();
 
@@ -234,7 +163,7 @@ namespace Brawler
 			uavDesc.Format = Format;
 			uavDesc.ViewDimension = ViewDimension;
 
-			ViewDimensionInfo<ViewDimension>::InitializeUAVDescription(uavDesc, mViewDesc);
+			InitializeUAVDescription<ViewDimension>(uavDesc, mViewDesc);
 
 			return uavDesc;
 		}

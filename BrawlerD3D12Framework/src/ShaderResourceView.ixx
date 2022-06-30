@@ -3,140 +3,14 @@ module;
 #include "DxDef.h"
 
 export module Brawler.D3D12.ShaderResourceView;
-import Brawler.D3D12.I_GPUResource;
+import :SRVDimensionInfo;
 import Util.D3D12;
+import Brawler.D3D12.I_GPUResource;
 
 namespace Brawler
 {
 	namespace D3D12
 	{
-		template <D3D12_SRV_DIMENSION ViewDimension>
-		struct ViewDimensionInfo
-		{
-			static_assert(sizeof(ViewDimension) != sizeof(ViewDimension));
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_BUFFER>
-		{
-			using ViewDescType = D3D12_BUFFER_SRV;
-
-			__forceinline static constexpr void InitializeSRVDescription(D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, const ViewDescType& viewDesc)
-			{
-				srvDesc.Buffer = viewDesc;
-			}
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_TEXTURE1D>
-		{
-			using ViewDescType = D3D12_TEX1D_SRV;
-
-			__forceinline static constexpr void InitializeSRVDescription(D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, const ViewDescType& viewDesc)
-			{
-				srvDesc.Texture1D = viewDesc;
-			}
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_TEXTURE1DARRAY>
-		{
-			using ViewDescType = D3D12_TEX1D_ARRAY_SRV;
-
-			__forceinline static constexpr void InitializeSRVDescription(D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, const ViewDescType& viewDesc)
-			{
-				srvDesc.Texture1DArray = viewDesc;
-			}
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_TEXTURE2D>
-		{
-			using ViewDescType = D3D12_TEX2D_SRV;
-
-			__forceinline static constexpr void InitializeSRVDescription(D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, const ViewDescType& viewDesc)
-			{
-				srvDesc.Texture2D = viewDesc;
-			}
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_TEXTURE2DARRAY>
-		{
-			using ViewDescType = D3D12_TEX2D_ARRAY_SRV;
-
-			__forceinline static constexpr void InitializeSRVDescription(D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, const ViewDescType& viewDesc)
-			{
-				srvDesc.Texture2DArray = viewDesc;
-			}
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_TEXTURE2DMS>
-		{
-			using ViewDescType = D3D12_TEX2DMS_SRV;
-
-			__forceinline static constexpr void InitializeSRVDescription(D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, const ViewDescType& viewDesc)
-			{
-				srvDesc.Texture2DMS = viewDesc;
-			}
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_TEXTURE2DMSARRAY>
-		{
-			using ViewDescType = D3D12_TEX2DMS_ARRAY_SRV;
-
-			__forceinline static constexpr void InitializeSRVDescription(D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, const ViewDescType& viewDesc)
-			{
-				srvDesc.Texture2DMSArray = viewDesc;
-			}
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_TEXTURE3D>
-		{
-			using ViewDescType = D3D12_TEX3D_SRV;
-
-			__forceinline static constexpr void InitializeSRVDescription(D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, const ViewDescType& viewDesc)
-			{
-				srvDesc.Texture3D = viewDesc;
-			}
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_TEXTURECUBE>
-		{
-			using ViewDescType = D3D12_TEXCUBE_SRV;
-
-			__forceinline static constexpr void InitializeSRVDescription(D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, const ViewDescType& viewDesc)
-			{
-				srvDesc.TextureCube = viewDesc;
-			}
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_TEXTURECUBEARRAY>
-		{
-			using ViewDescType = D3D12_TEXCUBE_ARRAY_SRV;
-
-			__forceinline static constexpr void InitializeSRVDescription(D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, const ViewDescType& viewDesc)
-			{
-				srvDesc.TextureCubeArray = viewDesc;
-			}
-		};
-
-		template <>
-		struct ViewDimensionInfo<D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE>
-		{
-			using ViewDescType = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_SRV;
-
-			__forceinline static constexpr void InitializeSRVDescription(D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, const ViewDescType& viewDesc)
-			{
-				srvDesc.RaytracingAccelerationStructure = viewDesc;
-			}
-		};
-
 		template <DXGI_FORMAT Format, D3D12_SRV_DIMENSION ViewDimension>
 		class ShaderResourceView;
 
@@ -168,7 +42,7 @@ export namespace Brawler
 			friend ShaderResourceView<ToFormat, ViewDimension> ReinterpretResourceCast(const ShaderResourceView<FromFormat, ViewDimension>& srcSrv);
 
 		private:
-			using ViewDescType = typename ViewDimensionInfo<ViewDimension>::ViewDescType;
+			using ViewDescType = typename SRVDimensionInfo<ViewDimension>::SRVDescType;
 
 		public:
 			ShaderResourceView() = default;
@@ -181,7 +55,6 @@ export namespace Brawler
 			ShaderResourceView& operator=(ShaderResourceView&& rhs) noexcept = default;
 
 			const I_GPUResource& GetGPUResource() const;
-
 			Brawler::D3D12Resource& GetD3D12Resource() const;
 
 			D3D12_SHADER_RESOURCE_VIEW_DESC CreateSRVDescription() const;
@@ -233,7 +106,7 @@ namespace Brawler
 			srvDesc.ViewDimension = ViewDimension;
 			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-			ViewDimensionInfo<ViewDimension>::InitializeSRVDescription(srvDesc, mViewDesc);
+			InitializeSRVDescription<ViewDimension>(srvDesc, mViewDesc);
 
 			return srvDesc;
 		}

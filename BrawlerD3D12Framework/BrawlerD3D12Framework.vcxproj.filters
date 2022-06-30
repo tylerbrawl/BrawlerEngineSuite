@@ -1089,6 +1089,12 @@
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_TILING_TRILINEAR_SRGB.ixx">
       <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\SRVDimensionInfo.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UAVDimensionInfo.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">
