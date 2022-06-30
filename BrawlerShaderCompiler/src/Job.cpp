@@ -1,9 +1,12 @@
 module;
 #include <memory>
+#include <optional>
 
 module Brawler.Job;
 import Brawler.JobCounter;
 import Brawler.JobPriority;
+import Util.Coroutine;
+import Brawler.JobCounterGuard;
 
 namespace Brawler
 {
@@ -21,6 +24,8 @@ namespace Brawler
 
 	void Job::Execute()
 	{
+		JobCounterGuard counterGuard{ mCounterPtr.get() };
+		
 		try
 		{
 			mCallback();
@@ -31,8 +36,13 @@ namespace Brawler
 		catch (...)
 		{
 			if (mCounterPtr != nullptr)
+			{
 				mCounterPtr->DecrementCounter();
-
+				
+				while (!mCounterPtr->IsFinished())
+					Util::Coroutine::TryExecuteJob();
+			}
+			
 			std::rethrow_exception(std::current_exception());
 		}
 	}

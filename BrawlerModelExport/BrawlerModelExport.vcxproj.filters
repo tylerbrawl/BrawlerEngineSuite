@@ -380,6 +380,9 @@
     <FxCompile Include="src\Shaders\StaticIndirectPrepare.hlsl">
       <Filter>Shader Files</Filter>
     </FxCompile>
+    <FxCompile Include="src\Shaders\VirtualTextureTiling.hlsl">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -390,6 +393,12 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="src\Shaders\GeneralUtil.hlsli">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="src\Shaders\VirtualTextureConstants.hlsli">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="src\Shaders\ColorSpaceUtil.hlsli">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

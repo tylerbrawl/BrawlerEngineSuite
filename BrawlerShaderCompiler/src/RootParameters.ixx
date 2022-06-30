@@ -77,6 +77,33 @@ export namespace Brawler
 			COUNT_OR_ERROR
 		};
 
+		// Brawler Model Exporter
+		enum class VirtualTexturePageTiling
+		{
+			/// <summary>
+			/// Root Parameter 0: RootConstants<2> TilingConstants -> Space0[b0];
+			/// </summary>
+			TILING_CONSTANTS,
+
+			/// <summary>
+			/// Root Parameter 1: DescriptorTable
+			/// {
+			///		VOLATILE UAV OutputTexture -> Space0[u0];
+			/// };
+			/// </summary>
+			OUTPUT_TEXTURE_TABLE,
+
+			/// <summary>
+			/// Root Parameter 2: DescriptorTable
+			/// {
+			///		STATIC SRV InputTexture -> Space0[t0];
+			/// };
+			/// </summary>
+			INPUT_TEXTURE_TABLE,
+
+			COUNT_OR_ERROR
+		};
+
 		// Test Shader Profile
 		enum class TestRootSignature
 		{

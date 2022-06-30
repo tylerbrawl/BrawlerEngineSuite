@@ -13,6 +13,7 @@ export namespace Brawler
 		{
 			BC6H_BC7_COMPRESSION,
 			GENERIC_DOWNSAMPLE,
+			VIRTUAL_TEXTURE_PAGE_TILING,
 
 			COUNT_OR_ERROR
 		};

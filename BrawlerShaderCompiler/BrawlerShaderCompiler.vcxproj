@@ -53,6 +53,8 @@
     <ClCompile Include="src\Job.ixx" />
     <ClCompile Include="src\JobCounter.cpp" />
     <ClCompile Include="src\JobCounter.ixx" />
+    <ClCompile Include="src\JobCounterGuard.cpp" />
+    <ClCompile Include="src\JobCounterGuard.ixx" />
     <ClCompile Include="src\JobGroup.cpp" />
     <ClCompile Include="src\JobGroup.ixx" />
     <ClCompile Include="src\JobPriority.ixx" />

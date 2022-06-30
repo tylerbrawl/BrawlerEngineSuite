@@ -1059,6 +1059,36 @@
     <ClCompile Include="src\GPUResourceEventCollection.cpp">
       <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
     </ClCompile>
+    <ClCompile Include="src\JobCounterGuard.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobCounterGuard.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_TILING_ANISOTROPIC.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_TILING_ANISOTROPIC_SRGB.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_TILING_BILINEAR.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_TILING_BILINEAR_SRGB.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_TILING_POINT.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_TILING_POINT_SRGB.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_TILING_TRILINEAR.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_TILING_TRILINEAR_SRGB.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

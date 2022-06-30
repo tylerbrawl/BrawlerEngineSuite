@@ -47,6 +47,18 @@ namespace Brawler
 		};
 
 		template <>
+		struct RootParameterDefinition<Brawler::RootParameters::VirtualTexturePageTiling>
+		{
+			static constexpr std::string_view ROOT_PARAMETER_ENUM_CLASS_NAME{ "VirtualTexturePageTiling" };
+
+			static constexpr std::array<std::string_view, std::to_underlying(VirtualTexturePageTiling::COUNT_OR_ERROR)> ROOT_PARAMETER_ENUM_VALUE_STRINGS_ARR{
+				"TILING_CONSTANTS",
+				"OUTPUT_TEXTURE_TABLE",
+				"INPUT_TEXTURE_TABLE"
+			};
+		};
+
+		template <>
 		struct RootParameterDefinition<Brawler::RootParameters::TestRootSignature>
 		{
 			static constexpr std::string_view ROOT_PARAMETER_ENUM_CLASS_NAME{ "TestRootSignature" };

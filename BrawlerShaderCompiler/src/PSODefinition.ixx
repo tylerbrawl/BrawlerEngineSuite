@@ -98,6 +98,70 @@ namespace Brawler
 		static constexpr RootSignatureID ROOT_SIGNATURE_ID = RootSignatureID::GENERIC_DOWNSAMPLE;
 		using PSOStreamType = IMPL::StandardComputePSOStream;
 	};
+
+	template <>
+	struct PSODefinition<PSOID::VIRTUAL_TEXTURE_PAGE_TILING_POINT>
+	{
+		static constexpr std::string_view PSO_ID_STRING{ "VIRTUAL_TEXTURE_PAGE_TILING_POINT" };
+		static constexpr RootSignatureID ROOT_SIGNATURE_ID = RootSignatureID::VIRTUAL_TEXTURE_PAGE_TILING;
+		using PSOStreamType = IMPL::StandardComputePSOStream;
+	};
+
+	template <>
+	struct PSODefinition<PSOID::VIRTUAL_TEXTURE_PAGE_TILING_BILINEAR>
+	{
+		static constexpr std::string_view PSO_ID_STRING{ "VIRTUAL_TEXTURE_PAGE_TILING_BILINEAR" };
+		static constexpr RootSignatureID ROOT_SIGNATURE_ID = RootSignatureID::VIRTUAL_TEXTURE_PAGE_TILING;
+		using PSOStreamType = IMPL::StandardComputePSOStream;
+	};
+
+	template <>
+	struct PSODefinition<PSOID::VIRTUAL_TEXTURE_PAGE_TILING_TRILINEAR>
+	{
+		static constexpr std::string_view PSO_ID_STRING{ "VIRTUAL_TEXTURE_PAGE_TILING_TRILINEAR" };
+		static constexpr RootSignatureID ROOT_SIGNATURE_ID = RootSignatureID::VIRTUAL_TEXTURE_PAGE_TILING;
+		using PSOStreamType = IMPL::StandardComputePSOStream;
+	};
+
+	template <>
+	struct PSODefinition<PSOID::VIRTUAL_TEXTURE_PAGE_TILING_ANISOTROPIC>
+	{
+		static constexpr std::string_view PSO_ID_STRING{ "VIRTUAL_TEXTURE_PAGE_TILING_ANISOTROPIC" };
+		static constexpr RootSignatureID ROOT_SIGNATURE_ID = RootSignatureID::VIRTUAL_TEXTURE_PAGE_TILING;
+		using PSOStreamType = IMPL::StandardComputePSOStream;
+	};
+
+	template <>
+	struct PSODefinition<PSOID::VIRTUAL_TEXTURE_PAGE_TILING_POINT_SRGB>
+	{
+		static constexpr std::string_view PSO_ID_STRING{ "VIRTUAL_TEXTURE_PAGE_TILING_POINT_SRGB" };
+		static constexpr RootSignatureID ROOT_SIGNATURE_ID = RootSignatureID::VIRTUAL_TEXTURE_PAGE_TILING;
+		using PSOStreamType = IMPL::StandardComputePSOStream;
+	};
+
+	template <>
+	struct PSODefinition<PSOID::VIRTUAL_TEXTURE_PAGE_TILING_BILINEAR_SRGB>
+	{
+		static constexpr std::string_view PSO_ID_STRING{ "VIRTUAL_TEXTURE_PAGE_TILING_BILINEAR_SRGB" };
+		static constexpr RootSignatureID ROOT_SIGNATURE_ID = RootSignatureID::VIRTUAL_TEXTURE_PAGE_TILING;
+		using PSOStreamType = IMPL::StandardComputePSOStream;
+	};
+
+	template <>
+	struct PSODefinition<PSOID::VIRTUAL_TEXTURE_PAGE_TILING_TRILINEAR_SRGB>
+	{
+		static constexpr std::string_view PSO_ID_STRING{ "VIRTUAL_TEXTURE_PAGE_TILING_TRILINEAR_SRGB" };
+		static constexpr RootSignatureID ROOT_SIGNATURE_ID = RootSignatureID::VIRTUAL_TEXTURE_PAGE_TILING;
+		using PSOStreamType = IMPL::StandardComputePSOStream;
+	};
+
+	template <>
+	struct PSODefinition<PSOID::VIRTUAL_TEXTURE_PAGE_TILING_ANISOTROPIC_SRGB>
+	{
+		static constexpr std::string_view PSO_ID_STRING{ "VIRTUAL_TEXTURE_PAGE_TILING_ANISOTROPIC_SRGB" };
+		static constexpr RootSignatureID ROOT_SIGNATURE_ID = RootSignatureID::VIRTUAL_TEXTURE_PAGE_TILING;
+		using PSOStreamType = IMPL::StandardComputePSOStream;
+	};
 	
 	template <>
 	struct PSODefinition<PSOID::TEST_PSO>

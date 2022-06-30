@@ -1,6 +1,8 @@
 // Yes, this was definitely ripped wholesale from the MiniEngine implementation on GitHub.
 // I'm still learning HLSL, you know?
 
+#include "ColorSpaceUtil.hlsli"
+
 Texture2D<unorm float4> InputTexture : register(t0, space0);
 
 RWTexture2D<float4> OutputMip1 : register(u0, space0);
@@ -19,31 +21,6 @@ ConstantBuffer<MipMapGenerationInfo> MipMapConstants : register(b0, space0);
 
 static const uint THREADS_IN_GROUP = 64;
 
-// The exact sRGB equations can be found at https://entropymine.com/imageworsener/srgbformula/.
-// The approximations were taken from https://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html.
-
-float4 LinearToSRGB(in const float4 linearColor)
-{
-#ifdef __EXACT_SRGB__
-    return float4(select(linearColor.xyz <= 0.0031308f, (linearColor.xyz * 12.92), 1.055f * pow(linearColor.xyz, 1.0f / 2.4f) - 0.055f), linearColor.w);
-#else
-    return float4(max(1.055f * pow(linearColor.xyz, 0.416666667f) - 0.055, 0), linearColor.w);
-#endif
-}
-
-float4 SRGBToLinear(in const float4 srgbColor)
-{
-#ifdef __EXACT_SRGB__
-    return float4(select(srgbColor.xyz <= 0.04045f, (srgbColor.xyz / 12.92f), pow((srgbColor.xyz + 0.055f) / 1.055f, 2.4)), srgbColor.w);
-#else
-    float3 linearColor = mad(srgbColor.xyz, 0.305306011f, 0.682171111f);
-    linearColor = mad(srgbColor.xyz, linearColor, 0.012522878f);
-    linearColor *= srgbColor.xyz;
-	
-    return float4(linearColor, srgbColor.w);
-#endif
-}
-
 float4 SampleInputTexture(in const uint2 DTid)
 {
 	// Assuming that we are creating X * Y threads, where X and Y are the x- and y-dimensions
@@ -60,7 +37,7 @@ void main(in const uint3 DTid : SV_DispatchThreadID, in const uint2 GTid : SV_Gr
 	float4 currOutputValue = SampleInputTexture(DTid.xy);
 	
 #ifdef __USING_SRGB_DATA__
-	OutputMip1[DTid.xy] = LinearToSRGB(currOutputValue);
+	OutputMip1[DTid.xy] = Util::ColorSpace::LinearToSRGB(currOutputValue);
 #else
 	OutputMip1[DTid.xy] = currOutputValue;
 #endif
@@ -120,7 +97,7 @@ void main(in const uint3 DTid : SV_DispatchThreadID, in const uint2 GTid : SV_Gr
 	// going to change between passes?
 	
 #ifdef __USING_SRGB_DATA__
-	float4 colorToWrite = LinearToSRGB(0.25f * (currOutputValue + adjacentXValue + adjacentYValue + diagonalValue));
+	float4 colorToWrite = Util::ColorSpace::LinearToSRGB(0.25f * (currOutputValue + adjacentXValue + adjacentYValue + diagonalValue));
 #else
     float4 colorToWrite = 0.25f * (currOutputValue + adjacentXValue + adjacentYValue + diagonalValue);
 #endif

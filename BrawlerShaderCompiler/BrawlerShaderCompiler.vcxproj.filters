@@ -273,6 +273,12 @@
     <ClCompile Include="src\PSODefinitionSpecializationFileWriter.ixx">
       <Filter>Module Files\File Writing\Source File Writers</Filter>
     </ClCompile>
+    <ClCompile Include="src\JobCounterGuard.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JobCounterGuard.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

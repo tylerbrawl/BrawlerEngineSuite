@@ -31,6 +31,14 @@ namespace Brawler
 	};
 
 	template <>
+	struct RootSignatureDefinition<RootSignatureID::VIRTUAL_TEXTURE_PAGE_TILING>
+	{
+		static constexpr std::string_view ROOT_SIGNATURE_ID_STRING{ "VIRTUAL_TEXTURE_PAGE_TILING" };
+		static constexpr D3D12_ROOT_SIGNATURE_FLAGS ROOT_SIGNATURE_FLAGS = D3D12_ROOT_SIGNATURE_FLAGS::D3D12_ROOT_SIGNATURE_FLAG_NONE;
+		using RootParamType = Brawler::RootParameters::VirtualTexturePageTiling;
+	};
+
+	template <>
 	struct RootSignatureDefinition<RootSignatureID::TEST_ROOT_SIGNATURE>
 	{
 		static constexpr std::string_view ROOT_SIGNATURE_ID_STRING{ "TEST_ROOT_SIGNATURE" };

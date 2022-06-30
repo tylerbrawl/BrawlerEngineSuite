@@ -28,5 +28,14 @@ export namespace Brawler
 
 			COUNT_OR_ERROR
 		};
+
+		enum class VirtualTexturePageTiling
+		{
+			TILING_CONSTANTS,
+			OUTPUT_TEXTURE_TABLE,
+			INPUT_TEXTURE_TABLE,
+
+			COUNT_OR_ERROR
+		};
 	}
 }
