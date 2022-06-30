@@ -34,7 +34,7 @@ export namespace Brawler
 			Texture2D& operator=(Texture2D&& rhs) noexcept = default;
 
 			template <DXGI_FORMAT Format>
-			Texture2DShaderResourceView<Format> CreateShaderResourceView();
+			Texture2DShaderResourceView<Format> CreateShaderResourceView() const;
 
 			template <DXGI_FORMAT Format>
 			Texture2DUnorderedAccessView<Format> CreateUnorderedAccessView(const std::uint32_t mipSlice = 0) const;
@@ -65,7 +65,7 @@ namespace Brawler
 	namespace D3D12
 	{
 		template <DXGI_FORMAT Format>
-		Texture2DShaderResourceView<Format> Texture2D::CreateShaderResourceView()
+		Texture2DShaderResourceView<Format> Texture2D::CreateShaderResourceView() const
 		{
 			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
 
@@ -115,10 +115,10 @@ export namespace Brawler
 			const Texture2D& GetTexture2D() const;
 
 			template <DXGI_FORMAT Format>
-			Texture2DShaderResourceView<Format> CreateShaderResourceView();
+			Texture2DShaderResourceView<Format> CreateShaderResourceView() const;
 
 			template <DXGI_FORMAT Format>
-			Texture2DUnorderedAccessView<Format> CreateUnorderedAccessView();
+			Texture2DUnorderedAccessView<Format> CreateUnorderedAccessView() const;
 
 		private:
 			Texture2D* mTexturePtr;
@@ -133,7 +133,7 @@ namespace Brawler
 	namespace D3D12
 	{
 		template <DXGI_FORMAT Format>
-		Texture2DShaderResourceView<Format> Texture2DSubResource::CreateShaderResourceView()
+		Texture2DShaderResourceView<Format> Texture2DSubResource::CreateShaderResourceView() const
 		{
 			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
 
@@ -146,7 +146,7 @@ namespace Brawler
 		}
 
 		template <DXGI_FORMAT Format>
-		Texture2DUnorderedAccessView<Format> Texture2DSubResource::CreateUnorderedAccessView()
+		Texture2DUnorderedAccessView<Format> Texture2DSubResource::CreateUnorderedAccessView() const
 		{
 			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
 

@@ -167,13 +167,13 @@ namespace Brawler
 			mipMapGenerationPass.AddResourceDependency(inputTextureSubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 			generationInfo.TableBuilderPtr->CreateShaderResourceView(0, inputTextureSubResource.CreateShaderResourceView<TextureFormat>());
 
-			assert((currInputMipLevel + 1) < numTotalMipLevels);
+			assert((static_cast<std::size_t>(currInputMipLevel) + 1) < numTotalMipLevels);
 			D3D12::Texture2DSubResource outputMip1SubResource{ mTexturePtr->GetSubResource(currInputMipLevel + 1) };
 			mipMapGenerationPass.AddResourceDependency(outputMip1SubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 			generationInfo.TableBuilderPtr->CreateUnorderedAccessView(1, outputMip1SubResource.CreateUnorderedAccessView<FormatInfo<TextureFormat>::UAV_FORMAT>());
 			++mipLevelsGeneratedThisPass;
 
-			if ((currInputMipLevel + 2) < numTotalMipLevels)
+			if ((static_cast<std::size_t>(currInputMipLevel) + 2) < numTotalMipLevels)
 			{
 				D3D12::Texture2DSubResource outputMip2SubResource{ mTexturePtr->GetSubResource(currInputMipLevel + 2) };
 				mipMapGenerationPass.AddResourceDependency(outputMip2SubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
