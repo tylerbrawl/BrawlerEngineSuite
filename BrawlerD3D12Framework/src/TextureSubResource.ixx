@@ -2,14 +2,7 @@ module;
 #include "DxDef.h"
 
 export module Brawler.D3D12.TextureSubResource;
-
-export namespace Brawler
-{
-	namespace D3D12
-	{
-		class I_GPUResource;
-	}
-}
+import Brawler.D3D12.I_GPUResource;
 
 export namespace Brawler
 {

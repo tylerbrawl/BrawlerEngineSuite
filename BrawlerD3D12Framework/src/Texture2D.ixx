@@ -14,9 +14,77 @@ export namespace Brawler
 {
 	namespace D3D12
 	{
-		class Texture2DSubResource;
+		class Texture2D;
 	}
 }
+
+export namespace Brawler
+{
+	namespace D3D12
+	{
+		class Texture2DSubResource final : public TextureSubResource
+		{
+		public:
+			Texture2DSubResource() = default;
+			Texture2DSubResource(Texture2D& texture2D, const std::uint32_t subResourceIndex);
+
+			Texture2DSubResource(const Texture2DSubResource& rhs) = default;
+			Texture2DSubResource& operator=(const Texture2DSubResource& rhs) = default;
+
+			Texture2DSubResource(Texture2DSubResource&& rhs) noexcept = default;
+			Texture2DSubResource& operator=(Texture2DSubResource&& rhs) noexcept = default;
+
+			I_GPUResource& GetGPUResource() override;
+			const I_GPUResource& GetGPUResource() const override;
+
+			Texture2D& GetTexture2D();
+			const Texture2D& GetTexture2D() const;
+
+			template <DXGI_FORMAT Format>
+			Texture2DShaderResourceView<Format> CreateShaderResourceView() const;
+
+			template <DXGI_FORMAT Format>
+			Texture2DUnorderedAccessView<Format> CreateUnorderedAccessView() const;
+
+		private:
+			Texture2D* mTexturePtr;
+		};
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------
+
+namespace Brawler
+{
+	namespace D3D12
+	{
+		template <DXGI_FORMAT Format>
+		Texture2DShaderResourceView<Format> Texture2DSubResource::CreateShaderResourceView() const
+		{
+			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
+
+			return Texture2DShaderResourceView<Format>{ GetTexture2D(), D3D12_TEX2D_SRV{
+				.MostDetailedMip = GetSubResourceIndex(),
+				.MipLevels = 1,
+				.PlaneSlice = 0,
+				.ResourceMinLODClamp = 0.0f
+			} };
+		}
+
+		template <DXGI_FORMAT Format>
+		Texture2DUnorderedAccessView<Format> Texture2DSubResource::CreateUnorderedAccessView() const
+		{
+			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
+
+			return Texture2DUnorderedAccessView<Format>{ GetTexture2D(), D3D12_TEX2D_UAV{
+				.MipSlice = GetSubResourceIndex(),
+				.PlaneSlice = 0
+			} };
+		}
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------
 
 export namespace Brawler
 {
@@ -84,74 +152,6 @@ namespace Brawler
 
 			return Texture2DUnorderedAccessView<Format>{ *this, D3D12_TEX2D_UAV{
 				.MipSlice = mipSlice,
-				.PlaneSlice = 0
-			} };
-		}
-	}
-}
-
-// --------------------------------------------------------------------------------------------------------------
-
-export namespace Brawler
-{
-	namespace D3D12
-	{
-		class Texture2DSubResource final : public TextureSubResource
-		{
-		public:
-			Texture2DSubResource() = default;
-			Texture2DSubResource(Texture2D& texture2D, const std::uint32_t subResourceIndex);
-
-			Texture2DSubResource(const Texture2DSubResource& rhs) = default;
-			Texture2DSubResource& operator=(const Texture2DSubResource& rhs) = default;
-
-			Texture2DSubResource(Texture2DSubResource&& rhs) noexcept = default;
-			Texture2DSubResource& operator=(Texture2DSubResource&& rhs) noexcept = default;
-
-			I_GPUResource& GetGPUResource() override;
-			const I_GPUResource& GetGPUResource() const override;
-
-			Texture2D& GetTexture2D();
-			const Texture2D& GetTexture2D() const;
-
-			template <DXGI_FORMAT Format>
-			Texture2DShaderResourceView<Format> CreateShaderResourceView() const;
-
-			template <DXGI_FORMAT Format>
-			Texture2DUnorderedAccessView<Format> CreateUnorderedAccessView() const;
-
-		private:
-			Texture2D* mTexturePtr;
-		};
-	}
-}
-
-// --------------------------------------------------------------------------------------------------------------
-
-namespace Brawler
-{
-	namespace D3D12
-	{
-		template <DXGI_FORMAT Format>
-		Texture2DShaderResourceView<Format> Texture2DSubResource::CreateShaderResourceView() const
-		{
-			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
-
-			return Texture2DShaderResourceView<Format>{ GetTexture2D(), D3D12_TEX2D_SRV{
-				.MostDetailedMip = GetSubResourceIndex(),
-				.MipLevels = 1,
-				.PlaneSlice = 0,
-				.ResourceMinLODClamp = 0.0f
-			} };
-		}
-
-		template <DXGI_FORMAT Format>
-		Texture2DUnorderedAccessView<Format> Texture2DSubResource::CreateUnorderedAccessView() const
-		{
-			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
-
-			return Texture2DUnorderedAccessView<Format>{ GetTexture2D(), D3D12_TEX2D_UAV{
-				.MipSlice = GetSubResourceIndex(),
 				.PlaneSlice = 0
 			} };
 		}

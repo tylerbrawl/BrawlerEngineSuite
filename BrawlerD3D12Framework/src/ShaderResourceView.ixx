@@ -5,8 +5,6 @@ module;
 export module Brawler.D3D12.ShaderResourceView;
 import Brawler.D3D12.I_GPUResource;
 import Util.D3D12;
-import Util.General;
-import Brawler.D3D12.BindlessSRVAllocation;
 
 namespace Brawler
 {

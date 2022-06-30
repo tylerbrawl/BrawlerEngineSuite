@@ -23,7 +23,7 @@ namespace Brawler
 		{
 			using ViewDescType = D3D12_BUFFER_UAV;
 
-			static constexpr __forceinline void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
+			__forceinline static constexpr void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
 			{
 				uavDesc.Buffer = viewDesc;
 			}
@@ -34,7 +34,7 @@ namespace Brawler
 		{
 			using ViewDescType = D3D12_TEX1D_UAV;
 
-			static constexpr __forceinline void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
+			__forceinline static constexpr void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
 			{
 				uavDesc.Texture1D = viewDesc;
 			}
@@ -45,7 +45,7 @@ namespace Brawler
 		{
 			using ViewDescType = D3D12_TEX1D_ARRAY_UAV;
 
-			static constexpr __forceinline void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
+			__forceinline static constexpr void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
 			{
 				uavDesc.Texture1DArray = viewDesc;
 			}
@@ -56,7 +56,7 @@ namespace Brawler
 		{
 			using ViewDescType = D3D12_TEX2D_UAV;
 
-			static constexpr __forceinline void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
+			__forceinline static constexpr void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
 			{
 				uavDesc.Texture2D = viewDesc;
 			}
@@ -67,7 +67,7 @@ namespace Brawler
 		{
 			using ViewDescType = D3D12_TEX2D_ARRAY_UAV;
 
-			static constexpr __forceinline void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
+			__forceinline static constexpr void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
 			{
 				uavDesc.Texture2DArray = viewDesc;
 			}
@@ -78,7 +78,7 @@ namespace Brawler
 		{
 			using ViewDescType = D3D12_TEX3D_UAV;
 
-			static constexpr __forceinline void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
+			__forceinline static constexpr void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const ViewDescType& viewDesc)
 			{
 				uavDesc.Texture3D = viewDesc;
 			}
