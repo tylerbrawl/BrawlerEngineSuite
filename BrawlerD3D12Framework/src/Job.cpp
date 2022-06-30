@@ -10,6 +10,7 @@ import Util.Engine;
 import Util.Threading;
 import Brawler.ThreadLocalResources;
 import Brawler.DelayedJobSubmitter;
+import Brawler.JobCounterGuard;
 
 namespace Brawler
 {
@@ -30,6 +31,8 @@ namespace Brawler
 
 	void Job::Execute()
 	{
+		JobCounterGuard counterGuard{ mCounterPtr.get() };
+		
 		ThreadLocalResources& threadLocalResources{ Util::Threading::GetThreadLocalResources() };
 		threadLocalResources.SetCachedFrameNumber(mCachedFrameNumber);
 
@@ -40,10 +43,10 @@ namespace Brawler
 		{
 			mCallback();
 
-			threadLocalResources.ResetCachedFrameNumber();
-
 			if (mCounterPtr != nullptr)
 				mCounterPtr->DecrementCounter();
+
+			threadLocalResources.ResetCachedFrameNumber();
 		}
 		catch (...)
 		{

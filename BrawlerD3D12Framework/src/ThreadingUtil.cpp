@@ -1,5 +1,6 @@
 module;
 #include <mutex>
+#include <cstdint>
 #include "DxDef.h"
 
 module Util.Threading;
@@ -82,6 +83,16 @@ namespace Util
 				return Brawler::GetWorkerThreadPool().mMainThreadInfo.Resources;
 
 			return GetCurrentWorkerThread()->mResources;
+		}
+
+		std::size_t GetWorkerThreadCount()
+		{
+			return Brawler::GetWorkerThreadPool().GetWorkerThreadCount();
+		}
+
+		std::size_t GetTotalThreadCount()
+		{
+			return (GetWorkerThreadCount() + 1);
 		}
 	}
 }

@@ -104,6 +104,9 @@ export namespace Brawler
 		friend constexpr CompositeEnum (::operator^)(const EnumType lhs, const CompositeEnum& rhs);
 		friend constexpr CompositeEnum (::operator^)(const CompositeEnum& lhs, const CompositeEnum& rhs);
 
+	private:
+		static constexpr std::size_t BIT_SET_ARRAY_SIZE = GetBitSetArraySize<EnumType>();
+
 	public:
 		constexpr CompositeEnum() = default;
 		constexpr CompositeEnum(const EnumType initialValue);
@@ -131,7 +134,7 @@ export namespace Brawler
 		constexpr std::size_t GetBitSetArrayIndex(const EnumType enumValue) const;
 
 	private:
-		std::array<std::uint64_t, GetBitSetArraySize<EnumType>()> mBitSetArr;
+		std::array<std::uint64_t, BIT_SET_ARRAY_SIZE> mBitSetArr;
 	};
 }
 

@@ -4,6 +4,7 @@ module;
 #include <ranges>
 #include <algorithm>
 #include <cassert>
+#include <vector>
 
 export module Brawler.ThreadSafeVector;
 import Brawler.ScopedSharedLock;

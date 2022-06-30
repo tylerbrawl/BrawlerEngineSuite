@@ -1,4 +1,5 @@
 module;
+#include <cstddef>
 
 export module Util.Threading;
 import Brawler.ThreadLocalResources;
@@ -33,5 +34,8 @@ export namespace Util
 		// are generally *NOT* synchronized, and should be accessed with extreme care from
 		// other threads.
 		Brawler::ThreadLocalResources& GetThreadLocalResources();
+
+		std::size_t GetWorkerThreadCount();
+		std::size_t GetTotalThreadCount();
 	}
 }
