@@ -44,20 +44,25 @@ namespace IMPL
 	template <uint OutputPageIndex>
 	struct StartCoordsAdjuster
 	{
-		inline static void AdjustFlattenedStartCoordinates(inout uint flattenedStartCoordinates)
+		inline static uint2 GetAdjustedStartCoordinates()
 		{
-			static const uint FLATTENED_USEFUL_PAGE_DIMENSIONS = VirtualTextures::USEFUL_PAGE_DIMENSIONS.x * VirtualTextures::USEFUL_PAGE_DIMENSIONS.y;
-			static const uint FLATTENED_START_COORDINATES_OFFSET = FLATTENED_USEFUL_PAGE_DIMENSIONS * OutputPageIndex;
+			uint2 startCoordinates = TilingConstants.StartingLogicalCoordinates;
+			const uint adjustedXCoord = mad(VirtualTextures::USEFUL_PAGE_DIMENSIONS.x, OutputPageIndex, startCoordinates.x);
+			
+			startCoordinates.x = (adjustedXCoord & (VirtualTextures::USEFUL_PAGE_DIMENSIONS.x - 1));
+			startCoordinates.y = mad(VirtualTextures::USEFUL_PAGE_DIMENSIONS.y, (adjustedXCoord >> firstbitlow(VirtualTextures::USEFUL_PAGE_DIMENSIONS.x)), startCoordinates.y);
 				
-			flattenedStartCoordinates += FLATTENED_START_COORDINATES_OFFSET;
+			return startCoordinates;
 		}
 	};
 	
 	template <>
 	struct StartCoordsAdjuster<0>
 	{
-		inline static void AdjustFlattenedStartCoordinates(inout uint flattenedStartCoordinates)
-		{}
+		inline static uint2  GetAdjustedStartCoordinates()
+		{
+			return TilingConstants.StartingLogicalCoordinates;
+		}
 	};
 }
 	
@@ -107,8 +112,7 @@ namespace IMPL
 template <uint OutputPageIndex>
 void BeginOutputPageWrite(in const uint2 DTid)
 {
-	uint flattenedStartCoordinates = WaveReadFirstLane(mad(TilingConstants.StartingLogicalCoordinates.y, MipLevelConstants.MipLevelLogicalSize, TilingConstants.StartingLogicalCoordinates.x));
-	IMPL::StartCoordsAdjuster<OutputPageIndex>::AdjustFlattenedStartCoordinates(flattenedStartCoordinates);
+	const uint2 adjustedStartCoordinates = WaveReadLaneFirst(IMPL::StartCoordsAdjuster<OutputPageIndex>::GetAdjustedStartCoordinates());
 	
 	// Revert the flattening. Since we can expect MipLevelConstants.MipLevelLogicalSize to be a power of two, we can
 	// use the following optimizations:
@@ -119,8 +123,7 @@ void BeginOutputPageWrite(in const uint2 DTid)
 	//
 	// We can't rely on the compiler to generate this code because MipLevelConstants.MipLevelLogicalSize is a root constant,
 	// and there is no way to tell it that this value will always be a power of two.
-	const uint2 texelSampleCoordinates = uint2(flattenedStartCoordinates & (MipLevelConstants.MipLevelLogicalSize - 1), flattenedStartCoordinates >> (firstbitlow(MipLevelConstants.MipLevelLogicalSize) + 1)) + DTid 
-		- CurrentTilingTypeInfo::BORDER_DIMENSIONS;
+	const uint2 texelSampleCoordinates = adjustedStartCoordinates + DTid - CurrentTilingTypeInfo::BORDER_DIMENSIONS;
 		
 	// AMD suggests to avoid using rcp(), since it runs at quarter-rate as a transcendental instruction. Is
 	// (1.0f / x) really faster than rcp(x), then?

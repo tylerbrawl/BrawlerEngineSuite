@@ -115,6 +115,12 @@
     <Filter Include="Source Files\File I/O\SHA-512 Hashing">
       <UniqueIdentifier>{cbc9e8a8-9b98-4f5f-b1de-d54d40c34a1a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Textures\Virtual Textures">
+      <UniqueIdentifier>{aaa98387-7c06-4b23-9535-7d06ec7e4bd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Textures\Virtual Textures">
+      <UniqueIdentifier>{6d91a75d-da4b-4422-ba6a-6f56ab9dedd1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -368,6 +374,21 @@
     </ClCompile>
     <ClCompile Include="src\ByteStream.ixx">
       <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTexturePartitioner.ixx">
+      <Filter>Module Files\Textures\Virtual Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTexturePage.ixx">
+      <Filter>Module Files\Textures\Virtual Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTexturePageFilterMode.ixx">
+      <Filter>Module Files\Textures\Virtual Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTexturePage.cpp">
+      <Filter>Source Files\Textures\Virtual Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTextureConstants.ixx">
+      <Filter>Module Files\Textures\Virtual Textures</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

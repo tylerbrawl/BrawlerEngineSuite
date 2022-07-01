@@ -1,9 +1,11 @@
 module;
 #include <cassert>
+#include <cstddef>
 #include "DxDef.h"
 
 export module Brawler.D3D12.StructuredBufferSubAllocation:StructuredBufferViewGenerator;
 import :StructuredBufferElementRange;
+import Brawler.D3D12.BufferCopyRegion;
 import Brawler.D3D12.GPUResourceViews;
 import Brawler.D3D12.RootDescriptors;
 import Brawler.OptionalRef;
@@ -38,6 +40,9 @@ export namespace Brawler
 			RootUnorderedAccessView CreateRootUnorderedAccessView() const;
 			StructuredBufferUnorderedAccessView CreateTableUnorderedAccessView() const;
 			StructuredBufferUnorderedAccessView CreateTableUnorderedAccessView(const StructuredBufferElementRange& viewedElementsRange) const;
+
+			BufferCopyRegion GetBufferCopyRegion() const;
+			BufferCopyRegion GetBufferCopyRegion(const StructuredBufferElementRange& viewedElementsRange) const;
 
 		private:
 			StructuredBufferElementRange ConvertElementRangeToAbsoluteUnits(const StructuredBufferElementRange& rangeInRelativeUnits) const;
@@ -135,6 +140,27 @@ namespace Brawler
 				bufferUAV.SetUAVCounterResource(uavCounterSnapshot->GetD3D12Resource());
 
 			return bufferUAV;
+		}
+
+		template <typename DerivedClass, typename DataElementType>
+		BufferCopyRegion StructuredBufferViewGenerator<DerivedClass, DataElementType>::GetBufferCopyRegion() const
+		{
+			return GetBufferCopyRegion(StructuredBufferElementRange{
+				.FirstElement = 0,
+				.NumElements = GetDerivedClass().GetElementCount()
+			});
+		}
+
+		template <typename DerivedClass, typename DataElementType>
+		BufferCopyRegion StructuredBufferViewGenerator<DerivedClass, DataElementType>::GetBufferCopyRegion(const StructuredBufferElementRange& viewedElementsRange) const
+		{
+			assert(viewedElementsRange.FirstElement + viewedElementsRange.NumElements <= GetDerivedClass().GetElementCount() && "ERROR: An invalid StructuredBufferElementRange was provided when trying to make a BufferCopyRegion for a StructuredBuffer!");
+
+			return BufferCopyRegion{ BufferCopyRegionInfo{
+				.BufferResourcePtr = &(GetDerivedClass().GetBufferResource()),
+				.OffsetFromBufferStart = (GetDerivedClass().GetOffsetFromBufferStart() + (sizeof(DataElementType) * viewedElementsRange.FirstElement)),
+				.RegionSizeInBytes = (viewedElementsRange.NumElements * sizeof(DataElementType))
+			} };
 		}
 
 		template <typename DerivedClass, typename DataElementType>

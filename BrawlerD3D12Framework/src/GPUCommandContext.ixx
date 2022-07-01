@@ -16,6 +16,7 @@ import Brawler.D3D12.FrameGraphResourceDependency;
 import Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.D3D12.TextureSubResource;
 import Brawler.D3D12.I_BufferSnapshot;
+import Brawler.D3D12.BufferCopyRegion;
 export import Brawler.D3D12.GPUResourceDescriptorHeap;
 
 export namespace Brawler
@@ -181,6 +182,7 @@ export namespace Brawler
 			void CopyTextureToBuffer(const TextureCopyBufferSnapshot& destSnapshot, const TextureSubResource& srcTexture) const;
 
 			void CopyBufferToBuffer(const I_BufferSnapshot& destSnapshot, const I_BufferSnapshot& srcSnapshot) const;
+			void CopyBufferToBuffer(const BufferCopyRegion& destRegion, const BufferCopyRegion& srcRegion) const;
 
 			/// <summary>
 			/// Issues the D3D12 resource barrier specified by barrier immediately on the GPU timeline.
@@ -402,6 +404,23 @@ namespace Brawler
 				&(srcSnapshot.GetD3D12Resource()),
 				srcSnapshot.GetOffsetFromBufferStart(),
 				srcSnapshot.GetSubAllocationSize()
+			);
+		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::CopyBufferToBuffer(const BufferCopyRegion& destRegion, const BufferCopyRegion& srcRegion) const
+		{
+			assert(IsResourceAccessValid(destRegion.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination buffer resource in a call to GPUCommandContext::CopyBufferToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
+			assert(IsResourceAccessValid(srcRegion.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source buffer resource in a call to GPUCommandContext::CopyBufferToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
+
+			assert(destRegion.GetCopyRegionSize() >= srcRegion.GetCopyRegionSize() && "ERROR: An attempt was made to call GPUCommandContext::CopyBufferToBuffer() with two buffer copy regions, but the destination region was not large enough to hold all of the data from the source region!");
+
+			mCmdList->CopyBufferRegion(
+				&(destRegion.GetD3D12Resource()),
+				destRegion.GetOffsetFromBufferStart(),
+				&(srcRegion.GetD3D12Resource()),
+				srcRegion.GetOffsetFromBufferStart(),
+				srcRegion.GetCopyRegionSize()
 			);
 		}
 

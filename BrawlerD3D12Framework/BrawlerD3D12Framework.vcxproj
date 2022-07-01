@@ -254,6 +254,8 @@
     <ClCompile Include="src\BarrierMergerStateContainer.ixx" />
     <ClCompile Include="src\BindlessSRVSentinel.cpp" />
     <ClCompile Include="src\BindlessSRVSentinel.ixx" />
+    <ClCompile Include="src\BufferCopyRegion.cpp" />
+    <ClCompile Include="src\BufferCopyRegion.ixx" />
     <ClCompile Include="src\CustomEventHandle.ixx" />
     <ClCompile Include="src\DebugScopedCPUPIXEvent.cpp" />
     <ClCompile Include="src\DebugScopedCPUPIXEvent.ixx" />

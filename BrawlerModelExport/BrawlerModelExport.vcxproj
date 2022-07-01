@@ -377,6 +377,11 @@
     <ClCompile Include="src\StaticVertexBuffer.ixx" />
     <ClCompile Include="src\StaticVertexData.ixx" />
     <ClCompile Include="src\TextureTypeMap.ixx" />
+    <ClCompile Include="src\VirtualTextureConstants.ixx" />
+    <ClCompile Include="src\VirtualTexturePage.cpp" />
+    <ClCompile Include="src\VirtualTexturePage.ixx" />
+    <ClCompile Include="src\VirtualTexturePageFilterMode.ixx" />
+    <ClCompile Include="src\VirtualTexturePartitioner.ixx" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\Shaders\BC7Encode.hlsl">

@@ -1119,6 +1119,12 @@
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_TRILINEAR_SRGB.ixx">
       <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\BufferCopyRegion.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BufferCopyRegion.cpp">
+      <Filter>Source Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

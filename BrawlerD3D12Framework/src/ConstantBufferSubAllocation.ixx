@@ -6,6 +6,7 @@ module;
 export module Brawler.D3D12.ConstantBufferSubAllocation;
 import Brawler.D3D12.I_BufferSubAllocation;
 import Brawler.D3D12.I_BufferSnapshot;
+import Brawler.D3D12.BufferCopyRegion;
 import Util.HLSL;
 import Util.Math;
 import Brawler.D3D12.RootDescriptors;
@@ -53,6 +54,8 @@ export namespace Brawler
 			RootShaderResourceView CreateRootShaderResourceView() const;
 			StructuredBufferShaderResourceView CreateTableShaderResourceView() const;
 
+			BufferCopyRegion GetBufferCopyRegion() const;
+
 		private:
 			D3D12_BUFFER_SRV CreateBufferSRVDescription() const;
 		};
@@ -90,6 +93,8 @@ export namespace Brawler
 
 			RootShaderResourceView CreateRootShaderResourceView() const;
 			StructuredBufferShaderResourceView CreateTableShaderResourceView() const;
+
+			BufferCopyRegion GetBufferCopyRegion() const;
 
 		private:
 			D3D12_BUFFER_SRV CreateBufferSRVDescription() const;
@@ -138,6 +143,17 @@ namespace Brawler
 		StructuredBufferShaderResourceView ConstantBufferSnapshot<T>::CreateTableShaderResourceView() const
 		{
 			return StructuredBufferShaderResourceView{ GetBufferResource(), CreateBufferSRVDescription() };
+		}
+
+		template <typename T>
+			requires HLSLConstantBufferCompatible<T>
+		BufferCopyRegion ConstantBufferSnapshot<T>::GetBufferCopyRegion() const
+		{
+			return BufferCopyRegion{ BufferCopyRegionInfo{
+				.BufferResourcePtr = &(GetBufferResource()),
+				.OffsetFromBufferStart = GetOffsetFromBufferStart(),
+				.RegionSizeInBytes = GetSubAllocationSize()
+			} };
 		}
 
 		template <typename T>
@@ -213,6 +229,17 @@ namespace Brawler
 		StructuredBufferShaderResourceView ConstantBufferSubAllocation<T>::CreateTableShaderResourceView() const
 		{
 			return StructuredBufferShaderResourceView{ GetBufferResource(), CreateBufferSRVDescription() };
+		}
+
+		template <typename T>
+			requires HLSLConstantBufferCompatible<T>
+		BufferCopyRegion ConstantBufferSubAllocation<T>::GetBufferCopyRegion() const
+		{
+			return BufferCopyRegion{ BufferCopyRegionInfo{
+				.BufferResourcePtr = &(GetBufferResource()),
+				.OffsetFromBufferStart = GetOffsetFromBufferStart(),
+				.RegionSizeInBytes = GetSubAllocationSize()
+			} };
 		}
 
 		template <typename T>
