@@ -127,7 +127,6 @@ namespace Brawler
 			D3D12::RenderPass<D3D12::GPUCommandQueueType::DIRECT, TextureCopyInfo> textureCopyPass{};
 			textureCopyPass.SetRenderPassName("Opaque Diffuse Model Texture Resolver - Source Texture Copy");
 
-			
 			textureCopyPass.AddResourceDependency(textureCopySubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE);
 			textureCopyPass.AddResourceDependency(mainSrcTextureSubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST);
 

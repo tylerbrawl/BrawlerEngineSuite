@@ -81,6 +81,41 @@ export namespace Brawler
 		enum class VirtualTexturePageTiling
 		{
 			/// <summary>
+			/// Root Parameter 0: RootConstants<3> TilingConstants -> Space0[b0];
+			/// </summary>
+			TILING_ROOT_CONSTANTS,
+
+			/// <summary>
+			/// Root Parameter 1: Descriptor Table
+			/// {
+			///		VOLATILE UAV OutputPage0 -> Space0[u0];
+			///		VOLATILE UAV OutputPage1 -> Space0[u1];
+			///		VOLATILE UAV OutputPage2 -> Space0[u2];
+			///		VOLATILE UAV OutputPage3 -> Space0[u3];
+			/// };
+			/// </summary>
+			OUTPUT_PAGES_TABLE,
+
+			/// <summary>
+			/// Root Parameter 2: STATIC CBV MipLevelConstants -> Space0[b1];
+			/// </summary>
+			MIP_LEVEL_INFO_CBV,
+
+			/// <summary>
+			/// Root Parameter 3: Descriptor Table
+			/// {
+			///		STATIC SRV InputTexture -> Space0[t0];
+			/// };
+			/// </summary>
+			INPUT_TEXTURE_TABLE,
+
+			COUNT_OR_ERROR
+		};
+
+		// Brawler Model Exporter
+		enum class VirtualTexturePageMerging
+		{
+			/// <summary>
 			/// Root Parameter 0: RootConstants<2> TilingConstants -> Space0[b0];
 			/// </summary>
 			TILING_CONSTANTS,

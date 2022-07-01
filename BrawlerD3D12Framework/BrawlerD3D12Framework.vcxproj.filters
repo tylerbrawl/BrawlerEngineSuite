@@ -1095,6 +1095,30 @@
     <ClCompile Include="src\UAVDimensionInfo.ixx">
       <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
     </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_ANISOTROPIC.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_ANISOTROPIC_SRGB.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_BILINEAR.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_BILINEAR_SRGB.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_POINT.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_POINT_SRGB.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_TRILINEAR.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_TRILINEAR_SRGB.ixx">
+      <Filter>Module Files\Pipeline State Management\Shader Compiler Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

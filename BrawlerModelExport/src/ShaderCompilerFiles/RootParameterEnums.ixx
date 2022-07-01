@@ -31,6 +31,16 @@ export namespace Brawler
 
 		enum class VirtualTexturePageTiling
 		{
+			TILING_ROOT_CONSTANTS,
+			OUTPUT_PAGES_TABLE,
+			MIP_LEVEL_INFO_CBV,
+			INPUT_TEXTURE_TABLE,
+
+			COUNT_OR_ERROR
+		};
+
+		enum class VirtualTexturePageMerging
+		{
 			TILING_CONSTANTS,
 			OUTPUT_TEXTURE_TABLE,
 			INPUT_TEXTURE_TABLE,

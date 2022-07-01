@@ -176,11 +176,106 @@ export namespace Brawler
 		template <>
 		RootSignatureBuilder<Brawler::RootSignatureID::VIRTUAL_TEXTURE_PAGE_TILING> CreateRootSignatureBuilder<Brawler::RootSignatureID::VIRTUAL_TEXTURE_PAGE_TILING>()
 		{
-			RootSignatureBuilder<RootSignatureID::VIRTUAL_TEXTURE_PAGE_TILING> rootSigBuilder{};
+			RootSignatureBuilder<Brawler::RootSignatureID::VIRTUAL_TEXTURE_PAGE_TILING> rootSigBuilder{};
 
-			// Root Parameter 0: RootConstants<2> TilingConstants->Space0[b0];
+			// Root Parameter 0: RootConstants<3> TilingConstants -> Space0[b0];
 			{
-				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::VirtualTexturePageTiling::TILING_CONSTANTS>(RootConstantsInfo{
+				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::VirtualTexturePageTiling::TILING_ROOT_CONSTANTS>(RootConstantsInfo{
+					.Num32BitValues = 3,
+					.ShaderRegister = 0,
+					.RegisterSpace = 0,
+					.Visibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL
+				});
+			}
+
+			/*
+			Root Parameter 1: Descriptor Table
+			{
+				VOLATILE UAV OutputPage0 -> Space0[u0];
+				VOLATILE UAV OutputPage1 -> Space0[u1];
+				VOLATILE UAV OutputPage2 -> Space0[u2];
+				VOLATILE UAV OutputPage3 -> Space0[u3];
+			};
+			*/
+			{
+				std::vector<CD3DX12_DESCRIPTOR_RANGE1> param1TableRanges{};
+				param1TableRanges.resize(1);
+
+				param1TableRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 4, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAGS::D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE);
+
+				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::VirtualTexturePageTiling::OUTPUT_PAGES_TABLE>(DescriptorTableInfo{
+					.DescriptorRangeArr{std::move(param1TableRanges)},
+					.Visibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL
+				});
+			}
+
+			// Root Parameter 2: STATIC CBV MipLevelConstants -> Space0[b1];
+			{
+				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::VirtualTexturePageTiling::MIP_LEVEL_INFO_CBV>(RootCBVInfo{
+					.ShaderRegister = 1,
+					.RegisterSpace = 0,
+
+					// Static Data: The constant buffers describing each mip level are initialized before any of them are
+					// bound as a root parameter.
+					.Flags = D3D12_ROOT_DESCRIPTOR_FLAGS::D3D12_ROOT_DESCRIPTOR_FLAG_DATA_STATIC,
+
+					.Visibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL
+				});
+			}
+
+			/*
+			Root Parameter 3: Descriptor Table
+			{
+				STATIC SRV InputTexture -> Space0[t0];
+			};
+			*/
+			{
+				std::vector<CD3DX12_DESCRIPTOR_RANGE1> param3TableRanges{};
+				param3TableRanges.resize(1);
+
+				// Static Data: At this point, all of the input texture's mip levels have been generated, and we do not expect to modify
+				// its data any further.
+				param3TableRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAGS::D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
+
+				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::VirtualTexturePageTiling::INPUT_TEXTURE_TABLE>(DescriptorTableInfo{
+					.DescriptorRangeArr{std::move(param3TableRanges)},
+					.Visibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL
+				});
+			}
+
+			// Static Sampler 0: Point Clamp
+			{
+				CD3DX12_STATIC_SAMPLER_DESC staticPointClampSampler{};
+				staticPointClampSampler.Init(
+					0,
+					D3D12_FILTER::D3D12_FILTER_MIN_MAG_MIP_POINT,
+					D3D12_TEXTURE_ADDRESS_MODE::D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
+					D3D12_TEXTURE_ADDRESS_MODE::D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
+					D3D12_TEXTURE_ADDRESS_MODE::D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
+					0.0f,
+					1,
+					D3D12_COMPARISON_FUNC::D3D12_COMPARISON_FUNC_NEVER,
+					D3D12_STATIC_BORDER_COLOR::D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK,
+					0.0f,
+					D3D12_FLOAT32_MAX,
+					D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL,
+					0
+				);
+
+				rootSigBuilder.AddStaticSampler(std::move(staticPointClampSampler));
+			}
+
+			return rootSigBuilder;
+		}
+
+		template <>
+		RootSignatureBuilder<Brawler::RootSignatureID::VIRTUAL_TEXTURE_PAGE_MERGING> CreateRootSignatureBuilder<Brawler::RootSignatureID::VIRTUAL_TEXTURE_PAGE_MERGING>()
+		{
+			RootSignatureBuilder<RootSignatureID::VIRTUAL_TEXTURE_PAGE_MERGING> rootSigBuilder{};
+
+			// Root Parameter 0: RootConstants<3> TilingConstants->Space0[b0];
+			{
+				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::VirtualTexturePageMerging::TILING_CONSTANTS>(RootConstantsInfo{
 					.Num32BitValues = 3,
 					.ShaderRegister = 0,
 					.RegisterSpace = 0,
@@ -200,7 +295,7 @@ export namespace Brawler
 
 				param1TableRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAGS::D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE);
 
-				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::VirtualTexturePageTiling::OUTPUT_TEXTURE_TABLE>(DescriptorTableInfo{
+				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::VirtualTexturePageMerging::OUTPUT_TEXTURE_TABLE>(DescriptorTableInfo{
 					.DescriptorRangeArr{std::move(param1TableRanges)},
 					.Visibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL
 				});
@@ -220,7 +315,7 @@ export namespace Brawler
 				// its data any further.
 				param2TableRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAGS::D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
 
-				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::VirtualTexturePageTiling::INPUT_TEXTURE_TABLE>(DescriptorTableInfo{
+				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::VirtualTexturePageMerging::INPUT_TEXTURE_TABLE>(DescriptorTableInfo{
 					.DescriptorRangeArr{std::move(param2TableRanges)},
 					.Visibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL
 				});

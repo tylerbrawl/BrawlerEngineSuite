@@ -383,6 +383,9 @@
     <FxCompile Include="src\Shaders\VirtualTextureTiling.hlsl">
       <Filter>Shader Files</Filter>
     </FxCompile>
+    <FxCompile Include="src\Shaders\VirtualTexturePageMerging.hlsl">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -399,6 +402,9 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="src\Shaders\ColorSpaceUtil.hlsli">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="src\Shaders\VirtualTextureUtil.hlsli">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

@@ -214,6 +214,110 @@ export namespace Brawler
 		}
 
 		template <>
+		PSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_POINT> CreatePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_POINT>()
+		{
+			return CreateGeneralComputePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_POINT>(Brawler::ShaderCompilationParams{
+				.FilePath{L"Shaders\\VirtualTexturePageMerging.hlsl"},
+				.EntryPoint{L"main"},
+				.MacroDefinitionArr{
+					{L"__TILING_MODE_POINT_FILTER__", L"1"}
+				}
+			});
+		}
+
+		template <>
+		PSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_BILINEAR> CreatePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_BILINEAR>()
+		{
+			return CreateGeneralComputePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_BILINEAR>(Brawler::ShaderCompilationParams{
+				.FilePath{ L"Shaders\\VirtualTexturePageMerging.hlsl" },
+				.EntryPoint{ L"main" },
+				.MacroDefinitionArr{
+					{ L"__TILING_MODE_BILINEAR_FILTER__", L"1" }
+				}
+			});
+		}
+
+		template <>
+		PSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_TRILINEAR> CreatePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_TRILINEAR>()
+		{
+			return CreateGeneralComputePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_TRILINEAR>(Brawler::ShaderCompilationParams{
+				.FilePath{ L"Shaders\\VirtualTexturePageMerging.hlsl" },
+				.EntryPoint{ L"main" },
+				.MacroDefinitionArr{
+					{ L"__TILING_MODE_TRILINEAR_FILTER__", L"1" }
+				}
+			});
+		}
+
+		template <>
+		PSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_ANISOTROPIC> CreatePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_ANISOTROPIC>()
+		{
+			return CreateGeneralComputePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_ANISOTROPIC>(Brawler::ShaderCompilationParams{
+				.FilePath{ L"Shaders\\VirtualTexturePageMerging.hlsl" },
+				.EntryPoint{ L"main" },
+				.MacroDefinitionArr{
+					{ L"__TILING_MODE_ANISOTROPIC_8X_FILTER__", L"1" }
+				}
+			});
+		}
+
+		template <>
+		PSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_POINT_SRGB> CreatePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_POINT_SRGB>()
+		{
+			return CreateGeneralComputePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_POINT_SRGB>(Brawler::ShaderCompilationParams{
+				.FilePath{ L"Shaders\\VirtualTexturePageMerging.hlsl" },
+				.EntryPoint{ L"main" },
+				.MacroDefinitionArr{
+					{ L"__TILING_MODE_POINT_FILTER__", L"1" },
+					{ L"__USING_SRGB_DATA__", L"1" },
+					{ L"__EXACT_SRGB__", L"1" }
+				}
+			});
+		}
+
+		template <>
+		PSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_BILINEAR_SRGB> CreatePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_BILINEAR_SRGB>()
+		{
+			return CreateGeneralComputePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_BILINEAR_SRGB>(Brawler::ShaderCompilationParams{
+				.FilePath{ L"Shaders\\VirtualTexturePageMerging.hlsl" },
+				.EntryPoint{ L"main" },
+				.MacroDefinitionArr{
+					{ L"__TILING_MODE_BILINEAR_FILTER__", L"1" },
+					{ L"__USING_SRGB_DATA__", L"1" },
+					{ L"__EXACT_SRGB__", L"1" }
+				}
+			});
+		}
+
+		template <>
+		PSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_TRILINEAR_SRGB> CreatePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_TRILINEAR_SRGB>()
+		{
+			return CreateGeneralComputePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_TRILINEAR_SRGB>(Brawler::ShaderCompilationParams{
+				.FilePath{ L"Shaders\\VirtualTexturePageMerging.hlsl" },
+				.EntryPoint{ L"main" },
+				.MacroDefinitionArr{
+					{ L"__TILING_MODE_TRILINEAR_FILTER__", L"1" },
+					{ L"__USING_SRGB_DATA__", L"1" },
+					{ L"__EXACT_SRGB__", L"1" }
+				}
+			});
+		}
+
+		template <>
+		PSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_ANISOTROPIC_SRGB> CreatePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_ANISOTROPIC_SRGB>()
+		{
+			return CreateGeneralComputePSOBuilder<Brawler::PSOID::VIRTUAL_TEXTURE_PAGE_MERGING_ANISOTROPIC_SRGB>(Brawler::ShaderCompilationParams{
+				.FilePath{ L"Shaders\\VirtualTexturePageMerging.hlsl" },
+				.EntryPoint{ L"main" },
+				.MacroDefinitionArr{
+					{ L"__TILING_MODE_ANISOTROPIC_8X_FILTER__", L"1" },
+					{ L"__USING_SRGB_DATA__", L"1" },
+					{ L"__EXACT_SRGB__", L"1" }
+				}
+			});
+		}
+
+		template <>
 		PSOBuilder<Brawler::PSOID::TEST_PSO> CreatePSOBuilder<Brawler::PSOID::TEST_PSO>()
 		{
 			Brawler::PSOStreamType<Brawler::PSOID::TEST_PSO> psoStream{};

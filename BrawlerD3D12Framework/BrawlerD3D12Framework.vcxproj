@@ -378,6 +378,14 @@
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_BC7_TRY_MODE_456.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_GENERIC_DOWNSAMPLE.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_GENERIC_DOWNSAMPLE_SRGB.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_ANISOTROPIC.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_ANISOTROPIC_SRGB.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_BILINEAR.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_BILINEAR_SRGB.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_POINT.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_POINT_SRGB.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_TRILINEAR.ixx" />
+    <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_MERGING_TRILINEAR_SRGB.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_TILING_ANISOTROPIC.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_TILING_ANISOTROPIC_SRGB.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\PSODefinition_VIRTUAL_TEXTURE_PAGE_TILING_BILINEAR.ixx" />
