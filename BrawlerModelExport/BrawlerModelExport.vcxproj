@@ -345,6 +345,7 @@
     <ClCompile Include="src\SerializationContext.ixx" />
     <ClCompile Include="src\SerializedMaterialDefinition.ixx" />
     <ClCompile Include="src\SerializedStaticMeshData.ixx" />
+    <ClCompile Include="src\SerializedVirtualTextureDescriptions.ixx" />
     <ClCompile Include="src\SHA512AlgorithmProvider.cpp" />
     <ClCompile Include="src\SHA512AlgorithmProvider.ixx" />
     <ClCompile Include="src\SHA512Hash.ixx" />
@@ -378,6 +379,9 @@
     <ClCompile Include="src\StaticVertexData.ixx" />
     <ClCompile Include="src\TextureTypeMap.ixx" />
     <ClCompile Include="src\VirtualTextureConstants.ixx" />
+    <ClCompile Include="src\VirtualTextureCPUDataStore.ixx" />
+    <ClCompile Include="src\VirtualTextureCPUMipMapStore.ixx" />
+    <ClCompile Include="src\VirtualTextureCPUPageStore.ixx" />
     <ClCompile Include="src\VirtualTexturePage.cpp" />
     <ClCompile Include="src\VirtualTexturePage.ixx" />
     <ClCompile Include="src\VirtualTexturePageFilterMode.ixx" />

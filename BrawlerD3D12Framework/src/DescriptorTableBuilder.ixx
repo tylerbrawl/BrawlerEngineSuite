@@ -81,6 +81,34 @@ export namespace Brawler
 			template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
 			void CreateUnorderedAccessView(const std::uint32_t index, const UnorderedAccessView<Format, ViewDimension>& uav);
 
+			/// <summary>
+			/// Sets the descriptor at the specified index within the descriptor table being built to a NULL 
+			/// UAV. This is done to ensure correct behavior on devices with only resource binding tier 2 support.
+			/// 
+			/// If the device has resource binding tier 3 support, then this function does nothing. As such, this 
+			/// function should always be called if a UAV in a descriptor table is left unused, regardless of the 
+			/// user's device.
+			/// 
+			/// The function is templated because NULL descriptors must be created such that if the descriptor
+			/// were not NULL, then it could potentially refer to a resource which could be used. For example,
+			/// if a root parameter in a root signature asks for N UAVs and a shader uses these UAVs as
+			/// RWTexture2D instances, then the NULL descriptor must contain dummy information for a
+			/// D3D12_UAV_DIMENSION_TEXTURE2D resource. Otherwise, the behavior is undefined.
+			/// 
+			/// Sadly, the MSDN and DirectX specifications are quite vague as to what values need to be set in
+			/// any given scenario, so we err on the side of caution be requiring both a DXGI_FORMAT and a
+			/// D3D12_UAV_DIMENSION template parameter.
+			/// </summary>
+			/// <typeparam name="Format">
+			/// - The DXGI_FORMAT of a resource which, had this UAV not been nullified, it would be in.
+			/// </typeparam>
+			/// <typeparam name="ViewDimension">
+			/// - The type of resource which, had this UAV not been nullified, it would be describing.
+			/// </typeparam>
+			/// <param name="index">
+			/// - The zero-based index from the start of the descriptor table at which the NULL UAV will be
+			///   created.
+			/// </param>
 			template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
 			void NullifyUnorderedAccessView(const std::uint32_t index);
 

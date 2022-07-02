@@ -1,22 +1,17 @@
 module;
 #include <cstdint>
+#include <optional>
 #include <DirectXMath/DirectXMath.h>
 
 export module Brawler.VirtualTexturePage;
 import Brawler.D3D12.Texture2D;
+import Brawler.D3D12.BufferSubAllocationReservationHandle;
 
 export namespace Brawler
 {
 	struct VirtualTexturePageInitializationInfo
 	{
 		D3D12::Texture2DSubResource TextureSubResource;
-
-		/// <summary>
-		/// This field describes whether or not the relevant VirtualTexturePage represents a
-		/// merged page; that is, it is the final page of a virtual texture which contains all
-		/// of the mip levels which are smaller than the useful dimensions of a page.
-		/// </summary>
-		bool IsMergedPage;
 
 		/// <summary>
 		/// This field describes the coordinates of the relevant VirtualTexturePage within
@@ -47,6 +42,8 @@ export namespace Brawler
 
 		D3D12::Texture2DSubResource GetTexture2DSubResource() const;
 
+		DirectX::XMUINT2 GetPageCoordinates() const;
+
 		/// <summary>
 		/// Returns the first logical mip level partially or completely represented by this VirtualTexturePage
 		/// instance. Most virtual texture pages will only represent some or all of a single mip level of
@@ -71,7 +68,12 @@ export namespace Brawler
 		/// </returns>
 		std::uint32_t GetLogicalMipLevelCount() const;
 
+		void AssignCompressedDataBufferReservation(D3D12::BufferSubAllocationReservationHandle&& hReservation);
+		bool HasCompressedDataBufferReservation() const;
+		D3D12::BufferSubAllocationReservationHandle RevokeCompressedDataBufferReservation();
+
 	private:
 		VirtualTexturePageInitializationInfo mInitInfo;
+		std::optional<D3D12::BufferSubAllocationReservationHandle> mHCompressedData;
 	};
 }

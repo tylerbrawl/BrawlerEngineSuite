@@ -113,16 +113,6 @@ template <uint OutputPageIndex>
 void BeginOutputPageWrite(in const uint2 DTid)
 {
 	const uint2 adjustedStartCoordinates = WaveReadLaneFirst(IMPL::StartCoordsAdjuster<OutputPageIndex>::GetAdjustedStartCoordinates());
-	
-	// Revert the flattening. Since we can expect MipLevelConstants.MipLevelLogicalSize to be a power of two, we can
-	// use the following optimizations:
-	//
-	//   - flattenedStartCoordinates & (MipLevelConstants.MipLevelLogicalSize - 1) == flattenedStartCoordinates % MipLevelConstants.MipLevelLogicalSize
-	//   - flattenedStartCoordinates / MipLevelConstants.MipLevelLogicalSize == flattenedStartCoordinates >> (log2(MipLevelConstants.MipLevelLogicalSize) + 1)
-	//     == flattenedStartCoordinates >> (firstbitlow(MipLevelConstants.MipLevelLogicalSize) + 1)
-	//
-	// We can't rely on the compiler to generate this code because MipLevelConstants.MipLevelLogicalSize is a root constant,
-	// and there is no way to tell it that this value will always be a power of two.
 	const uint2 texelSampleCoordinates = adjustedStartCoordinates + DTid - CurrentTilingTypeInfo::BORDER_DIMENSIONS;
 		
 	// AMD suggests to avoid using rcp(), since it runs at quarter-rate as a transcendental instruction. Is

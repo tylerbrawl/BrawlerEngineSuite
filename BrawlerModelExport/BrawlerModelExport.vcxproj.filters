@@ -390,6 +390,18 @@
     <ClCompile Include="src\VirtualTextureConstants.ixx">
       <Filter>Module Files\Textures\Virtual Textures</Filter>
     </ClCompile>
+    <ClCompile Include="src\VirtualTextureCPUDataStore.ixx">
+      <Filter>Module Files\Textures\Virtual Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTextureCPUMipMapStore.ixx">
+      <Filter>Module Files\Textures\Virtual Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTextureCPUPageStore.ixx">
+      <Filter>Module Files\Textures\Virtual Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SerializedVirtualTextureDescriptions.ixx">
+      <Filter>Module Files\Textures\Virtual Textures</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\Shaders\BC7Encode.hlsl">

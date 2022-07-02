@@ -48,6 +48,7 @@ export namespace Brawler
 
 	public:
 		MappedFileView() = default;
+		explicit MappedFileView(const std::filesystem::path& filePath);
 		MappedFileView(const std::filesystem::path& filePath, const ViewParams& params);
 
 		MappedFileView(const MappedFileView& rhs) = delete;
@@ -81,6 +82,27 @@ namespace Brawler
 
 namespace Brawler
 {
+	template <FileAccessMode AccessMode>
+		requires IsValidAccessMode<AccessMode>
+	MappedFileView<AccessMode>::MappedFileView(const std::filesystem::path& filePath) :
+		mHFileMappingObject(nullptr),
+		mMapping(nullptr),
+		mMappedSpan()
+	{
+		std::error_code errorCode{};
+		const std::size_t fileSizeInBytes = std::filesystem::file_size(filePath, errorCode);
+
+		Util::General::CheckErrorCode(errorCode);
+
+		const ViewParams params{
+			.FileOffsetInBytes = 0,
+			.ViewSizeInBytes = fileSizeInBytes
+		};
+
+		CreateFileMappingObject(filePath, params);
+		MapFileView(params);
+	}
+
 	template <FileAccessMode AccessMode>
 		requires IsValidAccessMode<AccessMode>
 	MappedFileView<AccessMode>::MappedFileView(const std::filesystem::path& filePath, const ViewParams& params) :
