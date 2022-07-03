@@ -394,7 +394,7 @@ namespace Brawler
 					// Add D3D12 Debug Layer warnings which you wish to ignore here V. You better have a good reason for
 					// doing so, though, and you should document it well.
 
-					static std::array<D3D12_MESSAGE_ID, 2> ignoredD3D12DebugLayerMessageArr{
+					static std::array<D3D12_MESSAGE_ID, 5> ignoredD3D12DebugLayerMessageArr{
 						// Disable error messages for invalid alignments from ID3D12Device::GetResourceAllocationInfo2().
 						// We already check if an alignment value is invalid when calling that function, and revert
 						// to standard (non-small) alignment when this happens. As a result, this error message becomes
@@ -410,7 +410,15 @@ namespace Brawler
 						// developer is aware that buffers which share GPU memory cannot be used simultaneously in
 						// different states, but the FrameGraph system of the Brawler Engine guarantees that this does
 						// not happen.
-						D3D12_MESSAGE_ID::D3D12_MESSAGE_ID_HEAP_ADDRESS_RANGE_INTERSECTS_MULTIPLE_BUFFERS
+						D3D12_MESSAGE_ID::D3D12_MESSAGE_ID_HEAP_ADDRESS_RANGE_INTERSECTS_MULTIPLE_BUFFERS,
+
+						// Disable warnings suggesting that a given ID3D12PipelineLibrary blob cannot be used to instantiate
+						// an ID3D12PipelineLibrary instance. We disable these warnings because we already check for these
+						// cases during runtime, as well as print messages to the Win32 console if the PSO library cannot
+						// be used.
+						D3D12_MESSAGE_ID::D3D12_MESSAGE_ID_CREATEPIPELINELIBRARY_DRIVERVERSIONMISMATCH,
+						D3D12_MESSAGE_ID::D3D12_MESSAGE_ID_CREATEPIPELINELIBRARY_ADAPTERVERSIONMISMATCH,
+						D3D12_MESSAGE_ID::D3D12_MESSAGE_ID_CREATEPIPELINELIBRARY_INVALIDLIBRARYBLOB
 					};
 
 					D3D12_INFO_QUEUE_FILTER infoQueueFilter{};

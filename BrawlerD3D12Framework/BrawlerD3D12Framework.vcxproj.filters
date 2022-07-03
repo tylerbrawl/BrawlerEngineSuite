@@ -1125,6 +1125,9 @@
     <ClCompile Include="src\BufferCopyRegion.cpp">
       <Filter>Source Files\GPU Resources\Buffer Resource Types</Filter>
     </ClCompile>
+    <ClCompile Include="src\ByteAddressBufferSubAllocation.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types\Buffer Sub-Allocation Types</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

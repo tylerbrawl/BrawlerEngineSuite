@@ -15,6 +15,22 @@ namespace Brawler
 {
 	void OpaqueDiffuseModelTextureResolver::AddBC7CompressionRenderPasses(TextureResolutionContext& context)
 	{
+		assert(!context.VirtualTexturePageArr.empty());
+
+		mBC7CompressorPtrArr.reserve(context.VirtualTexturePageArr.size());
+
+		for (auto& page : context.VirtualTexturePageArr)
+		{
+			std::unique_ptr<BC7ImageCompressor> compressorPtr{ std::make_unique<BC7ImageCompressor>(BC7ImageCompressor::InitInfo{
+				.SrcTextureSubResource{ page.GetTexture2DSubResource() },
+				.DesiredFormat = Brawler::GetDesiredTextureFormat<ModelTextureID::DIFFUSE_ALBEDO>()
+			}) };
+
+			page.AssignCompressedDataBufferReservation(compressorPtr->AddCompressionRenderPasses(context.Builder));
+			mBC7CompressorPtrArr.push_back(std::move(compressorPtr));
+		}
+
+		/*
 		// STEP 2
 		//
 		// Convert the data contained in the Texture2D to the BC7 format.
@@ -37,5 +53,6 @@ namespace Brawler
 			context.HBC7TextureDataReservationArr.push_back(std::move(hBC7SubResourceDataReservation));
 			mBC7CompressorPtrArr.push_back(std::move(compressorPtr));
 		}
+		*/
 	}
 }

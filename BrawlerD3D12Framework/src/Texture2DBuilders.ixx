@@ -267,37 +267,40 @@ namespace Brawler
 		template <BuilderType Type>
 		constexpr void Texture2DBuilderIMPL<Type>::AllowUnorderedAccessViews() requires BuilderInfo<Type>::ENABLE_ALLOW_UAV_OPTION
 		{
-			mResourceDesc.Flags |= D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+			// The people at Microsoft were nice enough to add explicit C++ bit-wise operator overloads
+			// for D3D12 enumeration types... but they forgot to make some of them (e.g., |=, &=, etc.) constexpr!
+
+			mResourceDesc.Flags = (mResourceDesc.Flags | D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 		}
 
 		template <BuilderType Type>
 		constexpr void Texture2DBuilderIMPL<Type>::DenyUnorderedAccessViews() requires BuilderInfo<Type>::ENABLE_ALLOW_UAV_OPTION
 		{
-			mResourceDesc.Flags &= ~(D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+			mResourceDesc.Flags = (mResourceDesc.Flags & ~(D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS));
 		}
 
 		template <BuilderType Type>
 		constexpr void Texture2DBuilderIMPL<Type>::AllowShaderResourceViews() requires BuilderInfo<Type>::ENABLE_DENY_SRV_OPTION
 		{
-			mResourceDesc.Flags &= ~(D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE);
+			mResourceDesc.Flags = (mResourceDesc.Flags & ~(D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE));
 		}
 
 		template <BuilderType Type>
 		constexpr void Texture2DBuilderIMPL<Type>::DenyShaderResourceViews() requires BuilderInfo<Type>::ENABLE_DENY_SRV_OPTION
 		{
-			mResourceDesc.Flags |= D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
+			mResourceDesc.Flags = (mResourceDesc.Flags | D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE);
 		}
 
 		template <BuilderType Type>
 		constexpr void Texture2DBuilderIMPL<Type>::AllowSimultaneousAccess() requires BuilderInfo<Type>::ENABLE_SIMULTANEOUS_ACCESS_OPTION
 		{
-			mResourceDesc.Flags |= D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS;
+			mResourceDesc.Flags = (mResourceDesc.Flags | D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS);
 		}
 
 		template <BuilderType Type>
 		constexpr void Texture2DBuilderIMPL<Type>::DenySimultaneousAccess() requires BuilderInfo<Type>::ENABLE_SIMULTANEOUS_ACCESS_OPTION
 		{
-			mResourceDesc.Flags &= ~(D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS);
+			mResourceDesc.Flags = (mResourceDesc.Flags & ~(D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS));
 		}
 
 		template <BuilderType Type>

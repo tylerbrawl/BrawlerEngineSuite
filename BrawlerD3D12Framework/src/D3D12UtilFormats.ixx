@@ -320,7 +320,7 @@ export namespace Util
 		/// </returns>
 		constexpr std::size_t GetBitsPerPixelForFormat(const DXGI_FORMAT format)
 		{
-			switch (static_cast<int>(fmt))
+			switch (format)
 			{
 			case DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_TYPELESS:
 			case DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT:

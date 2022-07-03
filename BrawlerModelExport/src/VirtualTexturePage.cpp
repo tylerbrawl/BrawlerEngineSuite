@@ -3,7 +3,6 @@ module;
 #include <cstdint>
 #include <cassert>
 #include <optional>
-#include <DirectXMath/DirectXMath.h>
 #include <DxDef.h>
 
 module Brawler.VirtualTexturePage;

@@ -12,8 +12,12 @@ import Brawler.D3D12.BufferResource;
 import Brawler.D3D12.StructuredBufferSubAllocation;
 import Brawler.D3D12.FrameGraphBuilder;
 import Brawler.D3D12.Texture2D;
-import Brawler.D3D12.BufferSubAllocationReservationHandle;
 import Brawler.BC7ImageCompressor;
+import Brawler.VirtualTexturePage;
+import Brawler.VirtualTextureCPUDataStore;
+import Brawler.TextureTypeMap;
+import Brawler.ModelTextureID;
+import Brawler.FilePathHash;
 
 export namespace Brawler
 {
@@ -24,12 +28,7 @@ export namespace Brawler
 		{
 			D3D12::FrameGraphBuilder& Builder;
 			D3D12::Texture2D* CurrTexturePtr;
-			std::vector<D3D12::BufferSubAllocationReservationHandle> HBC7TextureDataReservationArr;
-		};
-
-		struct BufferBC7
-		{
-			DirectX::XMUINT4 Color;
+			std::vector<VirtualTexturePage> VirtualTexturePageArr;
 		};
 
 	public:
@@ -44,25 +43,22 @@ export namespace Brawler
 		void Update();
 		bool IsReadyForSerialization() const;
 
-		const DirectX::ScratchImage& GetFinalOpaqueDiffuseTexture() const;
+		FilePathHash SerializeModelTexture() const;
 
 	private:
 		void BeginDiffuseTextureResolution();
 		void AddTextureResolutionRenderPasses(D3D12::FrameGraphBuilder& builder);
 
 		void AddSourceTextureUploadRenderPasses(TextureResolutionContext& context);
-		void AddBC7CompressionRenderPasses(TextureResolutionContext& context);
 		void AddMipMapGenerationRenderPasses(TextureResolutionContext& context);
-		void AddReadBackBufferCopyRenderPasses(TextureResolutionContext& context);
-
-		void CopyResolvedTextureToScratchImage();
+		void AddVirtualTexturePartitioningRenderPasses(TextureResolutionContext& context);
+		void AddBC7CompressionRenderPasses(TextureResolutionContext& context);
+		void AddCPUDataStoreCopyRenderPasses(TextureResolutionContext& context);
 
 	private:
 		std::optional<ModelTextureResolutionEventHandle> mHDiffuseTextureResolutionEvent;
-		std::unique_ptr<D3D12::BufferResource> mOutputBuffer;
+		AnisotropicFilterVirtualTextureCPUDataStore<Brawler::GetDesiredTextureFormat<ModelTextureID::DIFFUSE_ALBEDO>()> mTextureDataStore;
 		std::vector<std::unique_ptr<BC7ImageCompressor>> mBC7CompressorPtrArr;
-		std::vector<D3D12::StructuredBufferSubAllocation<BufferBC7>> mBC7BufferSubAllocationArr;
-		DirectX::ScratchImage mDestDiffuseScratchImage;
 		DirectX::ScratchImage mSrcDiffuseScratchImage;
 		const ImportedMesh* mMeshPtr;
 	};

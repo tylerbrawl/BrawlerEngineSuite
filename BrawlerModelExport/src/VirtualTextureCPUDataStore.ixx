@@ -11,7 +11,6 @@ module;
 #include <bit>
 #include <DxDef.h>
 #include <DirectXTex.h>
-#include <DirectXMath/DirectXMath.h>
 
 export module Brawler.VirtualTextureCPUDataStore;
 import :VirtualTextureCPUPageStore;
@@ -96,7 +95,7 @@ namespace Brawler
 	}
 
 	template <DXGI_FORMAT TextureFormat, VirtualTexturePageFilterMode FilterMode>
-	FilePathHash VirtualTextureCPUDataStore<TextureFormat, VirtualTexturePageFilterMode>::SerializeVirtualTexture(const Brawler::NZWStringView srcTextureName, const std::size_t srcTextureDimensions) const
+	FilePathHash VirtualTextureCPUDataStore<TextureFormat, FilterMode>::SerializeVirtualTexture(const Brawler::NZWStringView srcTextureName, const std::size_t srcTextureDimensions) const
 	{
 		assert(Util::Math::IsPowerOfTwo(srcTextureDimensions));
 		
@@ -111,7 +110,7 @@ namespace Brawler
 
 		for (const auto i : std::views::iota(0u, mPageStoreArr.size()))
 		{
-			VirtualTextureCPUPageStore<TextureFormat, FilterMode>& currPageStore{ mPageStoreArr[i] };
+			const VirtualTextureCPUPageStore<TextureFormat, FilterMode>& currPageStore{ mPageStoreArr[i] };
 			std::unique_ptr<TextureDataWriteInfo>& currWriteInfoPtr{ dataWriteInfoPtrArr[i] };
 
 			pageDataWriteGroup.AddJob([srcTextureName, &currPageStore, &currWriteInfoPtr, &activeJobsCounter] ()
@@ -157,7 +156,7 @@ namespace Brawler
 				.CopyableFootprintsPageSizeInBytes = copyablePageSizeInBytes,
 				.TextureFormat = TextureFormat,
 				.LogicalTextureMip0Dimensions = static_cast<std::uint32_t>(srcTextureDimensions),
-				.LogicalMipLevelCount = logicalMipLevelCount,
+				.LogicalMipLevelCount = static_cast<std::uint32_t>(logicalMipLevelCount),
 				.PageCount = static_cast<std::uint32_t>(mPageStoreArr.size())
 			}
 		};
@@ -186,4 +185,19 @@ namespace Brawler
 
 		return FilePathHash{ partialOutputTextureDescFilePath.c_str() };
 	}
+}
+
+export namespace Brawler
+{
+	template <DXGI_FORMAT TextureFormat>
+	using PointFilterVirtualTextureCPUDataStore = VirtualTextureCPUDataStore<TextureFormat, VirtualTexturePageFilterMode::POINT_FILTER>;
+
+	template <DXGI_FORMAT TextureFormat>
+	using BilinearFilterVirtualTextureCPUDataStore = VirtualTextureCPUDataStore<TextureFormat, VirtualTexturePageFilterMode::BILINEAR_FILTER>;
+
+	template <DXGI_FORMAT TextureFormat>
+	using TrilinearFilterVirtualTextureCPUDataStore = VirtualTextureCPUDataStore<TextureFormat, VirtualTexturePageFilterMode::TRILINEAR_FILTER>;
+
+	template <DXGI_FORMAT TextureFormat>
+	using AnisotropicFilterVirtualTextureCPUDataStore = VirtualTextureCPUDataStore<TextureFormat, VirtualTexturePageFilterMode::ANISOTROPIC_8X_FILTER>;
 }

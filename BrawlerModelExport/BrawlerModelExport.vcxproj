@@ -323,6 +323,7 @@
     <ClCompile Include="src\ModelResolver.cpp" />
     <ClCompile Include="src\ModelResolver.ixx" />
     <ClCompile Include="src\ModelTextureID.ixx" />
+    <ClCompile Include="src\ModelTextureNameGenerator.ixx" />
     <ClCompile Include="src\ModelTextureResolutionEventHandle.cpp" />
     <ClCompile Include="src\ModelTextureResolutionEventHandle.ixx" />
     <ClCompile Include="src\ModelTextureResolutionRenderModule.cpp" />
@@ -338,8 +339,9 @@
     <ClCompile Include="src\OpaqueDiffuseMipMapping.cpp" />
     <ClCompile Include="src\OpaqueDiffuseModelTextureResolver.cpp" />
     <ClCompile Include="src\OpaqueDiffuseModelTextureResolver.ixx" />
-    <ClCompile Include="src\OpaqueDiffuseReadBackBufferCopy.cpp" />
+    <ClCompile Include="src\OpaqueDiffuseCPUDataStore.cpp" />
     <ClCompile Include="src\OpaqueDiffuseSourceTextureUpload.cpp" />
+    <ClCompile Include="src\OpaqueDiffuseVirtualTexturePartitioning.cpp" />
     <ClCompile Include="src\OpaqueMaterialDefinition.cpp" />
     <ClCompile Include="src\OpaqueMaterialDefinition.ixx" />
     <ClCompile Include="src\SerializationContext.ixx" />
@@ -380,7 +382,6 @@
     <ClCompile Include="src\TextureTypeMap.ixx" />
     <ClCompile Include="src\VirtualTextureConstants.ixx" />
     <ClCompile Include="src\VirtualTextureCPUDataStore.ixx" />
-    <ClCompile Include="src\VirtualTextureCPUMipMapStore.ixx" />
     <ClCompile Include="src\VirtualTextureCPUPageStore.ixx" />
     <ClCompile Include="src\VirtualTexturePage.cpp" />
     <ClCompile Include="src\VirtualTexturePage.ixx" />

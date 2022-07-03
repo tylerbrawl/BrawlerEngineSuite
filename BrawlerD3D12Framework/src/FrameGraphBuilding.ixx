@@ -6,3 +6,4 @@ export import Brawler.D3D12.FrameGraphBuilder;
 export import Brawler.D3D12.RenderPassBundle;
 export import Brawler.D3D12.RenderPass;
 export import Brawler.D3D12.GPUCommandQueueType;
+export import Brawler.D3D12.GPUCommandContexts;

@@ -256,6 +256,7 @@
     <ClCompile Include="src\BindlessSRVSentinel.ixx" />
     <ClCompile Include="src\BufferCopyRegion.cpp" />
     <ClCompile Include="src\BufferCopyRegion.ixx" />
+    <ClCompile Include="src\ByteAddressBufferSubAllocation.ixx" />
     <ClCompile Include="src\CustomEventHandle.ixx" />
     <ClCompile Include="src\DebugScopedCPUPIXEvent.cpp" />
     <ClCompile Include="src\DebugScopedCPUPIXEvent.ixx" />

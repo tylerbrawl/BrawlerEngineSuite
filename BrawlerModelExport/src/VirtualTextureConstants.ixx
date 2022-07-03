@@ -44,7 +44,7 @@ namespace Brawler
 		{};
 
 		template <>
-		struct FilterModeInfo<VirtualTexturePageFilterMode::ANISOTROPIC_8X_FILTER> : public FilterModeInfoInstantiation<3>
+		struct FilterModeInfo<VirtualTexturePageFilterMode::ANISOTROPIC_8X_FILTER> : public FilterModeInfoInstantiation<4>
 		{};
 	}
 }

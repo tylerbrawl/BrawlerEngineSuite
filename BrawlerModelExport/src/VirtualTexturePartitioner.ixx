@@ -208,7 +208,7 @@ namespace Brawler
 		{
 			const Brawler::D3D12_RESOURCE_DESC& srcTextureDesc{ srcTexture.GetResourceDescription() };
 			assert(Util::D3D12::IsSRVRTVDSVResourceCastLegal(srcTextureDesc.Format, TextureFormat) && "ERROR: An invalid DXGI_FORMAT value was provided when instantiating a VirtualTexturePartitioner instance!");
-			assert(srcTextureDesc.Width == srcTextureDesc.Height && Util::Math::IsPowerOfTwo(srcTexture.Width) && "ERROR: Virtual textures must be square, and they must have dimensions which are powers of two!");
+			assert(srcTextureDesc.Width == srcTextureDesc.Height && Util::Math::IsPowerOfTwo(srcTextureDesc.Width) && "ERROR: Virtual textures must be square, and they must have dimensions which are powers of two!");
 		}
 
 		// There are a number of reasons as to why the D3D12::DescriptorTableBuilder instance which builds
@@ -242,7 +242,7 @@ namespace Brawler
 			PartitionLargeMipMap(frameGraphBuilder, mSrcTexturePtr->GetSubResource(i));
 
 		// Merge the remaining mip levels into a single page.
-		MergeSmallMipMaps(frameGraphBuilder, mCBSubAllocationArr.size());
+		MergeSmallMipMaps(frameGraphBuilder, static_cast<std::uint32_t>(mCBSubAllocationArr.size()));
 	}
 
 	template <DXGI_FORMAT TextureFormat, VirtualTexturePageFilterMode FilterMode>
@@ -346,8 +346,8 @@ namespace Brawler
 			std::size_t currMipLevel = 0;
 			for (auto& mipLevelInfo : mipLevelInfoArr)
 			{
-				mipLevelInfo.InputMipLevel = currMipLevel;
-				mipLevelInfo.MipLevelLogicalSize = (copyInfo.MaxLogicalMipLevelDimensions >> currMipLevel);
+				mipLevelInfo.InputMipLevel = static_cast<std::uint32_t>(currMipLevel);
+				mipLevelInfo.MipLevelLogicalSize = static_cast<std::uint32_t>(copyInfo.MaxLogicalMipLevelDimensions >> currMipLevel);
 
 				++currMipLevel;
 			}
@@ -381,7 +381,7 @@ namespace Brawler
 		// The dimensions of the current mip level are (MipLevel0Dimensions) / 2^(CurrentMipLevel). However, since
 		// we know that the source texture has power-of-two dimensions, we can optimize this calculation as follows:
 		const std::size_t currMipLevelDimensions = (mSrcTexturePtr->GetResourceDescription().Width >> mipMapSubResource.GetSubResourceIndex());
-		assert(static_cast<std::uint32_t>(currMipLevelDimensions) <= VirtualTextures::USEFUL_VIRTUAL_TEXTURE_PAGE_DIMENSIONS.x);
+		assert(static_cast<std::uint32_t>(currMipLevelDimensions) >= VirtualTextures::USEFUL_VIRTUAL_TEXTURE_PAGE_DIMENSIONS.x);
 
 		// Since we only partition mip levels which have at least as many texels as the useful dimensions of a page,
 		// and since both the useful page dimensions and highest mip level of the source texture are square powers
@@ -392,9 +392,9 @@ namespace Brawler
 		static constexpr std::size_t SIZE_DIVISOR_EXPONENT = std::countr_zero(NUM_USEFUL_PAGE_TEXELS);
 		const std::size_t numPagesToCreate = (currMipLevelDimensions << std::countr_zero(currMipLevelDimensions)) >> SIZE_DIVISOR_EXPONENT;
 
-		const std::size_t numPagesPerLogicalRow = currMipLevelDimensions / VirtualTextures::USEFUL_VIRTUAL_TEXTURE_PAGE_DIMENSIONS.x;
+		const std::uint32_t numPagesPerLogicalRow = static_cast<std::uint32_t>(currMipLevelDimensions / VirtualTextures::USEFUL_VIRTUAL_TEXTURE_PAGE_DIMENSIONS.x);
 
-		const D3D12::ConstantBufferSubAllocation<MipLevelInfo>& currMipLevelInfoSubAllocation{ mCBSubAllocationArr[mipMapSubResource.GetSubResourceIndex()] };
+		D3D12::ConstantBufferSubAllocation<MipLevelInfo>& currMipLevelInfoSubAllocation{ mCBSubAllocationArr[mipMapSubResource.GetSubResourceIndex()] };
 
 		D3D12::RenderPassBundle mipLevelPartitionPassBundle{};
 		std::size_t numPagesCreated = 0;
@@ -440,7 +440,7 @@ namespace Brawler
 
 			struct LargePageTilingInfo
 			{
-				D3D12::DescriptorTableBuilder OutputPageTableBuilder;
+				std::unique_ptr<D3D12::DescriptorTableBuilder> OutputPageTableBuilderPtr;
 				std::shared_ptr<D3D12::DescriptorTableBuilder> InputTextureTableBuilderPtr;
 				DirectX::XMUINT2 StartingLogicalCoordinates;
 				std::uint32_t OutputPageCount;
@@ -451,7 +451,7 @@ namespace Brawler
 			mipLevelPartitionPass.SetRenderPassName("Virtual Texture Partitioning - Large Mip Level Partition Pass");
 
 			LargePageTilingInfo tilingInfo{
-				.OutputPageTableBuilder{ MAX_OUTPUT_PAGES_PER_DISPATCH },
+				.OutputPageTableBuilderPtr{ std::make_unique<D3D12::DescriptorTableBuilder>(static_cast<std::uint32_t>(MAX_OUTPUT_PAGES_PER_DISPATCH)) },
 				.InputTextureTableBuilderPtr{ mSrcTextureTableBuilderPtr },
 				.StartingLogicalCoordinates{ currStartingCoordinates },
 				.OutputPageCount{ static_cast<std::uint32_t>(numPagesThisIteration) },
@@ -468,11 +468,13 @@ namespace Brawler
 				
 				if (i < outputPageTexturePtrArr.size()) [[likely]]
 				{
-					mipLevelPartitionPass.AddResourceDependency(outputPageTexturePtrArr[i]->GetSubResource(0), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-					tilingInfo.OutputPageTableBuilder.CreateUnorderedAccessView(i, outputPageTexturePtrArr[i]->CreateUnorderedAccessView<UAV_FORMAT>(0));
+					D3D12::Texture2DSubResource currPageSubResource{ outputPageTexturePtrArr[i]->GetSubResource(0) };
+
+					mipLevelPartitionPass.AddResourceDependency(currPageSubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+					tilingInfo.OutputPageTableBuilderPtr->CreateUnorderedAccessView(i, currPageSubResource.CreateUnorderedAccessView<UAV_FORMAT>());
 				}
 				else [[unlikely]]
-					tilingInfo.OutputPageTableBuilder.NullifyUnorderedAccessView<UAV_FORMAT, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2D>(i);
+					tilingInfo.OutputPageTableBuilderPtr->NullifyUnorderedAccessView<UAV_FORMAT, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE2D>(i);
 			}
 
 			mipLevelPartitionPass.SetInputData(std::move(tilingInfo));
@@ -499,7 +501,7 @@ namespace Brawler
 					resourceBinder.BindRoot32BitConstants<RootParams::TILING_ROOT_CONSTANTS>(tilingInfoConstants);
 				}
 
-				resourceBinder.BindDescriptorTable<RootParams::OUTPUT_PAGES_TABLE>(largeTilingInfo.OutputPageTableBuilder.GetDescriptorTable());
+				resourceBinder.BindDescriptorTable<RootParams::OUTPUT_PAGES_TABLE>(largeTilingInfo.OutputPageTableBuilderPtr->GetDescriptorTable());
 				resourceBinder.BindRootCBV<RootParams::MIP_LEVEL_INFO_CBV>(largeTilingInfo.CurrMipLevelInfoSnapshot.CreateRootConstantBufferView());
 
 				// Even though std::shared_ptr does not provide thread-safe access, D3D12::DescriptorTableBuilder is, in fact, a
@@ -524,7 +526,7 @@ namespace Brawler
 
 			// Offset the starting logical coordinates to account for the pages which we created.
 			{
-				currStartingCoordinates.x += (VirtualTextures::USEFUL_VIRTUAL_TEXTURE_PAGE_DIMENSIONS.x * numPagesThisIteration);
+				currStartingCoordinates.x += static_cast<std::uint32_t>(VirtualTextures::USEFUL_VIRTUAL_TEXTURE_PAGE_DIMENSIONS.x * numPagesThisIteration);
 
 				const std::uint32_t pageColumnOffset = (currStartingCoordinates.x / VirtualTextures::USEFUL_VIRTUAL_TEXTURE_PAGE_DIMENSIONS.x);
 				currStartingCoordinates.x = (currStartingCoordinates.x % VirtualTextures::USEFUL_VIRTUAL_TEXTURE_PAGE_DIMENSIONS.x);
@@ -565,7 +567,7 @@ namespace Brawler
 
 		struct MergeSmallMipMapsPassInfo
 		{
-			D3D12::DescriptorTableBuilder OutputTextureTableBuilder;
+			std::unique_ptr<D3D12::DescriptorTableBuilder> OutputTextureTableBuilderPtr;
 			std::shared_ptr<D3D12::DescriptorTableBuilder> InputTextureTableBuilderPtr;
 			ConstantsInfo RootConstantsInfo;
 		};
@@ -573,15 +575,19 @@ namespace Brawler
 		D3D12::RenderPass<D3D12::GPUCommandQueueType::DIRECT, MergeSmallMipMapsPassInfo> mipLevelMergePass{};
 		mipLevelMergePass.SetRenderPassName("Virtual Texture Partitioning - Small Mip Level Merge Pass");
 
-		mipLevelMergePass.AddResourceDependency(outputPageTexture.GetSubResource(0), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		D3D12::Texture2DSubResource outputPageSubResource{ outputPageTexture.GetSubResource(0) };
+		mipLevelMergePass.AddResourceDependency(outputPageSubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 		for (const auto i : std::views::iota(firstMipLevelToMerge, numMipLevelsToMerge))
-			mipLevelMergePass.AddResourceDependency(mSrcTexturePtr->GetSubResource(i), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		{
+			D3D12::Texture2DSubResource mergedMipLevelSubResource{ mSrcTexturePtr->GetSubResource(i) };
+			mipLevelMergePass.AddResourceDependency(mergedMipLevelSubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		}
 
 		{
 			MergeSmallMipMapsPassInfo passInfo{
-				.OutputTextureTableBuilder{1},
-				.InputTextureTableBuilderPtr{mSrcTextureTableBuilderPtr},
+				.OutputTextureTableBuilderPtr{ std::make_unique<D3D12::DescriptorTableBuilder>(1) },
+				.InputTextureTableBuilderPtr{ mSrcTextureTableBuilderPtr },
 				.RootConstantsInfo{
 					.FirstMipLevelToBeMerged = firstMipLevelToMerge,
 					.NumMipLevelsToMerge = numMipLevelsToMerge,
@@ -589,7 +595,8 @@ namespace Brawler
 				}
 			};
 
-			passInfo.OutputTextureTableBuilder.CreateUnorderedAccessView(0, outputPageTexture.CreateUnorderedAccessView(0));
+			constexpr DXGI_FORMAT UAV_FORMAT = (IsSRGB<TextureFormat>() ? GetUAVFormatForSRGBFormat<TextureFormat>() : TextureFormat);
+			passInfo.OutputTextureTableBuilderPtr->CreateUnorderedAccessView(0, outputPageTexture.CreateUnorderedAccessView<UAV_FORMAT>(0));
 
 			mipLevelMergePass.SetInputData(std::move(passInfo));
 		}
@@ -602,7 +609,7 @@ namespace Brawler
 			using RootParams = Brawler::RootParameters::VirtualTexturePageMerging;
 
 			resourceBinder.BindRoot32BitConstants<RootParams::TILING_CONSTANTS>(passInfo.RootConstantsInfo);
-			resourceBinder.BindDescriptorTable<RootParams::OUTPUT_TEXTURE_TABLE>(passInfo.OutputTextureTableBuilder.GetDescriptorTable());
+			resourceBinder.BindDescriptorTable<RootParams::OUTPUT_TEXTURE_TABLE>(passInfo.OutputTextureTableBuilderPtr->GetDescriptorTable());
 			resourceBinder.BindDescriptorTable<RootParams::INPUT_TEXTURE_TABLE>(passInfo.InputTextureTableBuilderPtr->GetDescriptorTable());
 
 			// As per the compute shader contract in VirtualTexturePageMerging.hlsl, we need to create one thread

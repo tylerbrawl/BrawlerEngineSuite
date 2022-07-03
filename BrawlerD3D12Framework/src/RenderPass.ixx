@@ -295,7 +295,7 @@ namespace Brawler
 		void RenderPass<QueueType, InputDataType>::AddResourceDependency(I_BufferSubAllocation& bufferSubAllocation, const D3D12_RESOURCE_STATES requiredState)
 		{
 			AddResourceDependency(FrameGraphResourceDependency{
-				.ResourcePtr = std::addressof(bufferSubAllocation.GetBufferResource()),
+				.ResourcePtr = &(bufferSubAllocation.GetBufferResource()),
 				.RequiredState = requiredState,
 				.SubResourceIndex = 0
 			});
@@ -305,7 +305,7 @@ namespace Brawler
 		void RenderPass<QueueType, InputDataType>::AddResourceDependency(TextureSubResource& textureSubResource, const D3D12_RESOURCE_STATES requiredState)
 		{
 			AddResourceDependency(FrameGraphResourceDependency{
-				.ResourcePtr = std::addressof(textureSubResource.GetGPUResource()),
+				.ResourcePtr = &(textureSubResource.GetGPUResource()),
 				.RequiredState = requiredState,
 				.SubResourceIndex = textureSubResource.GetSubResourceIndex()
 			});

@@ -309,7 +309,7 @@
     <ClCompile Include="src\OpaqueDiffuseMipMapping.cpp">
       <Filter>Source Files\Model Texture Resolvers\Opaque Diffuse</Filter>
     </ClCompile>
-    <ClCompile Include="src\OpaqueDiffuseReadBackBufferCopy.cpp">
+    <ClCompile Include="src\OpaqueDiffuseCPUDataStore.cpp">
       <Filter>Source Files\Model Texture Resolvers\Opaque Diffuse</Filter>
     </ClCompile>
     <ClCompile Include="src\MipMapGeneration.ixx">
@@ -393,14 +393,17 @@
     <ClCompile Include="src\VirtualTextureCPUDataStore.ixx">
       <Filter>Module Files\Textures\Virtual Textures</Filter>
     </ClCompile>
-    <ClCompile Include="src\VirtualTextureCPUMipMapStore.ixx">
-      <Filter>Module Files\Textures\Virtual Textures</Filter>
-    </ClCompile>
     <ClCompile Include="src\VirtualTextureCPUPageStore.ixx">
       <Filter>Module Files\Textures\Virtual Textures</Filter>
     </ClCompile>
     <ClCompile Include="src\SerializedVirtualTextureDescriptions.ixx">
       <Filter>Module Files\Textures\Virtual Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpaqueDiffuseVirtualTexturePartitioning.cpp">
+      <Filter>Source Files\Model Texture Resolvers\Opaque Diffuse</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelTextureNameGenerator.ixx">
+      <Filter>Module Files\Textures</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

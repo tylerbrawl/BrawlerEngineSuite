@@ -6,6 +6,7 @@ module;
 #include <memory>
 #include <span>
 #include <ranges>
+#include <iostream>
 #include <assimp/material.h>
 #include <DxDef.h>
 #include <DirectXTex.h>
@@ -20,15 +21,14 @@ import Brawler.ModelTextureResolutionRenderModule;
 import Brawler.D3D12.Texture2D;
 import Brawler.TextureTypeMap;
 import Brawler.ModelTextureID;
+import Brawler.ModelTextureNameGenerator;
 
 namespace Brawler
 {
 	OpaqueDiffuseModelTextureResolver::OpaqueDiffuseModelTextureResolver(const ImportedMesh& mesh) :
 		mHDiffuseTextureResolutionEvent(),
-		mOutputBuffer(nullptr),
+		mTextureDataStore(),
 		mBC7CompressorPtrArr(),
-		mBC7BufferSubAllocationArr(),
-		mDestDiffuseScratchImage(),
 		mSrcDiffuseScratchImage(),
 		mMeshPtr(&mesh)
 
@@ -41,21 +41,21 @@ namespace Brawler
 	{
 		if (!mHDiffuseTextureResolutionEvent.has_value()) [[unlikely]]
 			BeginDiffuseTextureResolution();
-
-		else if (mHDiffuseTextureResolutionEvent->IsEventComplete() && mOutputBuffer != nullptr)
-			CopyResolvedTextureToScratchImage();
 	}
 
 	bool OpaqueDiffuseModelTextureResolver::IsReadyForSerialization() const
 	{
-		return (mHDiffuseTextureResolutionEvent.has_value() && mHDiffuseTextureResolutionEvent->IsEventComplete() && mOutputBuffer == nullptr);
+		return (mHDiffuseTextureResolutionEvent.has_value() && mHDiffuseTextureResolutionEvent->IsEventComplete());
 	}
 
-	const DirectX::ScratchImage& OpaqueDiffuseModelTextureResolver::GetFinalOpaqueDiffuseTexture() const
+	FilePathHash OpaqueDiffuseModelTextureResolver::SerializeModelTexture() const
 	{
-		assert(IsReadyForSerialization());
+		assert(mMeshPtr != nullptr);
+		const ModelTextureNameGenerator<ModelTextureID::DIFFUSE_ALBEDO> diffuseAlbedoNameGenerator{ *mMeshPtr };
 
-		return mDestDiffuseScratchImage;
+		const DirectX::Image& relevantImage{ *(mSrcDiffuseScratchImage.GetImage(0, 0, 0)) };
+
+		return mTextureDataStore.SerializeVirtualTexture(diffuseAlbedoNameGenerator.GetModelTextureName(), relevantImage.width);
 	}
 
 	void OpaqueDiffuseModelTextureResolver::BeginDiffuseTextureResolution()
@@ -157,73 +157,13 @@ namespace Brawler
 		TextureResolutionContext resolutionContext{
 			.Builder{builder},
 			.CurrTexturePtr = nullptr,
-			.HBC7TextureDataReservationArr{}
+			.VirtualTexturePageArr{}
 		};
 
 		AddSourceTextureUploadRenderPasses(resolutionContext);
 		AddMipMapGenerationRenderPasses(resolutionContext);
+		AddVirtualTexturePartitioningRenderPasses(resolutionContext);
 		AddBC7CompressionRenderPasses(resolutionContext);
-		AddReadBackBufferCopyRenderPasses(resolutionContext);
-	}
-
-	void OpaqueDiffuseModelTextureResolver::CopyResolvedTextureToScratchImage()
-	{
-		assert(mHDiffuseTextureResolutionEvent->IsEventComplete() && mOutputBuffer != nullptr);
-
-		{
-			const DirectX::Image* const srcImagePtr = mSrcDiffuseScratchImage.GetImage(0, 0, 0);
-			assert(srcImagePtr != nullptr);
-
-			// Initialize the DirectX::ScratchImage to have one image for every sub-resource of the
-			// transient Texture2D which contained our data.
-			Util::General::CheckHRESULT(mDestDiffuseScratchImage.Initialize2D(
-				Brawler::GetDesiredTextureFormat<ModelTextureID::DIFFUSE_ALBEDO>(),
-				srcImagePtr->width,
-				srcImagePtr->height,
-				1,
-				mBC7BufferSubAllocationArr.size(),
-				DirectX::CP_FLAGS::CP_FLAGS_NONE
-			));
-		}
-
-		// Copy the data from each StructuredBufferSubAllocation<BufferBC7> (i.e., each sub-resource) to
-		// its corresponding DirectX::Image. (Before you ask: No, we still don't have std::views::zip.)
-		const std::span<const DirectX::Image> destImageSpan{ mDestDiffuseScratchImage.GetImages(), mDestDiffuseScratchImage.GetImageCount() };
-		assert(destImageSpan.size() == mBC7BufferSubAllocationArr.size());
-
-		for (const auto i : std::views::iota(0u, mBC7BufferSubAllocationArr.size()))
-		{
-			const DirectX::Image& currDestImage{ destImageSpan[i] };
-			const D3D12::StructuredBufferSubAllocation<BufferBC7>& currSrcDataSubAllocation{ mBC7BufferSubAllocationArr[i] };
-
-			std::size_t rowPitch = 0;
-			std::size_t slicePitch = 0;
-
-			Util::General::CheckHRESULT(DirectX::ComputePitch(
-				currDestImage.format,
-				currDestImage.width,
-				currDestImage.height,
-				rowPitch,
-				slicePitch
-			));
-
-			const std::size_t numRows = (slicePitch / rowPitch);
-			assert(numRows == std::max<std::size_t>(1, (currDestImage.height + 3) >> 2));
-
-			const std::size_t numBlocksPerRow = std::max<size_t>(1, (currDestImage.width + 3) >> 2);
-
-			for (std::size_t currRow = 0; currRow < numRows; ++currRow)
-			{
-				const std::span<BufferBC7> destRowDataSpan{ reinterpret_cast<BufferBC7*>(currDestImage.pixels + (currRow * rowPitch)), numBlocksPerRow };
-				currSrcDataSubAllocation.ReadStructuredBufferData(static_cast<std::uint32_t>(currRow * numBlocksPerRow), destRowDataSpan);
-			}
-		}
-
-		// Delete the persistent BufferResource and all of its associated StructuredBufferSubAllocation
-		// instances. Not only does this tell us if we are finished with everything (assuming that
-		// mHDiffuseTextureResolutionEvent->IsEventComplete() returns true, of course), but it also
-		// frees the GPU memory reserved by the BufferResource.
-		mOutputBuffer.reset();
-		mBC7BufferSubAllocationArr.clear();
+		AddCPUDataStoreCopyRenderPasses(resolutionContext);
 	}
 }

@@ -40,7 +40,7 @@ export namespace Brawler
 	{
 		std::uint64_t LogicalMipLevel;
 		DirectX::XMUINT2 PageCoordinates;
-		std::uint64_t PageTextureDataFilePathHash
+		std::uint64_t PageTextureDataFilePathHash;
 	};
 #pragma pack(pop)
 }
@@ -51,7 +51,7 @@ export namespace Brawler
 	{
 		return CommonVirtualTextureDescriptionHeader{
 			.Magic = VIRTUAL_TEXTURE_DESCRIPTION_HEADER_MAGIC_HANDLER.GetMagicIntegerValue(),
-			.Value = CURRENT_VIRTUAL_TEXTURE_DESCRIPTION_VERSION
+			.Version = CURRENT_VIRTUAL_TEXTURE_DESCRIPTION_VERSION
 		};
 	}
 }

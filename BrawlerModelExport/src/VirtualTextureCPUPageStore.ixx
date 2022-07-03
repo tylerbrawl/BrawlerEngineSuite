@@ -17,6 +17,8 @@ import Brawler.D3D12.BufferResource;
 import Brawler.D3D12.BufferResourceInitializationInfo;
 import Util.D3D12;
 import Brawler.D3D12.Texture2D;
+import Brawler.D3D12.StructuredBufferSubAllocation;
+import Brawler.D3D12.ByteAddressBufferSubAllocation;
 import Brawler.D3D12.BufferSubAllocationReservationHandle;
 import Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.FilePathHash;
@@ -55,7 +57,7 @@ export namespace Brawler
 		std::unique_ptr<TextureDataWriteInfo> SerializeVirtualTexturePage(const Brawler::NZWStringView srcTextureName) const;
 
 	private:
-		auto GetRenderPassForUncompressedTextureReadBack(const D3D12::Texture2DSubResource pageTextureSubResource);
+		auto GetRenderPassForUncompressedTextureReadBack(D3D12::Texture2DSubResource pageTextureSubResource);
 		auto GetRenderPassForCompressedTextureReadBack(D3D12::BufferSubAllocationReservationHandle&& hCompressedDataReservation);
 
 	private:
@@ -105,9 +107,9 @@ namespace Brawler
 		// buffer. Otherwise, we will read from the Texture2DSubResource contained within the VirtualTexturePage
 		// instance, which has the uncompressed data.
 		if (page.HasCompressedDataBufferReservation()) [[likely]]
-			renderPassBundle.AddRenderPass(GetRenderPassForCompressedTextureReadBack(frameGraphBuilder, page.RevokeCompressedDataBufferReservation()));
+			renderPassBundle.AddRenderPass(GetRenderPassForCompressedTextureReadBack(page.RevokeCompressedDataBufferReservation()));
 		else [[unlikely]]
-			renderPassBundle.AddRenderPass(GetRenderPassForUncompressedTextureReadBack(frameGraphBuilder, page.GetTexture2DSubResource()));
+			renderPassBundle.AddRenderPass(GetRenderPassForUncompressedTextureReadBack(page.GetTexture2DSubResource()));
 	}
 
 	template <DXGI_FORMAT TextureFormat, VirtualTexturePageFilterMode FilterMode>
@@ -143,18 +145,18 @@ namespace Brawler
 		// Create a MappedFileView to the file which we just created/cleared.
 		MappedFileView<FileAccessMode::READ_WRITE> outputTexturePageFileView{ completeOutputTexturePageFilePath };
 		
-		std::optional<D3D12::StructuredBufferSubAllocation<std::byte>> readbackDataSubAllocation{ mReadbackBufferPtr->CreateBufferSubAllocation<D3D12::StructuredBufferSubAllocation<std::byte>>(NUM_BYTES_PER_PAGE) };
+		std::optional<D3D12::DynamicByteAddressBufferSubAllocation> readbackDataSubAllocation{ mReadbackBufferPtr->CreateBufferSubAllocation<D3D12::DynamicByteAddressBufferSubAllocation>(NUM_BYTES_PER_PAGE) };
 		assert(readbackDataSubAllocation.has_value());
 
 		// Write the texture data directly from the read-back heap into the file on the filesystem.
 		const std::span<std::byte> mappedPageDataSpan{ outputTexturePageFileView.GetMappedData() };
-		readbackDataSubAllocation.ReadStructuredBufferData(0, mappedPageDataSpan);
+		readbackDataSubAllocation->ReadRawBytesFromBuffer(mappedPageDataSpan);
 
 		return dataWriteInfo;
 	}
 
 	template <DXGI_FORMAT TextureFormat, VirtualTexturePageFilterMode FilterMode>
-	auto VirtualTextureCPUPageStore<TextureFormat, FilterMode>::GetRenderPassForUncompressedTextureReadBack(const D3D12::Texture2DSubResource pageTextureSubResource)
+	auto VirtualTextureCPUPageStore<TextureFormat, FilterMode>::GetRenderPassForUncompressedTextureReadBack(D3D12::Texture2DSubResource pageTextureSubResource)
 	{
 		struct UncompressedTextureCopyPassInfo
 		{
@@ -192,17 +194,17 @@ namespace Brawler
 		constexpr std::size_t NUM_BYTES_PER_PAGE = GetVirtualTexturePageSizeInBytes<TextureFormat, FilterMode>();
 		assert(hCompressedDataReservation->GetReservationSize() == NUM_BYTES_PER_PAGE);
 
-		D3D12::StructuredBufferSubAllocation<std::byte> compressedDataSubAllocation{ NUM_BYTES_PER_PAGE };
+		D3D12::DynamicByteAddressBufferSubAllocation compressedDataSubAllocation{ NUM_BYTES_PER_PAGE };
 		assert(compressedDataSubAllocation.IsReservationCompatible(hCompressedDataReservation));
 		compressedDataSubAllocation.AssignReservation(std::move(hCompressedDataReservation));
 
-		std::optional<D3D12::StructuredBufferSubAllocation<std::byte>> destBufferSubAllocation{ mReadbackBufferPtr->CreateBufferSubAllocation<D3D12::StructuredBufferSubAllocation<std::byte>>(NUM_BYTES_PER_PAGE) };
+		std::optional<D3D12::DynamicByteAddressBufferSubAllocation> destBufferSubAllocation{ mReadbackBufferPtr->CreateBufferSubAllocation<D3D12::DynamicByteAddressBufferSubAllocation>(NUM_BYTES_PER_PAGE) };
 		assert(destBufferSubAllocation.has_value());
 
 		struct CompressedTextureCopyPassInfo
 		{
-			D3D12::StructuredBufferSnapshot<std::byte> SrcBufferSnapshot;
-			D3D12::StructuredBufferSnapshot<std::byte> DestBufferSnapshot;
+			D3D12::DynamicByteAddressBufferSnapshot SrcBufferSnapshot;
+			D3D12::DynamicByteAddressBufferSnapshot DestBufferSnapshot;
 		};
 
 		D3D12::RenderPass<D3D12::GPUCommandQueueType::DIRECT, CompressedTextureCopyPassInfo> compressedCopyPass{};
