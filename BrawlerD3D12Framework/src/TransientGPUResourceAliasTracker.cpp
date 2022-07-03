@@ -4,6 +4,7 @@ module;
 #include <set>
 #include <algorithm>
 #include <cassert>
+#include <optional>
 #include <array>
 #include "DxDef.h"
 
@@ -53,7 +54,8 @@ namespace Brawler
 					.ResourcePtr = resourcePtr,
 					.ResourceSize = GetGPUResourceSize(transientResourceDependency),
 					.FirstBundleUsage = bundleID,
-					.LastBundleUsage = bundleID
+					.LastBundleUsage = bundleID,
+					.AliasGroupID{}
 				};
 		}
 
@@ -84,15 +86,16 @@ namespace Brawler
 				return (reinterpret_cast<std::size_t>(lhs) < reinterpret_cast<std::size_t>(rhs));
 			};
 
-			std::set<const TransientGPUResourceInfo*, decltype(SORT_TRANSIENT_GPU_RESOURCE_INFO_LAMBDA)> sortedResourceInfoSet{};
+			std::set<TransientGPUResourceInfo*, decltype(SORT_TRANSIENT_GPU_RESOURCE_INFO_LAMBDA)> sortedResourceInfoSet{};
 
-			for (const auto& [resourcePtr, resourceInfo] : mResourceLifetimeMap)
+			for (auto& [resourcePtr, resourceInfo] : mResourceLifetimeMap)
 				sortedResourceInfoSet.insert(&resourceInfo);
 
+			std::uint32_t currAliasGroupID = 0;
 			while (!sortedResourceInfoSet.empty())
 			{
-				std::vector<const TransientGPUResourceInfo*> aliasableResourceInfoArr{};
-				std::ranges::for_each(sortedResourceInfoSet, [this, &aliasableResourceInfoArr] (const TransientGPUResourceInfo* const& currInfo)
+				std::vector<TransientGPUResourceInfo*> aliasableResourceInfoArr{};
+				std::ranges::for_each(sortedResourceInfoSet, [this, &aliasableResourceInfoArr] (TransientGPUResourceInfo* const currInfo)
 				{
 					// We can skip all of this logic if aliasableResourceInfoArr is currently empty.
 					if (aliasableResourceInfoArr.empty())
@@ -151,9 +154,14 @@ namespace Brawler
 				aliasedResourcePtrArr.reserve(aliasableResourceInfoArr.size());
 
 				// Remove each processed TransientGPUResourceInfo from the list of aliasable resource infos
-				// and add its ResourcePtr to aliasedResourcePtrArr.
+				// and add its ResourcePtr to aliasedResourcePtrArr. We will also adjust the AliasGroupID
+				// member of each TransientGPUResourceInfo to correlate resources belonging to the same group;
+				// this information will be used during command list recording to determine which resources
+				// need aliasing barriers with each other.
 				for (const auto aliasedResourceInfoPtr : aliasableResourceInfoArr)
 				{
+					aliasedResourceInfoPtr->AliasGroupID = currAliasGroupID;
+					
 					sortedResourceInfoSet.erase(aliasedResourceInfoPtr);
 					aliasedResourcePtrArr.push_back(aliasedResourceInfoPtr->ResourcePtr);
 				}
@@ -161,12 +169,32 @@ namespace Brawler
 				// Finally, aliasedResourcePtrArr contains the set of all resources which are aliasable
 				// with the resource which we started with.
 				mAliasableResourcesArr.push_back(std::move(aliasedResourcePtrArr));
+
+				// Before we move on to the next set of aliasable resources, we increment the alias group ID.
+				++currAliasGroupID;
 			}
 		}
 
 		std::span<const std::vector<I_GPUResource*>> TransientGPUResourceAliasTracker::GetAliasableResources() const
 		{
 			return std::span<const std::vector<I_GPUResource*>>{ mAliasableResourcesArr };
+		}
+
+		std::optional<std::uint32_t> TransientGPUResourceAliasTracker::GetAliasGroupID(const I_GPUResource& resource) const
+		{
+			// Persistent resources will not be tracked by the TransientGPUResourceAliasTracker, and will thus
+			// be missing from mResourceLifetimeMap.
+			I_GPUResource* const castedResourcePtr = const_cast<I_GPUResource*>(&resource);
+
+			if (!mResourceLifetimeMap.contains(castedResourcePtr))
+				return std::optional<std::uint32_t>{};
+
+			return std::optional<std::uint32_t>{ mResourceLifetimeMap.at(castedResourcePtr).AliasGroupID };
+		}
+
+		std::size_t TransientGPUResourceAliasTracker::GetAliasGroupCount() const
+		{
+			return mAliasableResourcesArr.size();
 		}
 	}
 }

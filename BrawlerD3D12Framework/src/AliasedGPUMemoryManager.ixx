@@ -1,5 +1,4 @@
 module;
-#include <unordered_map>
 #include <vector>
 
 export module Brawler.D3D12.AliasedGPUMemoryManager;
@@ -52,8 +51,8 @@ export namespace Brawler
 			const I_GPUResource* ActivateGPUResource(const I_GPUResource& activatedResource);
 
 		private:
+			const TransientGPUResourceAliasTracker* mAliasTrackerPtr;
 			std::vector<AliasedGPUMemoryState> mStateArr;
-			std::unordered_map<const I_GPUResource*, AliasedGPUMemoryState*> mResourceMemoryStateMap;
 		};
 	}
 }

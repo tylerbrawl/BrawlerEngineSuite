@@ -2,6 +2,7 @@ module;
 #include <span>
 #include <unordered_map>
 #include <vector>
+#include <optional>
 
 export module Brawler.D3D12.TransientGPUResourceAliasTracker;
 import Brawler.D3D12.I_GPUResourceHeapManager;
@@ -39,6 +40,14 @@ export namespace Brawler
 				/// </summary>
 				std::uint32_t LastBundleUsage;
 
+				/// <summary>
+				/// This value correlates resources which belong to the same region of GPU memory
+				/// together. This correlation can indeed be assumed by analyzing the return value of
+				/// TransientGPUResourceAliasTracker::GetAliasableResources(), but having a separate
+				/// value allows for a more efficient method of checking.
+				/// </summary>
+				std::uint32_t AliasGroupID;
+
 				bool Overlaps(const TransientGPUResourceInfo& otherInfo) const;
 			};
 
@@ -57,6 +66,9 @@ export namespace Brawler
 			void CalculateAliasableResources();
 
 			std::span<const std::vector<I_GPUResource*>> GetAliasableResources() const;
+
+			std::optional<std::uint32_t> GetAliasGroupID(const I_GPUResource& resource) const;
+			std::size_t GetAliasGroupCount() const;
 
 		private:
 			const I_GPUResourceHeapManager<GPUResourceLifetimeType::TRANSIENT>* mResourceHeapManagerPtr;
