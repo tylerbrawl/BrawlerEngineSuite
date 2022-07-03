@@ -7,6 +7,7 @@ module Brawler.Job;
 import Brawler.JobCounter;
 import Brawler.JobPriority;
 import Util.Engine;
+import Util.Coroutine;
 import Util.Threading;
 import Brawler.ThreadLocalResources;
 import Brawler.DelayedJobSubmitter;
@@ -60,7 +61,8 @@ namespace Brawler
 				// with this counter have completed; otherwise, we risk stack unwinding wreaking
 				// havoc on the memory accessed by other threads. So, we wait here until the
 				// counter reaches zero to leave.
-				while (!mCounterPtr->IsFinished());
+				while (!mCounterPtr->IsFinished())
+					Util::Coroutine::TryExecuteJob();
 			}
 
 			std::rethrow_exception(std::current_exception());

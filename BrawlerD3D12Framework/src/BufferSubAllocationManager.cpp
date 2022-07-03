@@ -173,13 +173,12 @@ namespace Brawler
 			// ready for destruction.
 			mReservationPtrArr.EraseIf([this] (const std::unique_ptr<BufferSubAllocationReservation>& reservationPtr)
 			{
-				if (reservationPtr->ReadyForDestruction()) [[unlikely]]
-				{
-					DeleteSubAllocation(*reservationPtr);
-					return true;
-				}
+				// The destructor of BufferSubAllocationReservation will automatically return its TLSFMemoryBlock
+				// to the TLSFAllocator of this BufferSubAllocationManager instance. Thus, with the power of RAII,
+				// all we need to do here is return true if the BufferSubAllocationReservation instances announces
+				// that it is ready to be destroyed and false otherwise.
 
-				return false;
+				return (reservationPtr->ReadyForDestruction());
 			});
 			
 			const TLSFAllocationRequestInfo allocationRequest{
