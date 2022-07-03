@@ -46,12 +46,14 @@ namespace Brawler
 	void JobGroup::ExecuteJobsAsync()
 	{
 		// Synchronous execution only happens when co_await is used. Thus, we can simply
-		// send the jobs to the queues without worry.
+		// send the jobs to the queues without worry. However, we still need to update the
+		// counter value in order to ensure that when an exception is thrown, the thread
+		// in the catch-block within Job::Execute() does not loop forever due to a wrap-around.
+		//
+		// For this reason, JobGroup::ExecuteJobsAsync() is effectively the same thing as
+		// JobGroup::DispatchJobs().
 
-		for (auto&& job : mJobArr)
-			Brawler::GetWorkerThreadPool().DispatchJob(std::move(job));
-
-		mJobArr.clear();
+		DispatchJobs();
 	}
 
 	void JobGroup::DispatchJobs()
