@@ -58,7 +58,10 @@ export namespace Brawler
 				D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc;
 			};
 
-			using DescriptorInfoVariant = std::variant<std::monostate, D3D12_CONSTANT_BUFFER_VIEW_DESC, SRVInfo, UAVInfo>;
+			struct ResourceBindingTier3NullDescriptor
+			{};
+
+			using DescriptorInfoVariant = std::variant<std::monostate, D3D12_CONSTANT_BUFFER_VIEW_DESC, SRVInfo, UAVInfo, ResourceBindingTier3NullDescriptor>;
 
 		public:
 			DescriptorTableBuilder() = delete;
@@ -162,14 +165,11 @@ export namespace Brawler
 		private:
 			void CreateDescriptorTable();
 
-			void CreateConstantBufferView(const std::uint32_t index, const D3D12_CONSTANT_BUFFER_VIEW_DESC& cbvInfo);
-			void CreateShaderResourceView(const std::uint32_t index, const SRVInfo& srvInfo);
-			void CreateUnorderedAccessView(const std::uint32_t index, const UAVInfo& uavInfo);
-
-			CD3DX12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(const std::uint32_t offsetInDescriptors = 0) const;
+			void CreateConstantBufferView(const CD3DX12_CPU_DESCRIPTOR_HANDLE hCPUDescriptor, const D3D12_CONSTANT_BUFFER_VIEW_DESC& cbvInfo);
+			void CreateShaderResourceView(const CD3DX12_CPU_DESCRIPTOR_HANDLE hCPUDescriptor, const SRVInfo& srvInfo);
+			void CreateUnorderedAccessView(const CD3DX12_CPU_DESCRIPTOR_HANDLE hCPUDescriptor, const UAVInfo& uavInfo);
 
 		private:
-			Microsoft::WRL::ComPtr<Brawler::D3D12DescriptorHeap> mStagingHeap;
 			std::optional<PerFrameDescriptorTable> mDescriptorTable;
 			std::vector<DescriptorInfoVariant> mDescriptorInfoArr;
 			std::uint32_t mNumDescriptors;
@@ -362,22 +362,28 @@ namespace Brawler
 			assert(index < mDescriptorInfoArr.size());
 
 			// Don't bother setting a NULL descriptor if we do not need to.
-			if (Util::Engine::GetGPUCapabilities().GPUResourceBindingTier == ResourceBindingTier::TIER_3) [[likely]]
-				return;
+			const bool hasTier3Support = (Util::Engine::GetGPUCapabilities().GPUResourceBindingTier == ResourceBindingTier::TIER_3);
+			
+			if (hasTier3Support) [[likely]]
+			{
+				const std::scoped_lock<std::mutex> lock{ mTableCreationCritSection };
+				mDescriptorInfoArr[index] = ResourceBindingTier3NullDescriptor{};
+			}
+			else [[unlikely]]
+			{
+				// The MSVC refuses to let this be constexpr, even though it could/should be. There's some type
+				// of bug with the compiler which causes it to write out more data than is necessary for some
+				// structures, resulting in a buffer overflow. However, this bug only occurs in a constant-evaluated
+				// context.
+				const auto nullUAVDesc = NullUAVDescInfo<Format, ViewDimension>::CreateNullUAVDescription();
 
-			// The MSVC refuses to let this be constexpr, even though it could/should be. There's some type
-			// of bug with the compiler which causes it to write out more data than is necessary for some
-			// structures, resulting in a buffer overflow. However, this bug only occurs in a constant-evaluated
-			// context.
-			const auto nullUAVDesc = NullUAVDescInfo<Format, ViewDimension>::CreateNullUAVDescription();
-
-			const std::scoped_lock<std::mutex> lock{ mTableCreationCritSection };
-
-			mDescriptorInfoArr[index] = UAVInfo{
-				.GPUResourcePtr = nullptr,
-				.UAVCounterResource{},
-				.UAVDesc{ nullUAVDesc }
-			};
+				const std::scoped_lock<std::mutex> lock{ mTableCreationCritSection };
+				mDescriptorInfoArr[index] = UAVInfo{
+					.GPUResourcePtr = nullptr,
+					.UAVCounterResource{},
+					.UAVDesc{ nullUAVDesc }
+				};
+			}
 		}
 	}
 }

@@ -69,7 +69,7 @@ export namespace Brawler
 			std::unique_ptr<BindlessSRVSentinel> AllocateBindlessSRV();
 			void ReClaimBindlessSRV(BindlessSRVSentinel& srvAllocation);
 
-			PerFrameDescriptorTable CreatePerFrameDescriptorTable(const DescriptorTableBuilder& tableBuilder);
+			DescriptorHandleInfo CreatePerFrameDescriptorHeapReservation(const std::uint32_t numDescriptors);
 
 			void ResetPerFrameDescriptorHeapIndex();
 
@@ -80,8 +80,6 @@ export namespace Brawler
 
 		private:
 			__forceinline std::uint32_t GetBasePerFrameDescriptorHeapIndex() const;
-
-			DescriptorHandleInfo CreatePerFrameDescriptorHeapReservation(const std::uint32_t numDescriptors);
 
 		private:
 			Microsoft::WRL::ComPtr<Brawler::D3D12DescriptorHeap> mHeap;

@@ -98,36 +98,6 @@ namespace Brawler
 			mBindlessIndexQueue.Queue.push(srvAllocation.GetBindlessSRVIndex());
 		}
 
-		PerFrameDescriptorTable GPUResourceDescriptorHeap::CreatePerFrameDescriptorTable(const DescriptorTableBuilder& tableBuilder)
-		{
-			const DescriptorHandleInfo handleInfo{ CreatePerFrameDescriptorHeapReservation(tableBuilder.GetDescriptorTableSize()) };
-			
-			// Copy the descriptors from the DescriptorTableBuilder's staging descriptor heap to the shader-visible
-			// descriptor heap owned by this GPUResourceDescriptorHeap.
-			Util::Engine::GetD3D12Device().CopyDescriptorsSimple(
-				tableBuilder.GetDescriptorTableSize(),
-				handleInfo.HCPUDescriptor,
-				tableBuilder.GetCPUDescriptorHandle(),
-				D3D12_DESCRIPTOR_HEAP_TYPE::D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
-			);
-
-			return PerFrameDescriptorTable{ PerFrameDescriptorTable::InitializationInfo{
-				.HandleInfo{handleInfo},
-				.CurrentFrameNumber = Util::Engine::GetCurrentFrameNumber()
-			} };
-		}
-
-		void GPUResourceDescriptorHeap::ResetPerFrameDescriptorHeapIndex()
-		{
-			mPerFrameIndexArr[Util::Engine::GetTrueFrameNumber() % Util::Engine::MAX_FRAMES_IN_FLIGHT].store(0, std::memory_order::relaxed);
-		}
-
-		Brawler::D3D12DescriptorHeap& GPUResourceDescriptorHeap::GetD3D12DescriptorHeap() const
-		{
-			assert(mHeap != nullptr && "ERROR: An attempt was made to get the ID3D12DescriptorHeap* of the GPUResourceDescriptorHeap before it could ever be created!");
-			return *(mHeap.Get());
-		}
-
 		DescriptorHandleInfo GPUResourceDescriptorHeap::CreatePerFrameDescriptorHeapReservation(const std::uint32_t numDescriptors)
 		{
 			// Reserve numDescriptors descriptors in the per-frame segment of the descriptor heap.
@@ -140,6 +110,17 @@ namespace Brawler
 				.HCPUDescriptor{ mHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<std::int32_t>(descriptorHeapIndex), mDescriptorHandleIncrementSize },
 				.HGPUDescriptor{ mHeap->GetGPUDescriptorHandleForHeapStart(), static_cast<std::int32_t>(descriptorHeapIndex), mDescriptorHandleIncrementSize }
 			};
+		}
+
+		void GPUResourceDescriptorHeap::ResetPerFrameDescriptorHeapIndex()
+		{
+			mPerFrameIndexArr[Util::Engine::GetTrueFrameNumber() % Util::Engine::MAX_FRAMES_IN_FLIGHT].store(0, std::memory_order::relaxed);
+		}
+
+		Brawler::D3D12DescriptorHeap& GPUResourceDescriptorHeap::GetD3D12DescriptorHeap() const
+		{
+			assert(mHeap != nullptr && "ERROR: An attempt was made to get the ID3D12DescriptorHeap* of the GPUResourceDescriptorHeap before it could ever be created!");
+			return *(mHeap.Get());
 		}
 	}
 }

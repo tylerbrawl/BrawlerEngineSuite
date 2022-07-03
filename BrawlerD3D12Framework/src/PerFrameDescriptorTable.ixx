@@ -4,34 +4,22 @@ module;
 export module Brawler.D3D12.PerFrameDescriptorTable;
 import Brawler.D3D12.I_DescriptorTable;
 
-namespace Brawler
-{
-	namespace D3D12
-	{
-		class GPUResourceDescriptorHeap;
-	}
-}
-
 export namespace Brawler
 {
 	namespace D3D12
 	{
 		class PerFrameDescriptorTable final : public I_DescriptorTable
 		{
-		private:
+		public:
 			struct InitializationInfo
 			{
 				DescriptorHandleInfo HandleInfo;
 				std::uint64_t CurrentFrameNumber;
 			};
 
-		private:
-			friend class GPUResourceDescriptorHeap;
-
-		private:
+		public:
 			explicit PerFrameDescriptorTable(InitializationInfo&& initInfo);
 
-		public:
 			PerFrameDescriptorTable(const PerFrameDescriptorTable& rhs) = default;
 			PerFrameDescriptorTable& operator=(const PerFrameDescriptorTable& rhs) = default;
 
