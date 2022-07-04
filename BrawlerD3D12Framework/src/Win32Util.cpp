@@ -19,6 +19,11 @@ namespace
 {
 	void EnableConsoleFormatting()
 	{
+		// Here, we try to modify the application's console to support virtual terminal characters
+		// and foreign characters. However, we don't throw an exception if we fail here, because
+		// this is just for aesthetics; execution can continue normally if we cannot complete
+		// these modifications successfully.
+		
 		HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 		if (!hStdOut) [[unlikely]]
 			return;
@@ -43,6 +48,20 @@ namespace
 	{
 		Util::General::CheckHRESULT(CoInitializeEx(nullptr, COINIT_MULTITHREADED));
 	}
+
+	void RaiseFileStreamCapacity()
+	{
+		// By default, the maximum number of files which can be opened at once with std::fopen() (and
+		// thus with std::fstream instances) is 512. However, this limit can be raised to 8,192 by calling
+		// _setmaxstdio(). (The source for this information is 
+		// https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/setmaxstdio?view=msvc-170.)
+		static constexpr std::uint32_t MAX_FILE_STREAMS_ALLOWED = 8192;
+
+		const std::int32_t setMaxReturnValue = _setmaxstdio(static_cast<std::int32_t>(MAX_FILE_STREAMS_ALLOWED));
+
+		if (setMaxReturnValue == -1) [[unlikely]]
+			throw std::runtime_error{ "ERROR: The maximum number of open file streams could not be raised!" };
+	}
 }
 
 namespace Util
@@ -53,6 +72,7 @@ namespace Util
 		{
 			EnableConsoleFormatting();
 			InitializeCOM();
+			RaiseFileStreamCapacity();
 		}
 
 		void WriteDebugMessage(const std::string_view msg)

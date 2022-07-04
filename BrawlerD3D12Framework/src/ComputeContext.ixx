@@ -5,6 +5,7 @@ module;
 
 export module Brawler.D3D12.ComputeContext;
 import Brawler.D3D12.GPUCommandContext;
+import Brawler.D3D12.ComputeCapableCommandGenerator;
 import Brawler.D3D12.GPUResourceBinder;
 import Util.Engine;
 import Brawler.D3D12.PSODatabase;
@@ -18,7 +19,7 @@ export namespace Brawler
 {
 	namespace D3D12
 	{
-		class ComputeContext final : public GPUCommandContext<GPUCommandQueueType::COMPUTE>
+		class ComputeContext final : public GPUCommandContext<GPUCommandQueueType::COMPUTE>, public ComputeCapableCommandGenerator<ComputeContext>
 		{
 		public:
 			ComputeContext() = default;
@@ -38,12 +39,6 @@ export namespace Brawler
 			template <Brawler::PSOs::PSOID PSOIdentifier>
 				requires (Brawler::PSOs::GetPipelineType<PSOIdentifier>() == Brawler::PSOs::PipelineType::COMPUTE)
 			GPUResourceBinder<PSOIdentifier> SetPipelineState();
-
-			void Dispatch(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY, const std::uint32_t numThreadGroupsZ) const;
-
-			void Dispatch1D(const std::uint32_t numThreadGroups) const;
-			void Dispatch2D(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY) const;
-			void Dispatch3D(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY, const std::uint32_t numThreadGroupsZ) const;
 
 		private:
 			RootParameterCache mRootParamCache;

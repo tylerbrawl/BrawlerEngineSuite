@@ -5,6 +5,7 @@ module;
 
 export module Brawler.D3D12.DirectContext;
 import Brawler.D3D12.GPUCommandContext;
+import Brawler.D3D12.ComputeCapableCommandGenerator;
 import Brawler.D3D12.GPUResourceBinder;
 import Util.Engine;
 import Brawler.D3D12.RootSignatureDatabase;
@@ -27,7 +28,7 @@ export namespace Brawler
 {
 	namespace D3D12
 	{
-		class DirectContext final : public GPUCommandContext<GPUCommandQueueType::DIRECT>
+		class DirectContext final : public GPUCommandContext<GPUCommandQueueType::DIRECT>, public ComputeCapableCommandGenerator<DirectContext>
 		{
 		private:
 			template <GPUCommandQueueType QueueType>
@@ -50,12 +51,6 @@ export namespace Brawler
 		public:
 			template <Brawler::PSOs::PSOID PSOIdentifier>
 			GPUResourceBinder<PSOIdentifier> SetPipelineState();
-
-			void Dispatch(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY, const std::uint32_t numThreadGroupsZ) const;
-
-			void Dispatch1D(const std::uint32_t numThreadGroups) const;
-			void Dispatch2D(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY) const;
-			void Dispatch3D(const std::uint32_t numThreadGroupsX, const std::uint32_t numThreadGroupsY, const std::uint32_t numThreadGroupsZ) const;
 
 		private:
 			void PerformSpecialGPUResourceInitialization(I_GPUResource& resource);

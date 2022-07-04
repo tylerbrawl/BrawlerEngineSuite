@@ -143,6 +143,7 @@ namespace Brawler
 
 		const std::filesystem::path completeOutputTextureDescFilePath{ launchParams.GetRootOutputDirectory() / partialOutputTextureDescFilePath };
 
+		std::filesystem::create_directories(completeOutputTextureDescFilePath.parent_path());
 		std::ofstream outputTextureDescFileStream{ completeOutputTextureDescFilePath, std::ios::out | std::ios::binary };
 
 		constexpr CommonVirtualTextureDescriptionHeader COMMON_HEADER{ CreateCommonVirtualTextureDescriptionHeader() };

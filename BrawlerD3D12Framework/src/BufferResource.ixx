@@ -191,6 +191,8 @@ export namespace Brawler
 			void ExecutePostD3D12ResourceInitializationCallback() override;
 
 		public:
+			std::optional<D3D12_CLEAR_VALUE> GetOptimizedClearValue() const override;
+
 			bool CanAliasBeforeUseOnGPU() const override;
 			bool CanAliasAfterUseOnGPU() const override;
 

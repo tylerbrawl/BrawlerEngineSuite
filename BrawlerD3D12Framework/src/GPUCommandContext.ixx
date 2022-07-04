@@ -72,6 +72,9 @@ namespace Brawler
 
 		template <GPUCommandQueueType QueueType, typename InputDataType>
 		class RenderPass;
+
+		template <typename T>
+		class ComputeCapableCommandGenerator;
 	}
 }
 
@@ -92,6 +95,9 @@ export namespace Brawler
 
 			template <GPUCommandQueueType CmdListType, typename InputDataType>
 			friend class RenderPass;
+
+			template <typename T>
+			friend class ComputeCapableCommandGenerator;
 
 		private:
 			using DerivedContextType = GPUCommandContextInfo<CmdListType>::ContextType;

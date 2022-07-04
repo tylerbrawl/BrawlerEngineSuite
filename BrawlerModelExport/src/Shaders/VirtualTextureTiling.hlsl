@@ -113,11 +113,11 @@ template <uint OutputPageIndex>
 void BeginOutputPageWrite(in const uint2 DTid)
 {
 	const uint2 adjustedStartCoordinates = WaveReadLaneFirst(IMPL::StartCoordsAdjuster<OutputPageIndex>::GetAdjustedStartCoordinates());
-	const uint2 texelSampleCoordinates = adjustedStartCoordinates + DTid - CurrentTilingTypeInfo::BORDER_DIMENSIONS;
+	const int2 texelSampleCoordinates = int2(adjustedStartCoordinates + DTid) - CurrentTilingTypeInfo::BORDER_DIMENSIONS;
 		
 	// AMD suggests to avoid using rcp(), since it runs at quarter-rate as a transcendental instruction. Is
 	// (1.0f / x) really faster than rcp(x), then?
-	const float2 inputUV = (float2(texelSampleCoordinates) + 0.5f) * (1.0f / MipLevelConstants.MipLevelLogicalSize);
+	const float2 inputUV = (float2(texelSampleCoordinates) + 0.5f) / MipLevelConstants.MipLevelLogicalSize;
 	
 #ifdef __USING_SRGB_DATA__
 	const float4 sampledInputValue = Util::ColorSpace::LinearToSRGB(InputTexture.SampleLevel(PointClampSampler, inputUV, MipLevelConstants.InputMipLevel));
@@ -125,7 +125,7 @@ void BeginOutputPageWrite(in const uint2 DTid)
 	const float4 sampledInputValue = InputTexture.SampleLevel(PointClampSampler, inputUV, MipLevelConstants.InputMipLevel);
 #endif
 		
-	IMPL::OutputPageWriter<OutputPageIndex>::WriteToOutputPage(texelSampleCoordinates + CurrentTilingTypeInfo::BORDER_DIMENSIONS, sampledInputValue);
+	IMPL::OutputPageWriter<OutputPageIndex>::WriteToOutputPage(DTid, sampledInputValue);
 }
 
 // ===========================================================================================================
