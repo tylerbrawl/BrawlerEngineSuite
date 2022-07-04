@@ -528,8 +528,8 @@ namespace Brawler
 			{
 				currStartingCoordinates.x += static_cast<std::uint32_t>(VirtualTextures::USEFUL_VIRTUAL_TEXTURE_PAGE_DIMENSIONS.x * numPagesThisIteration);
 
-				const std::uint32_t pageColumnOffset = (currStartingCoordinates.x / VirtualTextures::USEFUL_VIRTUAL_TEXTURE_PAGE_DIMENSIONS.x);
-				currStartingCoordinates.x = (currStartingCoordinates.x % VirtualTextures::USEFUL_VIRTUAL_TEXTURE_PAGE_DIMENSIONS.x);
+				const std::uint32_t pageColumnOffset = (currStartingCoordinates.x / static_cast<std::uint32_t>(currMipLevelDimensions));
+				currStartingCoordinates.x = (currStartingCoordinates.x % static_cast<std::uint32_t>(currMipLevelDimensions));
 				currStartingCoordinates.y += (pageColumnOffset * VirtualTextures::USEFUL_VIRTUAL_TEXTURE_PAGE_DIMENSIONS.y);
 			}
 			

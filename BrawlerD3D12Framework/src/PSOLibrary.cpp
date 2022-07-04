@@ -122,6 +122,7 @@ namespace Brawler
 			{
 				Util::Win32::WriteFormattedConsoleMessage(L"The detected PSO cache was created with a different hardware configuration, or with an older version of the D3D12 runtime. A full re-compilation of all PSOs is necessary.");
 
+				mLibraryFileView = MappedFileView<FileAccessMode::READ_ONLY>{};
 				mNeedsSerialization.store(true, std::memory_order::relaxed);
 				return;
 			}
@@ -131,6 +132,7 @@ namespace Brawler
 			{
 				Util::Win32::WriteFormattedConsoleMessage(L"The PSO cache was somehow corrupted. A full re-compilation of all PSOs is necessary.");
 
+				mLibraryFileView = MappedFileView<FileAccessMode::READ_ONLY>{};
 				mNeedsSerialization.store(true, std::memory_order::relaxed);
 				return;
 			}
@@ -156,7 +158,10 @@ namespace Brawler
 			hr = oldPipelineLibrary.As(&mPipelineLibrary);
 
 			if (FAILED(hr)) [[unlikely]]
+			{
+				mLibraryFileView = MappedFileView<FileAccessMode::READ_ONLY>{};
 				mNeedsSerialization.store(true, std::memory_order::relaxed);
+			}
 		}
 
 		void PSOLibrary::SerializePSOLibraryAsync() const

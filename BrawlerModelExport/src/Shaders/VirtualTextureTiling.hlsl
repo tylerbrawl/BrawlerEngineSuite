@@ -49,8 +49,8 @@ namespace IMPL
 			uint2 startCoordinates = TilingConstants.StartingLogicalCoordinates;
 			const uint adjustedXCoord = mad(VirtualTextures::USEFUL_PAGE_DIMENSIONS.x, OutputPageIndex, startCoordinates.x);
 			
-			startCoordinates.x = (adjustedXCoord & (VirtualTextures::USEFUL_PAGE_DIMENSIONS.x - 1));
-			startCoordinates.y = mad(VirtualTextures::USEFUL_PAGE_DIMENSIONS.y, (adjustedXCoord >> firstbitlow(VirtualTextures::USEFUL_PAGE_DIMENSIONS.x)), startCoordinates.y);
+			startCoordinates.x = (adjustedXCoord & (MipLevelConstants.MipLevelLogicalSize - 1));
+			startCoordinates.y = mad(VirtualTextures::USEFUL_PAGE_DIMENSIONS.y, (adjustedXCoord >> firstbitlow(MipLevelConstants.MipLevelLogicalSize)), startCoordinates.y);
 				
 			return startCoordinates;
 		}
