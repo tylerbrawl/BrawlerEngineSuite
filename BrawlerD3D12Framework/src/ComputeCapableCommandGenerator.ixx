@@ -50,10 +50,9 @@ export namespace Brawler
 			///     by it is zeroed, as if by a call to SecureZeroMemory() from the Win32 API.
 			/// 
 			///   - If uavToClear refers to a texture GPU resource, then the clear value used is that which
-			///     is returned by I_GPUResource::GetOptimizedClearValue(); this function is called on the
-			///     I_GPUResource instance referred to by uavToClear. The function asserts if an empty
-			///     std::optional instance is returned by I_GPUResource::GetOptimizedClearValue(), but only
-			///     for texture GPU resources.
+			///     is returned by I_GPUResource::GetOptimizedClearValue(), if this function returns a
+			///     non-empty std::optional instance. Otherwise, the relevant subresources are zeroed, as if
+			///     by a call to SecureZeroMemory() from the Win32 API.
 			/// 
 			/// The relevant subresources are cleared on the *GPU* timeline, regardless of whether or not
 			/// their corresponding I_GPUResource is located in an UPLOAD heap. If you need to immediately
