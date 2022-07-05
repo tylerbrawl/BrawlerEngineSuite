@@ -1131,6 +1131,9 @@
     <ClCompile Include="src\ComputeCapableCommandGenerator.ixx">
       <Filter>Module Files\GPU Work Submission\Command Contexts</Filter>
     </ClCompile>
+    <ClCompile Include="src\FolderPath.ixx">
+      <Filter>Module Files\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

@@ -102,9 +102,6 @@
     <ClCompile Include="src\DirectStorageAssetIORequestBuilder.ixx">
       <Filter>Module Files\Asset Management\Asset I/O Requests</Filter>
     </ClCompile>
-    <ClCompile Include="src\SerializedStruct.ixx">
-      <Filter>Module Files\File I/O</Filter>
-    </ClCompile>
     <ClCompile Include="src\BPKArchiveReader.ixx">
       <Filter>Module Files\Asset Management</Filter>
     </ClCompile>
@@ -209,6 +206,9 @@
     </ClCompile>
     <ClCompile Include="src\Win32AssetIORequestTracker.cpp">
       <Filter>Source Files\Asset Management\Asset I/O Requests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SerializedStruct.ixx">
+      <Filter>Module Files\File I/O</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

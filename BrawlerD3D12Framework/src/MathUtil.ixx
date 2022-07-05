@@ -30,6 +30,10 @@ export namespace Util
 
 		template <typename T>
 			requires std::is_integral_v<T>
+		__forceinline constexpr std::uint64_t GigabytesToBytes(const T gigabytes);
+
+		template <typename T>
+			requires std::is_integral_v<T>
 		__forceinline constexpr bool IsPowerOfTwo(const T value);
 
 		/// <summary>
@@ -92,6 +96,13 @@ namespace Util
 		__forceinline constexpr std::uint64_t MegabytesToBytes(const T megabytes)
 		{
 			return (static_cast<std::uint64_t>(megabytes) * 1024 * 1024);
+		}
+
+		template <typename T>
+			requires std::is_integral_v<T>
+		__forceinline constexpr std::uint64_t GigabytesToBytes(const T gigabytes)
+		{
+			return (static_cast<std::uint64_t>(gigabytes) * 1024 * 1024 * 1024);
 		}
 
 		template <typename T>

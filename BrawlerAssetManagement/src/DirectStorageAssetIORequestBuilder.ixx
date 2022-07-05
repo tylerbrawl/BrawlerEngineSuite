@@ -10,7 +10,6 @@ export module Brawler.AssetManagement.DirectStorageAssetIORequestBuilder;
 import Brawler.AssetManagement.I_AssetIORequestBuilder;
 import Brawler.FilePathHash;
 import Brawler.D3D12.I_BufferSubAllocation;
-import Brawler.SerializedStruct;
 
 export namespace Brawler
 {

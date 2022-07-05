@@ -1,9 +1,11 @@
 module;
-#include "DxDef.h"
+#include <cassert>
+#include <DxDef.h>
 
 module Brawler.SwapChain;
 import Brawler.AppWindow;
 import Util.Engine;
+import Util.General;
 import Brawler.SettingID;
 import Brawler.Renderer;
 import Brawler.CommandQueue;
@@ -64,7 +66,7 @@ namespace Brawler
 	void SwapChain::UpdateDisplayCurve()
 	{
 		DXGI_OUTPUT_DESC1 currOutputDesc{};
-		CheckHRESULT(mOwningWnd->GetCurrentDXGIOutput().GetDesc1(&currOutputDesc));
+		Util::General::CheckHRESULT(mOwningWnd->GetCurrentDXGIOutput().GetDesc1(&currOutputDesc));
 
 		switch (currOutputDesc.ColorSpace)
 		{
@@ -85,6 +87,9 @@ namespace Brawler
 			// According to the MSDN at https://docs.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range#desktop-win32-directx-apps,
 			// this should never happen. If it does, however, then we're screwed...
 
+			assert(false);
+			std::unreachable();
+
 			mDisplayCurve = DisplayCurve::UNDEFINED;
 			return;
 		}
@@ -103,7 +108,7 @@ namespace Brawler
 		fullscreenDesc.Windowed = !(Util::Engine::GetOption<Brawler::SettingID::USE_FULLSCREEN>());
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain1> swapChain{ nullptr };
-		CheckHRESULT(Util::Engine::GetDXGIFactory().CreateSwapChainForHwnd(
+		Util::General::CheckHRESULT(Util::Engine::GetDXGIFactory().CreateSwapChainForHwnd(
 			&(Util::Engine::GetCommandQueue(Brawler::CommandListType::DIRECT).GetD3D12CommandQueue()),
 			mOwningWnd->GetWindowHandle(),
 			&scDesc,
@@ -112,8 +117,8 @@ namespace Brawler
 			&swapChain
 		));
 
-		CheckHRESULT(swapChain.As(&mSwapChain));
-		CheckHRESULT(mSwapChain->SetMaximumFrameLatency(BACK_BUFFER_COUNT));
+		Util::General::CheckHRESULT(swapChain.As(&mSwapChain));
+		Util::General::CheckHRESULT(mSwapChain->SetMaximumFrameLatency(BACK_BUFFER_COUNT));
 	}
 
 	void SwapChain::UpdateSwapChainColorSpace()

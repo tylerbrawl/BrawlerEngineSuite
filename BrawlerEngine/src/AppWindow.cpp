@@ -9,10 +9,11 @@ import Brawler.Manifest;
 import Util.General;
 import Util.Engine;
 import Brawler.SettingsManager;
+import Brawler.NZStringView;
 
 namespace
 {
-	constexpr const wchar_t* APPLICATION_WINDOW_CLASS_NAME = L"BrawlerEngineWindowClass::Main";
+	static constexpr Brawler::NZWStringView APPLICATION_WINDOW_CLASS_NAME{ L"BrawlerEngineWindowClass::Main" };
 	static Brawler::AppWindow* windowInstance = nullptr;
 
 	LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -68,7 +69,7 @@ namespace Brawler
 	{
 		switch (msg.Msg)
 		{
-		case WM_EXITSIZEMOVE:
+		case WM_EXITSIZEMOVE: [[fallthrough]];
 		case WM_DISPLAYCHANGE:
 		{
 			UpdateCurrentDXGIOutput();
@@ -109,7 +110,7 @@ namespace Brawler
 		DWM_TIMING_INFO timingInfo{};
 		timingInfo.cbSize = sizeof(timingInfo);
 
-		CheckHRESULT(DwmGetCompositionTimingInfo(nullptr, &timingInfo));
+		Util::General::CheckHRESULT(DwmGetCompositionTimingInfo(nullptr, &timingInfo));
 		return timingInfo.rateRefresh.uiNumerator / timingInfo.rateRefresh.uiDenominator;
 	}
 
@@ -133,7 +134,7 @@ namespace Brawler
 		));
 		wndClass.hCursor = hCursor;
 
-		wndClass.lpszClassName = APPLICATION_WINDOW_CLASS_NAME;
+		wndClass.lpszClassName = APPLICATION_WINDOW_CLASS_NAME.C_Str();
 
 		RegisterClassEx(&wndClass);
 	}
@@ -143,7 +144,7 @@ namespace Brawler
 		mHWnd = CreateWindowEx(
 			WS_EX_OVERLAPPEDWINDOW,
 			APPLICATION_WINDOW_CLASS_NAME,
-			Util::General::StringToWString(Brawler::Manifest::APPLICATION_NAME).c_str(),
+			Brawler::Manifest::APPLICATION_NAME.C_Str(),
 			WS_OVERLAPPEDWINDOW,
 			CW_USEDEFAULT,
 			CW_USEDEFAULT,
@@ -167,12 +168,12 @@ namespace Brawler
 		while (SUCCEEDED(Util::Engine::GetDXGIAdapter().EnumOutputs(currIndex++, &currOutput)))
 		{
 			DXGI_OUTPUT_DESC currOutputDesc{};
-			CheckHRESULT(currOutput->GetDesc(&currOutputDesc));
+			Util::General::CheckHRESULT(currOutput->GetDesc(&currOutputDesc));
 
 			if (hCurrMonitor == currOutputDesc.Monitor)
 				break;
 		}
 
-		CheckHRESULT(currOutput.As(&mCurrOutput));
+		Util::General::CheckHRESULT(currOutput.As(&mCurrOutput));
 	}
 }

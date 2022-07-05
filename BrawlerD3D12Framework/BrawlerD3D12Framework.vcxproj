@@ -278,6 +278,7 @@
     <ClCompile Include="src\D3D12UtilGeneral.ixx" />
     <ClCompile Include="src\FileAccessMode.ixx" />
     <ClCompile Include="src\Finally.ixx" />
+    <ClCompile Include="src\FolderPath.ixx" />
     <ClCompile Include="src\FormattedConsoleMessageBuilder.ixx" />
     <ClCompile Include="src\FrameGraphManager.cpp" />
     <ClCompile Include="src\FrameGraphManager.ixx" />

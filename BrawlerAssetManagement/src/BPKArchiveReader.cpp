@@ -12,6 +12,7 @@ module Brawler.AssetManagement.BPKArchiveReader;
 import Brawler.FilePathHash;
 import Brawler.FileAccessMode;
 import Brawler.SerializedStruct;
+import Util.Reflection;
 
 namespace
 {
@@ -143,6 +144,14 @@ namespace
 		const std::size_t numTOCEntries = versionedHeader->TableOfContentsSizeInBytes / sizeof(BPKTableOfContentsEntry);
 
 		std::vector<BPKTableOfContentsEntry> tocEntryArr{};
+
+		struct TestStruct
+		{
+			std::int32_t A;
+			std::int32_t B;
+		};
+
+		Brawler::SerializedStruct<TestStruct> testSerializedStruct{};
 
 		if constexpr (Brawler::IsInherentlySerializable<BPKTableOfContentsEntry>)
 		{

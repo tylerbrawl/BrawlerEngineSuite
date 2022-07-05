@@ -2,15 +2,15 @@ module;
 #include <variant>
 #include <unordered_map>
 #include <cassert>
+#include <mutex>
 
 export module Brawler.SettingsManager;
 import Brawler.SettingID;
 import Brawler.IMPL.SettingsDef;
-import Brawler.CriticalSection;
 
 export namespace Brawler
 {
-	class SettingsManager
+	class SettingsManager final
 	{
 	public:
 		using SettingVariant = std::variant<
@@ -31,8 +31,8 @@ export namespace Brawler
 		SettingsManager(const SettingsManager& rhs) = delete;
 		SettingsManager& operator=(const SettingsManager& rhs) = delete;
 
-		SettingsManager(SettingsManager&& rhs) noexcept = default;
-		SettingsManager& operator=(SettingsManager&& rhs) noexcept = default;
+		SettingsManager(SettingsManager&& rhs) noexcept = delete;
+		SettingsManager& operator=(SettingsManager&& rhs) noexcept = delete;
 
 	private:
 		void Initialize();
@@ -63,7 +63,7 @@ export namespace Brawler
 
 	private:
 		std::unordered_map<SettingID, SettingVariant> mSettingMap;
-		mutable CriticalSection mCritSection;
+		mutable std::mutex mCritSection;
 	};
 }
 
@@ -74,7 +74,7 @@ namespace Brawler
 	template <SettingID ID>
 	void SettingsManager::SetOption(const SettingType<ID> value)
 	{
-		ScopedLock<CriticalSection> lock{ mCritSection };
+		std::scoped_lock<std::mutex> lock{ mCritSection };
 
 		assert(mSettingMap.contains(ID) && "ERROR: The SettingsManager was not fully initialized before SettingsManager::SetOption<T>() was called!");
 		std::get<SettingType<ID>>(mSettingMap.at(ID)) = value;
@@ -83,7 +83,7 @@ namespace Brawler
 	template <SettingID ID>
 	SettingsManager::SettingType<ID> SettingsManager::GetOption() const
 	{
-		ScopedLock<CriticalSection> lock{ mCritSection };
+		std::scoped_lock<std::mutex> lock{ mCritSection };
 
 		assert(mSettingMap.contains(ID) && "ERROR: The SettingsManager was not fully initialized before SettingsManager::GetOption<T>() was called!");
 		return std::get<SettingType<ID>>(mSettingMap.at(ID));

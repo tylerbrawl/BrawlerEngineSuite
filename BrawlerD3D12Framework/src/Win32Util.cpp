@@ -4,6 +4,8 @@ module;
 #include <stdexcept>
 #include <cassert>
 #include <format>
+#include <optional>
+#include <filesystem>
 #include <io.h>
 #include <fcntl.h>
 #include "DxDef.h"
@@ -134,6 +136,33 @@ namespace Util
 			}
 			
 			return errMsgString;
+		}
+
+		std::optional<std::filesystem::path> GetKnownFolderPath(const KNOWNFOLDERID& folderID, const bool createIfNotFound)
+		{
+			PWSTR pFolderLocation = nullptr;
+			KNOWN_FOLDER_FLAG dwFlags = KNOWN_FOLDER_FLAG::KF_FLAG_DEFAULT;
+
+			if (createIfNotFound) [[unlikely]]
+				dwFlags |= KNOWN_FOLDER_FLAG::KF_FLAG_CREATE;
+
+			const HRESULT hr = SHGetKnownFolderPath(
+				folderID,
+				dwFlags,
+				nullptr,
+				&pFolderLocation
+			);
+
+			if (FAILED(hr)) [[unlikely]]
+			{
+				CoTaskMemFree(pFolderLocation);
+				return std::optional<std::filesystem::path>{};
+			}
+
+			std::filesystem::path knownFolderPath{ pFolderLocation };
+			CoTaskMemFree(pFolderLocation);
+
+			return std::optional<std::filesystem::path>{ std::move(knownFolderPath) };
 		}
 	}
 }

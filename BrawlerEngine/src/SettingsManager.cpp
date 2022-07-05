@@ -7,6 +7,7 @@ module;
 #include <string>
 #include <algorithm>
 #include <filesystem>
+#include <mutex>
 
 module Brawler.SettingsManager;
 import Brawler.SettingID;
@@ -16,8 +17,9 @@ import Brawler.CriticalSection;
 import Brawler.INIManager;
 import Brawler.FunctionConcepts;
 import Util.Win32;
-import Win32.FolderPath;
+import Brawler.Win32.FolderPath;
 import Brawler.Manifest;
+import Brawler.NZStringView;
 
 namespace
 {
@@ -52,9 +54,9 @@ namespace
 
 	// Use separate configuration files between debug and release builds.
 #ifdef _DEBUG
-	static constexpr const wchar_t* CONFIG_FILE_NAME = L"Config_Debug.ini";
+	static constexpr Brawler::NZWStringView CONFIG_FILE_NAME{ L"Config_Debug.ini" };
 #else
-	static constexpr const wchar_t* CONFIG_FILE_NAME = L"Config.ini";
+	static constexpr Brawler::NZWStringView CONFIG_FILE_NAME{ L"Config.ini" };
 #endif  // _DEBUG
 }
 
@@ -91,10 +93,7 @@ namespace Brawler
 	void SettingsManager::SaveConfigurationFile() const
 	{
 		INIManager iniManager{};
-
-		// Welcome to Modern C++, where the developers are hardcore masochists who will stop at nothing
-		// to make sure that they can overcomplicate the design of their system!
-		Brawler::ScopedLock<CriticalSection> lock{ mCritSection };
+		std::scoped_lock<std::mutex> lock{ mCritSection };
 
 		auto workerLambda = [this, &iniManager]<std::underlying_type_t<Brawler::SettingID>... ID>(std::integer_sequence<std::underlying_type_t<Brawler::SettingID>, ID...>)
 		{
@@ -112,29 +111,29 @@ namespace Brawler
 		workerLambda(settingIDSequence);
 
 		/* First, try to save the options in %LOCALAPPDATA%\[Application Name]\Config.ini. */
-		std::optional<std::wstring> currPath{ Util::Win32::GetKnownFolderPath(Win32::FolderPath::LOCAL_APP_DATA) };
-		if (currPath)
+		std::optional<std::filesystem::path> currPath{ Util::Win32::GetKnownFolderPath(Win32::FolderPath::LOCAL_APP_DATA) };
+		if (currPath) [[likely]]
 		{
-			iniManager.SaveToFile(std::filesystem::path{ std::move(*currPath) } / Util::General::StringToWString(Brawler::Manifest::APPLICATION_NAME) / CONFIG_FILE_NAME);
+			iniManager.SaveToFile(std::filesystem::path{ std::move(*currPath) } / Util::General::StringToWString(Brawler::Manifest::APPLICATION_NAME) / CONFIG_FILE_NAME.C_Str());
 			return;
 		}
 
 		/* If SHGetKnownFolderPath() failed, then try to save it in %USERPROFILE%\Saved Games\[Application Name]\Config.ini. */
 		currPath = std::move(Util::Win32::GetKnownFolderPath(Win32::FolderPath::SAVED_GAMES));
-		if (currPath)
+		if (currPath) [[likely]]
 		{
-			iniManager.SaveToFile(std::filesystem::path{ std::move(*currPath) } / Util::General::StringToWString(Brawler::Manifest::APPLICATION_NAME) / CONFIG_FILE_NAME);
+			iniManager.SaveToFile(std::filesystem::path{ std::move(*currPath) } / Util::General::StringToWString(Brawler::Manifest::APPLICATION_NAME) / CONFIG_FILE_NAME.C_Str());
 			return;
 		}
 
 		// If it failed again, then just save it in the current working directory.
-		iniManager.SaveToFile(std::filesystem::current_path() / CONFIG_FILE_NAME);
+		iniManager.SaveToFile(std::filesystem::current_path() / CONFIG_FILE_NAME.C_Str());
 	}
 
 	bool SettingsManager::LoadConfigurationFile()
 	{	
 		INIManager iniManager{};
-		Brawler::ScopedLock<CriticalSection> lock{ mCritSection };
+		std::scoped_lock<std::mutex> lock{ mCritSection };
 
 		auto workerLambda = [this, &iniManager] <std::underlying_type_t<Brawler::SettingID>... ID> (std::integer_sequence<std::underlying_type_t<Brawler::SettingID>, ID...>)
 		{
@@ -152,7 +151,7 @@ namespace Brawler
 		
 		/* First, try to load the options from %LOCALAPPDATA%\[Application Name]\Config.ini. */
 		std::optional<std::wstring> currPath{ Util::Win32::GetKnownFolderPath(Win32::FolderPath::LOCAL_APP_DATA) };
-		if (currPath && iniManager.LoadFromFile(std::filesystem::path{std::move(*currPath)} / Util::General::StringToWString(Brawler::Manifest::APPLICATION_NAME) / CONFIG_FILE_NAME))
+		if (currPath && iniManager.LoadFromFile(std::filesystem::path{std::move(*currPath)} / Util::General::StringToWString(Brawler::Manifest::APPLICATION_NAME) / CONFIG_FILE_NAME.C_Str()))
 		{
 			workerLambda(settingIDSequence);
 			return true;
@@ -160,14 +159,14 @@ namespace Brawler
 		
 		/* If SHGetKnownFolderPath() failed, then try to load it from %USERPROFILE%\Saved Games\[Application Name]\Config.ini. */
 		currPath = std::move(Util::Win32::GetKnownFolderPath(Win32::FolderPath::SAVED_GAMES));
-		if (currPath && iniManager.LoadFromFile(std::filesystem::path{ std::move(*currPath) } / Util::General::StringToWString(Brawler::Manifest::APPLICATION_NAME) / CONFIG_FILE_NAME))
+		if (currPath && iniManager.LoadFromFile(std::filesystem::path{ std::move(*currPath) } / Util::General::StringToWString(Brawler::Manifest::APPLICATION_NAME) / CONFIG_FILE_NAME.C_Str()))
 		{
 			workerLambda(settingIDSequence);
 			return true;
 		}
 
 		// If it failed again, then try one last time from the current working directory.
-		if (iniManager.LoadFromFile(std::filesystem::current_path() / CONFIG_FILE_NAME))
+		if (iniManager.LoadFromFile(std::filesystem::current_path() / CONFIG_FILE_NAME.C_Str()))
 		{
 			workerLambda(settingIDSequence);
 			return true;
@@ -179,7 +178,7 @@ namespace Brawler
 	void SettingsManager::RestoreDefaultSettings()
 	{
 		// We need to lock it *before* creating the lambda function, because it captures the this pointer.
-		Brawler::ScopedLock<CriticalSection> lock{ mCritSection };
+		std::scoped_lock<std::mutex> lock{ mCritSection };
 
 		auto workerLambda = [this] <std::underlying_type_t<Brawler::SettingID>... ID> (std::integer_sequence<std::underlying_type_t<Brawler::SettingID>, ID...>)
 		{

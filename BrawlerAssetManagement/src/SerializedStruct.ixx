@@ -24,7 +24,7 @@ namespace Brawler
 	{
 		static constexpr bool IS_ARRAY = true;
 	};
-	
+
 	template <typename FieldType>
 	consteval bool IsFieldSerializable()
 	{
@@ -207,6 +207,21 @@ namespace Brawler
 #pragma pack(pop)
 }
 
+namespace Brawler
+{
+	template <typename T>
+	struct FieldCountSolver
+	{
+		// Originally, we had the following type alias for SerializedStruct:
+		//
+		// using SerializedStruct = SerializedStructIMPL<T, Util::Reflection::GetFieldCount<T>()>;
+		//
+		// However, this was causing MSVC crashes/internal compiler errors, so we use this extra
+		// level of indirection. Somehow, this works while the other type alias does not. Go figure.
+		static constexpr std::size_t FIELD_COUNT = Util::Reflection::GetFieldCount<T>();
+	};
+}
+
 export namespace Brawler
 {
 	/// <summary>
@@ -226,12 +241,12 @@ export namespace Brawler
 	/// </typeparam>
 	template <typename T>
 		requires IsSerializable<T>
-	using SerializedStruct = SerializedStructIMPL<T, Util::Reflection::GetFieldCount<T>()>;
+	using SerializedStruct = SerializedStructIMPL<T, FieldCountSolver<T>::FIELD_COUNT>;
 
 	/// <summary>
 	/// This concept describes whether the type T is "inherently serializable;" that is, that
 	/// T is not only reflectable (as in Util::Reflection::IsReflectable) but also has the same
-	/// memory layout and size of SerializedStruct<T>.
+	/// memory layout and size of SerializedStruct&lt;T&gt;.
 	/// 
 	/// A type which is not inherently serializable may still very well be serializable. However,
 	/// the performance of serializing and deserializing the data will be greatly diminished in
@@ -286,7 +301,7 @@ export namespace Brawler
 		// safely copy the entire structure over in one std::memcpy operation. Otherwise, we need
 		// to carefully copy each individual field to ensure proper alignment.
 		if constexpr (sizeof(T) == sizeof(SerializedStruct<T>))
-			std::memcpy(std::addressof(serializedData), std::addressof(data), sizeof(data));
+			std::memcpy(&serializedData, std::addressof(data), sizeof(data));
 		else
 			SerializeField<T, 0>(serializedData, data);
 
@@ -303,7 +318,7 @@ export namespace Brawler
 		// safely copy the entire structure over in one std::memcpy operation. Otherwise, we need
 		// to carefully copy each individual field to ensure proper alignment.
 		if constexpr (sizeof(T) == sizeof(SerializedStruct<T>))
-			std::memcpy(std::addressof(data), std::addressof(serializedData), sizeof(serializedData));
+			std::memcpy(std::addressof(data), &serializedData, sizeof(serializedData));
 		else
 			DeserializeField<T, 0>(data, serializedData);
 

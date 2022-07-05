@@ -1,5 +1,7 @@
 module;
 #include <string>
+#include <optional>
+#include <filesystem>
 #include "DxDef.h"
 
 export module Util.Win32;
@@ -25,6 +27,8 @@ export namespace Util
 
 		__forceinline constexpr bool IsHandleValid(const HANDLE hObject);
 		__forceinline constexpr bool IsHandleValid(const Brawler::Win32::SafeHandle& hObject);
+
+		std::optional<std::filesystem::path> GetKnownFolderPath(const KNOWNFOLDERID& folderID, const bool createIfNotFound = false);
 	}
 }
 
