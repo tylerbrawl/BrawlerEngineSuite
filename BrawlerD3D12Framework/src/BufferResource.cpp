@@ -84,12 +84,6 @@ namespace Brawler
 			mSubAllocationManager.OnD3D12ResourceInitialized();
 		}
 
-		std::optional<D3D12_CLEAR_VALUE> BufferResource::GetOptimizedClearValue() const
-		{
-			// Buffers can never have an optimized clear value.
-			return std::optional<D3D12_CLEAR_VALUE>{};
-		}
-
 		bool BufferResource::CanAliasBeforeUseOnGPU() const
 		{
 			// When using a buffer in an upload heap to transfer data from the CPU to the GPU, we

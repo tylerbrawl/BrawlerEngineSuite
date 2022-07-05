@@ -203,21 +203,31 @@ namespace Brawler
 			else
 			{
 				// For all other types of resources, we should use its optimized clear value in order to clear
-				// the resource.
+				// the resource, if it has one.
 				const std::optional<D3D12_CLEAR_VALUE> optimizedClearValue{ uavToClear.GetGPUResource().GetOptimizedClearValue() };
 
-				// For the sake of performance, assert if there is no optimized clear value defined for this
-				// resource.
-				assert(optimizedClearValue.has_value() && "ERROR: An attempt was made to call GPUCommandContext::ClearUnorderedAccessView() with a UAV referring to an I_GPUResource instance, but said I_GPUResource instance did not have an optimized clear value!");
-
-				GetDerivedClassCommandList().ClearUnorderedAccessViewFloat(
-					perFrameReservationHandleInfo.HGPUDescriptor,
-					hNonShaderVisibleDescriptor,
-					&resourceToClear,
-					optimizedClearValue->Color,
-					0,
-					nullptr
-				);
+				if (optimizedClearValue.has_value()) [[unlikely]]
+				{
+					GetDerivedClassCommandList().ClearUnorderedAccessViewFloat(
+						perFrameReservationHandleInfo.HGPUDescriptor,
+						hNonShaderVisibleDescriptor,
+						&resourceToClear,
+						optimizedClearValue->Color,
+						0,
+						nullptr
+					);
+				}
+				else [[likely]]
+				{
+					GetDerivedClassCommandList().ClearUnorderedAccessViewFloat(
+						perFrameReservationHandleInfo.HGPUDescriptor,
+						hNonShaderVisibleDescriptor,
+						&resourceToClear,
+						reinterpret_cast<const FLOAT*>(DEFAULT_CLEAR_VALUE.data()),
+						0,
+						nullptr
+					);
+				}
 			}
 		}
 

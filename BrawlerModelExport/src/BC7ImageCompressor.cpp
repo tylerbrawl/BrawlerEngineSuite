@@ -262,7 +262,7 @@ namespace Brawler
 				mode0Pass.SetRenderPassName("BC7 Image Compressor - Mode 0? Pass (BC7_TRY_MODE_456)");
 
 				mode0Pass.AddResourceDependency(mInitInfo.SrcTextureSubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-				mode0Pass.AddResourceDependency(mResourceInfo.ConstantBufferSubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+				mode0Pass.AddResourceDependency(mResourceInfo.ConstantBufferSubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 				mode0Pass.AddResourceDependency(mResourceInfo.Error1BufferSubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 				mode0Pass.SetInputData(CompressionPassInfo{
@@ -318,7 +318,7 @@ namespace Brawler
 					compressionPass.SetRenderPassName(RENDER_PASS_NAME);
 
 					compressionPass.AddResourceDependency(mInitInfo.SrcTextureSubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-					compressionPass.AddResourceDependency(mResourceInfo.ConstantBufferSubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+					compressionPass.AddResourceDependency(mResourceInfo.ConstantBufferSubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 
 					if constexpr (CURRENT_ERROR_BINDING_MODE == ErrorBindingMode::ERROR1_SRV_ERROR2_UAV)
 					{
@@ -390,7 +390,7 @@ namespace Brawler
 
 				encodeBlockPass.AddResourceDependency(mInitInfo.SrcTextureSubResource, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 				encodeBlockPass.AddResourceDependency(mResourceInfo.Error2BufferSubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-				encodeBlockPass.AddResourceDependency(mResourceInfo.ConstantBufferSubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+				encodeBlockPass.AddResourceDependency(mResourceInfo.ConstantBufferSubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 				encodeBlockPass.AddResourceDependency(mResourceInfo.OutputBufferSubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 				encodeBlockPass.SetInputData(CompressionPassInfo{

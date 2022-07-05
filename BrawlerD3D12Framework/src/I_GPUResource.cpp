@@ -92,12 +92,7 @@ namespace Brawler
 
 		std::optional<D3D12_CLEAR_VALUE> I_GPUResource::GetOptimizedClearValue() const
 		{
-			assert(GetResourceDescription().Dimension != D3D12_RESOURCE_DIMENSION::D3D12_RESOURCE_DIMENSION_BUFFER && "ERROR: Buffers cannot have an optimized clear value! Any I_GPUResource instance which is supposed to represent a buffer *MUST* override I_GPUResource::GetOptimizedClearValue() to return an empty std::optional instance!");
-			
-			return std::optional<D3D12_CLEAR_VALUE>{ D3D12_CLEAR_VALUE{
-				.Format = GetResourceDescription().Format,
-				.Color{ 0.0f, 0.0f, 0.0f, 0.0f }
-			} };
+			return std::optional<D3D12_CLEAR_VALUE>{};
 		}
 
 		GPUResourceCreationType I_GPUResource::GetPreferredCreationType() const
