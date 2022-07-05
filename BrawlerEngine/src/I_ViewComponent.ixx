@@ -1,14 +1,10 @@
 module;
-#include "DxDef.h"
+#include <DxDef.h>
+#include <DirectXMath/DirectXMath.h>
 
 export module Brawler.I_ViewComponent;
 import Brawler.I_Component;
 import Brawler.ComponentID;
-
-export namespace Brawler
-{
-	class SceneNode;
-}
 
 export namespace Brawler
 {
@@ -61,7 +57,7 @@ export namespace Brawler
 		};
 
 	protected:
-		I_ViewComponent(SceneNode& owningNode, const ViewType type);
+		explicit I_ViewComponent(const ViewType type);
 
 	public:
 		virtual ~I_ViewComponent() = default;

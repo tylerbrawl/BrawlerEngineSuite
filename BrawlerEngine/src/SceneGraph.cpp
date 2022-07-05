@@ -19,7 +19,7 @@ namespace Brawler
 		// Since we aren't dealing with the root SceneNode, we know that it has a
 		// parent SceneNode which owns the SceneGraphEdge which owns it. So, we
 		// tell the parent SceneNode to eventually remove this SceneNode.
-		SceneNode& parentNode = sceneNode.GetOwningSceneGraphEdge().GetParentSceneNode();
+		SceneNode& parentNode = sceneNode.GetParentSceneNode();
 		parentNode.RemoveChildSceneNode(sceneNode);
 	}
 

@@ -16,11 +16,10 @@ namespace Brawler
 	SceneNode::SceneNode() :
 		mComponentCollection(*this),
 		mSceneGraph(nullptr),
-		mOwningEdge(nullptr),
-		mChildNodeEdges(),
-		mPendingChildAdditions(),
-		mPendingChildRemovals(),
-		mCurrUpdateTick(Util::Engine::GetCurrentUpdateTick())
+		mParentNodePtr(nullptr),
+		mChildNodePtrArr(),
+		mPendingChildAdditionsArr(),
+		mPendingChildRemovals()
 	{}
 	
 	void SceneNode::Update(const float dt)
@@ -28,11 +27,11 @@ namespace Brawler
 
 	void SceneNode::RemoveChildSceneNode(SceneNode& childNode)
 	{
-		for (auto& childEdge : mChildNodeEdges)
+		for (auto& childNodePtr : mChildNodePtrArr)
 		{
-			if (&(childEdge->GetChildSceneNode()) == &childNode)
+			if (childNodePtr.get() == &childNode)
 			{
-				mPendingChildRemovals.insert(childEdge.get());
+				mPendingChildRemovals.insert(childNodePtr.get());
 				return;
 			}
 		}
@@ -40,25 +39,26 @@ namespace Brawler
 
 	SceneGraph& SceneNode::GetSceneGraph()
 	{
+		assert(mSceneGraph != nullptr);
 		return *mSceneGraph;
 	}
 
 	const SceneGraph& SceneNode::GetSceneGraph() const
 	{
+		assert(mSceneGraph != nullptr);
 		return *mSceneGraph;
 	}
 
-	bool SceneNode::IsUpdateFinished() const
+	SceneNode& SceneNode::GetParentSceneNode()
 	{
-		return (mCurrUpdateTick != Util::Engine::GetCurrentUpdateTick());
+		assert(mParentNodePtr != nullptr);
+		return *mParentNodePtr;
 	}
 
-	void SceneNode::WaitForUpdate() const
+	const SceneNode& SceneNode::GetParentSceneNode() const
 	{
-		assert(GetSceneGraph().IsUpdating() && "ERROR: SceneNode::WaitForUpdate() was called when the SceneGraph was *NOT* executing an update!");
-		
-		while (!IsUpdateFinished())
-			Util::Coroutine::TryExecuteJob();
+		assert(mParentNodePtr != nullptr);
+		return *mParentNodePtr;
 	}
 
 	void SceneNode::ExecuteSceneGraphUpdates()
@@ -72,14 +72,14 @@ namespace Brawler
 		//
 		// TODO: Is it more efficient to do this single-threaded?
 		Brawler::JobGroup childUpdateGroup{};
-		childUpdateGroup.Reserve(mChildNodeEdges.size());
+		childUpdateGroup.Reserve(mChildNodePtrArr.size());
 
-		for (auto& childEdge : mChildNodeEdges)
+		for (const auto& childNode : mChildNodePtrArr)
 		{
-			SceneGraphEdge* const edgePtr = childEdge.get();
-			childUpdateGroup.AddJob([edgePtr] ()
+			SceneNode* const childNodePtr = childNode.get();
+			childUpdateGroup.AddJob([childNodePtr] ()
 			{
-				edgePtr->ExecuteSceneGraphUpdates();
+				childNodePtr->ExecuteSceneGraphUpdates();
 			});
 		}
 
@@ -88,34 +88,20 @@ namespace Brawler
 
 	void SceneNode::ExecutePendingChildAdditions()
 	{
-		for (auto&& pendingChild : mPendingChildAdditions)
-		{
-			// Now that this node is going to be receiving updates, we need to
-			// initialize its update tick counter.
-			pendingChild->InitializeChildNodeUpdateTickCounter();
-			
-			mChildNodeEdges.push_back(std::move(pendingChild));
-		}
+		for (auto&& pendingChild : mPendingChildAdditionsArr)
+			mChildNodePtrArr.push_back(std::move(pendingChild));
 
-		mPendingChildAdditions.clear();
+		mPendingChildAdditionsArr.clear();
 	}
 
 	void SceneNode::ExecutePendingChildRemovals()
 	{
-		for (auto itr = mChildNodeEdges.begin(); itr != mChildNodeEdges.end();)
+		std::erase_if(mChildNodePtrArr, [this] (const std::unique_ptr<SceneNode>& childNodePtr)
 		{
-			if (mPendingChildRemovals.contains(itr->get()))
-				itr = mChildNodeEdges.erase(itr);
-			else
-				++itr;
-		}
+			return mPendingChildRemovals.contains(childNodePtr.get());
+		});
 
 		mPendingChildRemovals.clear();
-	}
-
-	void SceneNode::InitializeUpdateTickCounter()
-	{
-		mCurrUpdateTick.store(Util::Engine::GetCurrentUpdateTick());
 	}
 
 	void SceneNode::SetSceneGraph(SceneGraph& sceneGraph)
@@ -123,23 +109,9 @@ namespace Brawler
 		mSceneGraph = &sceneGraph;
 	}
 
-	SceneGraphEdge& SceneNode::GetOwningSceneGraphEdge()
+	void SceneNode::SetParentNode(SceneNode& parentNode)
 	{
-		assert(mOwningEdge != nullptr && "ERROR: An attempt was made to get the owning SceneGraphEdge of a SceneNode which did not have one! (This should never be the case, unless the SceneNode is the root node of a SceneGraph.)");
-
-		return *mOwningEdge;
-	}
-
-	const SceneGraphEdge& SceneNode::GetOwningSceneGraphEdge() const
-	{
-		assert(mOwningEdge != nullptr && "ERROR: An attempt was made to get the owning SceneGraphEdge of a SceneNode which did not have one! (This should never be the case, unless the SceneNode is the root node of a SceneGraph.)");
-
-		return *mOwningEdge;
-	}
-
-	void SceneNode::SetOwningSceneGraphEdge(SceneGraphEdge& owningEdge)
-	{
-		mOwningEdge = &owningEdge;
+		mParentNodePtr = &parentNode;
 	}
 
 	void SceneNode::UpdateIMPL(const float dt)
@@ -148,19 +120,16 @@ namespace Brawler
 		Update(dt);
 		mComponentCollection.Update(dt);
 
-		// Mark this SceneNode's update as having been completed.
-		++mCurrUpdateTick;
-
 		// Create a separate CPU job for updating every child SceneNode.
 		Brawler::JobGroup childUpdateGroup{};
-		childUpdateGroup.Reserve(mChildNodeEdges.size());
+		childUpdateGroup.Reserve(mChildNodePtrArr.size());
 
-		for (auto& childNodeEdge : mChildNodeEdges)
+		for (const auto& childNode : mChildNodePtrArr)
 		{
-			SceneGraphEdge* const edgePtr = childNodeEdge.get();
-			childUpdateGroup.AddJob([edgePtr, dt] ()
+			SceneNode* const childNodePtr = childNode.get();
+			childUpdateGroup.AddJob([childNodePtr, dt] ()
 			{
-				edgePtr->Update(dt);
+				childNodePtr->UpdateIMPL(dt);
 			});
 		}
 

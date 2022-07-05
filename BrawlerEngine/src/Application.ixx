@@ -4,9 +4,7 @@ module;
 
 export module Brawler.Application;
 import Brawler.WorkerThreadPool;
-import Brawler.AppWindow;
-import Brawler.Renderer;
-import Brawler.AssetManager;
+import Brawler.D3D12.Renderer;
 import Brawler.ApplicationStateStack;
 
 export namespace Brawler
@@ -28,17 +26,14 @@ export namespace Brawler
 	public:
 		void Run();
 
-		AssetManager& GetAssetManager();
-		const AssetManager& GetAssetManager() const;
-
 		WorkerThreadPool& GetWorkerThreadPool();
 		const WorkerThreadPool& GetWorkerThreadPool() const;
 
 		HINSTANCE GetInstanceHandle() const;
 		std::int32_t GetInitialCmdShow() const;
 
-		Renderer& GetRenderer();
-		const Renderer& GetRenderer() const;
+		D3D12::Renderer& GetRenderer();
+		const D3D12::Renderer& GetRenderer() const;
 
 		std::uint64_t GetCurrentUpdateTick() const;
 
@@ -59,11 +54,11 @@ export namespace Brawler
 		const std::int32_t mInitialCmdShow;
 		std::uint64_t mCurrUpdateTick;
 		bool mRunning;
-		AssetManager mAssetManager;
-		Renderer mRenderer;
-		AppWindow mWnd;
+		D3D12::Renderer mRenderer;
 		ApplicationStateStack mStateStack;
 	};
 
 	Application& GetApplication();
+	WorkerThreadPool& GetWorkerThreadPool();
+	D3D12::Renderer& GetRenderer();
 }

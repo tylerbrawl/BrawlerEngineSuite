@@ -3,10 +3,8 @@ module;
 #include "DxDef.h"
 
 module Brawler.Application;
-import Util.Engine;
+import Brawler.SettingsManager;
 import Brawler.SettingID;
-
-import Tests.RenderJobSystem;
 
 namespace
 {
@@ -39,9 +37,7 @@ namespace Brawler
 		mInitialCmdShow(nCmdShow),
 		mCurrUpdateTick(0),
 		mRunning(true),
-		mAssetManager(),
 		mRenderer(),
-		mWnd(),
 		mStateStack()
 	{
 		// Only allow one instance of the Application class.
@@ -61,7 +57,6 @@ namespace Brawler
 		mThreadPool->SetInitialized();
 
 		mRenderer.Initialize();
-		mWnd.InitializeMainWindow();
 	}
 
 	void Application::Run()
@@ -107,7 +102,7 @@ namespace Brawler
 			}
 
 			// If applicable, lock the frame-rate.
-			std::uint32_t fpsLimit = Util::Engine::GetOption<Brawler::SettingID::FRAME_RATE_LIMIT>();
+			const std::uint32_t fpsLimit = Brawler::SettingsManager::GetInstance().GetOption<Brawler::SettingID::FRAME_RATE_LIMIT>();
 			if (fpsLimit)
 			{
 				const std::uint64_t ticksPerFrame = static_cast<std::uint64_t>((1.0f / static_cast<float>(fpsLimit)) * perfFreq);
@@ -117,16 +112,6 @@ namespace Brawler
 					currTicks = GetCurrentTickCount();
 			}
 		}
-	}
-
-	AssetManager& Application::GetAssetManager()
-	{
-		return mAssetManager;
-	}
-
-	const AssetManager& Application::GetAssetManager() const
-	{
-		return mAssetManager;
 	}
 
 	WorkerThreadPool& Application::GetWorkerThreadPool()
@@ -149,12 +134,12 @@ namespace Brawler
 		return mInitialCmdShow;
 	}
 
-	Renderer& Application::GetRenderer()
+	D3D12::Renderer& Application::GetRenderer()
 	{
 		return mRenderer;
 	}
 
-	const Renderer& Application::GetRenderer() const
+	const D3D12::Renderer& Application::GetRenderer() const
 	{
 		return mRenderer;
 	}
@@ -175,7 +160,7 @@ namespace Brawler
 
 		// Update any asset dependencies. We do this only before every update tick in order to better 
 		// control stuttering.
-		mAssetManager.UpdateAssetDependencies();
+		//mAssetManager.UpdateAssetDependencies();
 	}
 
 	void Application::Update(const float dt)
@@ -217,5 +202,15 @@ namespace Brawler
 		assert(appInstance != nullptr && "ERROR: An attempt was made to get the Brawler::Application instance before it was created!");
 
 		return *appInstance;
+	}
+
+	WorkerThreadPool& GetWorkerThreadPool()
+	{
+		return GetApplication().GetWorkerThreadPool();
+	}
+
+	D3D12::Renderer& GetRenderer()
+	{
+		return GetApplication().GetRenderer();
 	}
 }

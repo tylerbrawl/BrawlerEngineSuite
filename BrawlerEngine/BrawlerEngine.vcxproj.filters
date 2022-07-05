@@ -75,17 +75,11 @@
     <ClCompile Include="src\ExceptionReporter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\AppWindow.cpp">
-      <Filter>Source Files\Window Management</Filter>
-    </ClCompile>
     <ClCompile Include="src\Manifest.ixx">
       <Filter>Module Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ExceptionReporter.ixx">
       <Filter>Module Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AppWindow.ixx">
-      <Filter>Module Files\Window Management</Filter>
     </ClCompile>
     <ClCompile Include="src\WindowMessage.ixx">
       <Filter>Module Files\Win32</Filter>
@@ -126,12 +120,6 @@
     <ClCompile Include="src\INIManager.cpp">
       <Filter>Source Files\Settings</Filter>
     </ClCompile>
-    <ClCompile Include="src\SwapChain.ixx">
-      <Filter>Module Files\Window Management</Filter>
-    </ClCompile>
-    <ClCompile Include="src\SwapChain.cpp">
-      <Filter>Source Files\Window Management</Filter>
-    </ClCompile>
     <ClCompile Include="src\CompositeEnum.ixx">
       <Filter>Module Files</Filter>
     </ClCompile>
@@ -146,12 +134,6 @@
     </ClCompile>
     <ClCompile Include="src\SceneNodeID.ixx">
       <Filter>Module Files\Scene Graph</Filter>
-    </ClCompile>
-    <ClCompile Include="src\SceneGraphEdge.ixx">
-      <Filter>Module Files\Scene Graph</Filter>
-    </ClCompile>
-    <ClCompile Include="src\SceneGraphEdge.cpp">
-      <Filter>Source Files\Scene Graph</Filter>
     </ClCompile>
     <ClCompile Include="src\SceneNode.cpp">
       <Filter>Source Files\Scene Graph</Filter>
@@ -212,6 +194,18 @@
     </ClCompile>
     <ClCompile Include="src\I_ViewComponent.cpp">
       <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MonitorHub.ixx">
+      <Filter>Module Files\Window Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Monitor.ixx">
+      <Filter>Module Files\Window Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MonitorHub.cpp">
+      <Filter>Source Files\Window Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Monitor.cpp">
+      <Filter>Source Files\Window Management</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

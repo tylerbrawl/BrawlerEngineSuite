@@ -246,8 +246,6 @@
     <ClCompile Include="src\ApplicationStateStack.cpp" />
     <ClCompile Include="src\ApplicationStateStack.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequestBundle.cpp" />
-    <ClCompile Include="src\AppWindow.cpp" />
-    <ClCompile Include="src\AppWindow.ixx" />
     <ClCompile Include="src\ComponentCollection.cpp" />
     <ClCompile Include="src\ComponentCollection.ixx" />
     <ClCompile Include="src\ComponentID.ixx" />
@@ -263,6 +261,10 @@
     <ClCompile Include="src\I_ViewComponent.cpp" />
     <ClCompile Include="src\I_ViewComponent.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequest.ixx" />
+    <ClCompile Include="src\Monitor.cpp" />
+    <ClCompile Include="src\Monitor.ixx" />
+    <ClCompile Include="src\MonitorHub.cpp" />
+    <ClCompile Include="src\MonitorHub.ixx" />
     <ClCompile Include="src\MSVCConcepts.ixx" />
     <ClCompile Include="src\INIManager.cpp" />
     <ClCompile Include="src\INIManager.ixx" />
@@ -272,8 +274,6 @@
     <ClCompile Include="src\Manifest.ixx" />
     <ClCompile Include="src\SceneGraph.cpp" />
     <ClCompile Include="src\SceneGraph.ixx" />
-    <ClCompile Include="src\SceneGraphEdge.cpp" />
-    <ClCompile Include="src\SceneGraphEdge.ixx" />
     <ClCompile Include="src\SceneNode.cpp" />
     <ClCompile Include="src\SceneNode.ixx" />
     <ClCompile Include="src\SceneNodeID.ixx" />
@@ -282,8 +282,6 @@
     <ClCompile Include="src\SettingsManager.cpp" />
     <ClCompile Include="src\SettingsManager.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequestBundle.ixx" />
-    <ClCompile Include="src\SwapChain.cpp" />
-    <ClCompile Include="src\SwapChain.ixx" />
     <ClCompile Include="src\WindowMessage.ixx" />
     <ClCompile Include="src\World.cpp" />
     <ClCompile Include="src\World.ixx" />

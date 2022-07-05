@@ -6,7 +6,7 @@ module;
 #include <set>
 
 export module Brawler.ComponentCollection;
-import Brawler.FunctionConcepts;
+import Brawler.Functional;
 import Brawler.I_Component;
 import Brawler.ComponentID;
 import Brawler.ComponentMap;
@@ -175,7 +175,9 @@ namespace Brawler
 		assert(!mIsUpdating && "ERROR: An attempt was made to add a component to a ComponentCollection while it was being updated!");
 
 		const ComponentID compId{ Brawler::GetComponentID<T>() };
-		std::unique_ptr<I_Component> compPtr{ std::make_unique<T>(*mOwningNode, std::forward<Args>(args)...) };
+
+		std::unique_ptr<I_Component> compPtr{ std::make_unique<T>(std::forward<Args>(args)...) };
+		compPtr->SetSceneNode(*mOwningNode);
 
 		mComponentMap[compId].push_back(std::move(compPtr));
 	}

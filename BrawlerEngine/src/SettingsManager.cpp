@@ -13,9 +13,8 @@ module Brawler.SettingsManager;
 import Brawler.SettingID;
 import Brawler.IMPL.SettingsDef;
 import Util.General;
-import Brawler.CriticalSection;
 import Brawler.INIManager;
-import Brawler.FunctionConcepts;
+import Brawler.Functional;
 import Util.Win32;
 import Brawler.Win32.FolderPath;
 import Brawler.Manifest;
@@ -99,12 +98,10 @@ namespace Brawler
 		{
 			([&] ()
 			{
-				using SettingType = Brawler::IMPL::SettingDefinition<static_cast<Brawler::SettingID>(ID)>::Type;
-
 				iniManager.AddConfigOption<Brawler::IMPL::SettingDefinition<static_cast<Brawler::SettingID>(ID)>::Type>(
 					std::string{ Brawler::GetSettingHeaderString<Brawler::IMPL::SettingDefinition<static_cast<Brawler::SettingID>(ID)>::Header>() },
 					std::string{ Brawler::GetSettingIDString<static_cast<Brawler::SettingID>(ID)>() },
-					std::get<SettingType>(mSettingMap.at(static_cast<Brawler::SettingID>(ID)))
+					std::get<Brawler::IMPL::SettingDefinition<static_cast<Brawler::SettingID>(ID)>::Type>(mSettingMap.at(static_cast<Brawler::SettingID>(ID)))
 				);
 			}(), ...);
 		};
@@ -114,7 +111,7 @@ namespace Brawler
 		std::optional<std::filesystem::path> currPath{ Util::Win32::GetKnownFolderPath(Win32::FolderPath::LOCAL_APP_DATA) };
 		if (currPath) [[likely]]
 		{
-			iniManager.SaveToFile(std::filesystem::path{ std::move(*currPath) } / Util::General::StringToWString(Brawler::Manifest::APPLICATION_NAME) / CONFIG_FILE_NAME.C_Str());
+			iniManager.SaveToFile(std::filesystem::path{ std::move(*currPath) } / Brawler::Manifest::APPLICATION_NAME.C_Str() / CONFIG_FILE_NAME.C_Str());
 			return;
 		}
 
@@ -122,7 +119,7 @@ namespace Brawler
 		currPath = std::move(Util::Win32::GetKnownFolderPath(Win32::FolderPath::SAVED_GAMES));
 		if (currPath) [[likely]]
 		{
-			iniManager.SaveToFile(std::filesystem::path{ std::move(*currPath) } / Util::General::StringToWString(Brawler::Manifest::APPLICATION_NAME) / CONFIG_FILE_NAME.C_Str());
+			iniManager.SaveToFile(std::filesystem::path{ std::move(*currPath) } / Brawler::Manifest::APPLICATION_NAME.C_Str() / CONFIG_FILE_NAME.C_Str());
 			return;
 		}
 
@@ -151,7 +148,7 @@ namespace Brawler
 		
 		/* First, try to load the options from %LOCALAPPDATA%\[Application Name]\Config.ini. */
 		std::optional<std::wstring> currPath{ Util::Win32::GetKnownFolderPath(Win32::FolderPath::LOCAL_APP_DATA) };
-		if (currPath && iniManager.LoadFromFile(std::filesystem::path{std::move(*currPath)} / Util::General::StringToWString(Brawler::Manifest::APPLICATION_NAME) / CONFIG_FILE_NAME.C_Str()))
+		if (currPath && iniManager.LoadFromFile(std::filesystem::path{std::move(*currPath)} / Brawler::Manifest::APPLICATION_NAME.C_Str() / CONFIG_FILE_NAME.C_Str()))
 		{
 			workerLambda(settingIDSequence);
 			return true;
@@ -159,7 +156,7 @@ namespace Brawler
 		
 		/* If SHGetKnownFolderPath() failed, then try to load it from %USERPROFILE%\Saved Games\[Application Name]\Config.ini. */
 		currPath = std::move(Util::Win32::GetKnownFolderPath(Win32::FolderPath::SAVED_GAMES));
-		if (currPath && iniManager.LoadFromFile(std::filesystem::path{ std::move(*currPath) } / Util::General::StringToWString(Brawler::Manifest::APPLICATION_NAME) / CONFIG_FILE_NAME.C_Str()))
+		if (currPath && iniManager.LoadFromFile(std::filesystem::path{ std::move(*currPath) } / Brawler::Manifest::APPLICATION_NAME.C_Str() / CONFIG_FILE_NAME.C_Str()))
 		{
 			workerLambda(settingIDSequence);
 			return true;
@@ -184,9 +181,7 @@ namespace Brawler
 		{
 			([&] ()
 			{
-				using SettingType = Brawler::IMPL::SettingDefinition<static_cast<Brawler::SettingID>(ID)>::Type;
-
-				mSettingMap[static_cast<Brawler::SettingID>(ID)].emplace<SettingType>(Brawler::IMPL::SettingDefinition<static_cast<Brawler::SettingID>(ID)>::DefaultVal);
+				mSettingMap[static_cast<Brawler::SettingID>(ID)].emplace<Brawler::IMPL::SettingDefinition<static_cast<Brawler::SettingID>(ID)>::Type>(Brawler::IMPL::SettingDefinition<static_cast<Brawler::SettingID>(ID)>::DefaultVal);
 			}(), ...);
 		};
 		workerLambda(settingIDSequence);

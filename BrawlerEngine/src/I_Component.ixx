@@ -16,7 +16,7 @@ export namespace Brawler
 		friend class ComponentCollection;
 
 	protected:
-		explicit I_Component(SceneNode& owningNode);
+		I_Component() = default;
 
 	public:
 		virtual ~I_Component() = default;
@@ -33,6 +33,9 @@ export namespace Brawler
 		const SceneNode& GetSceneNode() const;
 
 	private:
-		SceneNode* const mOwningNode;
+		void SetSceneNode(SceneNode& owningNode);
+
+	private:
+		SceneNode* mOwningNode;
 	};
 }

@@ -3,7 +3,6 @@ module;
 
 export module Brawler.SceneGraph;
 import Brawler.SceneNode;
-import Brawler.SceneGraphEdge;
 
 export namespace Brawler
 {
@@ -37,8 +36,8 @@ export namespace Brawler
 		/// <param name="...args">
 		/// - The arguments which are to be forwarded to a constructor of NodeType.
 		/// </param>
-		template <typename NodeType, typename EdgeType = SceneGraphEdge, typename... Args>
-			requires std::derived_from<NodeType, SceneNode> && std::derived_from<EdgeType, SceneGraphEdge>
+		template <typename NodeType, typename... Args>
+			requires std::derived_from<NodeType, SceneNode>
 		void AddRootLevelSceneNode(Args&&... args);
 
 		/// <summary>
@@ -84,10 +83,10 @@ export namespace Brawler
 
 namespace Brawler
 {
-	template <typename NodeType, typename EdgeType, typename... Args>
-		requires std::derived_from<NodeType, SceneNode>&& std::derived_from<EdgeType, SceneGraphEdge>
+	template <typename NodeType, typename... Args>
+		requires std::derived_from<NodeType, SceneNode>
 	void SceneGraph::AddRootLevelSceneNode(Args&&... args)
 	{
-		mRootNode.CreateChildSceneNode<NodeType, EdgeType, Args...>(std::forward<Args>(args)...);
+		mRootNode.CreateChildSceneNode<NodeType, Args...>(std::forward<Args>(args)...);
 	}
 }

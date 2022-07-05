@@ -7,7 +7,6 @@ module;
 export module Brawler.ApplicationStateMap;
 import Brawler.ApplicationStateID;
 import Brawler.I_ApplicationState;
-import Brawler.ConvenienceTypes;
 
 // Rather than importing the individual state types individually, just add
 // them to the following module (see ApplicationStates.ixx):

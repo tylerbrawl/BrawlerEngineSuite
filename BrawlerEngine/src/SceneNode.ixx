@@ -1,13 +1,13 @@
 module;
 #include <vector>
-#include <set>
+#include <unordered_set>
 #include <memory>
 #include <atomic>
+#include <cassert>
 
 export module Brawler.SceneNode;
 import Brawler.I_Component;
 import Brawler.ComponentCollection;
-import Brawler.SceneGraphEdge;
 
 export namespace Brawler
 {
@@ -26,7 +26,6 @@ export namespace Brawler
 	{
 	private:
 		friend class SceneGraph;
-		friend class SceneGraphEdge;
 
 	protected:
 		SceneNode();
@@ -62,8 +61,8 @@ export namespace Brawler
 			requires IMPL::IsValidComponent<T>
 		std::vector<const DecayedT*> GetComponents() const;
 
-		template <typename NodeType, typename EdgeType = SceneGraphEdge, typename... Args>
-			requires std::derived_from<NodeType, SceneNode> && std::derived_from<EdgeType, SceneGraphEdge>
+		template <typename NodeType, typename... Args>
+			requires std::derived_from<NodeType, SceneNode>
 		void CreateChildSceneNode(Args&&... args);
 
 		void RemoveChildSceneNode(SceneNode& childNode);
@@ -71,75 +70,40 @@ export namespace Brawler
 		SceneGraph& GetSceneGraph();
 		const SceneGraph& GetSceneGraph() const;
 
-		/// <summary>
-		/// Checks whether this particular SceneNode and all of its components have 
-		/// finished updating for the current update tick. Note that this function 
-		/// can return true even if child SceneNode instances have not finished 
-		/// updating.
-		/// </summary>
-		/// <returns>
-		/// The function returns true if this SceneNode instance, along with all of
-		/// it components, have all finished updating for the current update tick 
-		/// and false otherwise.
-		/// </returns>
-		bool IsUpdateFinished() const;
-
-		/// <summary>
-		/// Executes queued CPU jobs until this SceneNode and all of its components have
-		/// finished updating. Use this to efficiently wait for a SceneNode instance to 
-		/// finish updating before resuming execution.
-		/// 
-		/// NOTE: Beware circular dependencies between SceneNode update waits, for these
-		/// can cause a livelock!
-		/// </summary>
-		void WaitForUpdate() const;
+		SceneNode& GetParentSceneNode();
+		const SceneNode& GetParentSceneNode() const;
 
 	private:
 		void ExecuteSceneGraphUpdates();
 		void ExecutePendingChildAdditions();
 		void ExecutePendingChildRemovals();
 
-		/// <summary>
-		/// Resets the update tick counter of this SceneNode instance to the current update
-		/// tick returned by Util::Engine::GetCurrentUpdateTick(). 
-		/// 
-		/// This is called when a SceneNode which was pending addition to the SceneGraph is 
-		/// actually added to it.
-		/// </summary>
-		void InitializeUpdateTickCounter();
-
 		void SetSceneGraph(SceneGraph& sceneGraph);
-		
-		SceneGraphEdge& GetOwningSceneGraphEdge();
-		const SceneGraphEdge& GetOwningSceneGraphEdge() const;
+		void SetParentNode(SceneNode& parentNode);
 
-		void SetOwningSceneGraphEdge(SceneGraphEdge& owningEdge);
 		void UpdateIMPL(const float dt);
 
 	private:
 		ComponentCollection mComponentCollection;
 		SceneGraph* mSceneGraph;
-		SceneGraphEdge* mOwningEdge;
+		SceneNode* mParentNodePtr;
 
 		/// <summary>
-		/// These are the currently active child SceneNodes (or, to be more precise, their
-		/// owning SceneGraphEdges).
+		/// These are the currently active child SceneNodes.
 		/// </summary>
-		std::vector<std::unique_ptr<SceneGraphEdge>> mChildNodeEdges;
+		std::vector<std::unique_ptr<SceneNode>> mChildNodePtrArr;
 
 		/// <summary>
-		/// These are the SceneGraphEdges which are pending addition to the SceneGraph as
+		/// These are the SceneNodes which are pending addition to the SceneGraph as
 		/// a child of this SceneNode.
 		/// </summary>
-		std::vector<std::unique_ptr<SceneGraphEdge>> mPendingChildAdditions;
+		std::vector<std::unique_ptr<SceneNode>> mPendingChildAdditionsArr;
 
 		/// <summary>
-		/// These are pointers to SceneGraphEdges which are pending removal from the
-		/// SceneGraph. They should point to child edges of this SceneNode instance.
+		/// These are pointers to SceneNodes which are pending removal from the
+		/// SceneGraph.
 		/// </summary>
-		std::set<SceneGraphEdge*> mPendingChildRemovals;
-
-		std::atomic<std::uint64_t> mCurrUpdateTick;
+		std::unordered_set<SceneNode*> mPendingChildRemovals;
 	};
 }
 
@@ -182,19 +146,18 @@ namespace Brawler
 		return mComponentCollection.GetComponents<T>();
 	}
 
-	template <typename NodeType, typename EdgeType, typename... Args>
-		requires std::derived_from<NodeType, SceneNode> && std::derived_from<EdgeType, SceneGraphEdge>
+	template <typename NodeType, typename... Args>
+		requires std::derived_from<NodeType, SceneNode>
 	void SceneNode::CreateChildSceneNode(Args&&... args)
 	{
 		using DecayedNodeT = std::decay_t<NodeType>;
-		using DecayedEdgeT = std::decay_t<EdgeType>;
 
-		std::unique_ptr<SceneNode> childNode{ std::make_unique<DecayedNodeT>(std::forward<Args>(args)...) };
-		SceneNode* const childNodePtr = childNode.get();
+		std::unique_ptr<SceneNode> childNodePtr{ std::make_unique<DecayedNodeT>(std::forward<Args>(args)...) };
+		childNodePtr->SetParentNode(*this);
 
-		std::unique_ptr<SceneGraphEdge> graphEdge{ std::make_unique<DecayedEdgeT>(*this, std::move(childNode)) };
-		childNode->SetOwningSceneGraphEdge(*(graphEdge.get()));
+		assert(mSceneGraph != nullptr);
+		childNodePtr->SetSceneGraph(*mSceneGraph);
 
-		mPendingChildAdditions.push_back(std::move(graphEdge));
+		mPendingChildAdditionsArr.push_back(std::move(childNodePtr));
 	}
 }
