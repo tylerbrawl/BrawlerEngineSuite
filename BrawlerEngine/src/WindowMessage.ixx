@@ -1,30 +1,33 @@
 module;
-#include "DxDef.h"
+#include <DxDef.h>
 
-export module Win32.WindowMessage;
+export module Brawler.Win32.WindowMessage;
 
-export namespace Win32
+export namespace Brawler
 {
-	struct WindowMessage
+	namespace Win32
 	{
-		UINT Msg;
-		WPARAM WParam;
-		LPARAM LParam;
-	};
+		struct WindowMessage
+		{
+			UINT Msg;
+			WPARAM WParam;
+			LPARAM LParam;
+		};
 
-	struct WindowMessageResult
-	{
-		bool MessageHandled;
-		LRESULT Result;
-	};
+		struct WindowMessageResult
+		{
+			bool MessageHandled;
+			LRESULT Result;
+		};
 
-	constexpr WindowMessageResult HandledMessageResult(LRESULT result)
-	{
-		return WindowMessageResult{ true, result };
-	}
+		constexpr WindowMessageResult HandledMessageResult(const LRESULT result)
+		{
+			return WindowMessageResult{ true, result };
+		}
 
-	constexpr WindowMessageResult UnhandledMessageResult()
-	{
-		return WindowMessageResult{ false, 0 };
+		consteval WindowMessageResult UnhandledMessageResult()
+		{
+			return WindowMessageResult{ false, 0 };
+		}
 	}
 }

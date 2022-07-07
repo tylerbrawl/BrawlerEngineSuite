@@ -4,6 +4,8 @@ module;
 
 export module Brawler.IMPL.SettingsDef;
 import Brawler.SettingID;
+import Brawler.WindowDisplayMode;
+import Brawler.NZStringView;
 
 export namespace Brawler
 {
@@ -25,19 +27,19 @@ export namespace Brawler
 		template <>																																\
 		struct SettingHeaderDefinition<header>																									\
 		{																																		\
-			static constexpr const char* ConfigString = headerString;																			\
+			static constexpr NZStringView HEADER_NAME_STRING{ headerString };																	\
 		};
 
-#define CREATE_SETTING_DEFINITION(header, settingID, settingString, valueType, defaultValue)													\
+#define CREATE_SETTING_DEFINITION(header, settingID, settingString, defaultValue, settingComment)												\
 		template <>																																\
 		struct SettingDefinition<settingID>																										\
 		{																																		\
-			using Type = valueType;																												\
-			static_assert(std::is_arithmetic_v<Type>, "ERROR: A SettingDefinition was created with an invalid value type!");					\
+			using Type = decltype(defaultValue);																								\
 																																				\
-			static constexpr Type DefaultVal = defaultValue;																					\
-			static constexpr Brawler::SettingHeader Header = header;																			\
-			static constexpr const char* ConfigString = settingString;																			\
+			static constexpr Type DEFAULT_VALUE = defaultValue;																					\
+			static constexpr Brawler::SettingHeader HEADER = header;																			\
+			static constexpr NZStringView OPTION_NAME_STRING{ settingString };																	\
+			static constexpr NZStringView OPTION_COMMENT_STRING{ settingComment	};																\
 		};
 
 		// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -51,18 +53,39 @@ export namespace Brawler
 		//   - k: This prefix denotes enumeration (enum class) configuration values.
 
 		CREATE_HEADER_DEFINITION(Brawler::SettingHeader::VIDEO, "Video");
+		CREATE_HEADER_DEFINITION(Brawler::SettingHeader::WINDOWS, "Windows");
 
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::WINDOW_RESOLUTION_WIDTH, "uWindowResolutionWidth", std::uint32_t, 1280);
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::WINDOW_RESOLUTION_HEIGHT, "uWindowResolutionHeight", std::uint32_t, 720);
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::RENDER_RESOLUTION_FACTOR, "fRenderResolutionFactor", float, 1.0f);
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FRAME_RATE_LIMIT, "uFrameRateLimit", std::uint32_t, 0);
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::WINDOW_RESOLUTION_WIDTH, "uWindowResolutionWidth", 1280, "# This defines the starting width of the application's window in Windowed Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::WINDOW_RESOLUTION_HEIGHT, "uWindowResolutionHeight", 720, "# This defines the starting height of the application's window in Windowed Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_RESOLUTION_WIDTH, "uFullscreenResolutionWidth", 1280, "# This defines the width of the display mode used in Fullscreen Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_RESOLUTION_HEIGHT, "uFullscreenResolutionHeight", 720, "# This defines the height of the display mode used in Fullscreen Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_REFRESH_RATE_NUMERATOR, "uFullscreenRefreshRateNumerator", 0, "# This is the numerator of the refresh rate of the display mode used in Fullscreen Mode. The actual refresh rate is calculated as uFullscreenRefreshRateNumerator / uFullscreenRefreshRateDenominator.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_REFRESH_RATE_DENOMINATOR, "uFullscreenRefreshRateDenominator", 0, "# This is the denominator of the refresh rate of the display mode used in Fullscreen Mode. The actual refresh rate is calculated as uFullscreenRefreshRateNumerator / uFullscreenRefreshRateDenominator.");
 
-		// Debugging in fullscreen is a nightmare.
-#ifdef _DEBUG
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::USE_FULLSCREEN, "bUseFullscreen", bool, false);
-#else
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::USE_FULLSCREEN, "bUseFullscreen", bool, true);
-#endif // _DEBUG
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::RENDER_RESOLUTION_FACTOR, "fRenderResolutionFactor", 1.0f, 
+			R"(# This is a scalar floating-point value in the range [0.0f, +Infinity[ which is used to scale the resolution at which shading is done. The actual calculated value differs based on the current window display mode:
+#
+#   - Windowed Mode: The render resolution is calculated as the vector fRenderResolutionFactor * [uWindowResolutionWidth uWindowResolutionHeight].
+#   - Borderless Windowed Mode: The render resolution is calculated as the vector fRenderResolutionFactor * [MonitorWidth MonitorHeight].
+#   - Fullscreen Mode: The render resolution is calculated as the vector fRenderResolutionFactor * [uFullscreenResolutionWidth uFullscreenResolutionHeight].
+#   - Multimonitor Mode: Define vuTotalResolution to be the vector sum of the dimensions of all monitors connected to the relevant display adapter. Then, the render resolution is calculated as fRenderResolutionFactor * vuTotalResolution.)");
+
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FRAME_RATE_LIMIT, "uFrameRateLimit", 0, "# This sets a cap to the frames per second (FPS) displayed to the monitor. Setting this value to 0 will result in an uncapped frame rate.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::WINDOW_DISPLAY_MODE, "kWindowDisplayMode", WindowDisplayMode::WINDOWED),
+			R"(# This value determines how the application's window is presented to the user. The following values are available:
+#
+#   - 0: The application is displayed in Windowed Mode. Only a single window is created, and its resolution can be scaled dynamically. Using this mode may result in increased latency due to DirectFlip not being available.
+#   - 1: The application is displayed in Borderless Windowed Mode. Only a single window is created, and the resolution of this window is the same as that of the monitor it is displayed on.
+#   - 2: The application is displayed in Fullscreen Mode. Only a single window is created, and its resolution can be configured as needed. Keep in mind that in Direct3D 12, there is no such thing as true exclusive fullscreen mode; 
+#     using this will instead enter what is known as emulated fullscreen exclusive (eFSE) mode.
+#   - 3: The application is displayed in Multimonitor Mode. Each monitor connected to the display adapter is given a window in the same manner as Borderless Windowed Mode. When only one monitor is being used, this mode is effectively
+#     identical to Borderless Windowed Mode. Although eFSE cannot be used in Multimonitor Mode, since each window is taking up the entire dimensions of its associated monitor, Direct3D 12 will be able to make use of DirectFlip, and
+#     performance should thus be identical.)");
+
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::WINDOWS, Brawler::SettingID::WINDOWED_ORIGIN_COORDINATES_X, "uWindowOriginX", 0, "# This is the X-coordinate of the starting position of the application's window in Windowed Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::WINDOWS, Brawler::SettingID::WINDOWED_ORIGIN_COORDINATES_Y, "uWindowOriginY", 0, "# This is the Y-coordinate of the starting position of the application's window in Windowed Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::WINDOWS, Brawler::SettingID::FULLSCREEN_OR_BORDERLESS_ORIGIN_COORDINATES_X, "uFSBorderlessOriginX", 0, "# This is the X-coordinate of the starting position of the application's window in both Borderless Windowed Mode and Fullscreen Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::WINDOWS, Brawler::SettingID::FULLSCREEN_OR_BORDERLESS_ORIGIN_COORDINATES_Y, "uFSBorderlessOriginY", 0, "# This is the Y-coordinate of the starting position of the application's window in both Borderless Windowed Mode and Fullscreen Mode.");
 
 		// It's not really necessary to #undef a macro at the end of a module interface unit, but it's still good practice.
 #undef CREATE_HEADER_DEFINITION
@@ -70,14 +93,14 @@ export namespace Brawler
 	}
 
 	template <Brawler::SettingID ID>
-	constexpr const std::string_view GetSettingIDString()
+	consteval NZStringView GetSettingIDString()
 	{
-		return IMPL::SettingDefinition<ID>::ConfigString;
+		return IMPL::SettingDefinition<ID>::OPTION_NAME_STRING;
 	}
 
 	template <Brawler::SettingHeader Header>
-	constexpr const std::string_view GetSettingHeaderString()
+	consteval NZStringView GetSettingHeaderString()
 	{
-		return IMPL::SettingHeaderDefinition<Header>::ConfigString;
+		return IMPL::SettingHeaderDefinition<Header>::HEADER_NAME_STRING;
 	}
 }

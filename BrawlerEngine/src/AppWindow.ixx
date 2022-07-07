@@ -1,35 +1,65 @@
 module;
-#include "DxDef.h"
+#include <cassert>
+#include <memory>
+#include <DxDef.h>
+#include <DirectXMath/DirectXMath.h>
 
 export module Brawler.AppWindow;
-import Win32.WindowMessage;
-import Brawler.SwapChain;
+import Brawler.Win32.WindowMessage;
+import Brawler.WindowDisplayMode;
+import Brawler.PolymorphicAdapter;
+import Brawler.I_WindowState;
+export import Brawler.WindowStateTraits;
+
+namespace Brawler
+{
+	struct WindowDeleter
+	{
+		void operator()(const HWND hWnd) const
+		{
+			if (hWnd != nullptr) [[likely]]
+			{
+				const BOOL destroyWindowResult = DestroyWindow(hWnd);
+				assert(destroyWindowResult && "ERROR: DestroyWindow() failed to destroy a Win32 window!");
+			}
+		}
+	};
+
+	using SafeWindow = std::unique_ptr<std::remove_pointer_t<HWND>, WindowDeleter>;
+}
+
+export namespace Brawler
+{
+	class Monitor;
+}
 
 export namespace Brawler
 {
 	class AppWindow
 	{
 	public:
-		AppWindow();
+		explicit AppWindow(const Brawler::WindowDisplayMode displayMode);
 
-		void InitializeMainWindow();
+		AppWindow(const AppWindow& rhs) = delete;
+		AppWindow& operator=(const AppWindow& rhs) = delete;
 
-		HWND GetWindowHandle() const;
-		void ProcessIncomingWindowMessages();
+		AppWindow(AppWindow&& rhs) noexcept = default;
+		AppWindow& operator=(AppWindow&& rhs) noexcept = default;
+
 		Win32::WindowMessageResult ProcessWindowMessage(const Win32::WindowMessage& msg);
 
-		Brawler::DXGIOutput& GetCurrentDXGIOutput();
-		const Brawler::DXGIOutput& GetCurrentDXGIOutput() const;
-		std::uint32_t GetMonitorRefreshRate() const;
+		void SpawnWindow();
+
+		HWND GetWindowHandle() const;
+
+		const Monitor& GetOwningMonitor() const;
+		void SetOwningMonitor(const Monitor& owningMonitor);
+
+		void SetDisplayMode(const Brawler::WindowDisplayMode displayMode);
 
 	private:
-		void RegisterWindowClass() const;
-		void CreateWin32Window();
-		void UpdateCurrentDXGIOutput();
-
-	private:
-		HWND mHWnd;
-		Microsoft::WRL::ComPtr<Brawler::DXGIOutput> mCurrOutput;
-		SwapChain mSwapChain;
+		SafeWindow mHWnd;
+		PolymorphicAdapter<I_WindowState> mWndStateAdapter;
+		const Monitor* mOwningMonitorPtr;
 	};
 }

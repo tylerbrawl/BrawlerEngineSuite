@@ -1,5 +1,6 @@
 #include "DxDef.h"
 import Brawler.Application;
+import Util.Win32;
 import Brawler.ExceptionReporter;
 
 int WINAPI wWinMain(
@@ -11,6 +12,8 @@ int WINAPI wWinMain(
 {
 	try
 	{
+		Util::Win32::InitializeWin32Components();
+
 		Brawler::Application app{ hInstance, nCmdShow };
 		app.Run();
 	}

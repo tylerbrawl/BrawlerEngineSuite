@@ -64,6 +64,15 @@
     <Filter Include="Source Files\Window Management">
       <UniqueIdentifier>{6ab83be8-0663-40f8-b5ec-2715ea88c78c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Window Management\Window States">
+      <UniqueIdentifier>{ebd20ee8-b440-442a-b69d-da70a9789a9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Window Management\Window States">
+      <UniqueIdentifier>{303aa2eb-575e-4f6c-bacb-f2a1bda3f115}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Settings\Setting Enumerations">
+      <UniqueIdentifier>{3163e358-63ff-4b87-836d-54c5a578132a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -207,6 +216,48 @@
     <ClCompile Include="src\Monitor.cpp">
       <Filter>Source Files\Window Management</Filter>
     </ClCompile>
+    <ClCompile Include="src\AppWindow.ixx">
+      <Filter>Module Files\Window Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_WindowState.ixx">
+      <Filter>Module Files\Window Management\Window States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WindowStateID.ixx">
+      <Filter>Module Files\Window Management\Window States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WindowedModeWindowState.ixx">
+      <Filter>Module Files\Window Management\Window States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WindowedModeWindowState.cpp">
+      <Filter>Source Files\Window Management\Window States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FullscreenModeWindowState.ixx">
+      <Filter>Module Files\Window Management\Window States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FullscreenModeWindowState.cpp">
+      <Filter>Source Files\Window Management\Window States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WindowStateTraits.ixx">
+      <Filter>Module Files\Window Management\Window States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AppWindow.cpp">
+      <Filter>Source Files\Window Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SwapChain.ixx">
+      <Filter>Module Files\Window Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BorderlessWindowedModeWindowState.ixx">
+      <Filter>Module Files\Window Management\Window States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BorderlessWindowedModeWindowState.cpp">
+      <Filter>Source Files\Window Management\Window States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WindowDisplayMode.ixx">
+      <Filter>Module Files\Settings\Setting Enumerations</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CreateWindowInfo.ixx">
+      <Filter>Module Files\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -226,5 +277,10 @@
       <Filter>Shader Files\Compression</Filter>
     </None>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="BrawlerEngine.manifest">
+      <Filter>Resource Files</Filter>
+    </Manifest>
   </ItemGroup>
 </Project>

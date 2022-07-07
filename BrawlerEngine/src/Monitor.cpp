@@ -24,4 +24,28 @@ namespace Brawler
 	{
 		return mOutputDesc.Monitor;
 	}
+
+	const Brawler::DXGI_OUTPUT_DESC& Monitor::GetOutputDescription() const
+	{
+		return mOutputDesc;
+	}
+
+	void Monitor::AssignWindow(std::unique_ptr<AppWindow>&& appWindowPtr)
+	{
+		assert(mAppWindowPtr == nullptr && "ERROR: An attempt was made to call Monitor::AssignWindow() on a Monitor instance which already had a window!");
+
+		mAppWindowPtr = std::move(appWindowPtr);
+		mAppWindowPtr->SetOwningMonitor(*this);
+	}
+
+	void Monitor::ResetWindow()
+	{
+		mAppWindowPtr.reset();
+	}
+
+	void Monitor::SpawnWindowForMonitor()
+	{
+		assert(mAppWindowPtr != nullptr);
+		mAppWindowPtr->SpawnWindow();
+	}
 }

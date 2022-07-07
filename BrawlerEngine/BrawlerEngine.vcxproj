@@ -246,6 +246,10 @@
     <ClCompile Include="src\ApplicationStateStack.cpp" />
     <ClCompile Include="src\ApplicationStateStack.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequestBundle.cpp" />
+    <ClCompile Include="src\AppWindow.cpp" />
+    <ClCompile Include="src\AppWindow.ixx" />
+    <ClCompile Include="src\BorderlessWindowedModeWindowState.cpp" />
+    <ClCompile Include="src\BorderlessWindowedModeWindowState.ixx" />
     <ClCompile Include="src\ComponentCollection.cpp" />
     <ClCompile Include="src\ComponentCollection.ixx" />
     <ClCompile Include="src\ComponentID.ixx" />
@@ -254,6 +258,8 @@
     <ClCompile Include="src\CompositeEnum.ixx" />
     <ClCompile Include="src\ExceptionReporter.cpp" />
     <ClCompile Include="src\ExceptionReporter.ixx" />
+    <ClCompile Include="src\FullscreenModeWindowState.cpp" />
+    <ClCompile Include="src\FullscreenModeWindowState.ixx" />
     <ClCompile Include="src\GameState.cpp" />
     <ClCompile Include="src\GameState.ixx" />
     <ClCompile Include="src\I_ApplicationState.cpp" />
@@ -261,6 +267,7 @@
     <ClCompile Include="src\I_ViewComponent.cpp" />
     <ClCompile Include="src\I_ViewComponent.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequest.ixx" />
+    <ClCompile Include="src\I_WindowState.ixx" />
     <ClCompile Include="src\Monitor.cpp" />
     <ClCompile Include="src\Monitor.ixx" />
     <ClCompile Include="src\MonitorHub.cpp" />
@@ -282,7 +289,14 @@
     <ClCompile Include="src\SettingsManager.cpp" />
     <ClCompile Include="src\SettingsManager.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequestBundle.ixx" />
+    <ClCompile Include="src\SwapChain.ixx" />
+    <ClCompile Include="src\WindowDisplayMode.ixx" />
+    <ClCompile Include="src\WindowedModeWindowState.cpp" />
+    <ClCompile Include="src\WindowedModeWindowState.ixx" />
     <ClCompile Include="src\WindowMessage.ixx" />
+    <ClCompile Include="src\WindowStateID.ixx" />
+    <ClCompile Include="src\WindowStateTraits.ixx" />
+    <ClCompile Include="src\CreateWindowInfo.ixx" />
     <ClCompile Include="src\World.cpp" />
     <ClCompile Include="src\World.ixx" />
   </ItemGroup>
@@ -304,6 +318,9 @@
     <ProjectReference Include="..\BrawlerD3D12Framework\BrawlerD3D12Framework.vcxproj">
       <Project>{946e57e2-22c5-438b-a589-f64012d33873}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="BrawlerEngine.manifest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

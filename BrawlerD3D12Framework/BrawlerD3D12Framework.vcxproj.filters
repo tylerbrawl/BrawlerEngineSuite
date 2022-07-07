@@ -717,9 +717,6 @@
     <ClCompile Include="src\Timer.cpp">
       <Filter>Source Files\Profiling</Filter>
     </ClCompile>
-    <ClCompile Include="src\GPUResourceStateTrackerStateTraits.ixx">
-      <Filter>Module Files\Polymorphism Traits</Filter>
-    </ClCompile>
     <ClCompile Include="src\GPUVendor.ixx">
       <Filter>Module Files\D3D12</Filter>
     </ClCompile>

@@ -19,6 +19,10 @@ export namespace Brawler
 		template <typename T>
 		void AddConfigOption(std::string&& headerName, std::string&& settingName, const T& settingValue);
 
+		template <typename T>
+			requires std::is_enum_v<T>
+		void AddConfigOption(std::string&& headerName, std::string&& settingName, const T enumValue);
+
 		template <>
 		void AddConfigOption(std::string&& headerName, std::string&& settingName, const bool& settingValue);
 
@@ -31,6 +35,10 @@ export namespace Brawler
 
 		template <typename T>
 			requires std::is_integral_v<T> && std::is_unsigned_v<T>
+		std::optional<T> GetConfigOption(const std::string& headerName, const std::string& settingName) const;
+
+		template <typename T>
+			requires std::is_enum_v<T>
 		std::optional<T> GetConfigOption(const std::string& headerName, const std::string& settingName) const;
 
 		template <typename T>
@@ -59,6 +67,13 @@ namespace Brawler
 	void INIManager::AddConfigOption(std::string&& headerName, std::string&& settingName, const T& settingValue)
 	{
 		mSettingHeaderMap[std::move(headerName)][std::move(settingName)] = std::to_string(settingValue);
+	}
+
+	template <typename T>
+		requires std::is_enum_v<T>
+	void INIManager::AddConfigOption(std::string&& headerName, std::string&& settingName, const T enumValue)
+	{
+		mSettingHeaderMap[std::move(headerName)][std::move(settingName)] = std::to_string(std::to_underlying(enumValue));
 	}
 
 	template <>
@@ -96,6 +111,14 @@ namespace Brawler
 			return std::optional<T>{};
 
 		return std::optional<T>{ static_cast<T>(std::stoull(mSettingHeaderMap.at(headerName).at(settingName))) };
+	}
+
+	template <typename T>
+		requires std::is_enum_v<T>
+	std::optional<T> INIManager::GetConfigOption(const std::string& headerName, const std::string& settingName) const
+	{
+		auto underlyingOptionValue{ GetConfigOption<std::underlying_type_t>(headerName, settingName) };
+		return (underlyingOptionValue.has_value() ? std::optional<T>{ static_cast<T>(std::move(*underlyingOptionValue)) } : std::optional<T>{});
 	}
 
 	template <typename T>
