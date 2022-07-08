@@ -267,6 +267,12 @@
     <ClCompile Include="src\Vector.ixx">
       <Filter>Module Files\Math</Filter>
     </ClCompile>
+    <ClCompile Include="src\Matrix.ixx">
+      <Filter>Module Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MathTypes.ixx">
+      <Filter>Module Files\Math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

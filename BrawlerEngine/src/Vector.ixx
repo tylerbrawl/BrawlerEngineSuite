@@ -5,7 +5,8 @@ module;
 #include <ranges>
 #include <DirectXMath/DirectXMath.h>
 
-export module Brawler.Math.Vector;
+export module Brawler.Math.MathTypes:Vector;
+import :Matrix;
 import Util.Math;
 
 namespace Brawler
@@ -108,6 +109,9 @@ namespace Brawler
 			constexpr Vector MultiplyScalar(const ElementType rhs) const;
 			constexpr Vector DivideScalar(const ElementType rhs) const;
 
+			template <std::size_t NumColumns>
+			constexpr Vector<float, NumColumns> TransformByMatrix(const Matrix<NumElements, NumColumns>& rhs) const;
+
 			constexpr ElementType Dot(const Vector& rhs) const;
 			constexpr Vector Cross(const Vector& rhs) const requires (NumElements == 3);
 
@@ -126,6 +130,8 @@ namespace Brawler
 			constexpr ElementType GetZ() const requires (NumElements >= 3);
 			constexpr ElementType GetW() const requires (NumElements >= 4);
 
+			MathType GetDirectXMathVector() const;
+
 			constexpr Vector& operator+=(const Vector& rhs);
 			constexpr Vector& operator-=(const Vector& rhs);
 			constexpr Vector& operator*=(const Vector& rhs);
@@ -136,35 +142,43 @@ namespace Brawler
 			constexpr Vector& operator*=(const ElementType rhs);
 			constexpr Vector& operator/=(const ElementType rhs);
 
+			constexpr Vector& operator*=(const Matrix<NumElements, NumElements>& rhs);
+
 		private:
 			StorageType mStoredVector;
 		};
 	}
 }
 
-template <typename ElementType, std::size_t NumElements>
-constexpr Brawler::Math::Vector<ElementType, NumElements> operator+(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs);
+export
+{
+	template <typename ElementType, std::size_t NumElements>
+	constexpr Brawler::Math::Vector<ElementType, NumElements> operator+(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs);
 
-template <typename ElementType, std::size_t NumElements>
-constexpr Brawler::Math::Vector<ElementType, NumElements> operator-(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs);
+	template <typename ElementType, std::size_t NumElements>
+	constexpr Brawler::Math::Vector<ElementType, NumElements> operator-(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs);
 
-template <typename ElementType, std::size_t NumElements>
-constexpr Brawler::Math::Vector<ElementType, NumElements> operator*(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs);
+	template <typename ElementType, std::size_t NumElements>
+	constexpr Brawler::Math::Vector<ElementType, NumElements> operator*(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs);
 
-template <typename ElementType, std::size_t NumElements>
-constexpr Brawler::Math::Vector<ElementType, NumElements> operator/(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs);
+	template <typename ElementType, std::size_t NumElements>
+	constexpr Brawler::Math::Vector<ElementType, NumElements> operator/(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs);
 
-template <typename ElementType, std::size_t NumElements>
-constexpr Brawler::Math::Vector<ElementType, NumElements> operator+(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs);
+	template <typename ElementType, std::size_t NumElements>
+	constexpr Brawler::Math::Vector<ElementType, NumElements> operator+(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs);
 
-template <typename ElementType, std::size_t NumElements>
-constexpr Brawler::Math::Vector<ElementType, NumElements> operator-(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs);
+	template <typename ElementType, std::size_t NumElements>
+	constexpr Brawler::Math::Vector<ElementType, NumElements> operator-(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs);
 
-template <typename ElementType, std::size_t NumElements>
-constexpr Brawler::Math::Vector<ElementType, NumElements> operator*(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs);
+	template <typename ElementType, std::size_t NumElements>
+	constexpr Brawler::Math::Vector<ElementType, NumElements> operator*(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs);
 
-template <typename ElementType, std::size_t NumElements>
-constexpr Brawler::Math::Vector<ElementType, NumElements> operator/(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs);
+	template <typename ElementType, std::size_t NumElements>
+	constexpr Brawler::Math::Vector<ElementType, NumElements> operator/(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs);
+
+	template <typename ElementType, std::size_t NumElements, std::size_t MatrixNumColumns>
+	constexpr Brawler::Math::Vector<ElementType, MatrixNumColumns> operator*(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Matrix<NumElements, MatrixNumColumns>& rhs);
+}
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -332,7 +346,7 @@ namespace Brawler
 
 				StorageType storedResult{};
 				STORE_FUNCTION(&storedResult, addResult);
-				
+
 				return Vector{ storedResult };
 			}
 		}
@@ -400,6 +414,121 @@ namespace Brawler
 				STORE_FUNCTION(&storedResult, divideResult);
 
 				return Vector{ storedResult };
+			}
+		}
+
+		template <typename ElementType, std::size_t NumElements>
+		template <std::size_t NumColumns>
+		constexpr Vector<float, NumColumns> Vector<ElementType, NumElements>::TransformByMatrix(const Matrix<NumElements, NumColumns>& rhs) const
+		{
+			if (std::is_constant_evaluated())
+			{
+				typename VectorInfo<float, NumColumns>::StorageType storedResult{};
+				using MatrixColumnStorageType = typename VectorInfo<float, NumElements>::StorageType;
+
+				constexpr auto GET_MATRIX_COLUMN_VECTOR_LAMBDA = [] (const Matrix<NumElements, NumColumns>& rhs, const std::size_t columnIndex)
+				{
+					if constexpr (NumElements == 2)
+					{
+						return Vector<float, NumElements>{DirectX::XMFLOAT2{
+							rhs.GetElement(0, columnIndex),
+							rhs.GetElement(1, columnIndex)
+						} };
+					}
+					else if constexpr (NumElements == 3)
+					{
+						return Vector<float, NumElements>{DirectX::XMFLOAT3{
+							rhs.GetElement(0, columnIndex),
+							rhs.GetElement(1, columnIndex),
+							rhs.GetElement(2, columnIndex)
+						} };
+					}
+					else if constexpr (NumElements == 4)
+					{
+						return Vector<float, NumElements>{DirectX::XMFLOAT4{
+							rhs.GetElement(0, columnIndex),
+							rhs.GetElement(1, columnIndex),
+							rhs.GetElement(2, columnIndex),
+							rhs.GetElement(3, columnIndex)
+						} };
+					}
+					else
+						return Vector<float, NumElements>{};
+				};
+
+				// Create a casted version of *this so that Vector<std::int32_t, ...>::Dot() or Vector<std::uint32_t, ...>::Dot()
+				// does not result in lost information.
+				Vector<float, NumElements> castedThis{};
+
+				if constexpr (NumElements == 2)
+				{
+					castedThis = Vector<float, NumElements>{ DirectX::XMFLOAT2{
+						static_cast<float>(mStoredVector.x),
+						static_cast<float>(mStoredVector.y)
+					} };
+				}
+				else if constexpr (NumElements == 3)
+				{
+					castedThis = Vector<float, NumElements>{ DirectX::XMFLOAT3{
+						static_cast<float>(mStoredVector.x),
+						static_cast<float>(mStoredVector.y),
+						static_cast<float>(mStoredVector.z)
+					} };
+				}
+				else if constexpr (NumElements == 4)
+				{
+					castedThis = Vector<float, NumElements>{ DirectX::XMFLOAT4{
+						static_cast<float>(mStoredVector.x),
+						static_cast<float>(mStoredVector.y),
+						static_cast<float>(mStoredVector.z),
+						static_cast<float>(mStoredVector.w)
+					} };
+				}
+
+				if constexpr (NumColumns >= 1)
+				{
+					const Vector<float, NumElements> matrixColumnOneVector{ GET_MATRIX_COLUMN_VECTOR_LAMBDA(rhs, 0) };
+					storedResult.x = castedThis.Dot(matrixColumnOneVector);
+				}
+
+				if constexpr (NumColumns >= 2)
+				{
+					const Vector<float, NumElements> matrixColumnTwoVector{ GET_MATRIX_COLUMN_VECTOR_LAMBDA(rhs, 1) };
+					storedResult.y = castedThis.Dot(matrixColumnTwoVector);
+				}
+
+				if constexpr (NumElements >= 3 && NumColumns >= 3)
+				{
+					const Vector<float, NumElements> matrixColumnThreeVector{ GET_MATRIX_COLUMN_VECTOR_LAMBDA(rhs, 2) };
+					storedResult.z = castedThis.Dot(matrixColumnThreeVector);
+				}
+
+				if constexpr (NumElements >= 4 && NumColumns >= 4)
+				{
+					const Vector<float, NumElements> matrixColumnFourVector{ GET_MATRIX_COLUMN_VECTOR_LAMBDA(rhs, 3) };
+					storedResult.w = castedThis.Dot(matrixColumnFourVector);
+				}
+
+				return Vector<float, NumColumns>{ storedResult };
+			}
+			else
+			{
+				const MathType loadedLHS{ LOAD_FUNCTION(&mStoredVector) };
+				const DirectX::XMMATRIX loadedRHS{ rhs.GetDirectXMathMatrix() };
+
+				MathType transformedVector{};
+
+				if constexpr (NumElements == 2)
+					transformedVector = DirectX::XMVector2Transform(loadedLHS, loadedRHS);
+				else if constexpr (NumElements == 3)
+					transformedVector = DirectX::XMVector3Transform(loadedLHS, loadedRHS);
+				else if constexpr (NumElements == 4)
+					transformedVector = DirectX::XMVector4Transform(loadedLHS, loadedRHS);
+
+				typename VectorInfo<float, NumColumns>::StorageType storedResult{};
+				VectorInfo<float, NumColumns>::STORE_FUNCTION(&storedResult, transformedVector);
+
+				return Vector<float, NumColumns>{ storedResult };
 			}
 		}
 
@@ -702,7 +831,7 @@ namespace Brawler
 			// The length of a vector is calculated as sqrt(x), where x is the sum of all of
 			// its squared components. sqrt(x) == 1 if and only if x == 1. Thus, if we are
 			// just checking if a vector is normalized or not, then we can skip the square root.
-			
+
 			if (std::is_constant_evaluated())
 			{
 				const ElementType currentSum = 0;
@@ -771,6 +900,12 @@ namespace Brawler
 		}
 
 		template <typename ElementType, std::size_t NumElements>
+		Vector<ElementType, NumElements>::MathType Vector<ElementType, NumElements>::GetDirectXMathVector() const
+		{
+			return LOAD_FUNCTION(&mStoredVector);
+		}
+
+		template <typename ElementType, std::size_t NumElements>
 		constexpr Vector<ElementType, NumElements>& Vector<ElementType, NumElements>::operator+=(const Vector& rhs)
 		{
 			*this = AddVector(rhs);
@@ -825,6 +960,13 @@ namespace Brawler
 			*this = DivideScalar(rhs);
 			return *this;
 		}
+
+		template <typename ElementType, std::size_t NumElements>
+		constexpr Vector<ElementType, NumElements>& Vector<ElementType, NumElements>::operator*=(const Matrix<NumElements, NumElements>& rhs)
+		{
+			*this = TransformByMatrix(rhs);
+			return *this;
+		}
 	}
 }
 
@@ -874,6 +1016,12 @@ template <typename ElementType, std::size_t NumElements>
 constexpr Brawler::Math::Vector<ElementType, NumElements> operator/(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs)
 {
 	return lhs.DivideScalar(rhs);
+}
+
+template <typename ElementType, std::size_t NumElements, std::size_t MatrixNumColumns>
+constexpr Brawler::Math::Vector<ElementType, MatrixNumColumns> operator*(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Matrix<NumElements, MatrixNumColumns>& rhs)
+{
+	return lhs.TransformByMatrix(rhs);
 }
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------
