@@ -53,6 +53,8 @@ namespace Brawler
 
 		if (mHWnd.get() == nullptr) [[unlikely]]
 			throw std::runtime_error{ "ERROR: An attempt to create a window for the application failed!" };
+
+
 	}
 
 	HWND AppWindow::GetWindowHandle() const

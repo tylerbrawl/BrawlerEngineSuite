@@ -73,6 +73,9 @@
     <Filter Include="Module Files\Settings\Setting Enumerations">
       <UniqueIdentifier>{3163e358-63ff-4b87-836d-54c5a578132a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Math">
+      <UniqueIdentifier>{a508725f-68f2-4d06-a8aa-93edf5311af0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -257,6 +260,12 @@
     </ClCompile>
     <ClCompile Include="src\CreateWindowInfo.ixx">
       <Filter>Module Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SwapChain.cpp">
+      <Filter>Source Files\Window Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Vector.ixx">
+      <Filter>Module Files\Math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -8,6 +8,7 @@ import Brawler.D3D12.PersistentGPUResourceManager;
 import Brawler.D3D12.RootSignatureDatabase;
 import Brawler.D3D12.PSODatabase;
 import Brawler.D3D12.FrameGraphManager;
+import Brawler.D3D12.PresentationManager;
 import Brawler.D3D12.I_RenderModule;
 
 export namespace Brawler
@@ -35,6 +36,9 @@ export namespace Brawler
 
 			PersistentGPUResourceManager& GetPersistentGPUResourceManager();
 			const PersistentGPUResourceManager& GetPersistentGPUResourceManager() const;
+
+			PresentationManager& GetPresentationManager();
+			const PresentationManager& GetPresentationManager() const;
 
 			FrameGraphManager& GetFrameGraphManager();
 			const FrameGraphManager& GetFrameGraphManager() const;
@@ -80,6 +84,7 @@ export namespace Brawler
 			GPUDevice mDevice;
 			GPUCommandManager mCmdManager;
 			PersistentGPUResourceManager mPersistentResourceManager;
+			PresentationManager mPresentationManager;
 			FrameGraphManager mFrameGraphManager;
 			std::atomic<std::uint64_t> mCurrFrameNum;
 		};

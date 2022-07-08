@@ -184,8 +184,8 @@ namespace Brawler
 			// we get from the user's configuration, then we default to the primary monitor. This might happen if,
 			// for instance, the user disconnects a monitor before launching the application again.
 			const DirectX::XMINT2 fullscreenStartCoordinates{
-				.x = Brawler::SettingsManager::GetInstance().GetOption<SettingID::FULLSCREEN_OR_BORDERLESS_ORIGIN_COORDINATES_X>(),
-				.y = Brawler::SettingsManager::GetInstance().GetOption<SettingID::FULLSCREEN_OR_BORDERLESS_ORIGIN_COORDINATES_Y>()
+				Brawler::SettingsManager::GetInstance().GetOption<SettingID::FULLSCREEN_OR_BORDERLESS_ORIGIN_COORDINATES_X>(),
+				Brawler::SettingsManager::GetInstance().GetOption<SettingID::FULLSCREEN_OR_BORDERLESS_ORIGIN_COORDINATES_Y>()
 			};
 
 			bool windowCreated = false;
@@ -215,20 +215,20 @@ namespace Brawler
 			// every connected monitor. The monitor whose desktop coordinates RECT has the greatest area of intersection
 			// with the configuration RECT gets the new window.
 			const DirectX::XMINT2 windowedStartCoordinates{
-				.x = Brawler::SettingsManager::GetInstance().GetOption<SettingID::WINDOWED_ORIGIN_COORDINATES_X>(),
-				.y = Brawler::SettingsManager::GetInstance().GetOption<SettingID::WINDOWED_ORIGIN_COORDINATES_Y>()
+				Brawler::SettingsManager::GetInstance().GetOption<SettingID::WINDOWED_ORIGIN_COORDINATES_X>(),
+				Brawler::SettingsManager::GetInstance().GetOption<SettingID::WINDOWED_ORIGIN_COORDINATES_Y>()
 			};
 
 			const DirectX::XMUINT2 windowSize{
-				.x = Brawler::SettingsManager::GetInstance().GetOption<SettingID::WINDOW_RESOLUTION_WIDTH>(),
-				.y = Brawler::SettingsManager::GetInstance().GetOption<SettingID::WINDOW_RESOLUTION_HEIGHT>()
+				Brawler::SettingsManager::GetInstance().GetOption<SettingID::WINDOW_RESOLUTION_WIDTH>(),
+				Brawler::SettingsManager::GetInstance().GetOption<SettingID::WINDOW_RESOLUTION_HEIGHT>()
 			};
 
 			const RECT userConfigRect{
 				.left = windowedStartCoordinates.x,
 				.top = windowedStartCoordinates.y,
-				.right = (windowedStartCoordinates.x + windowSize.x),
-				.bottom = (windowedStartCoordinates.y + windowSize.y)
+				.right = (windowedStartCoordinates.x + static_cast<std::int32_t>(windowSize.x)),
+				.bottom = (windowedStartCoordinates.y + static_cast<std::int32_t>(windowSize.y))
 			};
 
 			// Verify that the values taken from the configuration file are sane. If they aren't, then just use
@@ -315,7 +315,7 @@ namespace Brawler
 		
 		// Have the Monitor instance call AppWindow::SpawnWindow() on the AppWindow instance which we just
 		// assigned it. This will assign the AppWindow an HWND value, allowing it to receive window messages.
-		monitor.SpawnWindow();
+		monitor.SpawnWindowForMonitor();
 
 		// Associate the HWND with its corresponding AppWindow instance. We need to do this in order to
 		// process window messages.

@@ -9,6 +9,7 @@ module Brawler.D3D12.DirectContext;
 import Brawler.D3D12.I_GPUResource;
 import Util.Engine;
 import Util.General;
+import Brawler.D3D12.PresentationManager;
 
 namespace
 {
@@ -36,6 +37,12 @@ namespace Brawler
 		void DirectContext::RecordCommandListIMPL(const std::function<void(DirectContext&)>& recordJob)
 		{
 			recordJob(*this);
+		}
+
+		void DirectContext::Present() const
+		{
+			// Report that presentation must occur at the end of the current frame to the PresentationManager.
+			Util::Engine::GetPresentationManager().EnablePresentationForCurrentFrame();
 		}
 
 		void DirectContext::PrepareCommandListIMPL()

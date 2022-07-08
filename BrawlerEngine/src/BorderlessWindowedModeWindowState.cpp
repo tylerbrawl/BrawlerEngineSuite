@@ -27,13 +27,13 @@ namespace Brawler
 		const Brawler::DXGI_OUTPUT_DESC& currMonitorDesc{ GetAppWindow().GetOwningMonitor().GetOutputDescription() };
 
 		DirectX::XMINT2 windowStartCoordinates{
-			.x = currMonitorDesc.DesktopCoordinates.left,
-			.y = currMonitorDesc.DesktopCoordinates.top
+			currMonitorDesc.DesktopCoordinates.left,
+			currMonitorDesc.DesktopCoordinates.top
 		};
 
 		DirectX::XMUINT2 windowSize{
-			.x = (currMonitorDesc.DesktopCoordinates.right - currMonitorDesc.DesktopCoordinates.left),
-			.y = (currMonitorDesc.DesktopCoordinates.bottom - currMonitorDesc.DesktopCoordinates.top)
+			static_cast<std::uint32_t>(currMonitorDesc.DesktopCoordinates.right - currMonitorDesc.DesktopCoordinates.left),
+			static_cast<std::uint32_t>(currMonitorDesc.DesktopCoordinates.bottom - currMonitorDesc.DesktopCoordinates.top)
 		};
 
 		return Win32::CreateWindowInfo{

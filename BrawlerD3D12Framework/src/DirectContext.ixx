@@ -45,6 +45,30 @@ export namespace Brawler
 
 			void RecordCommandListIMPL(const std::function<void(DirectContext&)>& recordJob) override;
 
+			/// <summary>
+			/// Guarantees that once all of the commands for this frame have been submitted, all of the
+			/// presentation callbacks registered with the PresentationManager will be executed. This will
+			/// (likely) result in IDXGISwapChain::Present1() being called for every swap chain created by
+			/// the application.
+			/// 
+			/// The original DXGI API for presenting sucks pretty bad, and it seems like Microsoft kind of
+			/// just shoehorned this into D3D12. As such, there really is no such thing as a function like
+			/// ID3D12GraphicsCommandList::Present(), even though that would make more sense. We believe that
+			/// this API is more intuitive. It also naturally allows one to ensure that any back buffers
+			/// used for presenting are in the D3D12_RESOURCE_STATE_PRESENT state at the time of presentation
+			/// on the GPU timeline by making use of the resource state tracking system already integrated into
+			/// the Brawler Engine.
+			/// 
+			/// Keep in mind that regardless of what RenderPass this command is executed in, the actual
+			/// presentation callbacks are executed on the GPU timeline after *ALL* of the commands for the
+			/// current frame have been executed. For this reason, it is suggested that this function is called
+			/// only in the last RenderPass of a frame. The program may still work fine if any RenderPass
+			/// instances have their commands executed after DirectContext::Present() is called in a different
+			/// RenderPass if said RenderPasses do not rely on the resources used during presentation, but this
+			/// is risky.
+			/// </summary>
+			void Present() const;
+
 		protected:
 			void PrepareCommandListIMPL() override;
 

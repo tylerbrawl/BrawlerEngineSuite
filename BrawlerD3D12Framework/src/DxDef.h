@@ -52,4 +52,5 @@ namespace Brawler
 	using DXGISwapChain = IDXGISwapChain4;
 	using DXGIOutput = IDXGIOutput6;
 	using DXGI_OUTPUT_DESC = ::DXGI_OUTPUT_DESC1;
+	using DXGI_SWAP_CHAIN_DESC = ::DXGI_SWAP_CHAIN_DESC1;
 }

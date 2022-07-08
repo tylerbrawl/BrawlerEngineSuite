@@ -4,6 +4,7 @@ module;
 #include <intrin.h>
 #include <cassert>
 #include <optional>
+#include <cmath>
 
 export module Util.Math;
 
@@ -75,6 +76,25 @@ export namespace Util
 		template <typename T>
 			requires (std::is_integral_v<T> && sizeof(T) <= sizeof(std::uint64_t))
 		__forceinline constexpr std::uint32_t GetFirstSetBit(const T valueToScan);
+
+		/// <summary>
+		/// Calculates the square root of the provided value. Unlike std::sqrtf() (as of writing this), this
+		/// function is constexpr. At runtime, however, it simply calls std::sqrtf(), anyways.
+		/// 
+		/// NOTE: C++ paper P0533R9 advocates for constexpr for both <cmath> and <cstdlib>, and has been
+		/// accepted by the standards committee. Once the MSVC STL implements this feature, please use
+		/// std::sqrtf() directly, instead.
+		/// </summary>
+		/// <typeparam name="T">
+		/// - The type of the value for which the square root is to be calculated.
+		/// </typeparam>
+		/// <param name="value">
+		/// - The value for which the square root is to be calculated.
+		/// </param>
+		/// <returns></returns>
+		template <typename T>
+			requires std::is_integral_v<T>
+		constexpr float GetSquareRoot(const T value);
 	}
 }
 
@@ -243,6 +263,57 @@ namespace Util
 				assert(bitScanResult != 0);
 				return index;
 			}
+		}
+
+		template <typename T>
+			requires std::is_integral_v<T>
+		constexpr float GetSquareRoot(const T value)
+		{
+			if (std::is_constant_evaluated())
+			{
+				if (value == 0) [[unlikely]]
+					return 0.0f;
+
+				if (value < 0) [[unlikely]]
+					return NAN;
+
+				// std::sqrtf() isn't constexpr yet at the time of writing this. Ready to have some fun?
+
+				// Start with an initial estimate which will be used for later refinement. Let m = a * (2^(2n))
+				// be the value which we want to calculate the square root for. By exploiting the layout
+				// of a floating-point value as defined in IEEE-754, we can get these values fairly easily.
+				const float castedValue = static_cast<float>(value);
+				const float halfExponent = (static_cast<float>(std::bit_cast<std::int32_t>((castedValue >> 23) & 0x8) - 127) / 2.0f);
+
+				// value == a * (2^(2n)) == a * (2^n) * (2^n). We have n == halfExponent already, so let's 
+				// represent 2^n as a float.
+				const std::int32_t biasedHalfExponent = static_cast<std::int32_t>(halfExponent) + 127;
+				const float twoRaisedToHalfExponent = std::bit_cast<float>(biasedHalfExponent << 23);
+
+				const float a = castedValue / (twoRaisedToHalfExponent * twoRaisedToHalfExponent);
+				const float initialEstimate = ((0.485f + (0.485f * a)) * twoRaisedToHalfExponent);
+
+				// Use the Babylonian Method to converge to the correct result.
+				constexpr float MAXIMUM_ALLOWED_DIFFERENCE = 0.001f;
+				float prevEstimate = initialEstimate;
+				float currEstimate = 0.0f;
+				float currDifference = 0.0f;
+
+				do
+				{
+					currEstimate = 0.5f * (prevEstimate + (castedValue / prevEstimate));
+					currDifference = currEstimate - prevEstimate;
+
+					if (currDifference < 0.0f)
+						currDifference *= -1.0f;
+
+					prevEstimate = currEstimate;
+				} while (currDifference > MAXIMUM_ALLOWED_DIFFERENCE);
+
+				return currEstimate;
+			}
+			else
+				return std::sqrtf(static_cast<float>(value));
 		}
 	}
 }

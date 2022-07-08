@@ -32,9 +32,15 @@ export namespace Brawler
 		class GPUCommandManager
 		{
 		private:
+			struct FrameGraphSubmissionInfo
+			{
+				FrameGraphFenceCollection* FenceCollectionPtr;
+				std::uint64_t FrameNumber;
+			};
+
 			struct GPUCommandContextSinkInfo
 			{
-				std::queue<FrameGraphFenceCollection*> FenceCollectionQueue;
+				std::queue<FrameGraphSubmissionInfo> SubmissionInfoQueue;
 				bool IsThreadHandlingSinks;
 				
 				mutable std::mutex CritSection;
@@ -56,12 +62,12 @@ export namespace Brawler
 
 			GPUCommandContextVault& GetGPUCommandContextVault();
 
+			template <GPUCommandQueueType QueueType>
+			const GPUCommandQueue<QueueType>& GetGPUCommandQueue() const;
+
 		private:
 			void DrainGPUCommandContextSinks(std::size_t beginSinkIndex);
 			void EnsureGPUResidencyForCurrentFrame(FrameGraphFenceCollection& fenceCollection) const;
-
-			template <GPUCommandQueueType QueueType>
-			const GPUCommandQueue<QueueType>& GetGPUCommandQueue() const;
 			
 			template <GPUCommandQueueType QueueType>
 			void HaltGPUCommandQueueForPreviousSubmission() const;
@@ -75,5 +81,26 @@ export namespace Brawler
 			GPUCommandContextSinkInfo mSinkInfo;
 			std::unique_ptr<GPUCommandContextVault> mCmdContextVaultPtr;
 		};
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+namespace Brawler
+{
+	namespace D3D12
+	{
+		template <GPUCommandQueueType QueueType>
+		const GPUCommandQueue<QueueType>& GPUCommandManager::GetGPUCommandQueue() const
+		{
+			if constexpr (QueueType == GPUCommandQueueType::DIRECT)
+				return mDirectCmdQueue;
+
+			else if constexpr (QueueType == GPUCommandQueueType::COMPUTE)
+				return mComputeCmdQueue;
+
+			else
+				return mCopyCmdQueue;
+		}
 	}
 }

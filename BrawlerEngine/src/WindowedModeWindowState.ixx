@@ -21,5 +21,7 @@ export namespace Brawler
 
 		Win32::WindowMessageResult ProcessWindowMessage(const Win32::WindowMessage& msg);
 		Win32::CreateWindowInfo GetCreateWindowInfo() const;
+
+		SwapChainCreationInfo GetSwapChainCreationInfo() const;
 	};
 }

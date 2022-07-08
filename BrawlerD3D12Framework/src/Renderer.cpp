@@ -31,7 +31,7 @@ namespace Brawler
 
 				bindlessSRVQueueInitializationGroup.ExecuteJobsAsync();
 			}
-			
+
 			// Initialize the GPUDevice.
 			mDevice.Initialize();
 
@@ -39,7 +39,7 @@ namespace Brawler
 			// GPUDevice be fully initialized, but are otherwise independent of each other. Since
 			// these are independent and thread-safe tasks, we can easily parallelize them.
 			Brawler::JobGroup postDeviceCreationInitializationGroup{};
-			postDeviceCreationInitializationGroup.Reserve(5);
+			postDeviceCreationInitializationGroup.Reserve(6);
 
 			postDeviceCreationInitializationGroup.AddJob([] ()
 			{
@@ -71,6 +71,12 @@ namespace Brawler
 				mFrameGraphManager.Initialize();
 			});
 
+			postDeviceCreationInitializationGroup.AddJob([this] ()
+			{
+				// Initialize the PresentationManager.
+				mPresentationManager.Initialize();
+			});
+
 			postDeviceCreationInitializationGroup.ExecuteJobs();
 
 			// Initialize the PSOs. This *MUST* be done after the RootSignatureDatabase, since PSO
@@ -82,7 +88,7 @@ namespace Brawler
 			while (!bindlessSRVQueueInitialized.load(std::memory_order::relaxed))
 				Util::Coroutine::TryExecuteJob();
 		}
-		
+
 		GPUCommandManager& Renderer::GetGPUCommandManager()
 		{
 			return mCmdManager;
@@ -111,6 +117,16 @@ namespace Brawler
 		const PersistentGPUResourceManager& Renderer::GetPersistentGPUResourceManager() const
 		{
 			return mPersistentResourceManager;
+		}
+
+		PresentationManager& Renderer::GetPresentationManager()
+		{
+			return mPresentationManager;
+		}
+
+		const PresentationManager& Renderer::GetPresentationManager() const
+		{
+			return mPresentationManager;
 		}
 
 		FrameGraphManager& Renderer::GetFrameGraphManager()

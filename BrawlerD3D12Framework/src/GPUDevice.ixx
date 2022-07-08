@@ -84,6 +84,9 @@ export namespace Brawler
 			Brawler::DXGIAdapter& GetDXGIAdapter();
 			const Brawler::DXGIAdapter& GetDXGIAdapter() const;
 
+			Brawler::DXGIFactory& GetDXGIFactory();
+			const Brawler::DXGIFactory& GetDXGIFactory() const;
+
 			GPUResourceDescriptorHeap& GetGPUResourceDescriptorHeap();
 			const GPUResourceDescriptorHeap& GetGPUResourceDescriptorHeap() const;
 

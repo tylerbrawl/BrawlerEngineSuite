@@ -313,6 +313,16 @@ namespace Brawler
 			return *(mDXGIAdapter.Get());
 		}
 
+		Brawler::DXGIFactory& GPUDevice::GetDXGIFactory()
+		{
+			return *(mDXGIFactory.Get());
+		}
+
+		const Brawler::DXGIFactory& GPUDevice::GetDXGIFactory() const
+		{
+			return *(mDXGIFactory.Get());
+		}
+
 		GPUResourceDescriptorHeap& GPUDevice::GetGPUResourceDescriptorHeap()
 		{
 			return mDescriptorHeap;
@@ -576,6 +586,16 @@ namespace Brawler
 				mDXGIAdapter->GetDesc(&adapterDesc);
 
 				mDeviceCapabilities.DedicatedVideoMemorySizeInBytes = adapterDesc.DedicatedVideoMemory;
+			}
+
+			{
+				// Check for tearing support for swap chains. According to the MSDN, this feature should
+				// be "nearly ubiquitous" in systems today. For correctness, however, we must still execute
+				// this check.
+				BOOL tearingSupportEnabled = FALSE;
+				Util::General::CheckHRESULT(mDXGIFactory->CheckFeatureSupport(DXGI_FEATURE::DXGI_FEATURE_PRESENT_ALLOW_TEARING, &tearingSupportEnabled, sizeof(tearingSupportEnabled)));
+
+				mDeviceCapabilities.IsTearingAllowed = tearingSupportEnabled;
 			}
 		}
 

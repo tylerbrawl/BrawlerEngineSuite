@@ -355,6 +355,8 @@
     <ClCompile Include="src\NZStringView.ixx" />
     <ClCompile Include="src\PipelineEnums.ixx" />
     <ClCompile Include="src\PipelineType.ixx" />
+    <ClCompile Include="src\PresentationManager.cpp" />
+    <ClCompile Include="src\PresentationManager.ixx" />
     <ClCompile Include="src\PSODatabase.cpp" />
     <ClCompile Include="src\PSOLibrary.cpp" />
     <ClCompile Include="src\PSOLibrary.ixx" />

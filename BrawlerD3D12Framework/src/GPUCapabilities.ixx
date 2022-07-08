@@ -92,6 +92,7 @@ export namespace Brawler
 			Brawler::CompositeEnum<TypedUAVFormat> SupportedTypedUAVLoadFormats;
 			std::uint32_t MaxGPUVirtualAddressBitsPerProcess;
 			std::size_t DedicatedVideoMemorySizeInBytes;
+			bool IsTearingAllowed;
 		};
 	}
 }

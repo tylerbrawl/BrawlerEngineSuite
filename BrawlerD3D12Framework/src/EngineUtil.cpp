@@ -43,6 +43,13 @@ namespace Util
 			return cmdManager;
 		}
 
+		Brawler::D3D12::PresentationManager& GetPresentationManager()
+		{
+			thread_local Brawler::D3D12::PresentationManager& presentationManager{ GetRenderer().GetPresentationManager() };
+
+			return presentationManager;
+		}
+
 		Brawler::D3D12::PersistentGPUResourceManager& GetPersistentGPUResourceManager()
 		{
 			thread_local Brawler::D3D12::PersistentGPUResourceManager& resourceManager{ GetRenderer().GetPersistentGPUResourceManager() };
@@ -103,6 +110,13 @@ namespace Util
 			thread_local Brawler::DXGIAdapter& dxgiAdapter{ GetRenderer().GetGPUDevice().GetDXGIAdapter() };
 
 			return dxgiAdapter;
+		}
+
+		Brawler::DXGIFactory& GetDXGIFactory()
+		{
+			thread_local Brawler::DXGIFactory& dxgiFactory{ GetRenderer().GetGPUDevice().GetDXGIFactory() };
+
+			return dxgiFactory;
 		}
 
 		Brawler::D3D12CommandAllocator& GetD3D12CommandAllocator(const Brawler::D3D12::GPUCommandQueueType queueType)

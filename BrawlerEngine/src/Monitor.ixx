@@ -24,6 +24,8 @@ export namespace Brawler
 
 		const Brawler::DXGI_OUTPUT_DESC& GetOutputDescription() const;
 
+		DXGI_FORMAT GetPreferredSwapChainFormat() const;
+
 		void AssignWindow(std::unique_ptr<AppWindow>&& appWindowPtr);
 		void ResetWindow();
 

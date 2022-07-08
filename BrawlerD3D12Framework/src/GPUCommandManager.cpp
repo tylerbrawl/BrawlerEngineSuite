@@ -11,24 +11,12 @@ module;
 module Brawler.D3D12.GPUCommandManager;
 import Brawler.JobSystem;
 import Brawler.D3D12.FrameGraphFenceCollection;
+import Brawler.D3D12.PresentationManager;
 
 namespace Brawler
 {
 	namespace D3D12
 	{
-		template <GPUCommandQueueType QueueType>
-		const GPUCommandQueue<QueueType>& GPUCommandManager::GetGPUCommandQueue() const
-		{
-			if constexpr (QueueType == GPUCommandQueueType::DIRECT)
-				return mDirectCmdQueue;
-
-			else if constexpr (QueueType == GPUCommandQueueType::COMPUTE)
-				return mComputeCmdQueue;
-
-			else
-				return mCopyCmdQueue;
-		}
-		
 		template <GPUCommandQueueType QueueType>
 		void GPUCommandManager::HaltGPUCommandQueueForPreviousSubmission() const
 		{
@@ -78,35 +66,36 @@ namespace Brawler
 
 			gpuSubmitJobGroup.AddJob([this, &submitJobInfo] ()
 			{
-				const std::size_t sinkIndex = (submitJobInfo.FrameNumber % mCmdContextSinkArr.size());
+				const std::uint64_t frameNumber = submitJobInfo.FrameNumber;
+				const std::size_t sinkIndex = (frameNumber % mCmdContextSinkArr.size());
 
 				submitJobInfo.SubmitPointSpan = mCmdContextSinkArr[sinkIndex].InitializeSinkForCurrentFrame(submitJobInfo.NumExecutionModules);
 
-				// Create a copy of the FrameGraphFenceCollection* before allowing the other thread
-				// to destroy the GPUSubmitJobInfo.
-				FrameGraphFenceCollection* const fenceCollectionPtr = &(submitJobInfo.FenceCollection);
-
-				submitJobInfo.SpanInitialized.store(true);
-				submitJobInfo.SpanInitialized.notify_all();
-
 				bool shouldSubmitGPUJobs = false;
+				FrameGraphSubmissionInfo submissionInfo{
+					.FenceCollectionPtr = &(submitJobInfo.FenceCollection),
+					.FrameNumber = submitJobInfo.FrameNumber
+				};
 
 				{
 					std::scoped_lock<std::mutex> lock{ mSinkInfo.CritSection };
 
-					mSinkInfo.FenceCollectionQueue.push(fenceCollectionPtr);
+					mSinkInfo.SubmissionInfoQueue.push(std::move(submissionInfo));
 					assert(mSinkInfo.FenceCollectionQueue.size() <= mCmdContextSinkArr.size());
 
 					shouldSubmitGPUJobs = !(mSinkInfo.IsThreadHandlingSinks);
 					mSinkInfo.IsThreadHandlingSinks = true;
 				}
 
+				submitJobInfo.SpanInitialized.store(true, std::memory_order::release);
+				submitJobInfo.SpanInitialized.notify_all();
+
 				if (shouldSubmitGPUJobs)
 					DrainGPUCommandContextSinks(sinkIndex);
 			});
 
 			gpuSubmitJobGroup.ExecuteJobsAsync();
-			spanInitialized.wait(false);
+			spanInitialized.wait(false, std::memory_order::acquire);
 
 			return submitPointSpan;
 		}
@@ -163,27 +152,66 @@ namespace Brawler
 			
 			while (keepGoing)
 			{
-				FrameGraphFenceCollection* fenceCollectionPtr = nullptr;
+				const FrameGraphSubmissionInfo* submissionInfoPtr = nullptr;
 
 				{
 					std::scoped_lock<std::mutex> lock{ mSinkInfo.CritSection };
 
-					assert(!mSinkInfo.FenceCollectionQueue.empty());
-					fenceCollectionPtr = mSinkInfo.FenceCollectionQueue.front();
+					assert(!mSinkInfo.SubmissionInfoQueue.empty());
+					submissionInfoPtr = &(mSinkInfo.SubmissionInfoQueue.front());
 				}
 
-				assert(fenceCollectionPtr != nullptr);
-				EnsureGPUResidencyForCurrentFrame(*fenceCollectionPtr);
+				assert(submissionInfoPtr != nullptr);
+				EnsureGPUResidencyForCurrentFrame(*(submissionInfoPtr->FenceCollectionPtr));
 				
 				mCmdContextSinkArr[beginSinkIndex].RunGPUSubmissionLoop();
 				beginSinkIndex = ((beginSinkIndex + 1) % mCmdContextSinkArr.size());
 
+				FrameGraphFenceCollection* const fenceCollectionPtr = submissionInfoPtr->FenceCollectionPtr;
+				const std::uint64_t submittedFrameNumber = submissionInfoPtr->FrameNumber;
+
+				// We need to call PresentationManager::HandleFramePresentation() outside of the lock.
+				// Otherwise, we can get a deadlock, because this function might launch CPU jobs and potentially
+				// cause this or another thread to attempt to acquire the mSinkInfo.CritSection lock.
+				//
+				// However, this should still be safe to do.
+				//
+				//   - We already guarantee that at most one thread is in GPUCommandManager::DrainGPUCommandContextSinks()
+				//     at any point in time.
+				//
+				//   - We know that commands for the frame MAX_FRAMES_IN_FLIGHT frames away from submittedFrameNumber
+				//     will not begin recording until all of the FrameGraphFenceCollection's fences have been signalled.
+				//     We wait to do this until after presentation.
+				bool presentationOccurred = false;
+				try
+				{
+					presentationOccurred = Util::Engine::GetPresentationManager().HandleFramePresentation(PresentationManager::PresentationInfo{
+						.FrameNumber = submittedFrameNumber,
+						.QueuesToSynchronizeWith = mLastSubmissionQueues
+					});
+				}
+				catch (...)
+				{
+					// If PresentationManager::HandleFramePresentation() throws an exception because a callback failed,
+					// then we're probably screwed, anyways. However, if this is the case, we should still ensure that
+					// mSinkInfo.IsThreadHandlingSinks is set to false, just in case we can, in fact, recover.
+
+					{
+						std::scoped_lock<std::mutex> lock{ mSinkInfo.CritSection };
+						
+						mSinkInfo.IsThreadHandlingSinks = false;
+					}
+
+					std::rethrow_exception(std::current_exception());
+				}
+
 				{
 					std::scoped_lock<std::mutex> lock{ mSinkInfo.CritSection };
 					
-					mSinkInfo.FenceCollectionQueue.pop();
+					mSinkInfo.SubmissionInfoQueue.pop();
+					submissionInfoPtr = nullptr;
 
-					if (mSinkInfo.FenceCollectionQueue.empty())
+					if (mSinkInfo.SubmissionInfoQueue.empty())
 					{
 						mSinkInfo.IsThreadHandlingSinks = false;
 						keepGoing = false;
@@ -199,7 +227,15 @@ namespace Brawler
 					// been executed on the GPU.
 					assert(fenceCollectionPtr != nullptr);
 					
-					fenceCollectionPtr->SignalFence<FrameGraphFenceCollection::FenceIndex::DIRECT_QUEUE>(mDirectCmdQueue.GetD3D12CommandQueue());
+					// If we presented for this frame, then wait for the presentation queue belonging to the
+					// PresentationManager. Otherwise, wait for the DIRECT queue of this GPUCommandManager instance.
+					// This works because the presentation queue always synchronizes with the DIRECT command queue,
+					// so either way, we guarantee that all of the relevant commands have finished.
+					if (presentationOccurred) [[likely]]
+						fenceCollectionPtr->SignalFence<FrameGraphFenceCollection::FenceIndex::DIRECT_QUEUE>(Util::Engine::GetPresentationManager().GetPresentationCommandQueue().GetD3D12CommandQueue());
+					else [[unlikely]]
+						fenceCollectionPtr->SignalFence<FrameGraphFenceCollection::FenceIndex::DIRECT_QUEUE>(mDirectCmdQueue.GetD3D12CommandQueue());
+
 					fenceCollectionPtr->SignalFence<FrameGraphFenceCollection::FenceIndex::COMPUTE_QUEUE>(mComputeCmdQueue.GetD3D12CommandQueue());
 					fenceCollectionPtr->SignalFence<FrameGraphFenceCollection::FenceIndex::COPY_QUEUE>(mCopyCmdQueue.GetD3D12CommandQueue());
 				}

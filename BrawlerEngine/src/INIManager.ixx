@@ -117,7 +117,7 @@ namespace Brawler
 		requires std::is_enum_v<T>
 	std::optional<T> INIManager::GetConfigOption(const std::string& headerName, const std::string& settingName) const
 	{
-		auto underlyingOptionValue{ GetConfigOption<std::underlying_type_t>(headerName, settingName) };
+		auto underlyingOptionValue{ GetConfigOption<std::underlying_type_t<T>>(headerName, settingName) };
 		return (underlyingOptionValue.has_value() ? std::optional<T>{ static_cast<T>(std::move(*underlyingOptionValue)) } : std::optional<T>{});
 	}
 

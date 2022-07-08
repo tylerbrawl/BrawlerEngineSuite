@@ -289,7 +289,9 @@
     <ClCompile Include="src\SettingsManager.cpp" />
     <ClCompile Include="src\SettingsManager.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequestBundle.ixx" />
+    <ClCompile Include="src\SwapChain.cpp" />
     <ClCompile Include="src\SwapChain.ixx" />
+    <ClCompile Include="src\Vector.ixx" />
     <ClCompile Include="src\WindowDisplayMode.ixx" />
     <ClCompile Include="src\WindowedModeWindowState.cpp" />
     <ClCompile Include="src\WindowedModeWindowState.ixx" />

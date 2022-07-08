@@ -55,12 +55,12 @@ export namespace Brawler
 		CREATE_HEADER_DEFINITION(Brawler::SettingHeader::VIDEO, "Video");
 		CREATE_HEADER_DEFINITION(Brawler::SettingHeader::WINDOWS, "Windows");
 
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::WINDOW_RESOLUTION_WIDTH, "uWindowResolutionWidth", 1280, "# This defines the starting width of the application's window in Windowed Mode.");
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::WINDOW_RESOLUTION_HEIGHT, "uWindowResolutionHeight", 720, "# This defines the starting height of the application's window in Windowed Mode.");
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_RESOLUTION_WIDTH, "uFullscreenResolutionWidth", 1280, "# This defines the width of the display mode used in Fullscreen Mode.");
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_RESOLUTION_HEIGHT, "uFullscreenResolutionHeight", 720, "# This defines the height of the display mode used in Fullscreen Mode.");
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_REFRESH_RATE_NUMERATOR, "uFullscreenRefreshRateNumerator", 0, "# This is the numerator of the refresh rate of the display mode used in Fullscreen Mode. The actual refresh rate is calculated as uFullscreenRefreshRateNumerator / uFullscreenRefreshRateDenominator.");
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_REFRESH_RATE_DENOMINATOR, "uFullscreenRefreshRateDenominator", 0, "# This is the denominator of the refresh rate of the display mode used in Fullscreen Mode. The actual refresh rate is calculated as uFullscreenRefreshRateNumerator / uFullscreenRefreshRateDenominator.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::WINDOW_RESOLUTION_WIDTH, "uWindowResolutionWidth", 1280u, "# This defines the starting width of the application's window in Windowed Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::WINDOW_RESOLUTION_HEIGHT, "uWindowResolutionHeight", 720u, "# This defines the starting height of the application's window in Windowed Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_RESOLUTION_WIDTH, "uFullscreenResolutionWidth", 1280u, "# This defines the width of the display mode used in Fullscreen Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_RESOLUTION_HEIGHT, "uFullscreenResolutionHeight", 720u, "# This defines the height of the display mode used in Fullscreen Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_REFRESH_RATE_NUMERATOR, "uFullscreenRefreshRateNumerator", 0u, "# This is the numerator of the refresh rate of the display mode used in Fullscreen Mode. The actual refresh rate is calculated as uFullscreenRefreshRateNumerator / uFullscreenRefreshRateDenominator.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_REFRESH_RATE_DENOMINATOR, "uFullscreenRefreshRateDenominator", 0u, "# This is the denominator of the refresh rate of the display mode used in Fullscreen Mode. The actual refresh rate is calculated as uFullscreenRefreshRateNumerator / uFullscreenRefreshRateDenominator.");
 
 		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::RENDER_RESOLUTION_FACTOR, "fRenderResolutionFactor", 1.0f, 
 			R"(# This is a scalar floating-point value in the range [0.0f, +Infinity[ which is used to scale the resolution at which shading is done. The actual calculated value differs based on the current window display mode:
@@ -70,8 +70,8 @@ export namespace Brawler
 #   - Fullscreen Mode: The render resolution is calculated as the vector fRenderResolutionFactor * [uFullscreenResolutionWidth uFullscreenResolutionHeight].
 #   - Multimonitor Mode: Define vuTotalResolution to be the vector sum of the dimensions of all monitors connected to the relevant display adapter. Then, the render resolution is calculated as fRenderResolutionFactor * vuTotalResolution.)");
 
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FRAME_RATE_LIMIT, "uFrameRateLimit", 0, "# This sets a cap to the frames per second (FPS) displayed to the monitor. Setting this value to 0 will result in an uncapped frame rate.");
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::WINDOW_DISPLAY_MODE, "kWindowDisplayMode", WindowDisplayMode::WINDOWED),
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FRAME_RATE_LIMIT, "uFrameRateLimit", 0u, "# This sets a cap to the frames per second (FPS) displayed to the monitor. Setting this value to 0 will result in an uncapped frame rate.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::WINDOW_DISPLAY_MODE, "kWindowDisplayMode", WindowDisplayMode::WINDOWED,
 			R"(# This value determines how the application's window is presented to the user. The following values are available:
 #
 #   - 0: The application is displayed in Windowed Mode. Only a single window is created, and its resolution can be scaled dynamically. Using this mode may result in increased latency due to DirectFlip not being available.
@@ -82,10 +82,10 @@ export namespace Brawler
 #     identical to Borderless Windowed Mode. Although eFSE cannot be used in Multimonitor Mode, since each window is taking up the entire dimensions of its associated monitor, Direct3D 12 will be able to make use of DirectFlip, and
 #     performance should thus be identical.)");
 
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::WINDOWS, Brawler::SettingID::WINDOWED_ORIGIN_COORDINATES_X, "uWindowOriginX", 0, "# This is the X-coordinate of the starting position of the application's window in Windowed Mode.");
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::WINDOWS, Brawler::SettingID::WINDOWED_ORIGIN_COORDINATES_Y, "uWindowOriginY", 0, "# This is the Y-coordinate of the starting position of the application's window in Windowed Mode.");
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::WINDOWS, Brawler::SettingID::FULLSCREEN_OR_BORDERLESS_ORIGIN_COORDINATES_X, "uFSBorderlessOriginX", 0, "# This is the X-coordinate of the starting position of the application's window in both Borderless Windowed Mode and Fullscreen Mode.");
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::WINDOWS, Brawler::SettingID::FULLSCREEN_OR_BORDERLESS_ORIGIN_COORDINATES_Y, "uFSBorderlessOriginY", 0, "# This is the Y-coordinate of the starting position of the application's window in both Borderless Windowed Mode and Fullscreen Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::WINDOWS, Brawler::SettingID::WINDOWED_ORIGIN_COORDINATES_X, "iWindowOriginX", 0, "# This is the X-coordinate of the starting position of the application's window in Windowed Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::WINDOWS, Brawler::SettingID::WINDOWED_ORIGIN_COORDINATES_Y, "iWindowOriginY", 0, "# This is the Y-coordinate of the starting position of the application's window in Windowed Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::WINDOWS, Brawler::SettingID::FULLSCREEN_OR_BORDERLESS_ORIGIN_COORDINATES_X, "iFSBorderlessOriginX", 0, "# This is the X-coordinate of the starting position of the application's window in both Borderless Windowed Mode and Fullscreen Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::WINDOWS, Brawler::SettingID::FULLSCREEN_OR_BORDERLESS_ORIGIN_COORDINATES_Y, "iFSBorderlessOriginY", 0, "# This is the Y-coordinate of the starting position of the application's window in both Borderless Windowed Mode and Fullscreen Mode.");
 
 		// It's not really necessary to #undef a macro at the end of a module interface unit, but it's still good practice.
 #undef CREATE_HEADER_DEFINITION

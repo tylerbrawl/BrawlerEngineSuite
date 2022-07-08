@@ -6,6 +6,7 @@ module;
 export module Brawler.I_WindowState;
 import Brawler.Win32.WindowMessage;
 import Brawler.Win32.CreateWindowInfo;
+import Brawler.SwapChain;
 
 export namespace Brawler
 {
@@ -31,6 +32,8 @@ export namespace Brawler
 
 		Win32::WindowMessageResult ProcessWindowMessage(const Win32::WindowMessage& msg);
 		Win32::CreateWindowInfo GetCreateWindowInfo() const;
+
+		SwapChainCreationInfo GetSwapChainCreationInfo() const;
 
 	protected:
 		AppWindow& GetAppWindow();
@@ -60,6 +63,12 @@ namespace Brawler
 	Win32::CreateWindowInfo I_WindowState<DerivedType>::GetCreateWindowInfo() const
 	{
 		return static_cast<const DerivedType*>(this)->GetCreateWindowInfo();
+	}
+
+	template <typename DerivedType>
+	SwapChainCreationInfo I_WindowState<DerivedType>::GetSwapChainCreationInfo() const
+	{
+		return static_cast<const DerivedType*>(this)->GetSwapChainCreationInfo();
 	}
 
 	template <typename DerivedType>

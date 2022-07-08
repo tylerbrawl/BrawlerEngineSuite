@@ -13,6 +13,7 @@ export namespace Brawler
 	{
 		class GPUResourceDescriptorHeap;
 		class GPUCommandManager;
+		class PresentationManager;
 		class PersistentGPUResourceManager;
 		class GPUResidencyManager;
 		class GPUDevice;
@@ -28,6 +29,7 @@ export namespace Util
 		Brawler::D3D12::GPUDevice& GetGPUDevice();
 
 		Brawler::D3D12::GPUCommandManager& GetGPUCommandManager();
+		Brawler::D3D12::PresentationManager& GetPresentationManager();
 		Brawler::D3D12::PersistentGPUResourceManager& GetPersistentGPUResourceManager();
 		Brawler::D3D12::GPUResidencyManager& GetGPUResidencyManager();
 		Brawler::D3D12::GPUVendor GetGPUVendor();
@@ -84,6 +86,7 @@ export namespace Util
 		
 		Brawler::D3D12Device& GetD3D12Device();
 		Brawler::DXGIAdapter& GetDXGIAdapter();
+		Brawler::DXGIFactory& GetDXGIFactory();
 
 		/// <summary>
 		/// Gets the ID3D12CommandAllocator instance for the calling thread. Since command allocators
