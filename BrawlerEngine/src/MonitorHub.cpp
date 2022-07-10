@@ -72,10 +72,16 @@ namespace Brawler
 	MonitorHub::MonitorHub() :
 		mMonitorArr(),
 		mHWndMap(),
-		mMsgHandler()
+		mMsgHandler(),
+		mMonitorInfoGraph()
 	{
 		RegisterBrawlerEngineWindowClass();
 		EnumerateDisplayOutputs();
+
+		mMonitorInfoGraph.UpdateCachedMonitorInformation();
+		
+		for (const auto& monitorPtr : mMonitorArr)
+			mMonitorInfoGraph.RegisterMonitor(*monitorPtr);
 	}
 
 	MonitorHub& MonitorHub::GetInstance()
@@ -311,6 +317,16 @@ namespace Brawler
 	const WindowMessageHandler& MonitorHub::GetWindowMessageHandler() const
 	{
 		return mMsgHandler;
+	}
+
+	MonitorInfoGraph& MonitorHub::GetMonitorInfoGraph()
+	{
+		return mMonitorInfoGraph;
+	}
+
+	const MonitorInfoGraph& MonitorHub::GetMonitorInfoGraph() const
+	{
+		return mMonitorInfoGraph;
 	}
 
 	Monitor& MonitorHub::GetPrimaryMonitor()

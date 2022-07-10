@@ -10,6 +10,7 @@ import Brawler.WindowDisplayMode;
 import Brawler.AppWindow;
 import Brawler.Win32.WindowMessage;
 import Brawler.WindowMessageHandler;
+import Brawler.MonitorInfoGraph;
 
 export namespace Brawler
 {
@@ -36,6 +37,9 @@ export namespace Brawler
 		WindowMessageHandler& GetWindowMessageHandler();
 		const WindowMessageHandler& GetWindowMessageHandler() const;
 
+		MonitorInfoGraph& GetMonitorInfoGraph();
+		const MonitorInfoGraph& GetMonitorInfoGraph() const;
+
 	private:
 		void EnumerateDisplayOutputs();
 
@@ -48,5 +52,6 @@ export namespace Brawler
 		std::vector<std::unique_ptr<Monitor>> mMonitorArr;
 		std::unordered_map<HWND, AppWindow*> mHWndMap;
 		WindowMessageHandler mMsgHandler;
+		MonitorInfoGraph mMonitorInfoGraph;
 	};
 }

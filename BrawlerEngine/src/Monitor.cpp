@@ -1,5 +1,8 @@
 module;
 #include <cassert>
+#include <vector>
+#include <memory>
+#include <span>
 #include <DxDef.h>
 #include <DirectXMath/DirectXMath.h>
 
@@ -11,10 +14,11 @@ namespace Brawler
 	Monitor::Monitor(Microsoft::WRL::ComPtr<Brawler::DXGIOutput>&& dxgiOutputPtr) :
 		mDXGIOutputPtr(std::move(dxgiOutputPtr)),
 		mOutputDesc(),
+		mDisplayModeArr(),
 		mAppWindowPtr()
 	{
 		assert(mDXGIOutputPtr != nullptr);
-		Util::General::CheckHRESULT(mDXGIOutputPtr->GetDesc1(&mOutputDesc));
+		UpdateMonitorInformation();
 	}
 
 	Brawler::DXGIOutput& Monitor::GetDXGIOutput() const
@@ -25,6 +29,13 @@ namespace Brawler
 	HMONITOR Monitor::GetMonitorHandle() const
 	{
 		return mOutputDesc.Monitor;
+	}
+
+	void Monitor::UpdateMonitorInformation()
+	{
+		Util::General::CheckHRESULT(mDXGIOutputPtr->GetDesc1(&mOutputDesc));
+
+		ResetDisplayModeList();
 	}
 
 	const Brawler::DXGI_OUTPUT_DESC& Monitor::GetOutputDescription() const
@@ -96,5 +107,64 @@ namespace Brawler
 	{
 		assert(HasWindow() && "ERROR: Monitor::GetAppWindow() was called for a Monitor instance which was never assigned an AppWindow instance!");
 		return *mAppWindowPtr;
+	}
+
+	std::span<const Brawler::DXGI_MODE_DESC> Monitor::GetDisplayModeSpan() const
+	{
+		return std::span<const Brawler::DXGI_MODE_DESC>{ mDisplayModeArr };
+	}
+
+	void Monitor::ResetDisplayModeList()
+	{
+		const auto getFormatDisplayModesLambda = [this]<DXGI_FORMAT BufferFormat>()
+		{
+			while (true)
+			{
+				std::vector<Brawler::DXGI_MODE_DESC> formatModeDescArr{};
+				std::uint32_t modeCount = 0;
+
+				HRESULT hr = mDXGIOutputPtr->GetDisplayModeList1(
+					BufferFormat,
+					0,
+					&modeCount,
+					nullptr
+				);
+
+				if (FAILED(hr)) [[unlikely]]
+					return formatModeDescArr;
+
+				formatModeDescArr.resize(modeCount);
+
+				hr = mDXGIOutputPtr->GetDisplayModeList1(
+					BufferFormat,
+					0,
+					&modeCount,
+					formatModeDescArr.data()
+				);
+
+				switch (hr)
+				{
+				case S_OK: [[likely]]
+					return formatModeDescArr;
+
+				case DXGI_ERROR_MORE_DATA:
+					break;
+
+				default:
+					return std::vector<Brawler::DXGI_MODE_DESC>{};
+				}
+			}
+		};
+
+		std::vector<Brawler::DXGI_MODE_DESC> sdrDisplayModeArr{ getFormatDisplayModesLambda.operator()<DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM>() };
+		std::vector<Brawler::DXGI_MODE_DESC> hdrDisplayModeArr{ getFormatDisplayModesLambda.operator()<DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT>() };
+
+		mDisplayModeArr.reserve(sdrDisplayModeArr.size() + hdrDisplayModeArr.size());
+
+		for (auto&& sdrDisplayMode : sdrDisplayModeArr)
+			mDisplayModeArr.push_back(std::move(sdrDisplayMode));
+
+		for (auto&& hdrDisplayMode : hdrDisplayModeArr)
+			mDisplayModeArr.push_back(std::move(hdrDisplayMode));
 	}
 }

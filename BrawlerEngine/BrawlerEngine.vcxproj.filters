@@ -282,6 +282,15 @@
     <ClCompile Include="src\I_WindowState.cpp">
       <Filter>Source Files\Window Management\Window States</Filter>
     </ClCompile>
+    <ClCompile Include="src\MonitorInfoGraph.ixx">
+      <Filter>Module Files\Window Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MonitorInformation.ixx">
+      <Filter>Module Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MonitorInfoGraph.cpp">
+      <Filter>Source Files\Window Management</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

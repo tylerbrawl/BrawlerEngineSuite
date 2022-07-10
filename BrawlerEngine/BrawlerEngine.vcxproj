@@ -269,6 +269,9 @@
     <ClCompile Include="src\Monitor.ixx" />
     <ClCompile Include="src\MonitorHub.cpp" />
     <ClCompile Include="src\MonitorHub.ixx" />
+    <ClCompile Include="src\MonitorInfoGraph.cpp" />
+    <ClCompile Include="src\MonitorInfoGraph.ixx" />
+    <ClCompile Include="src\MonitorInformation.ixx" />
     <ClCompile Include="src\MSVCConcepts.ixx" />
     <ClCompile Include="src\INIManager.cpp" />
     <ClCompile Include="src\INIManager.ixx" />

@@ -57,8 +57,8 @@ export namespace Brawler
 
 		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::WINDOW_RESOLUTION_WIDTH, "uWindowResolutionWidth", 1280u, "# This defines the starting width of the application's window in Windowed Mode.");
 		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::WINDOW_RESOLUTION_HEIGHT, "uWindowResolutionHeight", 720u, "# This defines the starting height of the application's window in Windowed Mode.");
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_RESOLUTION_WIDTH, "uFullscreenResolutionWidth", 1280u, "# This defines the width of the display mode used in Fullscreen Mode.");
-		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_RESOLUTION_HEIGHT, "uFullscreenResolutionHeight", 720u, "# This defines the height of the display mode used in Fullscreen Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_RESOLUTION_WIDTH, "uFullscreenResolutionWidth", 0u, "# This defines the width of the display mode used in Fullscreen Mode.");
+		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_RESOLUTION_HEIGHT, "uFullscreenResolutionHeight", 0u, "# This defines the height of the display mode used in Fullscreen Mode.");
 		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_REFRESH_RATE_NUMERATOR, "uFullscreenRefreshRateNumerator", 0u, "# This is the numerator of the refresh rate of the display mode used in Fullscreen Mode. The actual refresh rate is calculated as uFullscreenRefreshRateNumerator / uFullscreenRefreshRateDenominator.");
 		CREATE_SETTING_DEFINITION(Brawler::SettingHeader::VIDEO, Brawler::SettingID::FULLSCREEN_REFRESH_RATE_DENOMINATOR, "uFullscreenRefreshRateDenominator", 0u, "# This is the denominator of the refresh rate of the display mode used in Fullscreen Mode. The actual refresh rate is calculated as uFullscreenRefreshRateNumerator / uFullscreenRefreshRateDenominator.");
 

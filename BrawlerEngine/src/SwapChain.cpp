@@ -24,5 +24,11 @@ namespace Brawler
 		));
 
 		Util::General::CheckHRESULT(oldSwapChainPtr.As(&mSwapChainPtr));
+
+		static constexpr std::uint32_t MAXIMUM_FRAME_LATENCY = static_cast<std::uint32_t>(Util::Engine::MAX_FRAMES_IN_FLIGHT + 1);
+		Util::General::CheckHRESULT(mSwapChainPtr->SetMaximumFrameLatency(MAXIMUM_FRAME_LATENCY));
+
+		// Prevent DXGI from handling Alt+Enter fullscreen transitions.
+		Util::General::CheckHRESULT(Util::Engine::GetDXGIFactory().MakeWindowAssociation(creationInfo.HWnd, DXGI_MWA_NO_ALT_ENTER));
 	}
 }
