@@ -34,6 +34,7 @@ namespace Brawler
 	Application::Application(HINSTANCE hInstance, std::int32_t nCmdShow) :
 		mThreadPool(nullptr),
 		mHInstance(hInstance),
+		mProgramExitCode(0),
 		mInitialCmdShow(nCmdShow),
 		mCurrUpdateTick(0),
 		mRunning(true),
@@ -72,7 +73,7 @@ namespace Brawler
 		std::uint64_t startTicks = GetCurrentTickCount();
 		std::uint64_t accumulator = 0;
 
-		while (mRunning)
+		while (mRunning.load(std::memory_order::acquire))
 		{
 			const std::uint64_t frameStartTicks = GetCurrentTickCount();
 			
@@ -149,9 +150,15 @@ namespace Brawler
 		return mCurrUpdateTick;
 	}
 
-	void Application::Terminate()
+	void Application::Terminate(const std::int32_t exitCode)
 	{
-		mRunning = false;
+		mProgramExitCode.store(exitCode, std::memory_order::relaxed);
+		mRunning.store(false, std::memory_order::release);
+	}
+
+	std::int32_t Application::GetExitCode() const
+	{
+		return mProgramExitCode.load(std::memory_order::relaxed);
 	}
 
 	void Application::PreUpdate()

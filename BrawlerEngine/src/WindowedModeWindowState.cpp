@@ -1,10 +1,14 @@
 module;
+#include <cassert>
 #include <DxDef.h>
 #include <DirectXMath/DirectXMath.h>
 
 module Brawler.WindowedModeWindowState;
 import Brawler.SettingID;
 import Brawler.SettingsManager;
+import Brawler.AppWindow;
+import Brawler.Monitor;
+import Util.Engine;
 
 namespace Brawler
 {
@@ -42,6 +46,29 @@ namespace Brawler
 
 	SwapChainCreationInfo WindowedModeWindowState::GetSwapChainCreationInfo() const
 	{
+		// Get the client rectangle for the window. This will let us know how large the swap chain's
+		// buffers must be. Specifically, we want the swap chain's buffers to be as large as the
+		// window. We can apply a scaling pass afterwards if the resolution factor is not 1.0f.
+		RECT clientRect{};
+		const BOOL getClientRectResult = GetClientRect(GetAppWindow().GetWindowHandle(), &clientRect);
 
+		// I'm not sure why GetClientRect() would fail.
+		if (!getClientRectResult) [[unlikely]]
+		{
+			assert(false && "ERROR: GetClientRect() failed to retrieve the client area RECT of a window!");
+
+			clientRect.right = 0;
+			clientRect.bottom = 0;
+		}
+
+		Brawler::DXGI_SWAP_CHAIN_DESC windowedModeDesc{ GetDefaultSwapChainDescription() };
+		windowedModeDesc.Width = static_cast<std::uint32_t>(clientRect.right);
+		windowedModeDesc.Height = static_cast<std::uint32_t>(clientRect.bottom);
+
+		return SwapChainCreationInfo{
+			.HWnd = GetAppWindow().GetWindowHandle(),
+			.SwapChainDesc{ std::move(windowedModeDesc) },
+			.FullscreenDesc{}
+		};
 	}
 }

@@ -53,4 +53,5 @@ namespace Brawler
 	using DXGIOutput = IDXGIOutput6;
 	using DXGI_OUTPUT_DESC = ::DXGI_OUTPUT_DESC1;
 	using DXGI_SWAP_CHAIN_DESC = ::DXGI_SWAP_CHAIN_DESC1;
+	using DXGI_MODE_DESC = ::DXGI_MODE_DESC1;
 }

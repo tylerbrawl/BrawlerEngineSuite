@@ -5,6 +5,7 @@ module;
 export module Brawler.Monitor;
 import Brawler.AppWindow;
 import Brawler.WindowDisplayMode;
+import Brawler.Math.MathTypes;
 
 export namespace Brawler
 {
@@ -32,6 +33,9 @@ export namespace Brawler
 		void SpawnWindowForMonitor();
 
 	private:
+		void InitializeLinearRGBToXYZMatrix();
+
+	private:
 		Microsoft::WRL::ComPtr<Brawler::DXGIOutput> mDXGIOutputPtr;
 		Brawler::DXGI_OUTPUT_DESC mOutputDesc;
 
@@ -40,5 +44,7 @@ export namespace Brawler
 		/// why we do not store a std::vector of AppWindow instances.
 		/// </summary>
 		std::unique_ptr<AppWindow> mAppWindowPtr;
+
+		Math::Float3x3 mLinearRGBToXYZMatrix;
 	};
 }

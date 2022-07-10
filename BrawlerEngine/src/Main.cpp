@@ -16,6 +16,8 @@ int WINAPI wWinMain(
 
 		Brawler::Application app{ hInstance, nCmdShow };
 		app.Run();
+
+		return app.GetExitCode();
 	}
 	catch (const std::exception& e)
 	{
@@ -24,6 +26,4 @@ int WINAPI wWinMain(
 
 		return 1;
 	}
-
-	return 0;
 }

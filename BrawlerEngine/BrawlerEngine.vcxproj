@@ -298,6 +298,8 @@
     <ClCompile Include="src\WindowedModeWindowState.cpp" />
     <ClCompile Include="src\WindowedModeWindowState.ixx" />
     <ClCompile Include="src\WindowMessage.ixx" />
+    <ClCompile Include="src\WindowMessageHandler.cpp" />
+    <ClCompile Include="src\WindowMessageHandler.ixx" />
     <ClCompile Include="src\WindowStateID.ixx" />
     <ClCompile Include="src\WindowStateTraits.ixx" />
     <ClCompile Include="src\CreateWindowInfo.ixx" />

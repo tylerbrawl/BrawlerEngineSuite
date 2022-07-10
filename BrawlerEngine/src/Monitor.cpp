@@ -1,6 +1,7 @@
 module;
 #include <cassert>
 #include <DxDef.h>
+#include <DirectXMath/DirectXMath.h>
 
 module Brawler.Monitor;
 import Util.General;
@@ -9,10 +10,14 @@ namespace Brawler
 {
 	Monitor::Monitor(Microsoft::WRL::ComPtr<Brawler::DXGIOutput>&& dxgiOutputPtr) :
 		mDXGIOutputPtr(std::move(dxgiOutputPtr)),
-		mOutputDesc()
+		mOutputDesc(),
+		mAppWindowPtr(),
+		mLinearRGBToXYZMatrix()
 	{
 		assert(mDXGIOutputPtr != nullptr);
 		Util::General::CheckHRESULT(mDXGIOutputPtr->GetDesc1(&mOutputDesc));
+
+		InitializeLinearRGBToXYZMatrix();
 	}
 
 	Brawler::DXGIOutput& Monitor::GetDXGIOutput() const
@@ -77,5 +82,10 @@ namespace Brawler
 	{
 		assert(mAppWindowPtr != nullptr);
 		mAppWindowPtr->SpawnWindow();
+	}
+
+	void Monitor::InitializeLinearRGBToXYZMatrix()
+	{
+
 	}
 }

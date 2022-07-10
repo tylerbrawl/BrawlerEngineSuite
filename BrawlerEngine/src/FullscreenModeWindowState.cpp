@@ -7,6 +7,7 @@ import Brawler.AppWindow;
 import Brawler.Monitor;
 import Brawler.SettingID;
 import Brawler.SettingsManager;
+import Util.General;
 
 namespace Brawler
 {
@@ -31,9 +32,11 @@ namespace Brawler
 			currMonitorDesc.DesktopCoordinates.top
 		};
 
+		const Brawler::DXGI_MODE_DESC bestFullscreenMode{ GetBestFullscreenMode() };
+
 		DirectX::XMUINT2 windowSize{
-			static_cast<std::uint32_t>(currMonitorDesc.DesktopCoordinates.right - currMonitorDesc.DesktopCoordinates.left),
-			static_cast<std::uint32_t>(currMonitorDesc.DesktopCoordinates.bottom - currMonitorDesc.DesktopCoordinates.top)
+			bestFullscreenMode.Width,
+			bestFullscreenMode.Height
 		};
 
 		return Win32::CreateWindowInfo{
@@ -42,5 +45,68 @@ namespace Brawler
 			.WindowStartCoordinates{ std::move(windowStartCoordinates) },
 			.WindowSize{ std::move(windowSize) }
 		};
+	}
+
+	SwapChainCreationInfo FullscreenModeWindowState::GetSwapChainCreationInfo() const
+	{
+		const Brawler::DXGI_OUTPUT_DESC& currMonitorDesc{ GetAppWindow().GetOwningMonitor().GetOutputDescription() };
+		const Brawler::DXGI_MODE_DESC bestFullscreenMode{ GetBestFullscreenMode() };
+
+		Brawler::DXGI_SWAP_CHAIN_DESC swapChainDesc{ GetDefaultSwapChainDescription() };
+		swapChainDesc.Width = bestFullscreenMode.Width;
+		swapChainDesc.Height = bestFullscreenMode.Height;
+
+		DXGI_SWAP_CHAIN_FULLSCREEN_DESC swapChainFullscreenDesc{
+			.RefreshRate{ bestFullscreenMode.RefreshRate },
+			.ScanlineOrdering = bestFullscreenMode.ScanlineOrdering,
+			.Scaling = bestFullscreenMode.Scaling,
+			.Windowed = FALSE
+		};
+
+		return SwapChainCreationInfo{
+			.HWnd = GetAppWindow().GetWindowHandle(),
+			.SwapChainDesc{ std::move(swapChainDesc) },
+			.FullscreenDesc{ std::move(swapChainFullscreenDesc) }
+		};
+	}
+
+	Brawler::DXGI_MODE_DESC FullscreenModeWindowState::GetBestFullscreenMode() const
+	{
+		Brawler::DXGI_MODE_DESC desiredModeDesc{
+			.Width = Brawler::SettingsManager::GetInstance().GetOption<SettingID::FULLSCREEN_RESOLUTION_WIDTH>(),
+			.Height = Brawler::SettingsManager::GetInstance().GetOption<SettingID::FULLSCREEN_RESOLUTION_HEIGHT>(),
+			.RefreshRate{
+				.Numerator = Brawler::SettingsManager::GetInstance().GetOption<SettingID::FULLSCREEN_REFRESH_RATE_NUMERATOR>(),
+				.Denominator = Brawler::SettingsManager::GetInstance().GetOption<SettingID::FULLSCREEN_REFRESH_RATE_DENOMINATOR>()
+			},
+			.Format = GetAppWindow().GetOwningMonitor().GetPreferredSwapChainFormat(),
+			.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER::DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
+			.Scaling = DXGI_MODE_SCALING::DXGI_MODE_SCALING_UNSPECIFIED,
+			.Stereo = FALSE
+		};
+
+		// Verify the sanity of the values which we took from the configuration file.
+		{
+			if (desiredModeDesc.Width == 0 || desiredModeDesc.Height == 0) [[unlikely]]
+			{
+				desiredModeDesc.Width = 0;
+				desiredModeDesc.Height = 0;
+			}
+
+			if (desiredModeDesc.RefreshRate.Numerator == 0 || desiredModeDesc.RefreshRate.Denominator == 0) [[unlikely]]
+			{
+				desiredModeDesc.RefreshRate.Numerator = 0;
+				desiredModeDesc.RefreshRate.Denominator = 0;
+			}
+		}
+		
+		Brawler::DXGI_MODE_DESC bestModeDesc{};
+		Util::General::CheckHRESULT(GetAppWindow().GetOwningMonitor().GetDXGIOutput().FindClosestMatchingMode1(
+			&desiredModeDesc,
+			&bestModeDesc,
+			&(Util::Engine::GetD3D12Device())
+		));
+
+		return bestModeDesc;
 	}
 }

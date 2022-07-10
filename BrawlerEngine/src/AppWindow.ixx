@@ -10,6 +10,7 @@ import Brawler.WindowDisplayMode;
 import Brawler.PolymorphicAdapter;
 import Brawler.I_WindowState;
 export import Brawler.WindowStateTraits;
+import Brawler.SwapChain;
 
 namespace Brawler
 {
@@ -49,6 +50,7 @@ export namespace Brawler
 		Win32::WindowMessageResult ProcessWindowMessage(const Win32::WindowMessage& msg);
 
 		void SpawnWindow();
+		void ShowWindow(const bool useInitialCmdShow);
 
 		HWND GetWindowHandle() const;
 
@@ -58,8 +60,9 @@ export namespace Brawler
 		void SetDisplayMode(const Brawler::WindowDisplayMode displayMode);
 
 	private:
-		SafeWindow mHWnd;
 		PolymorphicAdapter<I_WindowState> mWndStateAdapter;
 		const Monitor* mOwningMonitorPtr;
+		SwapChain mSwapChain;
+		SafeWindow mHWnd;
 	};
 }

@@ -14,8 +14,10 @@ import Brawler.Application;
 namespace Brawler
 {
 	AppWindow::AppWindow(const Brawler::WindowDisplayMode displayMode) :
-		mHWnd(nullptr),
-		mWndStateAdapter()
+		mWndStateAdapter(),
+		mOwningMonitorPtr(nullptr),
+		mSwapChain(),
+		mHWnd(nullptr)
 	{
 		SetDisplayMode(displayMode);
 	}
@@ -54,7 +56,24 @@ namespace Brawler
 		if (mHWnd.get() == nullptr) [[unlikely]]
 			throw std::runtime_error{ "ERROR: An attempt to create a window for the application failed!" };
 
+		// Create the swap chain for the current mode.
+		const SwapChainCreationInfo swapChainInfo{ mWndStateAdapter.AccessData([]<typename WindowState>(const WindowState& wndState)
+		{
+			return wndState.GetSwapChainCreationInfo();
+		}) };
 
+		mSwapChain.CreateSwapChain(swapChainInfo);
+	}
+
+	void AppWindow::ShowWindow(const bool useInitialCmdShow)
+	{
+		const std::int32_t nCmdShow = (useInitialCmdShow ? Brawler::GetApplication().GetInitialCmdShow() : SW_SHOW);
+		::ShowWindow(mHWnd.get(), nCmdShow);
+
+		if (IsWindowVisible(mHWnd.get())) [[likely]]
+		{
+
+		}
 	}
 
 	HWND AppWindow::GetWindowHandle() const

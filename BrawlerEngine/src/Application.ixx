@@ -1,5 +1,6 @@
 module;
 #include <memory>
+#include <atomic>
 #include "DxDef.h"
 
 export module Brawler.Application;
@@ -37,7 +38,9 @@ export namespace Brawler
 
 		std::uint64_t GetCurrentUpdateTick() const;
 
-		void Terminate();
+		void Terminate(const std::int32_t exitCode = 0);
+
+		std::int32_t GetExitCode() const;
 
 	private:
 		void PreUpdate();
@@ -51,9 +54,10 @@ export namespace Brawler
 	private:
 		std::unique_ptr<WorkerThreadPool> mThreadPool;
 		HINSTANCE mHInstance;
+		std::atomic<std::int32_t> mProgramExitCode;
 		const std::int32_t mInitialCmdShow;
 		std::uint64_t mCurrUpdateTick;
-		bool mRunning;
+		std::atomic<bool> mRunning;
 		D3D12::Renderer mRenderer;
 		ApplicationStateStack mStateStack;
 	};

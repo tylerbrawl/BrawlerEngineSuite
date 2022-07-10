@@ -273,6 +273,12 @@
     <ClCompile Include="src\MathTypes.ixx">
       <Filter>Module Files\Math</Filter>
     </ClCompile>
+    <ClCompile Include="src\WindowMessageHandler.ixx">
+      <Filter>Module Files\Window Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WindowMessageHandler.cpp">
+      <Filter>Source Files\Window Management</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
