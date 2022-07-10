@@ -10,14 +10,15 @@ import Brawler.FullscreenModeWindowState;
 import Brawler.Win32.CreateWindowInfo;
 import Brawler.Manifest;
 import Brawler.Application;
+import Brawler.MonitorHub;
 
 namespace Brawler
 {
 	AppWindow::AppWindow(const Brawler::WindowDisplayMode displayMode) :
-		mWndStateAdapter(),
 		mOwningMonitorPtr(nullptr),
 		mSwapChain(),
-		mHWnd(nullptr)
+		mHWnd(nullptr), 
+		mWndStateAdapter()
 	{
 		SetDisplayMode(displayMode);
 	}
@@ -33,25 +34,12 @@ namespace Brawler
 	void AppWindow::SpawnWindow()
 	{
 		// Get the parameters needed to create the window based on its current state.
-		const Win32::CreateWindowInfo windowCreationInfo{ mWndStateAdapter.AccessData([]<typename WindowState>(const WindowState& wndState)
+		Win32::CreateWindowInfo windowCreationInfo{ mWndStateAdapter.AccessData([]<typename WindowState>(const WindowState& wndState)
 		{
 			return wndState.GetCreateWindowInfo();
 		}) };
 
-		mHWnd.reset(CreateWindowEx(
-			windowCreationInfo.WindowStyleEx,
-			Brawler::Manifest::WINDOW_CLASS_NAME_STR.C_Str(),
-			Brawler::Manifest::APPLICATION_NAME.C_Str(),
-			windowCreationInfo.WindowStyle,
-			windowCreationInfo.WindowStartCoordinates.x,
-			windowCreationInfo.WindowStartCoordinates.y,
-			static_cast<std::int32_t>(windowCreationInfo.WindowSize.x),
-			static_cast<std::int32_t>(windowCreationInfo.WindowSize.y),
-			nullptr,
-			nullptr,
-			Brawler::GetApplication().GetInstanceHandle(),
-			nullptr
-		));
+		mHWnd.reset(Brawler::MonitorHub::GetInstance().GetWindowMessageHandler().RequestWindowCreation(std::move(windowCreationInfo)));
 
 		if (mHWnd.get() == nullptr) [[unlikely]]
 			throw std::runtime_error{ "ERROR: An attempt to create a window for the application failed!" };
@@ -72,7 +60,10 @@ namespace Brawler
 
 		if (IsWindowVisible(mHWnd.get())) [[likely]]
 		{
-
+			mWndStateAdapter.AccessData([]<typename WindowState>(WindowState& wndState)
+			{
+				wndState.OnShowWindow();
+			});
 		}
 	}
 

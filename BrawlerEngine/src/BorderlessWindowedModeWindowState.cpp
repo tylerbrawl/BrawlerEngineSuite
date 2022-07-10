@@ -13,7 +13,8 @@ import Brawler.NZStringView;
 namespace Brawler
 {
 	BorderlessWindowedModeWindowState::BorderlessWindowedModeWindowState(AppWindow& owningWnd) :
-		I_WindowState<BorderlessWindowedModeWindowState>(owningWnd)
+		I_WindowState<BorderlessWindowedModeWindowState>(owningWnd),
+		mHMonitorTaskbarWnd(nullptr)
 	{}
 
 	BorderlessWindowedModeWindowState::~BorderlessWindowedModeWindowState()
@@ -53,6 +54,14 @@ namespace Brawler
 	{
 		// In borderless windowed mode, hide the taskbar. There doesn't seem to be any documented method
 		// for doing this without ugly hacks.
+		if (mHMonitorTaskbarWnd == nullptr) [[likely]]
+		{
+			const std::optional<HWND> hTaskbarWnd{ GetTaskbarWindowForCurrentMonitor() };
+
+			if (hTaskbarWnd.has_value()) [[likely]]
+				mHMonitorTaskbarWnd = *hTaskbarWnd;
+		}
+
 		HideTaskbar();
 	}
 
@@ -156,17 +165,13 @@ namespace Brawler
 
 	void BorderlessWindowedModeWindowState::ShowTaskbar() const
 	{
-		const std::optional<HWND> hTaskbarWnd{ GetTaskbarWindowForCurrentMonitor() };
-
-		if (hTaskbarWnd.has_value()) [[likely]]
-			ShowWindowAsync(*hTaskbarWnd, SW_SHOW);
+		if (mHMonitorTaskbarWnd != nullptr) [[likely]]
+			ShowWindowAsync(mHMonitorTaskbarWnd, SW_SHOW);
 	}
 
 	void BorderlessWindowedModeWindowState::HideTaskbar() const
 	{
-		const std::optional<HWND> hTaskbarWnd{ GetTaskbarWindowForCurrentMonitor() };
-
-		if (hTaskbarWnd.has_value()) [[likely]]
-			ShowWindowAsync(*hTaskbarWnd, SW_HIDE);
+		if (mHMonitorTaskbarWnd != nullptr) [[likely]]
+			ShowWindowAsync(mHMonitorTaskbarWnd, SW_HIDE);
 	}
 }

@@ -71,4 +71,7 @@ namespace Brawler
 			.FullscreenDesc{}
 		};
 	}
+
+	void WindowedModeWindowState::OnShowWindow()
+	{}
 }

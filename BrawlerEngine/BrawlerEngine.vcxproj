@@ -183,9 +183,7 @@
       <AdditionalLibraryDirectories>D:\repos\BrawlerEngine\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>dxgi.lib;D3D12.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest>
+    <Manifest />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -208,9 +206,7 @@
       <AdditionalLibraryDirectories>D:\repos\BrawlerEngine\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>dxgi.lib;D3D12.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest>
+    <Manifest />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">
     <ClCompile>
@@ -233,9 +229,7 @@
       <AdditionalLibraryDirectories>D:\repos\BrawlerEngine\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>dxgi.lib;D3D12.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
-    </Manifest>
+    <Manifest />
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Application.cpp" />
@@ -267,6 +261,7 @@
     <ClCompile Include="src\I_ViewComponent.cpp" />
     <ClCompile Include="src\I_ViewComponent.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequest.ixx" />
+    <ClCompile Include="src\I_WindowState.cpp" />
     <ClCompile Include="src\I_WindowState.ixx" />
     <ClCompile Include="src\MathTypes.ixx" />
     <ClCompile Include="src\Matrix.ixx" />

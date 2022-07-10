@@ -32,8 +32,10 @@ export namespace Brawler
 
 		void SpawnWindowForMonitor();
 
-	private:
-		void InitializeLinearRGBToXYZMatrix();
+		bool HasWindow() const;
+
+		AppWindow& GetAppWindow();
+		const AppWindow& GetAppWindow() const;
 
 	private:
 		Microsoft::WRL::ComPtr<Brawler::DXGIOutput> mDXGIOutputPtr;
@@ -44,7 +46,5 @@ export namespace Brawler
 		/// why we do not store a std::vector of AppWindow instances.
 		/// </summary>
 		std::unique_ptr<AppWindow> mAppWindowPtr;
-
-		Math::Float3x3 mLinearRGBToXYZMatrix;
 	};
 }

@@ -91,15 +91,11 @@ namespace Brawler
 		// then, we need to issue a stop request ourselves before sending a custom window message
 		// which will get the thread to exit.
 
-		// We wait to call std::jthread::request_stop() until after we get the thread ID, just to
-		// be safe.
-		mWindowHandlerThread.request_stop();
-
 		BOOL postThreadMessageResult = FALSE;
 		do
 		{
 			postThreadMessageResult = PostThreadMessage(
-				windowHandlerThreadID,
+				mWindowHandlerThreadID,
 				std::to_underlying(CustomWindowMessage::WM_SHUTDOWN),
 				0,
 				0
@@ -200,10 +196,10 @@ namespace Brawler
 
 	void WindowMessageHandler::RunMessageLoop()
 	{
-		const std::stop_token stopToken{ mWindowHandlerThread.get_stop_token() };
+		bool keepGoing = true;
 		MSG currMsg{};
 
-		while (!stopToken.stop_requested())
+		while (keepGoing)
 		{
 			// We want mWindowHandlerThread to do as little work as possible to ensure that we
 			// don't reduce the amount of CPU time dedicated to both the main thread and the
@@ -248,8 +244,8 @@ namespace Brawler
 
 			case WM_QUIT:
 			{
-				mWindowHandlerThread.request_stop();
-				Brawler::GetApplication().Terminate(currMsg.wParam);
+				keepGoing = false;
+				Brawler::GetApplication().Terminate(static_cast<std::int32_t>(currMsg.wParam));
 
 				break;
 			}
@@ -257,11 +253,14 @@ namespace Brawler
 			default: [[likely]]
 			{
 				TranslateMessage(&currMsg);
+				DispatchMessage(&currMsg);
 				
+				/*
 				// Push the window message to the dispatched message queue. Other threads will
 				// then be able to process the window messages concurrently.
 				while (!mPendingMessageQueue.PushBack(std::move(currMsg)))
 					std::this_thread::yield();
+				*/
 
 				break;
 			}

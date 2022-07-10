@@ -81,7 +81,7 @@ namespace Brawler
 					std::scoped_lock<std::mutex> lock{ mSinkInfo.CritSection };
 
 					mSinkInfo.SubmissionInfoQueue.push(std::move(submissionInfo));
-					assert(mSinkInfo.FenceCollectionQueue.size() <= mCmdContextSinkArr.size());
+					assert(mSinkInfo.SubmissionInfoQueue.size() <= mCmdContextSinkArr.size());
 
 					shouldSubmitGPUJobs = !(mSinkInfo.IsThreadHandlingSinks);
 					mSinkInfo.IsThreadHandlingSinks = true;

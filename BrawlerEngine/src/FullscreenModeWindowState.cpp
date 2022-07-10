@@ -8,6 +8,7 @@ import Brawler.Monitor;
 import Brawler.SettingID;
 import Brawler.SettingsManager;
 import Util.General;
+import Util.Engine;
 
 namespace Brawler
 {
@@ -70,6 +71,9 @@ namespace Brawler
 		};
 	}
 
+	void FullscreenModeWindowState::OnShowWindow()
+	{}
+
 	Brawler::DXGI_MODE_DESC FullscreenModeWindowState::GetBestFullscreenMode() const
 	{
 		Brawler::DXGI_MODE_DESC desiredModeDesc{
@@ -104,7 +108,7 @@ namespace Brawler
 		Util::General::CheckHRESULT(GetAppWindow().GetOwningMonitor().GetDXGIOutput().FindClosestMatchingMode1(
 			&desiredModeDesc,
 			&bestModeDesc,
-			&(Util::Engine::GetD3D12Device())
+			&(Util::Engine::GetDXGIDevice())
 		));
 
 		return bestModeDesc;

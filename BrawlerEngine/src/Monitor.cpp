@@ -11,13 +11,10 @@ namespace Brawler
 	Monitor::Monitor(Microsoft::WRL::ComPtr<Brawler::DXGIOutput>&& dxgiOutputPtr) :
 		mDXGIOutputPtr(std::move(dxgiOutputPtr)),
 		mOutputDesc(),
-		mAppWindowPtr(),
-		mLinearRGBToXYZMatrix()
+		mAppWindowPtr()
 	{
 		assert(mDXGIOutputPtr != nullptr);
 		Util::General::CheckHRESULT(mDXGIOutputPtr->GetDesc1(&mOutputDesc));
-
-		InitializeLinearRGBToXYZMatrix();
 	}
 
 	Brawler::DXGIOutput& Monitor::GetDXGIOutput() const
@@ -84,8 +81,20 @@ namespace Brawler
 		mAppWindowPtr->SpawnWindow();
 	}
 
-	void Monitor::InitializeLinearRGBToXYZMatrix()
+	bool Monitor::HasWindow() const
 	{
+		return (mAppWindowPtr != nullptr);
+	}
 
+	AppWindow& Monitor::GetAppWindow()
+	{
+		assert(HasWindow() && "ERROR: Monitor::GetAppWindow() was called for a Monitor instance which was never assigned an AppWindow instance!");
+		return *mAppWindowPtr;
+	}
+
+	const AppWindow& Monitor::GetAppWindow() const
+	{
+		assert(HasWindow() && "ERROR: Monitor::GetAppWindow() was called for a Monitor instance which was never assigned an AppWindow instance!");
+		return *mAppWindowPtr;
 	}
 }

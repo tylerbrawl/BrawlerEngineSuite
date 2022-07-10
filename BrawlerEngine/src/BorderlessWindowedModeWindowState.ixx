@@ -39,11 +39,6 @@ export namespace Brawler
 		/// it is unlikely to fail in any versions of Windows we know of any time soon, we'll
 		/// need to keep up with changes in future versions of the OS. If the function fails
 		/// to find the taskbar HWND, then the returned std::optional instance is empty.
-		/// 
-		/// NOTE: The taskbar HWND is not cached because the user is allowed to change its
-		/// position to one of four pre-defined locations at any time through the Windows
-		/// Settings, and we currently have no known way of detecting this. As future work, we
-		/// can investigate the WM_SETTINGCHANGE window message.
 		/// </summary>
 		/// <returns>
 		/// If the HWND representing the Windows Taskbar for the monitor on which the AppWindow
@@ -57,5 +52,8 @@ export namespace Brawler
 
 		void ShowTaskbar() const;
 		void HideTaskbar() const;
+
+	private:
+		HWND mHMonitorTaskbarWnd;
 	};
 }

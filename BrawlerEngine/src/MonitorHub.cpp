@@ -71,12 +71,11 @@ namespace Brawler
 {
 	MonitorHub::MonitorHub() :
 		mMonitorArr(),
-		mHWndMap()
+		mHWndMap(),
+		mMsgHandler()
 	{
 		RegisterBrawlerEngineWindowClass();
 		EnumerateDisplayOutputs();
-
-		ResetApplicationWindows();
 	}
 
 	MonitorHub& MonitorHub::GetInstance()
@@ -87,8 +86,8 @@ namespace Brawler
 
 	Win32::WindowMessageResult MonitorHub::ProcessWindowMessage(const HWND hWnd, const Win32::WindowMessage& msg)
 	{
-		assert(mHWndMap.contains(hWnd) && "ERROR: MonitorHub::ProcessWindowMessage() was called with an HWND which the MonitorHub instance never registered!");
-		assert(mHWndMap.at(hWnd) != nullptr);
+		if (!mHWndMap.contains(hWnd)) [[unlikely]]
+			return Win32::UnhandledMessageResult();
 
 		return mHWndMap.at(hWnd)->ProcessWindowMessage(msg);
 	}
@@ -162,7 +161,14 @@ namespace Brawler
 		// Delete the HWND map.
 		mHWndMap.clear();
 
-		const WindowDisplayMode displayMode{ Brawler::SettingsManager::GetInstance().GetOption<SettingID::WINDOW_DISPLAY_MODE>() };
+		WindowDisplayMode displayMode{ Brawler::SettingsManager::GetInstance().GetOption<SettingID::WINDOW_DISPLAY_MODE>() };
+
+		// Verify the value taken from the configuration options.
+		if (std::to_underlying(displayMode) < 0 || std::to_underlying(displayMode) >= std::to_underlying(WindowDisplayMode::COUNT_OR_ERROR)) [[unlikely]]
+		{
+			Brawler::SettingsManager::GetInstance().SetOption<SettingID::WINDOW_DISPLAY_MODE>(WindowDisplayMode::WINDOWED);
+			displayMode = WindowDisplayMode::WINDOWED;
+		}
 
 		switch (displayMode)
 		{
@@ -288,6 +294,23 @@ namespace Brawler
 			break;
 		}
 		}
+
+		// Show all of the created windows.
+		for (const auto& monitorPtr : mMonitorArr)
+		{
+			if (monitorPtr->HasWindow()) [[likely]]
+				monitorPtr->GetAppWindow().ShowWindow(true);
+		}
+	}
+
+	WindowMessageHandler& MonitorHub::GetWindowMessageHandler()
+	{
+		return mMsgHandler;
+	}
+
+	const WindowMessageHandler& MonitorHub::GetWindowMessageHandler() const
+	{
+		return mMsgHandler;
 	}
 
 	Monitor& MonitorHub::GetPrimaryMonitor()

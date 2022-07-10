@@ -19,10 +19,7 @@ namespace Brawler
 		void operator()(const HWND hWnd) const
 		{
 			if (hWnd != nullptr) [[likely]]
-			{
-				const BOOL destroyWindowResult = DestroyWindow(hWnd);
-				assert(destroyWindowResult && "ERROR: DestroyWindow() failed to destroy a Win32 window!");
-			}
+				DestroyWindow(hWnd);
 		}
 	};
 
@@ -60,9 +57,12 @@ export namespace Brawler
 		void SetDisplayMode(const Brawler::WindowDisplayMode displayMode);
 
 	private:
-		PolymorphicAdapter<I_WindowState> mWndStateAdapter;
 		const Monitor* mOwningMonitorPtr;
 		SwapChain mSwapChain;
 		SafeWindow mHWnd;
+
+		// The PolymorphicAdapter for the window state should always be created last and
+		// destroyed first.
+		PolymorphicAdapter<I_WindowState> mWndStateAdapter;
 	};
 }

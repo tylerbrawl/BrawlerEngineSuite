@@ -25,6 +25,8 @@ export namespace Brawler
 
 		SwapChainCreationInfo GetSwapChainCreationInfo() const;
 
+		void OnShowWindow();
+
 	private:
 		/// <summary>
 		/// Retrieves the best possible Brawler::DXGI_MODE_DESC for the Monitor associated with

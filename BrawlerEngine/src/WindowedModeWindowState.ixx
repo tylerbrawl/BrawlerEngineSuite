@@ -23,5 +23,7 @@ export namespace Brawler
 		Win32::CreateWindowInfo GetCreateWindowInfo() const;
 
 		SwapChainCreationInfo GetSwapChainCreationInfo() const;
+
+		void OnShowWindow();
 	};
 }

@@ -5,6 +5,7 @@ module;
 module Brawler.Application;
 import Brawler.SettingsManager;
 import Brawler.SettingID;
+import Brawler.MonitorHub;
 
 namespace
 {
@@ -58,6 +59,8 @@ namespace Brawler
 		mThreadPool->SetInitialized();
 
 		mRenderer.Initialize();
+
+		MonitorHub::GetInstance().ResetApplicationWindows();
 	}
 
 	void Application::Run()

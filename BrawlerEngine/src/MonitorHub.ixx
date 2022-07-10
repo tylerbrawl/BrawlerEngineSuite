@@ -9,6 +9,7 @@ import Brawler.Monitor;
 import Brawler.WindowDisplayMode;
 import Brawler.AppWindow;
 import Brawler.Win32.WindowMessage;
+import Brawler.WindowMessageHandler;
 
 export namespace Brawler
 {
@@ -32,6 +33,9 @@ export namespace Brawler
 
 		void ResetApplicationWindows();
 
+		WindowMessageHandler& GetWindowMessageHandler();
+		const WindowMessageHandler& GetWindowMessageHandler() const;
+
 	private:
 		void EnumerateDisplayOutputs();
 
@@ -43,5 +47,6 @@ export namespace Brawler
 	private:
 		std::vector<std::unique_ptr<Monitor>> mMonitorArr;
 		std::unordered_map<HWND, AppWindow*> mHWndMap;
+		WindowMessageHandler mMsgHandler;
 	};
 }
