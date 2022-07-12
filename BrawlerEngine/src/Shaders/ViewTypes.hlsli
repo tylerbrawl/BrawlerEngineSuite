@@ -12,6 +12,6 @@ namespace BrawlerHLSL
 	struct ViewDimensionsData
 	{
 		float2 ViewDimensions;
-		float2 __Pad0;
+		float2 InverseViewDimensions;
 	};
 }

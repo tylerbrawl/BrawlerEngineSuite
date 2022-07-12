@@ -10,7 +10,7 @@ namespace BrawlerHLSL
 		uint BiasedTriangleCount : 7;
 
 		float3 CurrentFrameAABBMax;
-		uint __Pad0;
+		uint StartingIndexBufferIndex;
 	};
 	
 	struct UnpackedTriangleCluster
@@ -19,6 +19,7 @@ namespace BrawlerHLSL
 		uint MaterialDefinitionIndex;
 		float3 CurrentFrameAABBMax;
 		uint TriangleCount;
+		uint StartingIndexBufferIndex;
 	};
 	
 	PackedTriangleCluster PackTriangleCluster(in const UnpackedTriangleCluster unpackedCluster)
@@ -34,6 +35,7 @@ namespace BrawlerHLSL
 		packedCluster.BiasedTriangleCount = (unpackedCluster.TriangleCount - 1);
 
 		packedCluster.CurrentFrameAABBMax = unpackedCluster.CurrentFrameAABBMax;
+		packedCluster.StartingIndexBufferIndex = unpackedCluster.StartingIndexBufferIndex;
 		
 		return packedCluster;
 	}
@@ -45,6 +47,7 @@ namespace BrawlerHLSL
 		unpackedCluster.MaterialDefinitionIndex = packedCluster.MaterialDefinitionIndex;
 		unpackedCluster.CurrentFrameAABBMax = packedCluster.CurrentFrameAABBMax;
 		unpackedCluster.TriangleCount = (packedCluster.BiasedTriangleCount + 1);
+		unpackedCluster.StartingIndexBufferIndex = packedCluster.StartingIndexBufferIndex;
 		
 		return unpackedCluster;
 	}

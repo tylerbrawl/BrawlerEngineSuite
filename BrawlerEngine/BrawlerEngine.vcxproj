@@ -291,7 +291,7 @@
     <ClCompile Include="src\SettingsManager.cpp" />
     <ClCompile Include="src\SettingsManager.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequestBundle.ixx" />
-    <ClCompile Include="src\Shaders\ModelInstanceListPrepare.hlsl" />
+    <ClCompile Include="src\Shaders\TriangleClusterFrustumCull.hlsl" />
     <ClCompile Include="src\SwapChain.cpp" />
     <ClCompile Include="src\SwapChain.ixx" />
     <ClCompile Include="src\Vector.ixx" />
@@ -335,9 +335,6 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="BrawlerEngine.manifest" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="src\Shaders\TriangleClusterFrustumCull.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

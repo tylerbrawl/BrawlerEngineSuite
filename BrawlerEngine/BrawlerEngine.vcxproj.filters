@@ -318,7 +318,7 @@
     <ClCompile Include="src\ModelLoadEventHandle.ixx">
       <Filter>Module Files\Streaming Systems\Model Streaming</Filter>
     </ClCompile>
-    <ClCompile Include="src\Shaders\ModelInstanceListPrepare.hlsl">
+    <ClCompile Include="src\Shaders\TriangleClusterFrustumCull.hlsl">
       <Filter>Shader Files\Culling</Filter>
     </ClCompile>
   </ItemGroup>
@@ -366,10 +366,5 @@
     <Manifest Include="BrawlerEngine.manifest">
       <Filter>Resource Files</Filter>
     </Manifest>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="src\Shaders\TriangleClusterFrustumCull.hlsl">
-      <Filter>Shader Files\Culling</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>

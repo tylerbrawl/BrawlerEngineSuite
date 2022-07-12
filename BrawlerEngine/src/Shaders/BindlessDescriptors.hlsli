@@ -19,7 +19,6 @@ namespace IMPL
 	StructuredBuffer<BrawlerHLSL::ViewTransformData> Bindless_GlobalViewTransformDataBuffer[] : register(t0, space5);
 	StructuredBuffer<BrawlerHLSL::ViewDimensionsData> Bindless_GlobalViewDimensionsDataBuffer[] : register(t0, space6);
 	StructuredBuffer<BrawlerHLSL::PackedTriangleCluster> Bindless_GlobalTriangleClusterBuffer[] : register(t0, space7);
-	StructuredBuffer<BrawlerHLSL::GPUSceneState> Bindless_GlobalGPUSceneStateBuffer[] : register(t0, space8);
 }
 
 namespace BrawlerHLSL
@@ -80,14 +79,6 @@ namespace BrawlerHLSL
 			StructuredBuffer<BrawlerHLSL::PackedTriangleCluster> triangleClusterBuffer = IMPL::Bindless_GlobalTriangleClusterBuffer[BINDLESS_GLOBAL_TRIANGLE_CLUSTER_BUFFER_INDEX];
 
 			return triangleClusterBuffer[NonUniformResourceIndex(clusterID)];
-		}
-
-		BrawlerHLSL::GPUSceneState GetGlobalGPUSceneState()
-		{
-			static const uint BINDLESS_GLOBAL_GPU_SCENE_STATE_BUFFER_INDEX = 7;
-			StructuredBuffer<BrawlerHLSL::GPUSceneState> sceneStateBuffer = IMPL::Bindless_GlobalGPUSceneStateBuffer[BINDLESS_GLOBAL_GPU_SCENE_STATE_BUFFER_INDEX];
-
-			return sceneStateBuffer[0];
 		}
 	}
 }
