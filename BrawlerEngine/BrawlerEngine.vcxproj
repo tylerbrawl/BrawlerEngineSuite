@@ -265,6 +265,8 @@
     <ClCompile Include="src\I_WindowState.ixx" />
     <ClCompile Include="src\MathTypes.ixx" />
     <ClCompile Include="src\Matrix.ixx" />
+    <ClCompile Include="src\ModelLoader.ixx" />
+    <ClCompile Include="src\ModelLoadEventHandle.ixx" />
     <ClCompile Include="src\Monitor.cpp" />
     <ClCompile Include="src\Monitor.ixx" />
     <ClCompile Include="src\MonitorHub.cpp" />
@@ -289,6 +291,7 @@
     <ClCompile Include="src\SettingsManager.cpp" />
     <ClCompile Include="src\SettingsManager.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequestBundle.ixx" />
+    <ClCompile Include="src\Shaders\ModelInstanceListPrepare.hlsl" />
     <ClCompile Include="src\SwapChain.cpp" />
     <ClCompile Include="src\SwapChain.ixx" />
     <ClCompile Include="src\Vector.ixx" />
@@ -312,8 +315,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="src\NormalPacking.hlsli" />
-    <None Include="src\TangentFramePacking.hlsli" />
+    <None Include="src\Shaders\BindlessDescriptors.hlsli" />
+    <None Include="src\Shaders\GPUSceneLimits.hlsli" />
+    <None Include="src\Shaders\MeshConstants.hlsli" />
+    <None Include="src\Shaders\MeshTypes.hlsli" />
+    <None Include="src\Shaders\NormalPacking.hlsli" />
+    <None Include="src\Shaders\NumericLimits.hlsli" />
+    <None Include="src\Shaders\TangentFramePacking.hlsli" />
+    <None Include="src\Shaders\TriangleCluster.hlsli" />
+    <None Include="src\Shaders\ViewTypes.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BrawlerAssetManagement\BrawlerAssetManagement.vcxproj">
@@ -325,6 +335,9 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="BrawlerEngine.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="src\Shaders\TriangleClusterFrustumCull.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

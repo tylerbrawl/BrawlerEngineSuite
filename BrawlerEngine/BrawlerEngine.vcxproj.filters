@@ -76,6 +76,27 @@
     <Filter Include="Module Files\Math">
       <UniqueIdentifier>{a508725f-68f2-4d06-a8aa-93edf5311af0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Streaming Systems">
+      <UniqueIdentifier>{7b75f20c-a89d-4ddc-9fd6-f749a8f49eff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Streaming Systems\Model Streaming">
+      <UniqueIdentifier>{610e4a61-3f7d-4de7-bf03-4a8c56736d7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\GPU Scene Representation">
+      <UniqueIdentifier>{92c8a67f-1288-4eb9-be80-7d5819e620b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\Culling">
+      <UniqueIdentifier>{cd5313b6-60c2-43f3-9044-583136286dd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\Geometry Types">
+      <UniqueIdentifier>{63ce499b-e47b-4d65-a094-14608be46c4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\Constants">
+      <UniqueIdentifier>{84608e7d-3f19-4440-a37b-cfe2b4a87862}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\Resource Binding">
+      <UniqueIdentifier>{42b719f3-83ee-4393-8435-1735e36be1f2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -291,6 +312,15 @@
     <ClCompile Include="src\MonitorInfoGraph.cpp">
       <Filter>Source Files\Window Management</Filter>
     </ClCompile>
+    <ClCompile Include="src\ModelLoader.ixx">
+      <Filter>Module Files\Streaming Systems\Model Streaming</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelLoadEventHandle.ixx">
+      <Filter>Module Files\Streaming Systems\Model Streaming</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shaders\ModelInstanceListPrepare.hlsl">
+      <Filter>Shader Files\Culling</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -303,17 +333,43 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\TangentFramePacking.hlsli">
-      <Filter>Shader Files\Compression</Filter>
-    </None>
-    <None Include="src\NormalPacking.hlsli">
-      <Filter>Shader Files\Compression</Filter>
-    </None>
     <None Include="packages.config" />
+    <None Include="src\Shaders\TriangleCluster.hlsli">
+      <Filter>Shader Files\Geometry Types</Filter>
+    </None>
+    <None Include="src\Shaders\MeshTypes.hlsli">
+      <Filter>Shader Files\Geometry Types</Filter>
+    </None>
+    <None Include="src\Shaders\TangentFramePacking.hlsli">
+      <Filter>Shader Files\Compression</Filter>
+    </None>
+    <None Include="src\Shaders\NormalPacking.hlsli">
+      <Filter>Shader Files\Compression</Filter>
+    </None>
+    <None Include="src\Shaders\GPUSceneLimits.hlsli">
+      <Filter>Shader Files\Constants</Filter>
+    </None>
+    <None Include="src\Shaders\MeshConstants.hlsli">
+      <Filter>Shader Files\Constants</Filter>
+    </None>
+    <None Include="src\Shaders\NumericLimits.hlsli">
+      <Filter>Shader Files\Constants</Filter>
+    </None>
+    <None Include="src\Shaders\BindlessDescriptors.hlsli">
+      <Filter>Shader Files\Resource Binding</Filter>
+    </None>
+    <None Include="src\Shaders\ViewTypes.hlsli">
+      <Filter>Shader Files\Geometry Types</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="BrawlerEngine.manifest">
       <Filter>Resource Files</Filter>
     </Manifest>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="src\Shaders\TriangleClusterFrustumCull.hlsl">
+      <Filter>Shader Files\Culling</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
