@@ -46,6 +46,9 @@ export namespace Brawler
 			template <DXGI_FORMAT Format>
 			Texture2DUnorderedAccessView<Format> CreateUnorderedAccessView() const;
 
+			template <DXGI_FORMAT Format>
+			BindlessSRVAllocation CreateBindlessSRV();
+
 		private:
 			Texture2D* mTexturePtr;
 		};
@@ -80,6 +83,15 @@ namespace Brawler
 				.MipSlice = GetSubResourceIndex(),
 				.PlaneSlice = 0
 			} };
+		}
+
+		template <DXGI_FORMAT Format>
+		BindlessSRVAllocation Texture2DSubResource::CreateBindlessSRV()
+		{
+			const Texture2DShaderResourceView<Format> tex2DSrv{ CreateShaderResourceView<Format>() };
+			I_GPUResource& texture2DResource = static_cast<I_GPUResource&>(GetTexture2D());
+
+			return texture2DResource.CreateBindlessSRV(tex2DSrv.CreateSRVDescription());
 		}
 	}
 }
@@ -122,6 +134,9 @@ export namespace Brawler
 			/// of this Texture2D indicated by mipSlice.
 			/// </returns>
 			Texture2DSubResource GetSubResource(const std::uint32_t mipSlice = 0);
+
+			template <DXGI_FORMAT Format>
+			BindlessSRVAllocation CreateBindlessSRV();
 		};
 	}
 }
@@ -154,6 +169,12 @@ namespace Brawler
 				.MipSlice = mipSlice,
 				.PlaneSlice = 0
 			} };
+		}
+
+		template <DXGI_FORMAT Format>
+		BindlessSRVAllocation Texture2D::CreateBindlessSRV()
+		{
+			return I_GPUResource::CreateBindlessSRV(CreateShaderResourceView<Format>().CreateSRVDescription());
 		}
 	}
 }

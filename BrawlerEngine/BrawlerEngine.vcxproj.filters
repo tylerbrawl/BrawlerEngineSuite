@@ -97,6 +97,24 @@
     <Filter Include="Shader Files\Resource Binding">
       <UniqueIdentifier>{42b719f3-83ee-4393-8435-1735e36be1f2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\GPU Scene Representation\Bindless Resources">
+      <UniqueIdentifier>{03d904ca-4faa-446b-b6c8-74d3861df559}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Render Modules">
+      <UniqueIdentifier>{6e2e2294-8781-43b5-acc0-66245b872370}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Scene Representation">
+      <UniqueIdentifier>{36f406fe-db1b-4800-8423-56411877012b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Scene Representation\Bindless Resources">
+      <UniqueIdentifier>{d77c6a82-6651-4a8f-bfcf-f19dffe4ad15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render Modules">
+      <UniqueIdentifier>{33184f11-adb6-4c43-9c60-cb87275ccb6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\Utilities">
+      <UniqueIdentifier>{e4480bc1-fccb-4731-9f03-9165c16a606d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -321,6 +339,39 @@
     <ClCompile Include="src\Shaders\TriangleClusterFrustumCull.hlsl">
       <Filter>Shader Files\Culling</Filter>
     </ClCompile>
+    <ClCompile Include="src\GPUSceneBuffer.ixx">
+      <Filter>Module Files\GPU Scene Representation\Bindless Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneBufferUpdater.ixx">
+      <Filter>Module Files\GPU Scene Representation\Bindless Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneUpdateRenderModule.ixx">
+      <Filter>Module Files\Render Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_GPUSceneBufferUpdateSource.ixx">
+      <Filter>Module Files\GPU Scene Representation\Bindless Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_GPUSceneBufferUpdateSource.cpp">
+      <Filter>Source Files\GPU Scene Representation\Bindless Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneUpdateRenderModule.cpp">
+      <Filter>Source Files\Render Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneManager.ixx">
+      <Filter>Module Files\GPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneBufferID.ixx">
+      <Filter>Module Files\GPU Scene Representation\Bindless Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneBufferMap.ixx">
+      <Filter>Module Files\GPU Scene Representation\Bindless Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneTypes.ixx">
+      <Filter>Module Files\GPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneManager.cpp">
+      <Filter>Source Files\GPU Scene Representation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -360,6 +411,9 @@
     </None>
     <None Include="src\Shaders\ViewTypes.hlsli">
       <Filter>Shader Files\Geometry Types</Filter>
+    </None>
+    <None Include="src\Shaders\TransformUtil.hlsli">
+      <Filter>Shader Files\Utilities</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

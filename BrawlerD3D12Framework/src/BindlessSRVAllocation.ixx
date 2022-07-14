@@ -9,20 +9,6 @@ export namespace Brawler
 {
 	namespace D3D12
 	{
-	}
-}
-
-namespace Brawler
-{
-	namespace D3D12
-	{
-	}
-}
-
-export namespace Brawler
-{
-	namespace D3D12
-	{
 		class BindlessSRVAllocation
 		{
 		public:

@@ -1,5 +1,5 @@
 #include "BindlessDescriptors.hlsli"
-#include "Optional.hlsli"
+#include "TransformUtil.hlsli"
 
 struct PrepareConstants
 {
@@ -63,10 +63,10 @@ bool IsModelInstanceAABBWithinViewFrustum(in const BrawlerHLSL::ModelInstanceDat
 	// the points lie outside of at least one boundary, then the AABB is *NOT* intersecting
 	// or inside of the view frustum.
 		
-	const float4x4 worldViewProjMatrix = (instanceData.TransformData.CurrentFrameWorldMatrix * BrawlerHLSL::Bindless::GetGlobalViewTransformData(ConstantsInfo.ViewID).CurrentFrameViewProjectionMatrix);
+	const float4x4 worldViewProjMatrix = (Util::Transform::ExpandWorldMatrix(instanceData.TransformData.CurrentFrameWorldMatrix) * BrawlerHLSL::Bindless::GetGlobalViewTransformData(ConstantsInfo.ViewID).CurrentFrameViewProjectionMatrix);
 		
-	const float4 aabbMaxPoint = float4(instanceData.LODMeshData.CurrentFrameAABBMax, 1.0f);
-	const float4 aabbMinPoint = float4(instanceData.LODMeshData.CurrentFrameAABBMin, 1.0f);
+	const float3 aabbMaxPoint = instanceData.LODMesh.CurrentFrameAABBMax;
+	const float3 aabbMinPoint = instanceData.LODMesh.CurrentFrameAABBMin;
 		
 	float4 aabbPointArr[8];
 	aabbPointArr[0] = float4(aabbMinPoint.x, aabbMinPoint.y, aabbMinPoint.z, 1.0f) * worldViewProjMatrix;
@@ -329,7 +329,7 @@ void ProcessTriangleClusterBatch(in const GPUJobQueueTriangleClusterBatch cluste
 	// space. This test is described in "Optimizing the Graphics Pipeline with Compute" by Graham
 	// Wihlidal.
 		
-	const float4x4 worldViewProjMatrix = (modelInstanceTransformData.CurrentFrameWorldMatrix * viewTransformData.CurrentFrameViewProjectionMatrix);
+	const float4x4 worldViewProjMatrix = (Util::Transform::ExpandWorldMatrix(modelInstanceTransformData.CurrentFrameWorldMatrix) * viewTransformData.CurrentFrameViewProjectionMatrix);
 		
 	float4 currLaneClusterAABBMin = float4(currLaneCluster.CurrentFrameAABBMin, 1.0f) * worldViewProjMatrix;
 	float4 currLaneClusterAABBMax = float4(currLaneCluster.CurrentFrameAABBMax, 1.0f) * worldViewProjMatrix;
@@ -371,7 +371,7 @@ struct BatchAdder
 			// retrieved values will be uniform (scalarized) because laneToProcess is uniform (scalarized).
 			GPUJobQueueTriangleClusterBatch currBatch;
 			currBatch.ModelInstanceID = WaveReadLaneAt(modelInstance.ModelInstanceID, laneToProcess);
-			currBatch.StartingTriangleClusterIDForBatch = WaveReadLaneAt(modelInstance.InstanceData.LODMeshData.StartingTriangleClusterID, laneToProcess);
+			currBatch.StartingTriangleClusterIDForBatch = WaveReadLaneAt(modelInstance.InstanceData.LODMesh.StartingTriangleClusterID, laneToProcess);
 			
 			const uint numBatchesToAdd = WaveReadLaneAt(numBatchesForCurrLane, laneToProcess);
 			
@@ -404,7 +404,7 @@ void AddModelInstanceDataToQueue(in const ProcessedModelInstance modelInstance)
 		
 	// To minimize divergence, we want to push batches of WaveGetLaneCount() triangle clusters to
 	// the GPU job queue.
-	const uint numTriangleClustersForCurrLane = modelInstance.InstanceData.LODMeshData.NumTriangleClusters;
+	const uint numTriangleClustersForCurrLane = modelInstance.InstanceData.LODMesh.NumTriangleClusters;
 	const uint numBatchesForCurrLane = ((numTriangleClustersForCurrLane / WaveGetLaneCount()) + min(numTriangleClustersForCurrLane % WaveGetLaneCount(), 1)) * (isModelInstanceRelevant ? 1 : 0);
 
 	const uint4 lanesWithBatchesBallot = WaveActiveBallot(isModelInstanceRelevant);
@@ -436,7 +436,7 @@ void main(in const uint DTid : SV_DispatchThreadID, in const uint groupIndex : S
 		
 	for (uint i = DTid; i < BrawlerHLSL::GPUSceneLimits::MAX_MODEL_INSTANCES; i += ConstantsInfo.NumThreadsDispatched)
 	{
-		const BrawlerHLSL::ModelInstanceLODMeshData currLaneLODMeshData = BrawlerHLSL::Bindless::GetGlobalModelInstanceLODMeshData(DTid);
+		const BrawlerHLSL::LODMeshData currLaneLODMeshData = BrawlerHLSL::Bindless::GetGlobalModelInstanceLODMeshData(DTid);
 		
 		// A model instance which is actually valid should have at least one triangle cluster.
 		bool isModelInstanceInUse = (currLaneLODMeshData.NumTriangleClusters > 0);
@@ -447,7 +447,7 @@ void main(in const uint DTid : SV_DispatchThreadID, in const uint groupIndex : S
 		{
 			ProcessedModelInstance modelInstance;
 			modelInstance.InstanceData.TransformData = BrawlerHLSL::Bindless::GetGlobalModelInstanceTransformData(DTid);
-			modelInstance.InstanceData.LODMeshData = currLaneLODMeshData;
+			modelInstance.InstanceData.LODMesh = currLaneLODMeshData;
 			modelInstance.ModelInstanceID = DTid;
 			modelInstance.IsModelInstanceUseful = isModelInstanceInUse;
 			
@@ -468,7 +468,7 @@ void main(in const uint DTid : SV_DispatchThreadID, in const uint groupIndex : S
 	
 	// Even though this wave has finished processing its model instances, it can still process any
 	// triangle clusters pushed into the GPU job queue by other waves.
-	while(true)
+	while (true)
 	{
 		// The value returned by GPUJobQueue::TryRemoveBatchFromQueue() will be uniform (scalarized)
 		// across the entire wave.
@@ -486,7 +486,7 @@ void main(in const uint DTid : SV_DispatchThreadID, in const uint groupIndex : S
 			uint numWavesFinishedWithModelInstances;
 				
 			[branch]
-			if(WaveIsFirstLane())
+			if (WaveIsFirstLane())
 				numWavesFinishedWithModelInstances = GPUJobQueueAcknowledgementBuffer.Load(0);
 				
 			numWavesFinishedWithModelInstances = WaveReadLaneFirst(numWavesFinishedWithModelInstances);

@@ -14,6 +14,7 @@ import Brawler.OptionalRef;
 import Brawler.D3D12.TLSFAllocationRequestInfo;
 import Brawler.D3D12.BufferSubAllocationReservation;
 import Brawler.ThreadSafeVector;
+import Brawler.D3D12.ShaderResourceView;
 
 export namespace Brawler
 {
@@ -187,6 +188,9 @@ export namespace Brawler
 				requires std::derived_from<SubAllocationType, I_BufferSubAllocation>
 			[[nodiscard]] std::optional<SubAllocationType> CreateBufferSubAllocation(Args&&... args);
 
+			template <DXGI_FORMAT Format>
+			BindlessSRVAllocation CreateBindlessSRV(const ShaderResourceView<Format, D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_BUFFER>& srv);
+
 		protected:
 			void ExecutePostD3D12ResourceInitializationCallback() override;
 
@@ -230,6 +234,13 @@ namespace Brawler
 		[[nodiscard]] std::optional<SubAllocationType> BufferResource::CreateBufferSubAllocation(Args&&... args)
 		{
 			return std::optional<SubAllocationType>{ mSubAllocationManager.CreateBufferSubAllocation<SubAllocationType, Args...>(std::forward<Args>(args)...) };
+		}
+
+		template <DXGI_FORMAT Format>
+		BindlessSRVAllocation BufferResource::CreateBindlessSRV(const ShaderResourceView<Format, D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_BUFFER>& srv)
+		{
+			assert(&(srv.GetGPUResource()) == this && "ERROR: BufferResource::CreateBindlessSRV() was provided an SRV referring to a different BufferResource instance!");
+			return I_GPUResource::CreateBindlessSRV(srv.CreateSRVDescription());
 		}
 	}
 }

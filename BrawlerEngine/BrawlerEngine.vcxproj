@@ -242,6 +242,7 @@
     <ClCompile Include="src\ApplicationStateStackRequestBundle.cpp" />
     <ClCompile Include="src\AppWindow.cpp" />
     <ClCompile Include="src\AppWindow.ixx" />
+    <ClCompile Include="src\GPUSceneBuffer.ixx" />
     <ClCompile Include="src\BorderlessWindowedModeWindowState.cpp" />
     <ClCompile Include="src\BorderlessWindowedModeWindowState.ixx" />
     <ClCompile Include="src\ComponentCollection.cpp" />
@@ -256,8 +257,18 @@
     <ClCompile Include="src\FullscreenModeWindowState.ixx" />
     <ClCompile Include="src\GameState.cpp" />
     <ClCompile Include="src\GameState.ixx" />
+    <ClCompile Include="src\GPUSceneBufferID.ixx" />
+    <ClCompile Include="src\GPUSceneBufferMap.ixx" />
+    <ClCompile Include="src\GPUSceneBufferUpdater.ixx" />
+    <ClCompile Include="src\GPUSceneManager.cpp" />
+    <ClCompile Include="src\GPUSceneManager.ixx" />
+    <ClCompile Include="src\GPUSceneTypes.ixx" />
+    <ClCompile Include="src\GPUSceneUpdateRenderModule.cpp" />
+    <ClCompile Include="src\GPUSceneUpdateRenderModule.ixx" />
     <ClCompile Include="src\I_ApplicationState.cpp" />
     <ClCompile Include="src\I_ApplicationState.ixx" />
+    <ClCompile Include="src\I_GPUSceneBufferUpdateSource.cpp" />
+    <ClCompile Include="src\I_GPUSceneBufferUpdateSource.ixx" />
     <ClCompile Include="src\I_ViewComponent.cpp" />
     <ClCompile Include="src\I_ViewComponent.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequest.ixx" />
@@ -322,6 +333,7 @@
     <None Include="src\Shaders\NormalPacking.hlsli" />
     <None Include="src\Shaders\NumericLimits.hlsli" />
     <None Include="src\Shaders\TangentFramePacking.hlsli" />
+    <None Include="src\Shaders\TransformUtil.hlsli" />
     <None Include="src\Shaders\TriangleCluster.hlsli" />
     <None Include="src\Shaders\ViewTypes.hlsli" />
   </ItemGroup>

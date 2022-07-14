@@ -14,11 +14,19 @@ namespace BrawlerHLSL
 	
 	struct ModelInstanceTransformData
 	{
-		float4x4 CurrentFrameWorldMatrix;
-		float4x4 PreviousFrameWorldMatrix;
+		float4x3 CurrentFrameWorldMatrix;
+		float4x3 CurrentFrameInverseWorldMatrix;
+		
+		float4x3 PreviousFrameWorldMatrix;
+		float4x3 PreviousFrameInverseWorldMatrix;
+		
+		// In addition, the following matrices can be calculated in a shader, should
+		// they prove necessary:
+		//
+		//   - InverseTransposeWorldMatrix = transpose(InverseWorldMatrix)  // This works because (Inverse(Transpose(M)) == Transpose(Inverse(M))) for any invertible matrix M.
 	};
 
-	struct ModelInstanceLODMeshData
+	struct LODMeshData
 	{
 		float3 CurrentFrameAABBMin;
 		uint StartingTriangleClusterID;
@@ -30,6 +38,6 @@ namespace BrawlerHLSL
 	struct ModelInstanceData
 	{
 		ModelInstanceTransformData TransformData;
-		ModelInstanceLODMeshData LODMeshData;
+		LODMeshData LODMesh;
 	};
 }

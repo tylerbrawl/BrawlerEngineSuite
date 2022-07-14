@@ -152,13 +152,20 @@ export namespace Brawler
 			///      when a transient resource can yield its GPU memory to another transient resource via
 			///      aliasing.
 			/// 
+			/// *NOTE*: It is valid to specify D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES for the
+			/// SubResourceIndex field of resourceDependency. Doing so will mark all sub-resources for
+			/// the relevant I_GPUResource as being used. However, if it is known that only a sub-set of
+			/// the sub-resources of the I_GPUResource are going to be used, then specifying one
+			/// FrameGraphResourceDependency instance for each sub-resource being used is generally more
+			/// efficient.
+			/// 
 			/// *WARNING*: The behavior of the program is *UNDEFINED* if a RenderPass attempts to make
 			/// use of an I_GPUResource instance (or a handle corresponding to said instance) without
 			/// marking the resource as a dependency by calling this function.
 			/// </summary>
 			/// <param name="resourceDependency">
 			/// - The FrameGraphResourceDependency which describes the I_GPUResource being used (or, to be
-			///   more precise, the sub-resource of the I_GPUResource), along with the required
+			///   more precise, the sub-resource(s) of the I_GPUResource), along with the required
 			///   D3D12_RESOURCE_STATES which the sub-resource must be in. Note that the actual state of
 			///   a sub-resource may be a combination of both this value and some other set of states,
 			///   depending on how the sub-resource is used in other RenderPasses.

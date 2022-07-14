@@ -23,6 +23,7 @@ export namespace Brawler
 
 	private:
 		void Initialize();
+		void AddRenderModules();
 
 	public:
 		void Run();

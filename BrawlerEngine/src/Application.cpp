@@ -6,6 +6,7 @@ module Brawler.Application;
 import Brawler.SettingsManager;
 import Brawler.SettingID;
 import Brawler.MonitorHub;
+import Brawler.GPUSceneUpdateRenderModule;
 
 namespace
 {
@@ -59,8 +60,19 @@ namespace Brawler
 		mThreadPool->SetInitialized();
 
 		mRenderer.Initialize();
+		AddRenderModules();
 
 		MonitorHub::GetInstance().ResetApplicationWindows();
+	}
+
+	void Application::AddRenderModules()
+	{
+		// Derived I_RenderModule classes should be added here in the order in which the commands they
+		// generate should be executed on the GPU timeline. Keep in mind, however, that frame graph building
+		// and command list recording are highly multi-threaded, so only the serial execution of the commands 
+		// on the GPU timeline is guaranteed.
+
+		mRenderer.AddRenderModule<GPUSceneUpdateRenderModule>();
 	}
 
 	void Application::Run()
