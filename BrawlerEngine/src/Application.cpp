@@ -101,7 +101,7 @@ namespace Brawler
 			// Perform the updates.
 			while (accumulator >= PHYSICS_TIMESTEP_TICKS)
 			{
-				Update(PHYSICS_TIMESTEP_MS);
+				Update(PHYSICS_TIMESTEP_S);
 
 				// If we decide to exit during the last update, then just break out
 				// of the main loop immediately.
@@ -113,7 +113,7 @@ namespace Brawler
 
 			// Draw the current frame.
 			{
-				const float variableTimeStep = PHYSICS_TIMESTEP_MS * (static_cast<float>(accumulator) / static_cast<float>(PHYSICS_TIMESTEP_TICKS));
+				const float variableTimeStep = PHYSICS_TIMESTEP_S * (static_cast<float>(accumulator) / static_cast<float>(PHYSICS_TIMESTEP_TICKS));
 				Draw(variableTimeStep);
 			}
 

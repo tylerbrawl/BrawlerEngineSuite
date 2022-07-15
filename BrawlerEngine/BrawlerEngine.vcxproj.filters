@@ -115,9 +115,6 @@
     <Filter Include="Shader Files\Utilities">
       <UniqueIdentifier>{e4480bc1-fccb-4731-9f03-9165c16a606d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Math">
-      <UniqueIdentifier>{16e7f039-82b6-4e66-9291-10f7c8c22373}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Math">
       <UniqueIdentifier>{af4b0202-1741-4723-a422-64ef6ded475e}</UniqueIdentifier>
     </Filter>
@@ -378,8 +375,8 @@
     <ClCompile Include="src\MathConstants.ixx">
       <Filter>Module Files\Math</Filter>
     </ClCompile>
-    <ClCompile Include="src\Matrix.cpp">
-      <Filter>Source Files\Math</Filter>
+    <ClCompile Include="src\TransformComponent.cpp">
+      <Filter>Source Files\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

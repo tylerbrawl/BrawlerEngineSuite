@@ -1,6 +1,6 @@
 module;
 #include <cassert>
-#include <unordered_map>
+#include <map>
 #include <set>
 #include <memory>  // For some reason, we have to manually include this header here, even though it appears in ComponentCollection.ixx.
 				   // Is this a compiler error?

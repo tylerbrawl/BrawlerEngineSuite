@@ -156,9 +156,15 @@ namespace Brawler
 			/// <returns>
 			/// The function returns the element stored at row rowIndex and column columnIndex.
 			/// </returns>
+			constexpr float& GetElement(const std::size_t rowIndex, const std::size_t columnIndex);
+
 			constexpr float GetElement(const std::size_t rowIndex, const std::size_t columnIndex) const;
 
 			MathType GetDirectXMathMatrix() const;
+
+			template <std::size_t RHSNumRows, std::size_t RHSNumColumns>
+				requires (NumColumns == RHSNumRows)
+			constexpr Matrix<NumRows, RHSNumColumns> operator*(const Matrix<RHSNumRows, RHSNumColumns>& rhs) const;
 
 			constexpr Matrix& operator+=(const Matrix& rhs);
 			constexpr Matrix& operator-=(const Matrix& rhs);
@@ -199,10 +205,6 @@ constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const Brawler::Ma
 
 template <std::size_t NumRows, std::size_t NumColumns>
 constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
-
-template <std::size_t LHSNumRows, std::size_t LHSNumColumns, std::size_t RHSNumRows, std::size_t RHSNumColumns>
-	requires (LHSNumColumns == RHSNumRows)
-constexpr Brawler::Math::Matrix<LHSNumRows, RHSNumColumns> operator*(const Brawler::Math::Matrix<LHSNumRows, LHSNumColumns>& lhs, const Brawler::Math::Matrix<RHSNumRows, RHSNumColumns>& rhs);
 
 template <std::size_t NumRows, std::size_t NumColumns>
 constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
@@ -757,9 +759,16 @@ namespace Brawler
 		}
 
 		template <std::size_t NumRows, std::size_t NumColumns>
-		constexpr float Matrix<NumRows, NumColumns>::GetElement(const std::size_t rowIndex, const std::size_t columnIndex) const
+		constexpr float& Matrix<NumRows, NumColumns>::GetElement(const std::size_t rowIndex, const std::size_t columnIndex)
 		{
 			assert(rowIndex < NumRows&& columnIndex < NumColumns && "ERROR: An out-of-bounds index was specified in a call to Matrix::GetElement()!");
+			return mStoredMatrix.m[rowIndex][columnIndex];
+		}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		constexpr float Matrix<NumRows, NumColumns>::GetElement(const std::size_t rowIndex, const std::size_t columnIndex) const
+		{
+			assert(rowIndex < NumRows && columnIndex < NumColumns && "ERROR: An out-of-bounds index was specified in a call to Matrix::GetElement()!");
 			return mStoredMatrix.m[rowIndex][columnIndex];
 		}
 
@@ -767,6 +776,14 @@ namespace Brawler
 		Matrix<NumRows, NumColumns>::MathType Matrix<NumRows, NumColumns>::GetDirectXMathMatrix() const
 		{
 			return MatrixInfo<NumRows, NumColumns>::LOAD_FUNCTION(&mStoredMatrix);
+		}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		template <std::size_t RHSNumRows, std::size_t RHSNumColumns>
+			requires (NumColumns == RHSNumRows)
+		constexpr Matrix<NumRows, RHSNumColumns> Matrix<NumRows, NumColumns>::operator*(const Matrix<RHSNumRows, RHSNumColumns>& rhs) const
+		{
+			return MultiplyMatrix(rhs);
 		}
 
 		template <std::size_t NumRows, std::size_t NumColumns>
@@ -923,13 +940,6 @@ template <std::size_t NumRows, std::size_t NumColumns>
 constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs)
 {
 	return lhs.SubtractMatrix(rhs);
-}
-
-template <std::size_t LHSNumRows, std::size_t LHSNumColumns, std::size_t RHSNumRows, std::size_t RHSNumColumns>
-	requires (LHSNumColumns == RHSNumRows)
-constexpr Brawler::Math::Matrix<LHSNumRows, RHSNumColumns> operator*(const Brawler::Math::Matrix<LHSNumRows, LHSNumColumns>& lhs, const Brawler::Math::Matrix<RHSNumRows, RHSNumColumns>& rhs)
-{
-	return lhs.MultiplyMatrix(rhs);
 }
 
 template <std::size_t NumRows, std::size_t NumColumns>

@@ -60,7 +60,7 @@ export namespace Brawler
 		/// order in which SceneNodes are updated or which thread they are updated on.
 		/// </summary>
 		/// <param name="dt">
-		/// - The time (in milliseconds) which is used as the timestep for SceneNode updates.
+		/// - The time (in seconds) which is used as the timestep for SceneNode updates.
 		/// </param>
 		void Update(const float dt);
 

@@ -52,7 +52,7 @@ export namespace Brawler
 		/// states are updated.
 		/// </summary>
 		/// <param name="dt">
-		/// - The time (in milliseconds) which is to be used as the timestep for state updates.
+		/// - The time (in seconds) which is to be used as the timestep for state updates.
 		/// </param>
 		void Update(const float dt);
 

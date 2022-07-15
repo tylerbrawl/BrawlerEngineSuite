@@ -1,6 +1,6 @@
 module;
 #include <vector>
-#include <unordered_map>
+#include <map>
 #include <memory>
 #include <cassert>
 #include <set>
@@ -71,7 +71,7 @@ export namespace Brawler
 		/// Updates all of the I_Component instances within this ComponentCollection.
 		/// </summary>
 		/// <param name="dt">
-		/// - The timestep (in milliseconds) for this update.
+		/// - The timestep (in seconds) for this update.
 		/// </param>
 		void Update(const float dt);
 
@@ -153,7 +153,7 @@ export namespace Brawler
 		void ExecutePendingRemovals();
 
 	private:
-		std::unordered_map<Brawler::ComponentID, std::vector<std::unique_ptr<Brawler::I_Component>>> mComponentMap;
+		std::map<Brawler::ComponentID, std::vector<std::unique_ptr<Brawler::I_Component>>> mComponentMap;
 		std::vector<std::unique_ptr<I_Component>> mComponentsPendingRemoval;
 
 #ifdef _DEBUG

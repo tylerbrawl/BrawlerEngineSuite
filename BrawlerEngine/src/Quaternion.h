@@ -1,10 +1,14 @@
 #pragma once
 #include <utility>
+#include <algorithm>
+#include <source_location>
 #include <DirectXMath/DirectXMath.h>
 #include "Matrix.h"
 #include "Vector.h"
 
 import Util.Math;
+import Brawler.NZStringView;
+import Util.General;
 
 namespace Brawler
 {
@@ -14,12 +18,9 @@ namespace Brawler
 		{
 			class Quaternion
 			{
-			private:
-				using Float3 = Vector<float, 3>;
-
 			public:
 				constexpr Quaternion() = default;
-				constexpr explicit Quaternion(const Float3& normalizedRotationAxis, const float rotationInRadians);
+				constexpr explicit Quaternion(const Vector<float, 3>& normalizedRotationAxis, const float rotationInRadians);
 				constexpr explicit Quaternion(const DirectX::XMFLOAT4& quaternionData);
 				constexpr explicit Quaternion(const Matrix<3, 3>& rotationMatrix);
 
@@ -33,6 +34,14 @@ namespace Brawler
 				constexpr float GetMagnitude() const;
 
 				constexpr float GetMagnitudeSquared() const;
+
+				constexpr float Dot(const Quaternion& rhs) const;
+
+				constexpr float AngleBetween(const Quaternion& rhs) const;
+				constexpr float AngleBetweenNormalized(const Quaternion& rhs) const;
+
+				constexpr Quaternion AddQuaternion(const Quaternion& rhs) const;
+				constexpr Quaternion SubtractQuaternion(const Quaternion& rhs) const;
 
 				/// <summary>
 				/// Performs a "true" multiplication between two Quaternion instances. Specifically, let
@@ -60,6 +69,46 @@ namespace Brawler
 
 				/// <summary>
 				/// Assuming that both this Quaternion instance and nextRotationQuaternion are both
+				/// unit quaternions, this function first calculates the rotation created by first rotating 
+				/// by this Quaternion instance and then rotating by nextRotationQuaternion. It then sets
+				/// the value of this Quaternion instance to the calculated result. Finally, the function
+				/// returns a reference to *this.
+				/// 
+				/// Mathematically, let p and q be two unit quaternions. Then, this function will
+				/// return the result of qp, which represents a rotation by p followed by a rotation
+				/// by q. Importantly, the quaternion qp will also be a unit quaternion; this allows
+				/// for seamlessly chaining rotation quaternions.
+				/// 
+				/// As mentioned earlier, Quaternion::ChainRotation() *WILL* modify this Quaternion instance.
+				/// To get the result of this operation without modifying it, there are two options available:
+				/// 
+				///   - Call p.GetChainedRotation(q). This will perform the same operation without
+				///     modifying p and simply returns the result.
+				/// 
+				///   - Call q.MultiplyQuaternion(p) (or use q * p). This will perform the quaternion multiplication
+				///     operation in a manner equivalent to Quaternion::GetChainedRotation().
+				/// 
+				/// Notably, calling p.ChainRotation(q) will return the same result as
+				/// DirectX::XMQuaternionMultiply(p, q), because the DirectXMath function computes the
+				/// result of that call as qp (i.e., it swaps the operands). For a "true" multiplication
+				/// between Quaternions p and q, call p.MultiplyQuaternion(q).
+				/// 
+				/// *NOTE*: The function asserts in Debug builds if either this Quaternion instance
+				/// or nextRotationQuaternion is unnormalized.
+				/// </summary>
+				/// <param name="nextRotationQuaternion">
+				/// - The unit Quaternion instance which represents the next rotation in the chain.
+				/// </param>
+				/// <returns>
+				/// Let p represent this Quaternion instance and let q represent nextRotationQuaternion.
+				/// Then, assuming that both p and q are normalized, this function set the value of this
+				/// Quaternion instance to the unit/normalized Quaternion qp. Finally, it returns a reference to
+				/// *this for possible future chaining.
+				/// </returns>
+				constexpr Quaternion& ChainRotation(const Quaternion& nextRotationQuaternion);
+
+				/// <summary>
+				/// Assuming that both this Quaternion instance and nextRotationQuaternion are both
 				/// unit quaternions, this function calculates and returns the rotation created by
 				/// first rotating by this Quaternion instance and then rotating by nextRotationQuaternion.
 				/// 
@@ -68,7 +117,10 @@ namespace Brawler
 				/// by q. Importantly, the quaternion qp will also be a unit quaternion; this allows
 				/// for seamlessly chaining rotation quaternions.
 				/// 
-				/// Notably, calling p.ChainRotation(q) will return the same result as
+				/// Unlike Quaternion::ChainRotation(), Quaternion::GetChainedRotation() does *NOT* modify
+				/// the value of this Quaternion instance; instead, it only returns the result of qp.
+				/// 
+				/// Notably, calling p.GetChainedRotation(q) will return the same result as
 				/// DirectX::XMQuaternionMultiply(p, q), because the DirectXMath function computes the
 				/// result of that call as qp (i.e., it swaps the operands). For a "true" multiplication
 				/// between Quaternions p and q, call p.MultiplyQuaternion(q).
@@ -84,7 +136,7 @@ namespace Brawler
 				/// Then, assuming that both p and q are normalized, this function returns the unit/normalized
 				/// Quaternion qp.
 				/// </returns>
-				constexpr Quaternion ChainRotation(const Quaternion& nextRotationQuaternion) const;
+				constexpr Quaternion GetChainedRotation(const Quaternion& nextRotationQuaternion) const;
 
 				/// <summary>
 				/// Assuming that this Quaternion instance is a unit quaternion, this function returns the
@@ -119,11 +171,16 @@ namespace Brawler
 
 				constexpr Quaternion GetReciprocal() const;
 
+				constexpr Quaternion SLerp(const Quaternion& rhs, const float alpha) const;
+				constexpr Quaternion SLerpNormalized(const Quaternion& rhs, const float alpha) const;
+
 				constexpr float GetScalarComponent() const;
-				constexpr Float3 GetVectorComponent() const;
+				constexpr Vector<float, 3> GetVectorComponent() const;
 
 				DirectX::XMVECTOR GetDirectXMathVector() const;
 
+				constexpr Quaternion& operator+=(const Quaternion& rhs);
+				constexpr Quaternion& operator-=(const Quaternion& rhs);
 				constexpr Quaternion& operator*=(const Quaternion& rhs);
 
 				constexpr Quaternion& operator*=(const float rhs);
@@ -141,25 +198,53 @@ namespace Brawler
 	}
 }
 
-template <typename T>
-	requires std::is_arithmetic_v<T>
-constexpr Brawler::Math::IMPL::Quaternion operator*(const Brawler::Math::IMPL::Quaternion& lhs, const T rhs);
+namespace Brawler
+{
+	namespace Math
+	{
+		namespace IMPL
+		{
+			template <typename T>
+				requires std::is_arithmetic_v<T>
+			constexpr Brawler::Math::IMPL::Quaternion operator*(const Brawler::Math::IMPL::Quaternion& lhs, const T rhs);
 
-template <typename T>
-	requires std::is_arithmetic_v<T>
-constexpr Brawler::Math::IMPL::Quaternion operator*(const T lhs, const Brawler::Math::IMPL::Quaternion& rhs);
+			template <typename T>
+				requires std::is_arithmetic_v<T>
+			constexpr Brawler::Math::IMPL::Quaternion operator*(const T lhs, const Brawler::Math::IMPL::Quaternion& rhs);
 
-template <typename T>
-	requires std::is_arithmetic_v<T>
-constexpr Brawler::Math::IMPL::Quaternion operator/(const Brawler::Math::IMPL::Quaternion& lhs, const T rhs);
+			template <typename T>
+				requires std::is_arithmetic_v<T>
+			constexpr Brawler::Math::IMPL::Quaternion operator/(const Brawler::Math::IMPL::Quaternion& lhs, const T rhs);
 
-template <typename T>
-	requires std::is_arithmetic_v<T>
-constexpr Brawler::Math::IMPL::Quaternion operator/(const T lhs, const Brawler::Math::IMPL::Quaternion& rhs);
+			template <typename T>
+				requires std::is_arithmetic_v<T>
+			constexpr Brawler::Math::IMPL::Quaternion operator/(const T lhs, const Brawler::Math::IMPL::Quaternion& rhs);
 
-constexpr Brawler::Math::IMPL::Quaternion operator*(const Brawler::Math::IMPL::Quaternion& lhs, const Brawler::Math::IMPL::Quaternion& rhs);
+			constexpr Brawler::Math::IMPL::Quaternion operator+(const Brawler::Math::IMPL::Quaternion& lhs, const Brawler::Math::IMPL::Quaternion& rhs);
+			constexpr Brawler::Math::IMPL::Quaternion operator-(const Brawler::Math::IMPL::Quaternion& lhs, const Brawler::Math::IMPL::Quaternion& rhs);
+			constexpr Brawler::Math::IMPL::Quaternion operator*(const Brawler::Math::IMPL::Quaternion& lhs, const Brawler::Math::IMPL::Quaternion& rhs);
+		}
+	}
+}
 
 // -------------------------------------------------------------------------------------------------------------------------------------------
+
+namespace
+{
+	__forceinline constexpr void SafeAssert(const bool expression, const Brawler::NZWStringView assertMsg, const std::source_location srcLocation = std::source_location::current())
+	{
+		// Would you believe me if I told you that using the assert() macro in this file - and only this file - 
+		// is causing the MSVC to spit out false errors?
+
+		if constexpr (Util::General::IsDebugModeEnabled())
+		{
+			(void)(
+				(!!(expression)) ||
+				(_wassert(assertMsg.C_Str(), L"Quaternion.h", srcLocation.line()), 0)
+				);
+		}
+	}
+}
 
 namespace Brawler
 {
@@ -167,72 +252,23 @@ namespace Brawler
 	{
 		namespace IMPL
 		{
-			constexpr Quaternion::Quaternion(const Float3& normalizedRotationAxis, const float rotationInRadians) :
+			constexpr Quaternion::Quaternion(const Vector<float, 3>& normalizedRotationAxis, const float rotationInRadians) :
 				mQuaternionVector()
 			{
-				assert(normalizedRotationAxis.IsNormalized() && "ERROR: An attempt was made to construct a Quaternion from an unnormalized rotation axis vector!");
-
+				SafeAssert(normalizedRotationAxis.IsNormalized(), L"ERROR: An unnormalized rotation axis was specified when constructing a Quaternion instance!");
+				
 				if (std::is_constant_evaluated())
 				{
-					// We don't have constexpr for <cmath> (yet!), so we need to write our own approximation
-					// using the power series definition to converge to the correct result. We'll allow long-running
-					// calculations because this code path is only taken at compile time.
-
 					const float halfAngle = (rotationInRadians / 2.0f);
+					const float sineHalfAngle = Util::Math::GetSineAngle(halfAngle);
 
-					constexpr auto FACTORIAL_LAMBDA = [] (const std::size_t startingValue)
-					{
-						std::size_t currFactorialValue = 1;
-
-						for (std::size_t currValue = startingValue; currValue > 1; --currValue)
-							currFactorialValue *= currValue;
-
-						return currFactorialValue;
-					};
-
-					constexpr float MAXIMUM_ALLOWED_DIFFERENCE = 0.001f;
-
-					float currSineValue = 0.0f;
-					float prevSineValue = currSineValue;
-					std::uint32_t currIteration = 0;
-
-					const std::int32_t halfAngleFloatExponent = ((std::bit_cast<std::int32_t>(halfAngle) >> 23) & 0xFF) - 127;
-					const float halfAngleNoExponent = std::bit_cast<float>(std::bit_cast<std::int32_t>(halfAngle) & 0x807FFFFF);
-
-					while (true)
-					{
-						const std::uint32_t iterationExponentValue = ((2 * currIteration) + 1);
-
-						// Get the value of halfAngle^(currExponentValue). By exploiting the layout of IEEE-754
-						// floating-point values, we can calculate this in constant time.
-						const std::uint32_t newHalfAngleFloatExponent = (halfAngleFloatExponent * iterationExponentValue) + 127;
-
-						float currScaledHalfAngle = std::bit_cast<float>(std::bit_cast<std::int32_t>(halfAngleNoExponent) | (newHalfAngleFloatExponent << 23));
-						currScaledHalfAngle *= (currIteration % 2 == 0 ? 1.0f : -1.0f);
-						currScaledHalfAngle /= FACTORIAL_LAMBDA(iterationExponentValue);
-
-						currSineValue += currScaledHalfAngle;
-
-						float sineValueDifference = (currSineValue - prevSineValue);
-
-						if (sineValueDifference < 0.0f)
-							sineValueDifference *= -1.0f;
-
-						if (sineValueDifference < MAXIMUM_ALLOWED_DIFFERENCE)
-							break;
-
-						prevSineValue = currSineValue;
-						++currIteration;
-					}
-
-					// Now, currSineValue ~= sin(halfAngle). We need this to get the quaternion, but we also need cos(halfAngle).
+					// Now, sineHalfAngle ~= sin(halfAngle). We need this to get the quaternion, but we also need cos(halfAngle).
 					// However, we know that (sin(halfAngle))^2 + (cos(halfAngle))^2 = 1, so we can solve for that without
 					// using the power series definition for cosine.
-					const float sineHalfAngle = currSineValue;
 					const float cosineHalfAngle = Util::Math::GetSquareRoot(1.0f - (sineHalfAngle * sineHalfAngle));
 
 					// Finally, we can store the quaternion as q = (sineHalfAngle * normalizedRotationAxis, cosineHalfAngle).
-					const Float3 scaledRotationNormal{ normalizedRotationAxis * sineHalfAngle };
+					const Vector<float, 3> scaledRotationNormal{ normalizedRotationAxis * sineHalfAngle };
 
 					mQuaternionVector.x = scaledRotationNormal.GetX();
 					mQuaternionVector.y = scaledRotationNormal.GetY();
@@ -354,6 +390,122 @@ namespace Brawler
 				}
 			}
 
+			constexpr float Quaternion::Dot(const Quaternion& rhs) const
+			{
+				if (std::is_constant_evaluated())
+				{
+					return (mQuaternionVector.x * rhs.mQuaternionVector.x) + (mQuaternionVector.y * rhs.mQuaternionVector.y) + (mQuaternionVector.z * rhs.mQuaternionVector.z) +
+						(mQuaternionVector.w * rhs.mQuaternionVector.w);
+				}
+				else
+				{
+					const DirectX::XMVECTOR loadedLHS{ DirectX::XMLoadFloat4(&mQuaternionVector) };
+					const DirectX::XMVECTOR loadedRHS{ DirectX::XMLoadFloat4(&(rhs.mQuaternionVector)) };
+
+					const DirectX::XMVECTOR dotProductVector{ DirectX::XMVector4Dot(loadedLHS, loadedRHS) };
+
+					return DirectX::XMVectorGetX(dotProductVector);
+				}
+			}
+
+			constexpr float Quaternion::AngleBetween(const Quaternion& rhs) const
+			{
+				if (std::is_constant_evaluated())
+				{
+					const Quaternion normalizedThis{ Normalize() };
+					const Quaternion normalizedRHS{ rhs.Normalize() };
+
+					return normalizedThis.AngleBetweenNormalized(normalizedRHS);
+				}
+				else
+				{
+					const DirectX::XMVECTOR loadedLHS{ DirectX::XMLoadFloat4(&mQuaternionVector) };
+					const DirectX::XMVECTOR loadedRHS{ DirectX::XMLoadFloat4(&(rhs.mQuaternionVector)) };
+
+					const DirectX::XMVECTOR angleVector{ DirectX::XMVector4AngleBetweenVectors(loadedLHS, loadedRHS) };
+
+					return DirectX::XMVectorGetX(angleVector);
+				}
+			}
+
+			constexpr float Quaternion::AngleBetweenNormalized(const Quaternion& rhs) const
+			{
+				SafeAssert(IsNormalized(), L"ERROR: Quaternion::AngleBetweenNormalized() was called on a Quaternion instance which was not normalized!");
+				SafeAssert(rhs.IsNormalized(), L"ERROR: An unnormalized Quaternion instance was specified in a call to Quaternion::AngleBetweenNormalized()!");
+
+				if (std::is_constant_evaluated())
+				{
+					// Represent the quaternions as four-dimensional vectors and use Vector::AngleBetweenNormalized().
+					const Vector<float, 4> thisVector{ mQuaternionVector };
+					const Vector<float, 4> rhsVector{ rhs.mQuaternionVector };
+
+					return thisVector.AngleBetweenNormalized(rhsVector);
+				}
+				else
+				{
+					const DirectX::XMVECTOR loadedLHS{ DirectX::XMLoadFloat4(&mQuaternionVector) };
+					const DirectX::XMVECTOR loadedRHS{ DirectX::XMLoadFloat4(&(rhs.mQuaternionVector)) };
+
+					const DirectX::XMVECTOR angleVector{ DirectX::XMVector4AngleBetweenNormals(loadedLHS, loadedRHS) };
+
+					return DirectX::XMVectorGetX(angleVector);
+				}
+			}
+
+			constexpr Quaternion Quaternion::AddQuaternion(const Quaternion& rhs) const
+			{
+				if (std::is_constant_evaluated())
+				{
+					const DirectX::XMFLOAT4 addResult{
+						(mQuaternionVector.x + rhs.mQuaternionVector.x),
+						(mQuaternionVector.y + rhs.mQuaternionVector.y),
+						(mQuaternionVector.z + rhs.mQuaternionVector.z),
+						(mQuaternionVector.w + rhs.mQuaternionVector.w)
+					};
+
+					return Quaternion{ addResult };
+				}
+				else
+				{
+					const DirectX::XMVECTOR loadedLHS{ DirectX::XMLoadFloat4(&mQuaternionVector) };
+					const DirectX::XMVECTOR loadedRHS{ DirectX::XMLoadFloat4(&(rhs.mQuaternionVector)) };
+
+					const DirectX::XMVECTOR addResultVector{ DirectX::XMVectorAdd(loadedLHS, loadedRHS) };
+
+					DirectX::XMFLOAT4 storedResult{};
+					DirectX::XMStoreFloat4(&storedResult, addResultVector);
+
+					return Quaternion{ storedResult };
+				}
+			}
+
+			constexpr Quaternion Quaternion::SubtractQuaternion(const Quaternion& rhs) const
+			{
+				if (std::is_constant_evaluated())
+				{
+					const DirectX::XMFLOAT4 subtractResult{
+						(mQuaternionVector.x - rhs.mQuaternionVector.x),
+						(mQuaternionVector.y - rhs.mQuaternionVector.y),
+						(mQuaternionVector.z - rhs.mQuaternionVector.z),
+						(mQuaternionVector.w - rhs.mQuaternionVector.w)
+					};
+
+					return Quaternion{ subtractResult };
+				}
+				else
+				{
+					const DirectX::XMVECTOR loadedLHS{ DirectX::XMLoadFloat4(&mQuaternionVector) };
+					const DirectX::XMVECTOR loadedRHS{ DirectX::XMLoadFloat4(&(rhs.mQuaternionVector)) };
+
+					const DirectX::XMVECTOR subtractResultVector{ DirectX::XMVectorSubtract(loadedLHS, loadedRHS) };
+
+					DirectX::XMFLOAT4 storedResult{};
+					DirectX::XMStoreFloat4(&storedResult, subtractResultVector);
+
+					return Quaternion{ storedResult };
+				}
+			}
+
 			constexpr Quaternion Quaternion::MultiplyQuaternion(const Quaternion& rhs) const
 			{
 				if (std::is_constant_evaluated())
@@ -367,13 +519,13 @@ namespace Brawler
 					// p and q, respectively. Also, (v1 x v2) represents the cross product, while
 					// (v1 . v2) represents the dot product.
 
-					const Float3 v1 = Float3{ DirectX::XMFLOAT3{ mQuaternionVector.x, mQuaternionVector.y, mQuaternionVector.z } };
+					const Vector<float, 3> v1 = Vector<float, 3>{ DirectX::XMFLOAT3{ mQuaternionVector.x, mQuaternionVector.y, mQuaternionVector.z } };
 					const float s1 = mQuaternionVector.w;
 
-					const Float3 v2 = Float3{ DirectX::XMFLOAT3{ rhs.mQuaternionVector.x, rhs.mQuaternionVector.y, rhs.mQuaternionVector.z } };
+					const Vector<float, 3> v2 = Vector<float, 3>{ DirectX::XMFLOAT3{ rhs.mQuaternionVector.x, rhs.mQuaternionVector.y, rhs.mQuaternionVector.z } };
 					const float s2 = rhs.mQuaternionVector.w;
 
-					const Float3 resultVectorComponent{ (s1 * v2) + (s2 * v1) + v1.Cross(v2) };
+					const Vector<float, 3> resultVectorComponent{ (s1 * v2) + (s2 * v1) + v1.Cross(v2) };
 					const float resultScalarComponent = (s1 * s2) - v1.Dot(v2);
 
 					const DirectX::XMFLOAT4 storedResult{
@@ -455,17 +607,32 @@ namespace Brawler
 				}
 			}
 
-			constexpr Quaternion Quaternion::ChainRotation(const Quaternion& nextRotationQuaternion) const
+			constexpr Quaternion& Quaternion::ChainRotation(const Quaternion& nextRotationQuaternion)
 			{
 				// Consider two unit quaternions, p and q, both of which represent rotations. Then,
 				// a quaternion r which represents a rotation specified by p followed by a rotation
 				// specified by q is defined as r = qp.
+				SafeAssert(IsNormalized(), L"ERROR: Quaternion::ChainRotation() was called on a Quaternion instance which was not normalized!");
+				SafeAssert(nextRotationQuaternion.IsNormalized(), L"ERROR: An unnormalized Quaternion instance was specified in a call to Quaternion::ChainRotation()!");
 
+				*this = nextRotationQuaternion.MultiplyQuaternion(*this);
+				return *this;
+			}
+
+			constexpr Quaternion Quaternion::GetChainedRotation(const Quaternion& nextRotationQuaternion) const
+			{
+				SafeAssert(IsNormalized(), L"ERROR: Quaternion::GetChainedRotation() was called on a Quaternion instance which was not normalized!");
+				SafeAssert(nextRotationQuaternion.IsNormalized(), L"ERROR: An unnormalized Quaternion instance was specified in a call to Quaternion::GetChainedRotation()!");
+				
 				return nextRotationQuaternion.MultiplyQuaternion(*this);
 			}
 
 			constexpr Matrix<3, 3> Quaternion::ConvertToRotationMatrix() const
 			{
+				// For some reason, setting the values of the returned Matrix<3, 3> instance via the constructor is causing
+				// an MSVC internal compiler error. To work-around that, we use the default constructor of the class and
+				// call Matrix::GetElement() to manually set each value.
+
 				if (std::is_constant_evaluated())
 				{
 					const float quaternionXSquared = (mQuaternionVector.x * mQuaternionVector.x);
@@ -495,13 +662,21 @@ namespace Brawler
 					//rotationMatrixStorage._32 = (twoTimesYZ - twoTimesXW);
 					//rotationMatrixStorage._33 = (1.0f - (2.0f * quaternionXSquared) - (2.0f * quaternionYSquared));
 
-					/*
-					return Float3x3{
-						(1.0f - (2.0f * quaternionYSquared) - (2.0f * quaternionZSquared)), (twoTimesXY + twoTimesZW), (twoTimesXZ - twoTimesYW),
-						(twoTimesXY - twoTimesZW), (1.0f - (2.0f * quaternionXSquared) - (2.0f * quaternionZSquared)), (twoTimesYZ + twoTimesXW),
-						(twoTimesXZ + twoTimesYW), (twoTimesYZ - twoTimesXW), (1.0f - (2.0f * quaternionXSquared) - (2.0f * quaternionYSquared))
-					};
-					*/
+					Matrix<3, 3> returnMatrix{};
+
+					returnMatrix.GetElement(0, 0) = (1.0f - (2.0f * quaternionYSquared) - (2.0f * quaternionZSquared));
+					returnMatrix.GetElement(0, 1) = (twoTimesXY + twoTimesZW);
+					returnMatrix.GetElement(0, 2) = (twoTimesXZ - twoTimesYW);
+
+					returnMatrix.GetElement(1, 0) = (twoTimesXY - twoTimesZW);
+					returnMatrix.GetElement(1, 1) = (1.0f - (2.0f * quaternionXSquared) - (2.0f * quaternionZSquared));
+					returnMatrix.GetElement(1, 2) = (twoTimesYZ + twoTimesXW);
+
+					returnMatrix.GetElement(2, 0) = (twoTimesXZ + twoTimesYW);
+					returnMatrix.GetElement(2, 1) = (twoTimesYZ - twoTimesXW);
+					returnMatrix.GetElement(2, 2) = (1.0f - (2.0f * quaternionXSquared) - (2.0f * quaternionYSquared));
+
+					return returnMatrix;
 				}
 				else
 				{
@@ -512,16 +687,22 @@ namespace Brawler
 					DirectX::XMFLOAT3X3 storedResult{};
 					DirectX::XMStoreFloat3x3(&storedResult, loadedRotationMatrix);
 
-					/*
-					return Float3x3{
-						storedResult(0, 0), storedResult(0, 1), storedResult(0, 2),
-						storedResult(1, 0), storedResult(1, 1), storedResult(1, 2),
-						storedResult(2, 0), storedResult(2, 1), storedResult(2, 2)
-					};
-					*/
-				}
+					Matrix<3, 3> returnMatrix{};
 
-				return Matrix<3, 3>{};
+					returnMatrix.GetElement(0, 0) = storedResult(0, 0);
+					returnMatrix.GetElement(0, 1) = storedResult(0, 1);
+					returnMatrix.GetElement(0, 2) = storedResult(0, 2);
+
+					returnMatrix.GetElement(1, 0) = storedResult(1, 0);
+					returnMatrix.GetElement(1, 1) = storedResult(1, 1);
+					returnMatrix.GetElement(1, 2) = storedResult(1, 2);
+
+					returnMatrix.GetElement(2, 0) = storedResult(2, 0);
+					returnMatrix.GetElement(2, 1) = storedResult(2, 1);
+					returnMatrix.GetElement(2, 2) = storedResult(2, 2);
+
+					return returnMatrix;
+				}
 			}
 
 			constexpr Quaternion Quaternion::Inverse() const
@@ -631,14 +812,67 @@ namespace Brawler
 				}
 			}
 
+			constexpr Quaternion Quaternion::SLerp(const Quaternion& rhs, const float alpha) const
+			{
+				const Quaternion normalizedThis{ Normalize() };
+				const Quaternion normalizedRHS{ rhs.Normalize() };
+
+				return normalizedThis.SLerpNormalized(normalizedRHS, alpha);
+			}
+
+			constexpr Quaternion Quaternion::SLerpNormalized(const Quaternion& rhs, const float alpha) const
+			{
+				SafeAssert(IsNormalized(), L"ERROR: Quaternion::SLerpNormalized() was called on a Quaternion instance which was not normalized!");
+				SafeAssert(rhs.IsNormalized(), L"ERROR: An unnormalized Quaternion instance was specified in a call to Quaternion::SLerpNormalized()!");
+				
+				// Ensure that alpha is in the range [0.0f, 1.0f].
+				const float clampedAlpha = std::clamp(alpha, 0.0f, 1.0f);
+
+				if (std::is_constant_evaluated())
+				{
+					// Choose either rhs or -rhs depending on which one produces the shortest arc along
+					// the 4D unit sphere. This can be checked by comparing ||this - rhs||^2 to ||this + rhs||^2.
+					//
+					// If ||this + rhs||^2 < ||this - rhs||^2, then we choose -rhs; otherwise, we choose rhs.
+					const float thisPlusRhsMagnitudeSquared = Quaternion{ *this + rhs }.GetMagnitudeSquared();
+					const float thisMinusRhsMagnitudeSquared = Quaternion{ *this - rhs }.GetMagnitudeSquared();
+
+					const Quaternion comparisonQuaternion{ thisPlusRhsMagnitudeSquared < thisMinusRhsMagnitudeSquared ? (rhs * -1.0f) : rhs };
+
+					const float angleBetween = AngleBetweenNormalized(comparisonQuaternion);
+					const float sineAngleBetween = Util::Math::GetSineAngle(angleBetween);
+					const float sineAngleTimesAlpha = Util::Math::GetSineAngle(angleBetween * clampedAlpha);
+					const float sineAngleTimesOneMinusAlpha = Util::Math::GetSineAngle(angleBetween * (1.0f - clampedAlpha));
+
+					// Both this and rhs/-rhs are unit quaternions on the 4D unit sphere. Spherical interpolation works
+					// by finding a unit quaternion which lies along the path between these two quaternions on the
+					// unit sphere. Since the interpolated quaternion also lies on the 4D unit sphere, it must
+					// also be a unit quaternion.
+
+					return (((sineAngleTimesOneMinusAlpha * *this) + (sineAngleTimesAlpha * comparisonQuaternion)) / sineAngleBetween);
+				}
+				else
+				{
+					const DirectX::XMVECTOR loadedLHS{ DirectX::XMLoadFloat4(&mQuaternionVector) };
+					const DirectX::XMVECTOR loadedRHS{ DirectX::XMLoadFloat4(&(rhs.mQuaternionVector)) };
+
+					const DirectX::XMVECTOR slerpQuaternion{ DirectX::XMQuaternionSlerp(loadedLHS, loadedRHS, clampedAlpha) };
+
+					DirectX::XMFLOAT4 storedResult{};
+					DirectX::XMStoreFloat4(&storedResult, slerpQuaternion);
+
+					return Quaternion{ storedResult };
+				}
+			}
+
 			constexpr float Quaternion::GetScalarComponent() const
 			{
 				return mQuaternionVector.w;
 			}
 
-			constexpr Quaternion::Float3 Quaternion::GetVectorComponent() const
+			constexpr Vector<float, 3> Quaternion::GetVectorComponent() const
 			{
-				return Float3{ DirectX::XMFLOAT3{
+				return Vector<float, 3>{ DirectX::XMFLOAT3{
 					mQuaternionVector.x,
 					mQuaternionVector.y,
 					mQuaternionVector.z
@@ -648,6 +882,18 @@ namespace Brawler
 			DirectX::XMVECTOR Quaternion::GetDirectXMathVector() const
 			{
 				return DirectX::XMLoadFloat4(&mQuaternionVector);
+			}
+
+			constexpr Quaternion& Quaternion::operator+=(const Quaternion& rhs)
+			{
+				*this = AddQuaternion(rhs);
+				return *this;
+			}
+
+			constexpr Quaternion& Quaternion::operator-=(const Quaternion& rhs)
+			{
+				*this = SubtractQuaternion(rhs);
+				return *this;
 			}
 
 			constexpr Quaternion& Quaternion::operator*=(const Quaternion& rhs)
@@ -671,48 +917,67 @@ namespace Brawler
 	}
 }
 
-template <typename T>
-	requires std::is_arithmetic_v<T>
-constexpr Brawler::Math::IMPL::Quaternion operator*(const Brawler::Math::IMPL::Quaternion& lhs, const T rhs)
+namespace Brawler
 {
-	return lhs.MultiplyScalar(static_cast<float>(rhs));
-}
+	namespace Math
+	{
+		namespace IMPL
+		{
+			template <typename T>
+				requires std::is_arithmetic_v<T>
+			constexpr Brawler::Math::IMPL::Quaternion operator*(const Brawler::Math::IMPL::Quaternion& lhs, const T rhs)
+			{
+				return lhs.MultiplyScalar(static_cast<float>(rhs));
+			}
 
-template <typename T>
-	requires std::is_arithmetic_v<T>
-constexpr Brawler::Math::IMPL::Quaternion operator*(const T lhs, const Brawler::Math::IMPL::Quaternion& rhs)
-{
-	// a * b = b * a
-	return rhs.MultiplyScalar(lhs);
-}
+			template <typename T>
+				requires std::is_arithmetic_v<T>
+			constexpr Brawler::Math::IMPL::Quaternion operator*(const T lhs, const Brawler::Math::IMPL::Quaternion& rhs)
+			{
+				// a * b = b * a
+				return rhs.MultiplyScalar(lhs);
+			}
 
-template <typename T>
-	requires std::is_arithmetic_v<T>
-constexpr Brawler::Math::IMPL::Quaternion operator/(const Brawler::Math::IMPL::Quaternion& lhs, const T rhs)
-{
-	return lhs.DivideScalar(static_cast<float>(rhs));
-}
+			template <typename T>
+				requires std::is_arithmetic_v<T>
+			constexpr Brawler::Math::IMPL::Quaternion operator/(const Brawler::Math::IMPL::Quaternion& lhs, const T rhs)
+			{
+				return lhs.DivideScalar(static_cast<float>(rhs));
+			}
 
-template <typename T>
-	requires std::is_arithmetic_v<T>
-constexpr Brawler::Math::IMPL::Quaternion operator/(const T lhs, const Brawler::Math::IMPL::Quaternion& rhs)
-{
-	// a / b = a * (1 / b) = (1 / b) * a
-	return rhs.GetReciprocal().MultiplyScalar(lhs);
-}
+			template <typename T>
+				requires std::is_arithmetic_v<T>
+			constexpr Brawler::Math::IMPL::Quaternion operator/(const T lhs, const Brawler::Math::IMPL::Quaternion& rhs)
+			{
+				// a / b = a * (1 / b) = (1 / b) * a
+				return rhs.GetReciprocal().MultiplyScalar(lhs);
+			}
 
-constexpr Brawler::Math::IMPL::Quaternion operator*(const Brawler::Math::IMPL::Quaternion& lhs, const Brawler::Math::IMPL::Quaternion& rhs)
-{
-	// I'm not sure as to how I should define this function. Mathematically, the only correct
-	// way to define it would be lhs * rhs. However, most people use quaternions to "chain"
-	// rotations together, and doing that requires multiplying rhs * lhs.
-	//
-	// Since quaternion multiplication is not commutative, these will inherently lead to different
-	// results. Unlike DirectXMath, I am inclined to define the multiplication operation as
-	// "true" quaternion multiplication. If the goal is to chain together rotations, then
-	// Quaternion::ChainRotation() can be called, instead. Those who work from a more mathematical
-	// perspective are more likely to understand (lhs * rhs) as being just that: lhs * rhs, and
-	// not the chaining of two rotations.
+			constexpr Brawler::Math::IMPL::Quaternion operator+(const Brawler::Math::IMPL::Quaternion& lhs, const Brawler::Math::IMPL::Quaternion& rhs)
+			{
+				return lhs.AddQuaternion(rhs);
+			}
 
-	return lhs.MultiplyQuaternion(rhs);
+			constexpr Brawler::Math::IMPL::Quaternion operator-(const Brawler::Math::IMPL::Quaternion& lhs, const Brawler::Math::IMPL::Quaternion& rhs)
+			{
+				return lhs.SubtractQuaternion(rhs);
+			}
+
+			constexpr Brawler::Math::IMPL::Quaternion operator*(const Brawler::Math::IMPL::Quaternion& lhs, const Brawler::Math::IMPL::Quaternion& rhs)
+			{
+				// I'm not sure as to how I should define this function. Mathematically, the only correct
+				// way to define it would be lhs * rhs. However, most people use quaternions to "chain"
+				// rotations together, and doing that requires multiplying rhs * lhs.
+				//
+				// Since quaternion multiplication is not commutative, these will inherently lead to different
+				// results. Unlike DirectXMath, I am inclined to define the multiplication operation as
+				// "true" quaternion multiplication. If the goal is to chain together rotations, then
+				// Quaternion::ChainRotation() can be called, instead. Those who work from a more mathematical
+				// perspective are more likely to understand (lhs * rhs) as being just that: lhs * rhs, and
+				// not the chaining of two rotations.
+
+				return lhs.MultiplyQuaternion(rhs);
+			}
+		}
+	}
 }

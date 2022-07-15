@@ -95,6 +95,18 @@ export namespace Util
 		template <typename T>
 			requires std::is_arithmetic_v<T>
 		constexpr float GetSquareRoot(const T value);
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
+		constexpr float GetSineAngle(const T angleInRadians);
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
+		constexpr float RadiansToDegrees(const T angleInRadians);
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
+		constexpr float DegreesToRadians(const T angleInDegrees);
 	}
 }
 
@@ -314,6 +326,84 @@ namespace Util
 			}
 			else
 				return std::sqrtf(static_cast<float>(value));
+		}
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
+		constexpr float GetSineAngle(const T angleInRadians)
+		{
+			if (std::is_constant_evaluated())
+			{
+				// In a constant-evaluated context, we will use the power series definition of sin(x)
+				// to converge to the correct result.
+
+				constexpr auto FACTORIAL_LAMBDA = [] (const std::size_t startingValue)
+				{
+					std::size_t currFactorialValue = 1;
+
+					for (std::size_t currValue = startingValue; currValue > 1; --currValue)
+						currFactorialValue *= currValue;
+
+					return currFactorialValue;
+				};
+
+				constexpr float MAXIMUM_ALLOWED_DIFFERENCE = 0.001f;
+
+				float currSineValue = 0.0f;
+				float prevSineValue = currSineValue;
+				std::uint32_t currIteration = 0;
+
+				const std::int32_t angleFloatExponent = ((std::bit_cast<std::int32_t>(angleInRadians) >> 23) & 0xFF) - 127;
+				const float angleNoExponent = std::bit_cast<float>(std::bit_cast<std::int32_t>(angleInRadians) & 0x807FFFFF);
+
+				while (true)
+				{
+					const std::uint32_t iterationExponentValue = ((2 * currIteration) + 1);
+
+					// Get the value of halfAngle^(currExponentValue). By exploiting the layout of IEEE-754
+					// floating-point values, we can calculate this in constant time.
+					const std::uint32_t newAngleFloatExponent = (angleFloatExponent * iterationExponentValue) + 127;
+
+					float currScaledHalfAngle = std::bit_cast<float>(std::bit_cast<std::int32_t>(angleNoExponent) | (newAngleFloatExponent << 23));
+					currScaledHalfAngle *= (currIteration % 2 == 0 ? 1.0f : -1.0f);
+					currScaledHalfAngle /= FACTORIAL_LAMBDA(iterationExponentValue);
+
+					currSineValue += currScaledHalfAngle;
+
+					float sineValueDifference = (currSineValue - prevSineValue);
+
+					if (sineValueDifference < 0.0f)
+						sineValueDifference *= -1.0f;
+
+					if (sineValueDifference < MAXIMUM_ALLOWED_DIFFERENCE)
+						return currSineValue;
+
+					prevSineValue = currSineValue;
+					++currIteration;
+				}
+			}
+			else
+				return std::sinf(static_cast<float>(angleInRadians));
+		}
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
+		constexpr float RadiansToDegrees(const T angleInRadians)
+		{
+			constexpr float PI = 3.14159265359f;
+			constexpr float RADIANS_TO_DEGREES_CONVERSION_FACTOR = (180.0f / PI);
+
+			return (static_cast<float>(angleInRadians) * RADIANS_TO_DEGREES_CONVERSION_FACTOR);
+		}
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
+		constexpr float DegreesToRadians(const T angleInDegrees)
+		{
+			constexpr float PI = 3.14159265359f;
+			constexpr float DEGREES_TO_RADIANS_CONVERSION_FACTOR = (PI / 180.0f);
+
+			return (static_cast<float>(angleInDegrees) * DEGREES_TO_RADIANS_CONVERSION_FACTOR);
 		}
 	}
 }

@@ -276,7 +276,6 @@
     <ClCompile Include="src\I_WindowState.ixx" />
     <ClCompile Include="src\MathConstants.ixx" />
     <ClCompile Include="src\MathTypes.ixx" />
-    <ClCompile Include="src\Matrix.cpp" />
     <ClCompile Include="src\ModelLoader.ixx" />
     <ClCompile Include="src\ModelLoadEventHandle.ixx" />
     <ClCompile Include="src\Monitor.cpp" />
@@ -308,6 +307,7 @@
     </ClCompile>
     <ClCompile Include="src\SwapChain.cpp" />
     <ClCompile Include="src\SwapChain.ixx" />
+    <ClCompile Include="src\TransformComponent.cpp" />
     <ClCompile Include="src\TransformComponent.ixx" />
     <ClCompile Include="src\WindowDisplayMode.ixx" />
     <ClCompile Include="src\WindowedModeWindowState.cpp" />
