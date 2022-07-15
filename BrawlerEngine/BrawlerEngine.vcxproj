@@ -277,7 +277,6 @@
     <ClCompile Include="src\MathConstants.ixx" />
     <ClCompile Include="src\MathTypes.ixx" />
     <ClCompile Include="src\Matrix.cpp" />
-    <ClCompile Include="src\Matrix.ixx" />
     <ClCompile Include="src\ModelLoader.ixx" />
     <ClCompile Include="src\ModelLoadEventHandle.ixx" />
     <ClCompile Include="src\Monitor.cpp" />
@@ -294,7 +293,6 @@
     <ClCompile Include="src\I_Component.ixx" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Manifest.ixx" />
-    <ClCompile Include="src\Quaternion.ixx" />
     <ClCompile Include="src\SceneGraph.cpp" />
     <ClCompile Include="src\SceneGraph.ixx" />
     <ClCompile Include="src\SceneNode.cpp" />
@@ -311,7 +309,6 @@
     <ClCompile Include="src\SwapChain.cpp" />
     <ClCompile Include="src\SwapChain.ixx" />
     <ClCompile Include="src\TransformComponent.ixx" />
-    <ClCompile Include="src\Vector.ixx" />
     <ClCompile Include="src\WindowDisplayMode.ixx" />
     <ClCompile Include="src\WindowedModeWindowState.cpp" />
     <ClCompile Include="src\WindowedModeWindowState.ixx" />
@@ -326,6 +323,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="src\Matrix.h" />
+    <ClInclude Include="src\Quaternion.h" />
+    <ClInclude Include="src\Vector.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BrawlerEngine.rc" />

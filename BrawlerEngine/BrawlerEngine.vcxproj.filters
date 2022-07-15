@@ -118,6 +118,9 @@
     <Filter Include="Source Files\Math">
       <UniqueIdentifier>{16e7f039-82b6-4e66-9291-10f7c8c22373}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Math">
+      <UniqueIdentifier>{af4b0202-1741-4723-a422-64ef6ded475e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -306,12 +309,6 @@
     <ClCompile Include="src\SwapChain.cpp">
       <Filter>Source Files\Window Management</Filter>
     </ClCompile>
-    <ClCompile Include="src\Vector.ixx">
-      <Filter>Module Files\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Matrix.ixx">
-      <Filter>Module Files\Math</Filter>
-    </ClCompile>
     <ClCompile Include="src\MathTypes.ixx">
       <Filter>Module Files\Math</Filter>
     </ClCompile>
@@ -378,9 +375,6 @@
     <ClCompile Include="src\TransformComponent.ixx">
       <Filter>Module Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="src\Quaternion.ixx">
-      <Filter>Module Files\Math</Filter>
-    </ClCompile>
     <ClCompile Include="src\MathConstants.ixx">
       <Filter>Module Files\Math</Filter>
     </ClCompile>
@@ -391,6 +385,15 @@
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Matrix.h">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Quaternion.h">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Vector.h">
+      <Filter>Header Files\Math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

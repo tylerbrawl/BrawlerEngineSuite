@@ -1,12 +1,10 @@
-module;
+#pragma once
 #include <cstddef>
 #include <cstdint>
 #include <cassert>
 #include <array>
 #include <ranges>
 #include <DirectXMath/DirectXMath.h>
-
-export module Brawler.Math.MathTypes:Matrix;
 
 namespace Brawler
 {
@@ -196,41 +194,38 @@ namespace Brawler
 	}
 }
 
-export
-{
-	template <std::size_t NumRows, std::size_t NumColumns>
-	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
 
-	template <std::size_t NumRows, std::size_t NumColumns>
-	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
 
-	template <std::size_t LHSNumRows, std::size_t LHSNumColumns, std::size_t RHSNumRows, std::size_t RHSNumColumns>
-		requires (LHSNumColumns == RHSNumRows)
-	constexpr Brawler::Math::Matrix<LHSNumRows, RHSNumColumns> operator*(const Brawler::Math::Matrix<LHSNumRows, LHSNumColumns>& lhs, const Brawler::Math::Matrix<RHSNumRows, RHSNumColumns>& rhs);
+template <std::size_t LHSNumRows, std::size_t LHSNumColumns, std::size_t RHSNumRows, std::size_t RHSNumColumns>
+	requires (LHSNumColumns == RHSNumRows)
+constexpr Brawler::Math::Matrix<LHSNumRows, RHSNumColumns> operator*(const Brawler::Math::Matrix<LHSNumRows, LHSNumColumns>& lhs, const Brawler::Math::Matrix<RHSNumRows, RHSNumColumns>& rhs);
 
-	template <std::size_t NumRows, std::size_t NumColumns>
-	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
 
-	template <std::size_t NumRows, std::size_t NumColumns>
-	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
 
-	template <std::size_t NumRows, std::size_t NumColumns>
-	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
 
-	template <std::size_t NumRows, std::size_t NumColumns>
-	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
 
-	template <std::size_t NumRows, std::size_t NumColumns>
-	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator*(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator*(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
 
-	template <std::size_t NumRows, std::size_t NumColumns>
-	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator*(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator*(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
 
-	template <std::size_t NumRows, std::size_t NumColumns>
-	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator/(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator/(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
 
-	// Exclude operator/(const float lhs, const Matrix& rhs) because it makes no sense (i.e., scalar / matrix?).
-}
+// Exclude operator/(const float lhs, const Matrix& rhs) because it makes no sense (i.e., scalar / matrix?).
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -980,17 +975,4 @@ template <std::size_t NumRows, std::size_t NumColumns>
 constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator/(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs)
 {
 	return lhs.DivideScalar(rhs);
-}
-
-// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-export namespace Brawler
-{
-	namespace Math
-	{
-		using Float3x3 = Matrix<3, 3>;
-		using Float3x4 = Matrix<3, 4>;
-		using Float4x3 = Matrix<4, 3>;
-		using Float4x4 = Matrix<4, 4>;
-	}
 }

@@ -11,9 +11,21 @@ export namespace Brawler
 {
 	namespace Math
 	{
-		constexpr Int3 TEST_3{};
-		constexpr Float4 TEST_F4{};
-		
+		// Simply exporting the following was causing the MSVC to crash with an internal compiler
+		// error:
+		//
+		// constexpr Float3x3 IDENTITY_MATRIX_3X3{ ... };
+		//
+		// In fact, attempting to export any constexpr matrix type other than Float4x4 result in
+		// the crash. As a workaround, we define consteval functions which return the corresponding
+		// matrices.
+
+		constexpr Float3x3 IDENTITY_MATRIX_3X3{
+			1.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 1.0f
+		};
+
 		constexpr Float4x4 IDENTITY_MATRIX_4X4{
 			1.0f, 0.0f, 0.0f, 0.0f,
 			0.0f, 1.0f, 0.0f, 0.0f,

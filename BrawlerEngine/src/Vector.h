@@ -1,12 +1,11 @@
-module;
+#pragma once
 #include <cstddef>
 #include <cstdint>
 #include <cmath>
 #include <ranges>
 #include <DirectXMath/DirectXMath.h>
+#include "Matrix.h"
 
-export module Brawler.Math.MathTypes:Vector;
-import :Matrix;
 import Util.Math;
 
 namespace Brawler
@@ -23,7 +22,7 @@ namespace Brawler
 		using VectorCallFunctionPtr = RetType(XM_CALLCONV*)(Args...);
 
 		template <
-			typename StorageType_, 
+			typename StorageType_,
 			auto LoadFunctionPtr,
 			auto StoreFunctionPtr
 		>
@@ -1085,24 +1084,4 @@ template <typename ElementType, std::size_t NumElements, std::size_t MatrixNumCo
 constexpr Brawler::Math::Vector<ElementType, MatrixNumColumns> operator*(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Matrix<NumElements, MatrixNumColumns>& rhs)
 {
 	return lhs.TransformByMatrix(rhs);
-}
-
-// --------------------------------------------------------------------------------------------------------------------------------------------------
-
-export namespace Brawler
-{
-	namespace Math
-	{
-		using Int2 = Vector<std::int32_t, 2>;
-		using UInt2 = Vector<std::uint32_t, 2>;
-		using Float2 = Vector<float, 2>;
-
-		using Int3 = Vector<std::int32_t, 3>;
-		using UInt3 = Vector<std::uint32_t, 3>;
-		using Float3 = Vector<float, 3>;
-
-		using Int4 = Vector<std::int32_t, 4>;
-		using UInt4 = Vector<std::uint32_t, 4>;
-		using Float4 = Vector<float, 4>;
-	}
 }
