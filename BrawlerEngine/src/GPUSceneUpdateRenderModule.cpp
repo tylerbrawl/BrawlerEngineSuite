@@ -93,7 +93,7 @@ namespace Brawler
 			.HeapType = D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_UPLOAD
 		}) };
 
-		std::optional<D3D12::ByteAddressBufferSubAllocation> byteAddressSubAllocation{ uploadBuffer.CreateBufferSubAllocation<D3D12::ByteAddressBufferSubAllocation>(requiredBufferSize) };
+		std::optional<D3D12::DynamicByteAddressBufferSubAllocation> byteAddressSubAllocation{ uploadBuffer.CreateBufferSubAllocation<D3D12::DynamicByteAddressBufferSubAllocation>(requiredBufferSize) };
 		assert(byteAddressSubAllocation.has_value());
 
 		struct GPUSceneBufferUpdateCopyRegions
@@ -148,7 +148,7 @@ namespace Brawler
 			gpuSceneBufferUpdatePass.AddResourceDependency(std::move(resourceDependency));
 		}
 
-		gpuSceneBufferUpdatePass.AddResourceDependency(*byteAddressSubAllocation);
+		gpuSceneBufferUpdatePass.AddResourceDependency(*byteAddressSubAllocation, D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE);
 
 		gpuSceneBufferUpdatePass.SetInputData(GPUSceneBufferUpdatePassInfo{
 			.CopyRegionsArr{ std::move(copyRegionsArr) }

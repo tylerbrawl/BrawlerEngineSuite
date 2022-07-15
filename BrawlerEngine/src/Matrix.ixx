@@ -2,10 +2,12 @@ module;
 #include <cstddef>
 #include <cstdint>
 #include <cassert>
+#include <array>
 #include <ranges>
 #include <DirectXMath/DirectXMath.h>
 
 export module Brawler.Math.MathTypes:Matrix;
+import Util.General;
 
 namespace Brawler
 {
@@ -60,9 +62,6 @@ namespace Brawler
 			using StorageType = typename MatrixInfo<NumRows, NumColumns>::StorageType;
 			using MathType = typename MatrixInfo<NumRows, NumColumns>::MathType;
 
-			static constexpr auto LOAD_FUNCTION{ MatrixInfo<NumRows, NumColumns>::LOAD_FUNCTION };
-			static constexpr auto STORE_FUNCTION{ MatrixInfo<NumRows, NumColumns>::STORE_FUNCTION };
-
 		public:
 			constexpr Matrix() = default;
 			constexpr explicit Matrix(const StorageType& matrixData);
@@ -80,6 +79,11 @@ namespace Brawler
 			template <std::size_t RHSNumRows, std::size_t RHSNumColumns>
 				requires (NumColumns == RHSNumRows)
 			constexpr Matrix<NumRows, RHSNumColumns> MultiplyMatrix(const Matrix<RHSNumRows, RHSNumColumns>& rhs) const;
+
+			constexpr Matrix AddScalar(const float rhs) const;
+			constexpr Matrix SubtractScalar(const float rhs) const;
+			constexpr Matrix MultiplyScalar(const float rhs) const;
+			constexpr Matrix DivideScalar(const float rhs) const;
 
 			constexpr Matrix Inverse() const requires (NumRows == NumColumns);
 			constexpr Matrix<NumColumns, NumRows> Transpose() const;
@@ -112,6 +116,11 @@ namespace Brawler
 			constexpr Matrix& operator-=(const Matrix& rhs);
 			constexpr Matrix& operator*=(const Matrix& rhs) requires (NumRows == NumColumns);
 
+			constexpr Matrix& operator+=(const float rhs);
+			constexpr Matrix& operator-=(const float rhs);
+			constexpr Matrix& operator*=(const float rhs);
+			constexpr Matrix& operator/=(const float rhs);
+
 		private:
 			/// <summary>
 			/// Calculates and returns the Matrix whose entries represent the cofactors of the
@@ -127,7 +136,7 @@ namespace Brawler
 			/// The function returns the Matrix whose entries represent the cofactors of the
 			/// transpose of this matrix.
 			/// </returns>
-			consteval Matrix<NumRows, NumColumns> GetTransposeCofactorMatrix() const requires (NumRows == NumColumns);
+			constexpr Matrix<NumRows, NumColumns> GetTransposeCofactorMatrix() const requires (NumRows == NumColumns);
 
 			DirectX::XMVECTOR GetRowXMVector(const std::size_t rowIndex) const;
 
@@ -148,6 +157,29 @@ export
 	template <std::size_t LHSNumRows, std::size_t LHSNumColumns, std::size_t RHSNumRows, std::size_t RHSNumColumns>
 		requires (LHSNumColumns == RHSNumRows)
 	constexpr Brawler::Math::Matrix<LHSNumRows, RHSNumColumns> operator*(const Brawler::Math::Matrix<LHSNumRows, LHSNumColumns>& lhs, const Brawler::Math::Matrix<RHSNumRows, RHSNumColumns>& rhs);
+
+	template <std::size_t NumRows, std::size_t NumColumns>
+	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
+
+	template <std::size_t NumRows, std::size_t NumColumns>
+	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
+
+	template <std::size_t NumRows, std::size_t NumColumns>
+	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
+
+	template <std::size_t NumRows, std::size_t NumColumns>
+	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
+
+	template <std::size_t NumRows, std::size_t NumColumns>
+	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator*(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
+
+	template <std::size_t NumRows, std::size_t NumColumns>
+	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator*(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
+
+	template <std::size_t NumRows, std::size_t NumColumns>
+	constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator/(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
+
+	// Exclude operator/(const float lhs, const Matrix& rhs) because it makes no sense (i.e., scalar / matrix?).
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -284,7 +316,7 @@ namespace Brawler
 			}
 			else
 			{
-				const MathType loadedLHS{ LOAD_FUNCTION(&mStoredMatrix) };
+				const MathType loadedLHS{ MatrixInfo<NumRows, NumColumns>::LOAD_FUNCTION(&mStoredMatrix) };
 				const typename MatrixInfo<RHSNumRows, RHSNumColumns>::MathType loadedRHS{ MatrixInfo<RHSNumRows, RHSNumColumns>::LOAD_FUNCTION(&(rhs.mStoredMatrix)) };
 
 				const typename MatrixInfo<NumRows, RHSNumColumns>::MathType multiplyResult{ DirectX::XMMatrixMultiply(loadedLHS, loadedRHS) };
@@ -293,6 +325,173 @@ namespace Brawler
 				MatrixInfo<NumRows, RHSNumColumns>::STORE_FUNCTION(&storedResult, multiplyResult);
 
 				return Matrix<NumRows, RHSNumColumns>{ storedResult };
+			}
+		}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		constexpr Matrix<NumRows, NumColumns> Matrix<NumRows, NumColumns>::AddScalar(const float rhs) const
+		{
+			if (std::is_constant_evaluated())
+			{
+				StorageType storedResult{};
+
+				for (const auto i : std::views::iota(0u, NumRows))
+				{
+					for (const auto j : std::views::iota(0u, NumColumns))
+						storedResult.m[i][j] = (mStoredMatrix.m[i][j] + rhs);
+				}
+
+				return Matrix<NumRows, NumColumns>{ storedResult };
+			}
+			else
+			{
+				// There is no DirectXMath equivalent. However, we can utilize DirectXMath vector
+				// functions in order to vectorize the implementation ourselves.
+				StorageType storedResult{};
+				const DirectX::XMVECTOR rhsVector{ DirectX::XMVectorReplicate(rhs) };
+
+				for (const auto i : std::views::iota(0u, NumRows))
+				{
+					const DirectX::XMVECTOR lhsVector{ GetRowXMVector(i) };
+
+					const DirectX::XMVECTOR currRowAddResult{ DirectX::XMVectorAdd(lhsVector, rhsVector) };
+
+					storedResult.m[i][0] = DirectX::XMVectorGetX(currRowAddResult);
+					storedResult.m[i][1] = DirectX::XMVectorGetY(currRowAddResult);
+					storedResult.m[i][2] = DirectX::XMVectorGetZ(currRowAddResult);
+
+					if constexpr (NumColumns >= 4)
+						storedResult.m[i][3] = DirectX::XMVectorGetW(currRowAddResult);
+				}
+
+				return Matrix<NumRows, NumColumns>{ storedResult };
+			}
+		}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		constexpr Matrix<NumRows, NumColumns> Matrix<NumRows, NumColumns>::SubtractScalar(const float rhs) const
+		{
+			if (std::is_constant_evaluated())
+			{
+				StorageType storedResult{};
+
+				for (const auto i : std::views::iota(0u, NumRows))
+				{
+					for (const auto j : std::views::iota(0u, NumColumns))
+						storedResult.m[i][j] = (mStoredMatrix.m[i][j] - rhs);
+				}
+
+				return Matrix<NumRows, NumColumns>{ storedResult };
+			}
+			else
+			{
+				// There is no DirectXMath equivalent. However, we can utilize DirectXMath vector
+				// functions in order to vectorize the implementation ourselves.
+				StorageType storedResult{};
+				const DirectX::XMVECTOR rhsVector{ DirectX::XMVectorReplicate(rhs) };
+
+				for (const auto i : std::views::iota(0u, NumRows))
+				{
+					const DirectX::XMVECTOR lhsVector{ GetRowXMVector(i) };
+
+					const DirectX::XMVECTOR currRowSubtractResult{ DirectX::XMVectorSubtract(lhsVector, rhsVector) };
+
+					storedResult.m[i][0] = DirectX::XMVectorGetX(currRowSubtractResult);
+					storedResult.m[i][1] = DirectX::XMVectorGetY(currRowSubtractResult);
+					storedResult.m[i][2] = DirectX::XMVectorGetZ(currRowSubtractResult);
+
+					if constexpr (NumColumns >= 4)
+						storedResult.m[i][3] = DirectX::XMVectorGetW(currRowSubtractResult);
+				}
+
+				return Matrix<NumRows, NumColumns>{ storedResult };
+			}
+		}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		constexpr Matrix<NumRows, NumColumns> Matrix<NumRows, NumColumns>::MultiplyScalar(const float rhs) const
+		{
+			if (std::is_constant_evaluated())
+			{
+				StorageType storedResult{};
+
+				for (const auto i : std::views::iota(0u, NumRows))
+				{
+					for (const auto j : std::views::iota(0u, NumColumns))
+						storedResult.m[i][j] = (mStoredMatrix.m[i][j] * rhs);
+				}
+
+				return Matrix<NumRows, NumColumns>{ storedResult };
+			}
+			else
+			{
+				// There is no DirectXMath equivalent. However, we can utilize DirectXMath vector
+				// functions in order to vectorize the implementation ourselves.
+				StorageType storedResult{};
+				
+				for (const auto i : std::views::iota(0u, NumRows))
+				{
+					const DirectX::XMVECTOR lhsVector{ GetRowXMVector(i) };
+
+					const DirectX::XMVECTOR currRowMultiplyResult{ DirectX::XMVectorScale(lhsVector, rhs) };
+
+					storedResult.m[i][0] = DirectX::XMVectorGetX(currRowMultiplyResult);
+					storedResult.m[i][1] = DirectX::XMVectorGetY(currRowMultiplyResult);
+					storedResult.m[i][2] = DirectX::XMVectorGetZ(currRowMultiplyResult);
+
+					if constexpr (NumColumns >= 4)
+						storedResult.m[i][3] = DirectX::XMVectorGetW(currRowMultiplyResult);
+				}
+
+				return Matrix<NumRows, NumColumns>{ storedResult };
+			}
+		}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		constexpr Matrix<NumRows, NumColumns> Matrix<NumRows, NumColumns>::DivideScalar(const float rhs) const
+		{
+			if constexpr (Util::General::IsDebugModeEnabled())
+			{
+				constexpr float EPSILON = 0.0001f;
+
+				const float absRHS = (rhs < 0.0f ? -rhs : rhs);
+				assert(absRHS >= EPSILON && "ERROR: An attempt was made to divide the elements of a Matrix by zero!");
+			}
+			
+			if (std::is_constant_evaluated())
+			{
+				StorageType storedResult{};
+
+				for (const auto i : std::views::iota(0u, NumRows))
+				{
+					for (const auto j : std::views::iota(0u, NumColumns))
+						storedResult.m[i][j] = (mStoredMatrix.m[i][j] / rhs);
+				}
+
+				return Matrix<NumRows, NumColumns>{ storedResult };
+			}
+			else
+			{
+				// There is no DirectXMath equivalent. However, we can utilize DirectXMath vector
+				// functions in order to vectorize the implementation ourselves.
+				StorageType storedResult{};
+				const float reciprocalRHS = (1.0f / rhs);
+				
+				for (const auto i : std::views::iota(0u, NumRows))
+				{
+					const DirectX::XMVECTOR lhsVector{ GetRowXMVector(i) };
+
+					const DirectX::XMVECTOR currRowDivideResult{ DirectX::XMVectorScale(lhsVector, reciprocalRHS) };
+
+					storedResult.m[i][0] = DirectX::XMVectorGetX(currRowDivideResult);
+					storedResult.m[i][1] = DirectX::XMVectorGetY(currRowDivideResult);
+					storedResult.m[i][2] = DirectX::XMVectorGetZ(currRowDivideResult);
+
+					if constexpr (NumColumns >= 4)
+						storedResult.m[i][3] = DirectX::XMVectorGetW(currRowDivideResult);
+				}
+
+				return Matrix<NumRows, NumColumns>{ storedResult };
 			}
 		}
 
@@ -318,16 +517,17 @@ namespace Brawler
 
 				assert(absDeterminant > SINGULARITY_EPSILON && "ERROR: Matrix::Inverse() was called for a singular (i.e., non-invertible) matrix!");
 
+				return transposeCofactorMatrix / determinant;
 			}
 			else
 			{
-				const MathType loadedThis{ LOAD_FUNCTION(&mStoredMatrix) };
+				const MathType loadedThis{ MatrixInfo<NumRows, NumColumns>::LOAD_FUNCTION(&mStoredMatrix) };
 				const MathType inverseMatrix{ DirectX::XMMatrixInverse(nullptr, loadedThis) };
 
 				assert(!DirectX::XMMatrixIsInfinite(inverseMatrix) && "ERROR: Matrix::Inverse() was called for a singular (i.e., non-invertible) matrix!");
 
 				StorageType storedResult{};
-				STORE_FUNCTION(&storedResult, inverseMatrix);
+				MatrixInfo<NumRows, NumColumns>::STORE_FUNCTION(&storedResult, inverseMatrix);
 
 				return Matrix{ storedResult };
 			}
@@ -350,7 +550,7 @@ namespace Brawler
 			}
 			else
 			{
-				const MathType loadedThis{ LOAD_FUNCTION(&mStoredMatrix) };
+				const MathType loadedThis{ MatrixInfo<NumRows, NumColumns>::LOAD_FUNCTION(&mStoredMatrix) };
 				const MathType transposedMatrix{ DirectX::XMMatrixTranspose(loadedThis) };
 
 				typename MatrixInfo<NumColumns, NumRows>::StorageType storedResult{};
@@ -410,7 +610,7 @@ namespace Brawler
 			}
 			else
 			{
-				const MathType loadedThis{ LOAD_FUNCTION(&mStoredMatrix) };
+				const MathType loadedThis{ MatrixInfo<NumRows, NumColumns>::LOAD_FUNCTION(&mStoredMatrix) };
 				const DirectX::XMVECTOR determinantVector{ DirectX::XMMatrixDeterminant(loadedThis) };
 
 				return DirectX::XMVectorGetX(determinantVector);
@@ -420,14 +620,14 @@ namespace Brawler
 		template <std::size_t NumRows, std::size_t NumColumns>
 		constexpr float Matrix<NumRows, NumColumns>::GetElement(const std::size_t rowIndex, const std::size_t columnIndex) const
 		{
-			assert(rowIndex < NumRows&& columnIndex < NumColumns && "ERROR: An out-of-bounds index was specified in a call to Matrix::GetElement()!");
+			assert(rowIndex < NumRows && columnIndex < NumColumns && "ERROR: An out-of-bounds index was specified in a call to Matrix::GetElement()!");
 			return mStoredMatrix.m[rowIndex][columnIndex];
 		}
 
 		template <std::size_t NumRows, std::size_t NumColumns>
 		Matrix<NumRows, NumColumns>::MathType Matrix<NumRows, NumColumns>::GetDirectXMathMatrix() const
 		{
-			return LOAD_FUNCTION(&mStoredMatrix);
+			return MatrixInfo<NumRows, NumColumns>::LOAD_FUNCTION(&mStoredMatrix);
 		}
 
 		template <std::size_t NumRows, std::size_t NumColumns>
@@ -452,7 +652,35 @@ namespace Brawler
 		}
 
 		template <std::size_t NumRows, std::size_t NumColumns>
-		consteval Matrix<NumRows, NumColumns> Matrix<NumRows, NumColumns>::GetTransposeCofactorMatrix() const requires (NumRows == NumColumns)
+		constexpr Matrix<NumRows, NumColumns>& Matrix<NumRows, NumColumns>::operator+=(const float rhs)
+		{
+			*this = AddScalar(rhs);
+			return *this;
+		}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		constexpr Matrix<NumRows, NumColumns>& Matrix<NumRows, NumColumns>::operator-=(const float rhs)
+		{
+			*this = SubtractScalar(rhs);
+			return *this;
+		}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		constexpr Matrix<NumRows, NumColumns>& Matrix<NumRows, NumColumns>::operator*=(const float rhs)
+		{
+			*this = MultiplyScalar(rhs);
+			return *this;
+		}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		constexpr Matrix<NumRows, NumColumns>& Matrix<NumRows, NumColumns>::operator/=(const float rhs)
+		{
+			*this = DivideScalar(rhs);
+			return *this;
+		}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		constexpr Matrix<NumRows, NumColumns> Matrix<NumRows, NumColumns>::GetTransposeCofactorMatrix() const requires (NumRows == NumColumns)
 		{
 			const Matrix<NumRows, NumColumns> transposedMatrix{ Transpose() };
 			StorageType storageTransposeCofactorMatrix{};
@@ -463,22 +691,49 @@ namespace Brawler
 				{
 					const float negationScalar = (-1.0f * ((currRow + currColumn) % 2));
 
-					typename MatrixInfo<(NumRows - 1), (NumColumns - 1)>::StorageType currStorageDeterminantMatrix{};
-
-					for (const auto determinantMatrixRow : std::views::iota(0u, (NumRows - 1)))
+					if constexpr (NumRows > 3 && NumColumns > 3)
 					{
-						const std::size_t rowIndexToCopy = (determinantMatrixRow >= currRow ? (determinantMatrixRow + 1) : determinantMatrixRow);
+						typename MatrixInfo<(NumRows - 1), (NumColumns - 1)>::StorageType currStorageDeterminantMatrix{};
 
-						for (const auto determinantMatrixColumn : std::views::iota(NumColumns - 1))
+						for (const auto determinantMatrixRow : std::views::iota(0u, (NumRows - 1)))
 						{
-							const std::size_t columnIndexToCopy = (determinantMatrixColumn >= currColumn ? (determinantMatrixColumn + 1) : determinantMatrixColumn);
+							const std::size_t rowIndexToCopy = (determinantMatrixRow >= currRow ? (determinantMatrixRow + 1) : determinantMatrixRow);
 
-							currStorageDeterminantMatrix[determinantMatrixRow][determinantMatrixColumn] = transposedMatrix.GetElement(rowIndexToCopy, columnIndexToCopy);
+							for (const auto determinantMatrixColumn : std::views::iota(0u, NumColumns - 1))
+							{
+								const std::size_t columnIndexToCopy = (determinantMatrixColumn >= currColumn ? (determinantMatrixColumn + 1) : determinantMatrixColumn);
+
+								currStorageDeterminantMatrix.m[determinantMatrixRow][determinantMatrixColumn] = transposedMatrix.GetElement(rowIndexToCopy, columnIndexToCopy);
+							}
 						}
-					}
 
-					Matrix<(NumRows - 1), (NumColumns - 1)> currDeterminantMatrix{ currStorageDeterminantMatrix };
-					storageTransposeCofactorMatrix[currRow][currColumn] = (negationScalar * currDeterminantMatrix.Determinant());
+						Matrix<(NumRows - 1), (NumColumns - 1)> currDeterminantMatrix{ currStorageDeterminantMatrix };
+						storageTransposeCofactorMatrix.m[currRow][currColumn] = (negationScalar * currDeterminantMatrix.Determinant());
+					}
+					else
+					{
+						struct Matrix2x2
+						{
+							std::array<std::array<float, 2>, 2> DataArr;
+						};
+
+						Matrix2x2 currStorageDeterminantMatrix{};
+
+						for (const auto determinantMatrixRow : std::views::iota(0u, (NumRows - 1)))
+						{
+							const std::size_t rowIndexToCopy = (determinantMatrixRow >= currRow ? (determinantMatrixRow + 1) : determinantMatrixRow);
+
+							for (const auto determinantMatrixColumn : std::views::iota(0u, (NumColumns - 1)))
+							{
+								const std::size_t columnIndexToCopy = (determinantMatrixColumn >= currColumn ? (determinantMatrixColumn + 1) : determinantMatrixColumn);
+
+								currStorageDeterminantMatrix.DataArr[determinantMatrixRow][determinantMatrixColumn] = transposedMatrix.GetElement(rowIndexToCopy, columnIndexToCopy);
+							}
+						}
+
+						const float currDeterminant = ((currStorageDeterminantMatrix.DataArr[0][0] * currStorageDeterminantMatrix.DataArr[1][1]) - (currStorageDeterminantMatrix.DataArr[0][1] * currStorageDeterminantMatrix.DataArr[1][0]));
+						storageTransposeCofactorMatrix.m[currRow][currColumn] = (negationScalar * currDeterminant);
+					}
 				}
 			}
 
@@ -536,7 +791,63 @@ constexpr Brawler::Math::Matrix<LHSNumRows, RHSNumColumns> operator*(const Brawl
 	return lhs.MultiplyMatrix(rhs);
 }
 
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs)
+{
+	return lhs.AddScalar(rhs);
+}
+
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs)
+{
+	// a + b = b + a
+	return rhs.AddScalar(lhs);
+}
+
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs)
+{
+	return lhs.SubtractScalar(rhs);
+}
+
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs)
+{
+	// a - b = (-b) + a
+	return rhs.MultiplyScalar(-1.0f).AddScalar(lhs);
+}
+
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator*(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs)
+{
+	return lhs.MultiplyScalar(rhs);
+}
+
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator*(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs)
+{
+	// a * b = b * a (Well, for scalar-matrix multiplication, anyways...)
+	return rhs.MultiplyScalar(lhs);
+}
+
+template <std::size_t NumRows, std::size_t NumColumns>
+constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator/(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs)
+{
+	return lhs.DivideScalar(rhs);
+}
+
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+namespace Brawler
+{
+	namespace Math
+	{
+		template class Matrix<3, 3>;
+		template class Matrix<3, 4>;
+		template class Matrix<4, 3>;
+		template class Matrix<4, 4>;
+	}
+}
 
 export namespace Brawler
 {
@@ -546,5 +857,13 @@ export namespace Brawler
 		using Float3x4 = Matrix<3, 4>;
 		using Float4x3 = Matrix<4, 3>;
 		using Float4x4 = Matrix<4, 4>;
+	}
+}
+
+namespace Brawler
+{
+	namespace Math
+	{
+		static constexpr Matrix<3, 4> TEST_3X4{};
 	}
 }

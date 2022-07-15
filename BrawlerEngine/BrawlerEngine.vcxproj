@@ -274,6 +274,7 @@
     <ClCompile Include="src\ApplicationStateStackRequest.ixx" />
     <ClCompile Include="src\I_WindowState.cpp" />
     <ClCompile Include="src\I_WindowState.ixx" />
+    <ClCompile Include="src\MathConstants.ixx" />
     <ClCompile Include="src\MathTypes.ixx" />
     <ClCompile Include="src\Matrix.ixx" />
     <ClCompile Include="src\ModelLoader.ixx" />
@@ -292,6 +293,7 @@
     <ClCompile Include="src\I_Component.ixx" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Manifest.ixx" />
+    <ClCompile Include="src\Quaternion.ixx" />
     <ClCompile Include="src\SceneGraph.cpp" />
     <ClCompile Include="src\SceneGraph.ixx" />
     <ClCompile Include="src\SceneNode.cpp" />
@@ -302,9 +304,12 @@
     <ClCompile Include="src\SettingsManager.cpp" />
     <ClCompile Include="src\SettingsManager.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequestBundle.ixx" />
-    <ClCompile Include="src\Shaders\TriangleClusterFrustumCull.hlsl" />
+    <ClCompile Include="src\Shaders\TriangleClusterFrustumCull.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\SwapChain.cpp" />
     <ClCompile Include="src\SwapChain.ixx" />
+    <ClCompile Include="src\TransformComponent.ixx" />
     <ClCompile Include="src\Vector.ixx" />
     <ClCompile Include="src\WindowDisplayMode.ixx" />
     <ClCompile Include="src\WindowedModeWindowState.cpp" />
@@ -326,16 +331,36 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="src\Shaders\BindlessDescriptors.hlsli" />
-    <None Include="src\Shaders\GPUSceneLimits.hlsli" />
-    <None Include="src\Shaders\MeshConstants.hlsli" />
-    <None Include="src\Shaders\MeshTypes.hlsli" />
-    <None Include="src\Shaders\NormalPacking.hlsli" />
-    <None Include="src\Shaders\NumericLimits.hlsli" />
-    <None Include="src\Shaders\TangentFramePacking.hlsli" />
-    <None Include="src\Shaders\TransformUtil.hlsli" />
-    <None Include="src\Shaders\TriangleCluster.hlsli" />
-    <None Include="src\Shaders\ViewTypes.hlsli" />
+    <None Include="src\Shaders\BindlessDescriptors.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="src\Shaders\GPUSceneLimits.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="src\Shaders\MeshConstants.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="src\Shaders\MeshTypes.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="src\Shaders\NormalPacking.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="src\Shaders\NumericLimits.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="src\Shaders\TangentFramePacking.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="src\Shaders\TransformUtil.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="src\Shaders\TriangleCluster.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="src\Shaders\ViewTypes.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BrawlerAssetManagement\BrawlerAssetManagement.vcxproj">

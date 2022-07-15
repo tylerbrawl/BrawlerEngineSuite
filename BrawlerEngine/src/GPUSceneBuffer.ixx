@@ -6,16 +6,20 @@ module;
 
 export module Brawler.GPUSceneBuffer;
 import Brawler.D3D12.BufferResource;
+import Brawler.D3D12.I_GPUResource;
 import Brawler.D3D12.ByteAddressBufferSubAllocation;
 import Brawler.D3D12.StructuredBufferSubAllocation;
 import Brawler.D3D12.BindlessSRVAllocation;
 import Brawler.D3D12.BufferResourceInitializationInfo;
+import Brawler.GPUSceneTypes;
 
 namespace Brawler
 {
 	template <typename ElementType, std::size_t NumElements>
 	struct GPUSceneBufferSubAllocationInfo
-	{};
+	{
+		static_assert(sizeof(ElementType) != sizeof(ElementType), "ERROR: An invalid GPU scene buffer data type was detected!");
+	};
 
 	template <typename T, std::size_t NumElements, DXGI_FORMAT SRVFormat>
 		requires (SRVFormat != DXGI_FORMAT::DXGI_FORMAT_UNKNOWN)
@@ -138,6 +142,6 @@ namespace Brawler
 		// within the bindless SRV segment of the GPUResourceDescriptorHeap. We need the calls to
 		// GPUSceneBuffer::Initialize() to match this ordering.
 		D3D12_SHADER_RESOURCE_VIEW_DESC bindlessSRVDesc{ GPUSceneBufferSubAllocationInfo<ElementType, NumElements>::DEFAULT_SRV_DESC };
-		mBindlessAllocation = mBufferPtr->CreateBindlessSRV(std::move(bindlessSRVDesc));
+		mBindlessAllocation = static_cast<D3D12::I_GPUResource&>(*mBufferPtr).CreateBindlessSRV(std::move(bindlessSRVDesc));
 	}
 }

@@ -60,7 +60,7 @@ namespace Brawler
 		// of that.
 
 		template <typename T>
-		concept HLSLStructuredBufferCompatible = Util::HLSL::IsHLSLConstantBufferAligned<T>() && IsStructureTightlyPacked<T>();
+		concept HLSLStructuredBufferCompatible = Util::HLSL::IsHLSLConstantBufferAligned<T>();
 
 		static constexpr std::size_t DYNAMIC_BUFFER_SIZE = std::numeric_limits<std::size_t>::max();
 
@@ -71,12 +71,12 @@ namespace Brawler
 			SizeContainer() = default;
 			virtual ~SizeContainer() = default;
 
-			consteval std::size_t GetCalculatedSize() const
+			static consteval std::size_t GetCalculatedSize()
 			{
 				return (sizeof(T) * NumElements);
 			}
 
-			consteval std::size_t GetElementCount() const
+			static consteval std::size_t GetElementCount()
 			{
 				return NumElements;
 			}
@@ -295,7 +295,7 @@ namespace Brawler
 			// the template instantiation for SizeContainer in that case has a consteval version of
 			// GetCalculatedSize().
 
-			return this->GetCalculatedSize();
+			return SizeContainer<T, NumElements>::GetCalculatedSize();
 		}
 
 		template <typename T, std::size_t NumElements>

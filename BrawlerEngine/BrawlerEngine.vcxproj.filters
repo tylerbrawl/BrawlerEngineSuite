@@ -372,6 +372,15 @@
     <ClCompile Include="src\GPUSceneManager.cpp">
       <Filter>Source Files\GPU Scene Representation</Filter>
     </ClCompile>
+    <ClCompile Include="src\TransformComponent.ixx">
+      <Filter>Module Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Quaternion.ixx">
+      <Filter>Module Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MathConstants.ixx">
+      <Filter>Module Files\Math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

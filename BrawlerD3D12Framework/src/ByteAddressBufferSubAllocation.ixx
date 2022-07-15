@@ -18,7 +18,7 @@ namespace Brawler
 		protected:
 			constexpr ByteCountContainer() = default;
 
-			consteval std::size_t GetBytesCount() const
+			static consteval std::size_t GetBytesCount()
 			{
 				return NumBytes;
 			}

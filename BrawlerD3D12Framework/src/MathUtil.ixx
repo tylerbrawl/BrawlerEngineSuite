@@ -93,7 +93,7 @@ export namespace Util
 		/// </param>
 		/// <returns></returns>
 		template <typename T>
-			requires std::is_integral_v<T>
+			requires std::is_arithmetic_v<T>
 		constexpr float GetSquareRoot(const T value);
 	}
 }
@@ -266,7 +266,7 @@ namespace Util
 		}
 
 		template <typename T>
-			requires std::is_integral_v<T>
+			requires std::is_arithmetic_v<T>
 		constexpr float GetSquareRoot(const T value)
 		{
 			if (std::is_constant_evaluated())
@@ -283,7 +283,7 @@ namespace Util
 				// be the value which we want to calculate the square root for. By exploiting the layout
 				// of a floating-point value as defined in IEEE-754, we can get these values fairly easily.
 				const float castedValue = static_cast<float>(value);
-				const float halfExponent = (static_cast<float>(std::bit_cast<std::int32_t>((castedValue >> 23) & 0x8) - 127) / 2.0f);
+				const float halfExponent = (static_cast<float>(((std::bit_cast<std::int32_t>(castedValue) >> 23) & 0x8) - 127) / 2.0f);
 
 				// value == a * (2^(2n)) == a * (2^n) * (2^n). We have n == halfExponent already, so let's 
 				// represent 2^n as a float.

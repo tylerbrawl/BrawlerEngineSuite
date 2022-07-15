@@ -5,7 +5,7 @@ export module Brawler.GPUSceneBufferUpdater;
 import Brawler.I_GPUSceneBufferUpdateSource;
 import Brawler.D3D12.BufferCopyRegion;
 import Brawler.Application;
-import Brawler.Renderer;
+import Brawler.D3D12.Renderer;
 import Brawler.GPUSceneUpdateRenderModule;
 import Brawler.GPUSceneBufferMap;
 import Brawler.GPUSceneBufferID;
@@ -22,7 +22,7 @@ export namespace Brawler
 
 	public:
 		GPUSceneBufferUpdater() = default;
-		explicit GPUSceneBufferUpdater(D3D12::BufferCopyRegion&& gpuSceneBufferCopyDest) requires std::is_default_constructible_v<ElementType>;
+		explicit GPUSceneBufferUpdater(D3D12::BufferCopyRegion&& gpuSceneBufferCopyDest);
 
 		GPUSceneBufferUpdater(const GPUSceneBufferUpdater& rhs) = delete;
 		GPUSceneBufferUpdater& operator=(const GPUSceneBufferUpdater& rhs) = delete;
@@ -31,7 +31,7 @@ export namespace Brawler
 		GPUSceneBufferUpdater& operator=(GPUSceneBufferUpdater&& rhs) noexcept = default;
 
 		template <typename U>
-			requires std::is_same_v<std::decay_t<ElementType>, std::decay_t<U>>
+			requires std::is_same_v<std::decay_t<GPUSceneBufferElementType<BufferID>>, std::decay_t<U>>
 		void UpdateGPUSceneData(U&& newValue);
 
 		std::span<const std::byte> GetGPUSceneUploadData() const override;
@@ -47,7 +47,7 @@ export namespace Brawler
 namespace Brawler
 {
 	template <GPUSceneBufferID BufferID>
-	GPUSceneBufferUpdater<BufferID>::GPUSceneBufferUpdater(D3D12::BufferCopyRegion&& gpuSceneBufferCopyDest) requires std::is_default_constructible_v<ElementType> :
+	GPUSceneBufferUpdater<BufferID>::GPUSceneBufferUpdater(D3D12::BufferCopyRegion&& gpuSceneBufferCopyDest) :
 		I_GPUSceneBufferUpdateSource(std::move(gpuSceneBufferCopyDest)),
 		mDataToUpload()
 	{}

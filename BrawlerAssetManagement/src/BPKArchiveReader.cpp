@@ -232,7 +232,7 @@ namespace Brawler
 				.FileOffsetInBytes = tocEntry.FileOffsetInBytes,
 				.ViewSizeInBytes = (tocEntry.IsDataCompressed() ? tocEntry.CompressedSizeInBytes : tocEntry.UncompressedSizeInBytes)
 			} };
-			assert(mappedView.IsViewValid() && "ERROR: Something went wrong when creating a MappedFileView for an asset in a BPK file!");
+			assert(mappedView.IsValidView() && "ERROR: Something went wrong when creating a MappedFileView for an asset in a BPK file!");
 
 			return mappedView;
 		}
