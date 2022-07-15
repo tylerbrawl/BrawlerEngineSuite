@@ -276,6 +276,7 @@
     <ClCompile Include="src\I_WindowState.ixx" />
     <ClCompile Include="src\MathConstants.ixx" />
     <ClCompile Include="src\MathTypes.ixx" />
+    <ClCompile Include="src\Matrix.cpp" />
     <ClCompile Include="src\Matrix.ixx" />
     <ClCompile Include="src\ModelLoader.ixx" />
     <ClCompile Include="src\ModelLoadEventHandle.ixx" />

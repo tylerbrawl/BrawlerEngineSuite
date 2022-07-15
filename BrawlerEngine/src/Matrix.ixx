@@ -7,7 +7,6 @@ module;
 #include <DirectXMath/DirectXMath.h>
 
 export module Brawler.Math.MathTypes:Matrix;
-import Util.General;
 
 namespace Brawler
 {
@@ -59,13 +58,64 @@ namespace Brawler
 		class Matrix
 		{
 		private:
+			template <std::size_t RHSNumRows, std::size_t RHSNumColumns>
+			friend class Matrix;
+
+		private:
 			using StorageType = typename MatrixInfo<NumRows, NumColumns>::StorageType;
 			using MathType = typename MatrixInfo<NumRows, NumColumns>::MathType;
 
 		public:
 			constexpr Matrix() = default;
-			constexpr explicit Matrix(const StorageType& matrixData);
 			constexpr explicit Matrix(const float replicatedScalar);
+
+			// So, C++ has this stupid rule where you cannot switch the active member of a union in a constant-
+			// evaluated context. Typically, when one initializes a DirectX::XMFLOAT*X* structure, they do so
+			// by providing a set of floats. These structs have a constructor which takes all of these floats,
+			// but they initialize the _XX members of the anonymous union contained within these structs.
+			//
+			// As a result, the _XX members become the active members of matrixData. If we then invoke the defaulted
+			// trivial copy constructor of DirectX::XMFLOAT*X* to initialize mStoredMatrix from matrixData, then
+			// the active members of mStoredMatrix will also be the _XX members. This poses a problem for us,
+			// because our constexpr functions make use of the m member of the union.
+			// 
+			// If we create a constructor for Matrix which takes a const DirectX::XMFLOAT*X*& and manually copies
+			// the values into the m member of mStoredMatrix, then it might work for those DirectX::XMFLOAT*X*
+			// instances... but it will fail for default constructed DirectX::XMFLOAT*X* instances! Since there
+			// is no way to check the active member of the union at runtime, we simply cannot allow construction
+			// of Matrix instances from DirectX::XMFLOAT*X* structs.
+			//
+			// tl;dr: We can't add the constructor Matrix(const StorageType&).
+
+		private:
+			constexpr explicit Matrix(const StorageType& matrixData);
+
+		public:
+			constexpr explicit Matrix(
+				const float _11, const float _12, const float _13,
+				const float _21, const float _22, const float _23,
+				const float _31, const float _32, const float _33
+			) requires (NumRows == 3 && NumColumns == 3);
+
+			constexpr explicit Matrix(
+				const float _11, const float _12, const float _13, const float _14,
+				const float _21, const float _22, const float _23, const float _24,
+				const float _31, const float _32, const float _33, const float _34
+			) requires (NumRows == 3 && NumColumns == 4);
+
+			constexpr explicit Matrix(
+				const float _11, const float _12, const float _13,
+				const float _21, const float _22, const float _23,
+				const float _31, const float _32, const float _33,
+				const float _41, const float _42, const float _43
+			) requires (NumRows == 4 && NumColumns == 3);
+
+			constexpr explicit Matrix(
+				const float _11, const float _12, const float _13, const float _14,
+				const float _21, const float _22, const float _23, const float _24,
+				const float _31, const float _32, const float _33, const float _34,
+				const float _41, const float _42, const float _43, const float _44
+			) requires (NumRows == 4 && NumColumns == 4);
 
 			constexpr Matrix(const Matrix& rhs) = default;
 			constexpr Matrix& operator=(const Matrix& rhs) = default;
@@ -189,11 +239,6 @@ namespace Brawler
 	namespace Math
 	{
 		template <std::size_t NumRows, std::size_t NumColumns>
-		constexpr Matrix<NumRows, NumColumns>::Matrix(const StorageType& matrixData) :
-			mStoredMatrix(matrixData)
-		{}
-
-		template <std::size_t NumRows, std::size_t NumColumns>
 		constexpr Matrix<NumRows, NumColumns>::Matrix(const float replicatedScalar) :
 			mStoredMatrix()
 		{
@@ -202,6 +247,108 @@ namespace Brawler
 				for (const auto j : std::views::iota(0u, NumColumns))
 					mStoredMatrix.m[i][j] = replicatedScalar;
 			}
+		}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		constexpr Matrix<NumRows, NumColumns>::Matrix(const StorageType& matrixData) :
+			mStoredMatrix(matrixData)
+		{}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		constexpr Matrix<NumRows, NumColumns>::Matrix(
+			const float _11, const float _12, const float _13,
+			const float _21, const float _22, const float _23,
+			const float _31, const float _32, const float _33
+		) requires (NumRows == 3 && NumColumns == 3)
+		{
+			mStoredMatrix.m[0][0] = _11;
+			mStoredMatrix.m[0][1] = _12;
+			mStoredMatrix.m[0][2] = _13;
+
+			mStoredMatrix.m[1][0] = _21;
+			mStoredMatrix.m[1][1] = _22;
+			mStoredMatrix.m[1][2] = _23;
+
+			mStoredMatrix.m[2][0] = _31;
+			mStoredMatrix.m[2][1] = _32;
+			mStoredMatrix.m[2][2] = _33;
+		}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		constexpr Matrix<NumRows, NumColumns>::Matrix(
+			const float _11, const float _12, const float _13, const float _14,
+			const float _21, const float _22, const float _23, const float _24,
+			const float _31, const float _32, const float _33, const float _34
+		) requires (NumRows == 3 && NumColumns == 4)
+		{
+			mStoredMatrix.m[0][0] = _11;
+			mStoredMatrix.m[0][1] = _12;
+			mStoredMatrix.m[0][2] = _13;
+			mStoredMatrix.m[0][3] = _14;
+
+			mStoredMatrix.m[1][0] = _21;
+			mStoredMatrix.m[1][1] = _22;
+			mStoredMatrix.m[1][2] = _23;
+			mStoredMatrix.m[1][3] = _24;
+
+			mStoredMatrix.m[2][0] = _31;
+			mStoredMatrix.m[2][1] = _32;
+			mStoredMatrix.m[2][2] = _33;
+			mStoredMatrix.m[2][3] = _34;
+		}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		constexpr Matrix<NumRows, NumColumns>::Matrix(
+			const float _11, const float _12, const float _13,
+			const float _21, const float _22, const float _23,
+			const float _31, const float _32, const float _33,
+			const float _41, const float _42, const float _43
+		) requires (NumRows == 4 && NumColumns == 3)
+		{
+			mStoredMatrix.m[0][0] = _11;
+			mStoredMatrix.m[0][1] = _12;
+			mStoredMatrix.m[0][2] = _13;
+
+			mStoredMatrix.m[1][0] = _21;
+			mStoredMatrix.m[1][1] = _22;
+			mStoredMatrix.m[1][2] = _23;
+
+			mStoredMatrix.m[2][0] = _31;
+			mStoredMatrix.m[2][1] = _32;
+			mStoredMatrix.m[2][2] = _33;
+
+			mStoredMatrix.m[3][0] = _41;
+			mStoredMatrix.m[3][1] = _42;
+			mStoredMatrix.m[3][2] = _43;
+		}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		constexpr Matrix<NumRows, NumColumns>::Matrix(
+			const float _11, const float _12, const float _13, const float _14,
+			const float _21, const float _22, const float _23, const float _24,
+			const float _31, const float _32, const float _33, const float _34,
+			const float _41, const float _42, const float _43, const float _44
+		) requires (NumRows == 4 && NumColumns == 4)
+		{
+			mStoredMatrix.m[0][0] = _11;
+			mStoredMatrix.m[0][1] = _12;
+			mStoredMatrix.m[0][2] = _13;
+			mStoredMatrix.m[0][3] = _14;
+
+			mStoredMatrix.m[1][0] = _21;
+			mStoredMatrix.m[1][1] = _22;
+			mStoredMatrix.m[1][2] = _23;
+			mStoredMatrix.m[1][3] = _24;
+
+			mStoredMatrix.m[2][0] = _31;
+			mStoredMatrix.m[2][1] = _32;
+			mStoredMatrix.m[2][2] = _33;
+			mStoredMatrix.m[2][3] = _34;
+
+			mStoredMatrix.m[3][0] = _41;
+			mStoredMatrix.m[3][1] = _42;
+			mStoredMatrix.m[3][2] = _43;
+			mStoredMatrix.m[3][3] = _44;
 		}
 
 		template <std::size_t NumRows, std::size_t NumColumns>
@@ -428,7 +575,7 @@ namespace Brawler
 				// There is no DirectXMath equivalent. However, we can utilize DirectXMath vector
 				// functions in order to vectorize the implementation ourselves.
 				StorageType storedResult{};
-				
+
 				for (const auto i : std::views::iota(0u, NumRows))
 				{
 					const DirectX::XMVECTOR lhsVector{ GetRowXMVector(i) };
@@ -450,14 +597,11 @@ namespace Brawler
 		template <std::size_t NumRows, std::size_t NumColumns>
 		constexpr Matrix<NumRows, NumColumns> Matrix<NumRows, NumColumns>::DivideScalar(const float rhs) const
 		{
-			if constexpr (Util::General::IsDebugModeEnabled())
-			{
-				constexpr float EPSILON = 0.0001f;
+			constexpr float EPSILON = 0.0001f;
 
-				const float absRHS = (rhs < 0.0f ? -rhs : rhs);
-				assert(absRHS >= EPSILON && "ERROR: An attempt was made to divide the elements of a Matrix by zero!");
-			}
-			
+			const float absRHS = (rhs < 0.0f ? -rhs : rhs);
+			assert(absRHS >= EPSILON && "ERROR: An attempt was made to divide the elements of a Matrix by zero!");
+
 			if (std::is_constant_evaluated())
 			{
 				StorageType storedResult{};
@@ -476,7 +620,7 @@ namespace Brawler
 				// functions in order to vectorize the implementation ourselves.
 				StorageType storedResult{};
 				const float reciprocalRHS = (1.0f / rhs);
-				
+
 				for (const auto i : std::views::iota(0u, NumRows))
 				{
 					const DirectX::XMVECTOR lhsVector{ GetRowXMVector(i) };
@@ -571,9 +715,9 @@ namespace Brawler
 				// vectorized DirectXMath library.
 				if constexpr (NumRows == 3)
 				{
-					const float firstProduct = mStoredMatrix._11 * ((mStoredMatrix._22 * mStoredMatrix._33) - (mStoredMatrix._23 * mStoredMatrix._32));
-					const float secondProduct = mStoredMatrix._12 * ((mStoredMatrix._21 * mStoredMatrix._33) - (mStoredMatrix._23 * mStoredMatrix._31));
-					const float thirdProduct = mStoredMatrix._13 * ((mStoredMatrix._21 * mStoredMatrix._32) - (mStoredMatrix._22 * mStoredMatrix._31));
+					const float firstProduct = mStoredMatrix.m[0][0] * ((mStoredMatrix.m[1][1] * mStoredMatrix.m[2][2]) - (mStoredMatrix.m[1][2] * mStoredMatrix.m[2][1]));
+					const float secondProduct = mStoredMatrix.m[0][1] * ((mStoredMatrix.m[1][0] * mStoredMatrix.m[2][2]) - (mStoredMatrix.m[1][2] * mStoredMatrix.m[2][0]));
+					const float thirdProduct = mStoredMatrix.m[0][2] * ((mStoredMatrix.m[1][0] * mStoredMatrix.m[2][1]) - (mStoredMatrix.m[1][1] * mStoredMatrix.m[2][0]));
 
 					return firstProduct - secondProduct + thirdProduct;
 				}
@@ -620,7 +764,7 @@ namespace Brawler
 		template <std::size_t NumRows, std::size_t NumColumns>
 		constexpr float Matrix<NumRows, NumColumns>::GetElement(const std::size_t rowIndex, const std::size_t columnIndex) const
 		{
-			assert(rowIndex < NumRows && columnIndex < NumColumns && "ERROR: An out-of-bounds index was specified in a call to Matrix::GetElement()!");
+			assert(rowIndex < NumRows&& columnIndex < NumColumns && "ERROR: An out-of-bounds index was specified in a call to Matrix::GetElement()!");
 			return mStoredMatrix.m[rowIndex][columnIndex];
 		}
 
@@ -689,7 +833,7 @@ namespace Brawler
 			{
 				for (const auto currColumn : std::views::iota(0u, NumColumns))
 				{
-					const float negationScalar = (-1.0f * ((currRow + currColumn) % 2));
+					const float negationScalar = (((currRow + currColumn) % 2) == 0 ? 1.0f : -1.0f);
 
 					if constexpr (NumRows > 3 && NumColumns > 3)
 					{
@@ -707,7 +851,9 @@ namespace Brawler
 							}
 						}
 
-						Matrix<(NumRows - 1), (NumColumns - 1)> currDeterminantMatrix{ currStorageDeterminantMatrix };
+						Matrix<(NumRows - 1), (NumColumns - 1)> currDeterminantMatrix{};
+						currDeterminantMatrix.mStoredMatrix = currStorageDeterminantMatrix;
+
 						storageTransposeCofactorMatrix.m[currRow][currColumn] = (negationScalar * currDeterminantMatrix.Determinant());
 					}
 					else
@@ -744,7 +890,7 @@ namespace Brawler
 		DirectX::XMVECTOR Matrix<NumRows, NumColumns>::GetRowXMVector(const std::size_t rowIndex) const
 		{
 			assert(rowIndex < NumRows);
-			
+
 			if constexpr (NumColumns == 3)
 			{
 				return DirectX::XMVectorSet(
@@ -838,17 +984,6 @@ constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator/(const Brawler::Ma
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-namespace Brawler
-{
-	namespace Math
-	{
-		template class Matrix<3, 3>;
-		template class Matrix<3, 4>;
-		template class Matrix<4, 3>;
-		template class Matrix<4, 4>;
-	}
-}
-
 export namespace Brawler
 {
 	namespace Math
@@ -857,13 +992,5 @@ export namespace Brawler
 		using Float3x4 = Matrix<3, 4>;
 		using Float4x3 = Matrix<4, 3>;
 		using Float4x4 = Matrix<4, 4>;
-	}
-}
-
-namespace Brawler
-{
-	namespace Math
-	{
-		static constexpr Matrix<3, 4> TEST_3X4{};
 	}
 }

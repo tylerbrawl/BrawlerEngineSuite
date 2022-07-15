@@ -17,7 +17,7 @@ export namespace Brawler
 			constexpr Quaternion() = default;
 			constexpr explicit Quaternion(const Float3& normalizedRotationAxis, const float rotationInRadians);
 			constexpr explicit Quaternion(const DirectX::XMFLOAT4& quaternionData);
-			constexpr explicit Quaternion(const Matrix<3, 3>& rotationMatrix);
+			constexpr explicit Quaternion(const Float3x3& rotationMatrix);
 
 			constexpr Quaternion(const Quaternion& rhs) = default;
 			constexpr Quaternion& operator=(const Quaternion& rhs) = default;
@@ -106,7 +106,7 @@ export namespace Brawler
 			/// The function returns the 3x3 matrix representing the rotation represented by this Quaternion
 			/// instance.
 			/// </returns>
-			constexpr Matrix<3, 3> ConvertToRotationMatrix() const;
+			constexpr Float3x3 ConvertToRotationMatrix() const;
 
 			constexpr Quaternion Inverse() const;
 			constexpr Quaternion Conjugate() const;
@@ -246,7 +246,7 @@ namespace Brawler
 			mQuaternionVector(quaternionData)
 		{}
 
-		constexpr Quaternion::Quaternion(const Matrix<3, 3>& rotationMatrix) :
+		constexpr Quaternion::Quaternion(const Float3x3& rotationMatrix) :
 			mQuaternionVector()
 		{
 			if (std::is_constant_evaluated())
@@ -460,7 +460,7 @@ namespace Brawler
 			return nextRotationQuaternion.MultiplyQuaternion(*this);
 		}
 
-		constexpr Matrix<3, 3> Quaternion::ConvertToRotationMatrix() const
+		constexpr Float3x3 Quaternion::ConvertToRotationMatrix() const
 		{
 			if (std::is_constant_evaluated())
 			{
@@ -478,15 +478,6 @@ namespace Brawler
 				const float twoTimesYZ = (2.0f * mQuaternionVector.y * mQuaternionVector.z);
 				const float twoTimesXW = (2.0f * mQuaternionVector.x * mQuaternionVector.w);
 
-				// Originally, I was going to create a DirectX::XMFLOAT3X3 variable rotationMatrixStorage
-				// and fill in its fields manually as rotationMatrixStorage._XX or rotationMatrixStorage.m[X][X],
-				// but this was causing the MSVC to crash with a stack overflow error.
-				const DirectX::XMFLOAT3X3 rotationMatrixStorage{
-					(1.0f - (2.0f * quaternionYSquared) - (2.0f * quaternionZSquared)), (twoTimesXY + twoTimesZW), (twoTimesXZ - twoTimesYW),
-					(twoTimesXY - twoTimesZW), (1.0f - (2.0f * quaternionXSquared) - (2.0f * quaternionZSquared)), (twoTimesYZ + twoTimesXW),
-					(twoTimesXZ + twoTimesYW), (twoTimesYZ - twoTimesXW), (1.0f - (2.0f * quaternionXSquared) - (2.0f * quaternionYSquared))
-				};
-
 				// I'll leave the more readable version below:
 				//rotationMatrixStorage_11 = (1.0f - (2.0f * quaternionYSquared) - (2.0f * quaternionZSquared));
 				//rotationMatrixStorage._12 = (twoTimesXY + twoTimesZW);
@@ -500,7 +491,11 @@ namespace Brawler
 				//rotationMatrixStorage._32 = (twoTimesYZ - twoTimesXW);
 				//rotationMatrixStorage._33 = (1.0f - (2.0f * quaternionXSquared) - (2.0f * quaternionYSquared));
 
-				return Matrix<3, 3>{ rotationMatrixStorage };
+				return Float3x3{ 
+					(1.0f - (2.0f * quaternionYSquared) - (2.0f * quaternionZSquared)), (twoTimesXY + twoTimesZW), (twoTimesXZ - twoTimesYW),
+					(twoTimesXY - twoTimesZW), (1.0f - (2.0f * quaternionXSquared) - (2.0f * quaternionZSquared)), (twoTimesYZ + twoTimesXW),
+					(twoTimesXZ + twoTimesYW), (twoTimesYZ - twoTimesXW), (1.0f - (2.0f * quaternionXSquared) - (2.0f * quaternionYSquared))
+				};
 			}
 			else
 			{
@@ -511,7 +506,11 @@ namespace Brawler
 				DirectX::XMFLOAT3X3 storedResult{};
 				DirectX::XMStoreFloat3x3(&storedResult, loadedRotationMatrix);
 
-				return Matrix<3, 3>{ storedResult };
+				return Float3x3{
+					storedResult(0, 0), storedResult(0, 1), storedResult(0, 2),
+					storedResult(1, 0), storedResult(1, 1), storedResult(1, 2),
+					storedResult(2, 0), storedResult(2, 1), storedResult(2, 2)
+				};
 			}
 		}
 
