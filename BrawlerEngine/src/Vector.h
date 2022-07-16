@@ -765,69 +765,7 @@ namespace Brawler
 			if (std::is_constant_evaluated())
 			{
 				const float cosAngle = static_cast<float>(Dot(rhs));
-
-				// std::acosf() is not yet constexpr, so we need to calculate the arccos(cosAngle) ourselves.
-				// To do this, we instead use the formula arccos(x) = (PI / 2) - arcsin(x) and converge to the
-				// arcsin(x) using its power series representation.
-				//
-				// You know, it isn't until you try to implement these functions yourself that you realize
-				// why everybody hates transcendental functions in performance-critical code. Thankfully, these
-				// calculations, slow as they may be, are all done at compile time.
-
-				constexpr float MAXIMUM_ALLOWED_DIFFERENCE = 0.001f;
-				float currArcSinValue = 0;
-				float prevArcSinValue = currArcSinValue;
-				std::size_t currIteration = 0;
-				float currDifference = 0.0f;
-				const float cosAngleSquared = (cosAngle * cosAngle);
-
-				constexpr auto COMPUTE_FACTORIAL_LAMBDA = [] (const std::size_t value) -> std::size_t
-				{
-					if (value <= 1)
-						return 1;
-
-					std::size_t currProduct = 1;
-
-					for (std::size_t i = value; i > 1; --i)
-						currProduct *= i;
-
-					return currProduct;
-				};
-
-				// The formula for the power series which represents arcsin(x) can be found at
-				// https://en.wikipedia.org/wiki/Inverse_trigonometric_functions.
-				do
-				{
-					float currIterationValue = cosAngle;
-					const std::size_t twoTimesCurrIteration = (2 * currIteration);
-
-					for (const auto i : std::views::iota(0u, currIteration))
-						currIterationValue *= (cosAngleSquared);
-
-					currIterationValue /= static_cast<float>(twoTimesCurrIteration + 1);
-					currIterationValue *= COMPUTE_FACTORIAL_LAMBDA(twoTimesCurrIteration);
-
-					float scaleValueDenominator = (std::bit_cast<float>(static_cast<std::uint32_t>(currIteration + 127) << 23) * COMPUTE_FACTORIAL_LAMBDA(currIteration));
-					scaleValueDenominator *= scaleValueDenominator;
-
-					currIterationValue /= static_cast<float>(scaleValueDenominator);
-
-					currArcSinValue += currIterationValue;
-					currDifference = (currArcSinValue - prevArcSinValue);
-
-					if (currDifference < 0.0f)
-						currDifference *= -1.0f;
-
-					prevArcSinValue = currArcSinValue;
-					++currIteration;
-				} while (currDifference >= MAXIMUM_ALLOWED_DIFFERENCE);
-
-				// We have (finally) converged to the correct result for arcsin(cosAngle), but we need arccos(cosAngle).
-				// Thankfully, arccos(x) = (PI / 2) - arcsin(x).
-				constexpr float PI = 3.1415926535f;
-				constexpr float PI_OVER_TWO = (PI / 2.0f);
-
-				return (PI_OVER_TWO - currArcSinValue);
+				return Util::Math::GetArcCosineValue(cosAngle);
 			}
 			else
 			{

@@ -6,17 +6,42 @@ module;
 module Brawler.TransformComponent;
 import Brawler.Math.MathConstants;
 
+namespace
+{
+	consteval Brawler::Math::Float4x4 GetDefaultWorldMatrix()
+	{
+		const Brawler::Math::Float4x4 defaultScaleMatrix{ Brawler::Math::GetIdentityMatrix4x4() };
+		
+		Brawler::Math::Float4x4 rotationAndTranslationMatrix{};
+
+		{
+			const Brawler::Math::Float3x3 condensedRotationMatrix{ Brawler::Math::IDENTITY_QUATERNION.ConvertToRotationMatrix() };
+
+			rotationAndTranslationMatrix = Brawler::Math::Float4x4{
+				condensedRotationMatrix.GetElement(0, 0), condensedRotationMatrix.GetElement(0, 1), condensedRotationMatrix.GetElement(0, 2), 0.0f,
+				condensedRotationMatrix.GetElement(1, 0), condensedRotationMatrix.GetElement(1, 1), condensedRotationMatrix.GetElement(1, 2), 0.0f,
+				condensedRotationMatrix.GetElement(2, 0), condensedRotationMatrix.GetElement(2, 1), condensedRotationMatrix.GetElement(2, 2), 0.0f,
+
+				// The default translation value is the vector [0 0 0].
+				0.0f, 0.0f, 0.0f, 1.0f
+			};
+		}
+
+		return defaultScaleMatrix * rotationAndTranslationMatrix;
+	}
+
+	constexpr Brawler::Math::Float4x4 DEFAULT_WORLD_MATRIX{ GetDefaultWorldMatrix() };
+}
+
 namespace Brawler
 {
 	TransformComponent::TransformComponent() :
-		mWorldMatrix(),
+		mWorldMatrix(DEFAULT_WORLD_MATRIX),
 		mScale(DirectX::XMFLOAT3{ 1.0f, 1.0f, 1.0f }),
 		mRotation(Math::IDENTITY_QUATERNION),
 		mTranslation(),
-		mIsWorldMatrixDirty(true)
-	{
-		ReBuildWorldMatrix();
-	}
+		mIsWorldMatrixDirty(false)
+	{}
 
 	void TransformComponent::Update(const float dt)
 	{

@@ -378,6 +378,12 @@
     <ClCompile Include="src\TransformComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="src\ViewComponent.ixx">
+      <Filter>Module Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ViewComponent.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

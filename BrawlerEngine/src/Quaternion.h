@@ -3,11 +3,11 @@
 #include <algorithm>
 #include <source_location>
 #include <DirectXMath/DirectXMath.h>
+#include <string_view>
 #include "Matrix.h"
 #include "Vector.h"
 
 import Util.Math;
-import Brawler.NZStringView;
 import Util.General;
 
 namespace Brawler
@@ -231,7 +231,7 @@ namespace Brawler
 
 namespace
 {
-	__forceinline constexpr void SafeAssert(const bool expression, const Brawler::NZWStringView assertMsg, const std::source_location srcLocation = std::source_location::current())
+	__forceinline constexpr void SafeAssert(const bool expression, const std::wstring_view assertMsg, const std::source_location srcLocation = std::source_location::current())
 	{
 		// Would you believe me if I told you that using the assert() macro in this file - and only this file - 
 		// is causing the MSVC to spit out false errors?
@@ -240,7 +240,7 @@ namespace
 		{
 			(void)(
 				(!!(expression)) ||
-				(_wassert(assertMsg.C_Str(), L"Quaternion.h", srcLocation.line()), 0)
+				(_wassert(assertMsg.data(), L"Quaternion.h", srcLocation.line()), 0)
 				);
 		}
 	}

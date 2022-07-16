@@ -5,6 +5,7 @@ module;
 #include <cassert>
 #include <optional>
 #include <cmath>
+#include <ranges>
 
 export module Util.Math;
 
@@ -102,6 +103,26 @@ export namespace Util
 
 		template <typename T>
 			requires std::is_arithmetic_v<T>
+		constexpr float GetCosineAngle(const T angleInRadians);
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
+		constexpr float GetTangentAngle(const T angleInRadians);
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
+		constexpr float GetArcSineValue(const T value);
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
+		constexpr float GetArcCosineValue(const T value);
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
+		constexpr float GetArcTangentValue(const T value);
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
 		constexpr float RadiansToDegrees(const T angleInRadians);
 
 		template <typename T>
@@ -111,6 +132,14 @@ export namespace Util
 }
 
 // --------------------------------------------------------------------------------------------------------
+
+namespace Util
+{
+	namespace Math
+	{
+		constexpr float PI = 3.14159265359f;
+	}
+}
 
 namespace Util
 {
@@ -335,7 +364,8 @@ namespace Util
 			if (std::is_constant_evaluated())
 			{
 				// In a constant-evaluated context, we will use the power series definition of sin(x)
-				// to converge to the correct result.
+				// to converge to the correct result. The formula for the power series which represents
+				// sin(x) can be found at https://en.wikibooks.org/wiki/Trigonometry/Power_Series_for_Cosine_and_Sine.
 
 				constexpr auto FACTORIAL_LAMBDA = [] (const std::size_t startingValue)
 				{
@@ -388,9 +418,204 @@ namespace Util
 
 		template <typename T>
 			requires std::is_arithmetic_v<T>
+		constexpr float GetCosineAngle(const T angleInRadians)
+		{
+			if (std::is_constant_evaluated())
+			{
+				// Much like sin(x), cos(x) does indeed have its own power series. To keep things simple,
+				// however, we will just use the pythagorean identity sin^2(x) + cos^2(x) = 1. Remember that
+				// this slow code path is only taken at compile time.
+
+				const float sineAngle = GetSineAngle(static_cast<float>(angleInRadians));
+				return GetSquareRoot(1.0f - (sineAngle * sineAngle));
+			}
+			else
+				return std::cosf(static_cast<float>(angleInRadians));
+		}
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
+		constexpr float GetTangentAngle(const T angleInRadians)
+		{
+			if (std::is_constant_evaluated())
+			{
+				// tan(x) = (sin(x) / cos(x))
+				const float castedAngle = static_cast<float>(angleInRadians);
+				return (GetSineAngle(castedAngle) / GetCosineAngle(castedAngle));
+			}
+			else
+				return std::tanf(static_cast<float>(angleInRadians));
+		}
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
+		constexpr float GetArcSineValue(const T value)
+		{
+			if (std::is_constant_evaluated())
+			{
+				// You know, it isn't until you try to implement these functions yourself that you realize
+				// why everybody hates transcendental functions in performance-critical code. Thankfully, these
+				// calculations, slow as they may be, are all done at compile time.
+
+				const float castedValue = static_cast<float>(value);
+
+				constexpr float MAXIMUM_ALLOWED_DIFFERENCE = 0.00001f;
+				float currArcSinValue = 0;
+				float prevArcSinValue = currArcSinValue;
+				std::size_t currIteration = 0;
+				float currDifference = 0.0f;
+				const float valueSquared = (castedValue * castedValue);
+
+				constexpr auto COMPUTE_FACTORIAL_LAMBDA = [] (const std::size_t value) -> float
+				{
+					float currProduct = 1.0f;
+
+					for (std::size_t i = value; i > 1; --i)
+						currProduct *= i;
+
+					return currProduct;
+				};
+
+				// The formula for the power series which represents arcsin(x) can be found at
+				// https://en.wikipedia.org/wiki/Inverse_trigonometric_functions.
+				do
+				{
+					float currIterationValue = castedValue;
+					const std::size_t twoTimesCurrIteration = (2 * currIteration);
+
+					for (const auto i : std::views::iota(0u, currIteration))
+						currIterationValue *= valueSquared;
+
+					currIterationValue /= static_cast<float>(twoTimesCurrIteration + 1);
+					currIterationValue *= COMPUTE_FACTORIAL_LAMBDA(twoTimesCurrIteration);
+
+					// Rather than using floating-point bit hacks, we calculate this value in a loop because
+					// the convergence can take a long time. If we tried to just set the exponent part of
+					// 2^(N) manually, we might run out of bits if we do it naively.
+					float twoRaisedToN = 1.0f;
+
+					for (const auto i : std::views::iota(0u, currIteration))
+						twoRaisedToN *= 2.0f;
+
+					float scaleValueDenominator = (twoRaisedToN * COMPUTE_FACTORIAL_LAMBDA(currIteration));
+					scaleValueDenominator *= scaleValueDenominator;
+
+					currIterationValue /= scaleValueDenominator;
+
+					currArcSinValue += currIterationValue;
+					currDifference = (currArcSinValue - prevArcSinValue);
+
+					if (currDifference < 0.0f)
+						currDifference *= -1.0f;
+
+					prevArcSinValue = currArcSinValue;
+					++currIteration;
+				} while (currDifference >= MAXIMUM_ALLOWED_DIFFERENCE);
+
+				return currArcSinValue;
+			}
+			else
+				return std::asinf(static_cast<float>(value));
+		}
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
+		constexpr float GetArcCosineValue(const T value)
+		{
+			if (std::is_constant_evaluated())
+			{
+				// arccos(x) = ((PI / 2) - arcsin(x))
+				constexpr float HALF_PI = (PI / 2.0f);
+				return (HALF_PI - GetArcSineValue(value));
+			}
+			else
+				return std::acosf(value);
+		}
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
+		constexpr float GetArcTangentValue(const T value)
+		{
+			if (std::is_constant_evaluated())
+			{
+				const float castedValue = static_cast<float>(value);
+
+				constexpr float MAXIMUM_ALLOWED_DIFFERENCE = 0.00001f;
+				float currArcTanValue = 0;
+				float prevArcTanValue = currArcTanValue;
+				std::size_t currIteration = 0;
+				float currDifference = 0.0f;
+				const float valueSquared = (castedValue * castedValue);
+
+				constexpr auto COMPUTE_FACTORIAL_LAMBDA = [] (const std::size_t value) -> float
+				{
+					float currProduct = 1.0f;
+
+					for (std::size_t i = value; i > 1; --i)
+						currProduct *= i;
+
+					return currProduct;
+				};
+
+				// The formula for the power series which represents arctan(x) can be found at
+				// https://en.wikipedia.org/wiki/Inverse_trigonometric_functions.
+				const float onePlusValueSquared = (1.0f + (castedValue * castedValue));
+
+				do
+				{
+					float currIterationValue = COMPUTE_FACTORIAL_LAMBDA(currIteration);
+					currIterationValue *= currIterationValue;
+
+					// Rather than using floating-point bit hacks, we calculate this value in a loop because
+					// the convergence can take a long time. If we tried to just set the exponent part of
+					// 2^(2N) manually, we might run out of bits if we do it naively.
+					float twoRaisedTo2N = 1.0f;
+
+					for (const auto i : std::views::iota(0u, currIteration))
+						twoRaisedTo2N *= 2.0f;
+
+					twoRaisedTo2N *= twoRaisedTo2N;
+					currIterationValue *= twoRaisedTo2N;
+
+					currIterationValue /= COMPUTE_FACTORIAL_LAMBDA((currIteration * 2) + 1);
+
+					// x^(2N + 1) = x * x^(2N) = x * x^N * x^N, so we first solve for x^N and then
+					// multiply that by itself times x.
+					float valueRaisedTo2NPlusOne = 1.0f;
+
+					for (const auto i : std::views::iota(0u, currIteration))
+						valueRaisedTo2NPlusOne *= castedValue;
+
+					valueRaisedTo2NPlusOne *= (castedValue * valueRaisedTo2NPlusOne);
+					currIterationValue *= valueRaisedTo2NPlusOne;
+
+					float onePlusValueSquaredRaisedToNPlusOne = onePlusValueSquared;
+
+					for (std::size_t i = currIteration; i > 0; --i)
+						onePlusValueSquaredRaisedToNPlusOne *= onePlusValueSquared;
+
+					currIterationValue /= onePlusValueSquaredRaisedToNPlusOne;
+
+					currArcTanValue += currIterationValue;
+					currDifference = (currArcTanValue - prevArcTanValue);
+
+					if (currDifference < 0.0f)
+						currDifference *= -1.0f;
+
+					prevArcTanValue = currArcTanValue;
+					++currIteration;
+				} while (currDifference >= MAXIMUM_ALLOWED_DIFFERENCE);
+
+				return currArcTanValue;
+			}
+			else
+				return std::atanf(static_cast<float>(value));
+		}
+
+		template <typename T>
+			requires std::is_arithmetic_v<T>
 		constexpr float RadiansToDegrees(const T angleInRadians)
 		{
-			constexpr float PI = 3.14159265359f;
 			constexpr float RADIANS_TO_DEGREES_CONVERSION_FACTOR = (180.0f / PI);
 
 			return (static_cast<float>(angleInRadians) * RADIANS_TO_DEGREES_CONVERSION_FACTOR);
@@ -400,7 +625,6 @@ namespace Util
 			requires std::is_arithmetic_v<T>
 		constexpr float DegreesToRadians(const T angleInDegrees)
 		{
-			constexpr float PI = 3.14159265359f;
 			constexpr float DEGREES_TO_RADIANS_CONVERSION_FACTOR = (PI / 180.0f);
 
 			return (static_cast<float>(angleInDegrees) * DEGREES_TO_RADIANS_CONVERSION_FACTOR);

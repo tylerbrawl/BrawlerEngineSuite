@@ -55,7 +55,7 @@ export namespace Brawler
 
 	struct ViewDimensionsData
 	{
-		DirectX::XMFLOAT2 ViewDimensions;
+		DirectX::XMUINT2 ViewDimensions;
 		DirectX::XMFLOAT2 InverseViewDimensions;
 	};
 

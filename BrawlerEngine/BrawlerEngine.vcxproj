@@ -309,6 +309,8 @@
     <ClCompile Include="src\SwapChain.ixx" />
     <ClCompile Include="src\TransformComponent.cpp" />
     <ClCompile Include="src\TransformComponent.ixx" />
+    <ClCompile Include="src\ViewComponent.cpp" />
+    <ClCompile Include="src\ViewComponent.ixx" />
     <ClCompile Include="src\WindowDisplayMode.ixx" />
     <ClCompile Include="src\WindowedModeWindowState.cpp" />
     <ClCompile Include="src\WindowedModeWindowState.ixx" />
