@@ -6,18 +6,11 @@ module;
 #include <cassert>
 
 export module Brawler.SceneNode;
-import Brawler.I_Component;
 import Brawler.ComponentCollection;
 
 export namespace Brawler
 {
 	class SceneGraph;
-}
-
-namespace IMPL
-{
-	template <typename T>
-	concept IsValidComponent = std::derived_from<T, Brawler::I_Component> && !std::is_pointer_v<T>;
 }
 
 export namespace Brawler
@@ -42,23 +35,18 @@ export namespace Brawler
 		virtual void Update(const float dt);
 
 		template <typename T>
-			requires std::derived_from<T, I_Component>
 		std::size_t GetComponentCount() const;
 
 		template <typename T, typename DecayedT = std::decay_t<T>>
-			requires IMPL::IsValidComponent<T>
 		DecayedT* GetComponent();
 
 		template <typename T, typename DecayedT = std::decay_t<T>>
-			requires IMPL::IsValidComponent<T>
 		const DecayedT* GetComponent() const;
 
 		template <typename T, typename DecayedT = std::decay_t<T>>
-			requires IMPL::IsValidComponent<T>
 		std::vector<DecayedT*> GetComponents();
 
 		template <typename T, typename DecayedT = std::decay_t<T>>
-			requires IMPL::IsValidComponent<T>
 		std::vector<const DecayedT*> GetComponents() const;
 
 		template <typename NodeType, typename... Args>
@@ -112,35 +100,30 @@ export namespace Brawler
 namespace Brawler
 {
 	template <typename T>
-		requires std::derived_from<T, I_Component>
 	std::size_t SceneNode::GetComponentCount() const
 	{
 		return mComponentCollection.GetComponentCount<T>();
 	}
 
 	template <typename T, typename DecayedT>
-		requires IMPL::IsValidComponent<T>
 	DecayedT* SceneNode::GetComponent()
 	{
 		return mComponentCollection.GetComponent<T>();
 	}
 
 	template <typename T, typename DecayedT>
-		requires IMPL::IsValidComponent<T>
 	const DecayedT* SceneNode::GetComponent() const
 	{
 		return mComponentCollection.GetComponent<T>();
 	}
 
 	template <typename T, typename DecayedT>
-		requires IMPL::IsValidComponent<T>
 	std::vector<DecayedT*> SceneNode::GetComponents()
 	{
 		return mComponentCollection.GetComponents<T>();
 	}
 
 	template <typename T, typename DecayedT>
-		requires IMPL::IsValidComponent<T>
 	std::vector<const DecayedT*> SceneNode::GetComponents() const
 	{
 		return mComponentCollection.GetComponents<T>();

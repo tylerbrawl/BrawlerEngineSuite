@@ -139,6 +139,28 @@ namespace Brawler
 			constexpr float Determinant() const requires (NumRows == NumColumns);
 
 			/// <summary>
+			/// Let M be a square matrix with dimensions n x n. Then, this function returns an (n + 1) x (n + 1)
+			/// matrix whose elements are described by the following piecewise function (note that matrix element
+			/// indices are one-based in traditional mathematics notation):
+			/// 
+			/// M'_ij = 
+			/// {
+			///		- M_ij		iff 1 &lt;= i, j &lt;= n
+			///		- 0			iff (i == (n + 1) &amp;&amp; 1 &lt;= j &lt;= n) || (1 &lt;= i &lt;= n &amp;&amp; j == (n + 1))
+			///		- 1			otherwise
+			/// }
+			/// 
+			/// The typical use case for this is to construct a matrix which can be used with homogeneous coordinates
+			/// from one of lower dimensionality, but there may be other uses. (Please let me know if there is a more
+			/// mathematical term for this operation.)
+			/// </summary>
+			/// <returns>
+			/// The function returns the "expanded" version of this Matrix instance. See the summary for how the
+			/// elements of this matrix are determined.
+			/// </returns>
+			constexpr Matrix<(NumRows + 1), (NumColumns + 1)> ExpandDimensions() const requires (NumRows == NumColumns);
+
+			/// <summary>
 			/// Retrieves the element stored at row rowIndex and column columnIndex. In other words, let
 			/// M represent an m x n matrix. Then, this function returns M[rowIndex][columnIndex]. The function
 			/// asserts in Debug builds if either of rowIndex or columnIndex are out of the supported bounds.
@@ -755,6 +777,52 @@ namespace Brawler
 				const DirectX::XMVECTOR determinantVector{ DirectX::XMMatrixDeterminant(loadedThis) };
 
 				return DirectX::XMVectorGetX(determinantVector);
+			}
+		}
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		constexpr Matrix<(NumRows + 1), (NumColumns + 1)> Matrix<NumRows, NumColumns>::ExpandDimensions() const requires (NumRows == NumColumns)
+		{
+			if (std::is_constant_evaluated())
+			{
+				typename MatrixInfo<(NumRows + 1), (NumColumns + 1)>::StorageType storedResult{};
+
+				for (const auto i : std::views::iota(0u, NumRows))
+				{
+					for (const auto j : std::views::iota(0u, NumColumns))
+						storedResult.m[i][j] = mStoredMatrix.m[i][j];
+				}
+
+				// We can do both rows and columns in the same loop easily, since the matrix is
+				// square.
+				for (const auto i : std::views::iota(0u, NumRows))
+				{
+					storedResult.m[i][NumColumns] = 0.0f;
+					storedResult.m[NumRows][i] = 0.0f;
+				}
+				
+				storedResult.m[NumRows][NumColumns] = 1.0f;
+
+				return Matrix<(NumRows + 1), (NumColumns + 1)>{ storedResult };
+			}
+			else
+			{
+				// The DirectX::XMLoadFloat*x* functions actually do this operation for us, except with 
+				// vector intrinsics. Specifically, when creating a DirectX::XMMATRIX instance from a 
+				// storage type, it always internally creates a 4x4 matrix. Whenever it loads from a matrix
+				// of lower dimensionality, it fills the remaining elements with either 0 or 1 based on
+				// the method we use above.
+				//
+				// However, much like the other DirectXMath functions, these load operations use vector
+				// intrinsics to execute more efficiently. Thus, it is more efficient than the constexpr-capable
+				// implementation given above.
+
+				const MathType loadedThis{ MatrixInfo<NumRows, NumColumns>::LOAD_FUNCTION(&mStoredMatrix) };
+
+				typename MatrixInfo<(NumRows + 1), (NumColumns + 1)>::StorageType expandedStorage{};
+				MatrixInfo<(NumRows + 1), (NumColumns + 1)>::STORE_FUNCTION(&expandedStorage, loadedThis);
+
+				return Matrix<(NumRows + 1), (NumColumns + 1)>{ expandedStorage };
 			}
 		}
 

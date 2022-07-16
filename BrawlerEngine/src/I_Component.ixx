@@ -5,6 +5,10 @@ export module Brawler.I_Component;
 namespace Brawler
 {
 	class ComponentCollection;
+}
+
+export namespace Brawler
+{
 	class SceneNode;
 }
 

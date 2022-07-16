@@ -64,7 +64,7 @@ namespace Brawler
 	void SceneNode::ExecuteSceneGraphUpdates()
 	{
 		// First, execute the child node removals. That way, we have less
-		// SceneGraphEdges to iterate through.
+		// SceneNodes to iterate through.
 		ExecutePendingChildRemovals();
 		ExecutePendingChildAdditions();
 

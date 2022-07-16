@@ -27,6 +27,7 @@ namespace Brawler
 	{
 		mIsUpdating = true;
 		
+		mRootNode.ExecuteSceneGraphUpdates();
 		mRootNode.UpdateIMPL(dt);
 
 		mIsUpdating = false;

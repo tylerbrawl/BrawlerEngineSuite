@@ -58,6 +58,19 @@ export namespace Brawler
 {
 	class ComponentCollection
 	{
+	private:
+		struct UpdateAdditionInfo
+		{
+			ComponentID CompID;
+			std::unique_ptr<I_Component> ComponentPtr;
+		};
+
+		struct UpdateRemovalInfo
+		{
+			ComponentID CompID;
+			I_Component* ComponentPtr;
+		};
+
 	public:
 		explicit ComponentCollection(SceneNode& owningNode);
 
@@ -153,13 +166,16 @@ export namespace Brawler
 		void ExecutePendingRemovals();
 
 	private:
+		/// <summary>
+		/// We use a std::map, rather than a std::unordered_map, to benefit from the automatic
+		/// sorting of the container. That way, we can easily update components in the order specified
+		/// by their corresponding listing in the Brawler::ComponentID enumeration.
+		/// </summary>
 		std::map<Brawler::ComponentID, std::vector<std::unique_ptr<Brawler::I_Component>>> mComponentMap;
+		std::vector<UpdateAdditionInfo> mComponentsPendingAddition;
 		std::vector<std::unique_ptr<I_Component>> mComponentsPendingRemoval;
-
-#ifdef _DEBUG
+		std::vector<UpdateRemovalInfo> mComponentsMarkedForRemovalDuringUpdateArr;
 		bool mIsUpdating;
-#endif // _DEBUG
-
 		SceneNode* const mOwningNode;
 	};
 }
@@ -174,33 +190,45 @@ namespace Brawler
 	{
 		assert(!mIsUpdating && "ERROR: An attempt was made to add a component to a ComponentCollection while it was being updated!");
 
-		const ComponentID compId{ Brawler::GetComponentID<T>() };
+		constexpr ComponentID COMPONENT_ID{ Brawler::GetComponentID<T>() };
 
 		std::unique_ptr<I_Component> compPtr{ std::make_unique<T>(std::forward<Args>(args)...) };
 		compPtr->SetSceneNode(*mOwningNode);
 
-		mComponentMap[compId].push_back(std::move(compPtr));
+		// If the request to add the component was made during the update, then we delay adding it until the
+		// update has finished.
+		if (mIsUpdating)
+			mComponentsPendingAddition.emplace_back(COMPONENT_ID, std::move(compPtr));
+		else
+			mComponentMap[COMPONENT_ID].push_back(std::move(compPtr));
 	}
 
 	template <typename T, typename DecayedT>
 		requires IMPL::IsValidComponent<T>
 	void ComponentCollection::RemoveComponent(DecayedT* componentPtr)
 	{
-		assert(!mIsUpdating && "ERROR: An attempt was made to remove a component from a ComponentCollection while it was being updated!");
-		
-		constexpr ComponentID compID{ Brawler::GetComponentID<DecayedT>() };
+		constexpr ComponentID COMPONENT_ID{ Brawler::GetComponentID<DecayedT>() };
 
-		if (mComponentMap.contains(compID))
+		if (mComponentMap.contains(COMPONENT_ID)) [[likely]]
 		{
-			for (auto itr = mComponentMap.at(compID).begin(); itr != mComponentMap.at(compID).end(); ++itr)
+			for (auto itr = mComponentMap.at(COMPONENT_ID).begin(); itr != mComponentMap.at(COMPONENT_ID).end(); ++itr)
 			{
-				// If we find the pointer which we want to remove, then std::move() it into the array of
-				// components pending removal and erase the std::unique_ptr instance which used to contain
-				// it.
+				// If we find the pointer which we want to remove, then our next steps vary based on whether
+				// or not this removal was requested during an update. If the ComponentCollection instance
+				// is currently having its components be updated, then the removal is postponed until after
+				// the update. Otherwise, we std::move() it into the array of components pending removal and 
+				// erase the std::unique_ptr instance which used to contain it.
+				
+				// If we find the pointer which we want to remove, then 
 				if (componentPtr == static_cast<DecayedT>(itr->get()))
 				{
-					mComponentsPendingRemoval.insert(std::move(*itr));
-					mComponentMap.at(compID).erase(itr);
+					if (mIsUpdating)
+						mComponentsMarkedForRemovalDuringUpdateArr.emplace_back(COMPONENT_ID, itr->get());
+					else
+					{
+						mComponentsPendingRemoval.push_back(std::move(*itr));
+						mComponentMap.at(COMPONENT_ID).erase(itr);
+					}
 
 					return;
 				}
@@ -215,10 +243,10 @@ namespace Brawler
 		requires std::derived_from<T, Brawler::I_Component>
 	std::size_t ComponentCollection::GetComponentCount() const
 	{
-		constexpr std::vector<ComponentID> RELEVANT_IDS{ Brawler::GetCompatibleComponentIDs<T>() };
+		constexpr auto RELEVANT_ID_ARR{ Brawler::GetCompatibleComponentIDs<T>() };
 		std::size_t count = 0;
 
-		for (const auto componentID : RELEVANT_IDS)
+		for (const auto componentID : RELEVANT_ID_ARR)
 		{
 			if (mComponentMap.contains(componentID))
 				count += mComponentMap.at(componentID).size();
@@ -236,9 +264,9 @@ namespace Brawler
 		assert(GetComponentCount<DecayedT>() <= 1 && 
 			"ERROR: An attempt was made to call ComponentCollection::GetComponent<T>(), but the owning SceneNode had more than 1 component of type T! (In this case, you should use ComponentCollection::GetComponents<T>()!)");
 
-		constexpr std::vector<ComponentID> RELEVANT_IDS{ Brawler::GetCompatibleComponentIDs<T>() };
+		constexpr auto RELEVANT_ID_ARR{ Brawler::GetCompatibleComponentIDs<T>() };
 
-		for (const auto compID : RELEVANT_IDS)
+		for (const auto compID : RELEVANT_ID_ARR)
 		{
 			if (mComponentMap.contains(compID) && !mComponentMap.at(compID).empty())
 				return static_cast<DecayedT*>((mComponentMap.at(compID))[0].get());
@@ -256,9 +284,9 @@ namespace Brawler
 		assert(GetComponentCount<DecayedT>() <= 1 &&
 			"ERROR: An attempt was made to call ComponentCollection::GetComponent<T>(), but the owning SceneNode had more than 1 component of type T! (In this case, you should use ComponentCollection::GetComponents<T>()!)");
 
-		constexpr std::vector<ComponentID> RELEVANT_IDS{ Brawler::GetCompatibleComponentIDs<T>() };
+		constexpr auto RELEVANT_ID_ARR{ Brawler::GetCompatibleComponentIDs<T>() };
 
-		for (const auto compID : RELEVANT_IDS)
+		for (const auto compID : RELEVANT_ID_ARR)
 		{
 			if (mComponentMap.contains(compID) && !mComponentMap.at(compID).empty())
 				return static_cast<DecayedT*>((mComponentMap.at(compID))[0].get());
@@ -275,11 +303,11 @@ namespace Brawler
 		if (componentCount == 0)
 			return std::vector<DecayedT*>{};
 		
-		constexpr std::vector<ComponentID> RELEVANT_IDS{ Brawler::GetCompatibleComponentIDs<T>() };
+		constexpr auto RELEVANT_ID_ARR{ Brawler::GetCompatibleComponentIDs<T>() };
 		std::vector<DecayedT*> compPtrArr{};
 		compPtrArr.reserve(componentCount);
 
-		for (const auto compID : RELEVANT_IDS)
+		for (const auto compID : RELEVANT_ID_ARR)
 		{
 			if (!mComponentMap.contains(compID))
 				continue;
@@ -299,11 +327,11 @@ namespace Brawler
 		if (componentCount == 0)
 			return std::vector<DecayedT*>{};
 
-		constexpr std::vector<ComponentID> RELEVANT_IDS{ Brawler::GetCompatibleComponentIDs<T>() };
+		constexpr auto RELEVANT_ID_ARR{ Brawler::GetCompatibleComponentIDs<T>() };
 		std::vector<DecayedT*> compPtrArr{};
 		compPtrArr.reserve(componentCount);
 
-		for (const auto compID : RELEVANT_IDS)
+		for (const auto compID : RELEVANT_ID_ARR)
 		{
 			if (!mComponentMap.contains(compID))
 				continue;

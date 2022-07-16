@@ -18,7 +18,7 @@ export namespace Brawler
 		ViewComponent(ViewComponent&& rhs) noexcept = default;
 		ViewComponent& operator=(ViewComponent&& rhs) noexcept = default;
 
-		void Update(const float dt);
+		void Update(const float dt) override;
 
 		void SetViewDirection(Math::Float3&& normalizedViewDirection);
 
@@ -48,6 +48,14 @@ export namespace Brawler
 		/// rotation.
 		/// 
 		/// What this means in practice is that we can store any orthonormal basis as a quaternion!
+		/// However, the quaternion cannot serve as a complete substitute for a view matrix because
+		/// the view matrix also has a translation component; this is required to shift the origin
+		/// of the view space coordinate system to that of the position of the view.
+		/// 
+		/// Regardless, storing a quaternion and position (7 floats) is still cheaper than storing
+		/// either a 4x4 (16 floats) or 4x3 (12 floats) view matrix. We don't store the position
+		/// in the ViewComponent because we assume that the TransformComponent of the SceneNode
+		/// has it.
 		/// </summary>
 		Math::Quaternion mViewSpaceQuaternion;
 		Math::Float3 mViewDirection;

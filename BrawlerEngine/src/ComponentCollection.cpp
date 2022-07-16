@@ -1,6 +1,7 @@
 module;
 #include <cassert>
 #include <map>
+#include <vector>
 #include <set>
 #include <memory>  // For some reason, we have to manually include this header here, even though it appears in ComponentCollection.ixx.
 				   // Is this a compiler error?
@@ -11,10 +12,10 @@ namespace Brawler
 {
 	ComponentCollection::ComponentCollection(SceneNode& owningNode) :
 		mComponentMap(),
+		mComponentsPendingAddition(),
 		mComponentsPendingRemoval(),
-#ifdef _DEBUG
+		mComponentsMarkedForRemovalDuringUpdateArr(),
 		mIsUpdating(false),
-#endif
 		mOwningNode(&owningNode)
 	{}
 
@@ -25,18 +26,41 @@ namespace Brawler
 		ExecutePendingRemovals();
 
 		// Now, update all of the components.
-#ifdef _DEBUG
 		mIsUpdating = true;
-#endif // _DEBUG
 		
 		ExecuteComponentCommand([dt] (I_Component& component)
 		{
 			component.Update(dt);
 		});
 
-#ifdef _DEBUG
 		mIsUpdating = false;
-#endif // _DEBUG
+
+		// If any requests were made to remove a component during the update, we fulfill them now.
+		for (const auto& removalInfo : mComponentsMarkedForRemovalDuringUpdateArr)
+		{
+			assert(mComponentMap.contains(removalInfo.CompID));
+			auto& currContainer{ mComponentMap.at(removalInfo.CompID) };
+			
+			for (auto itr = currContainer.begin(); itr != currContainer.end();)
+			{
+				if (static_cast<I_Component*>(itr->get()) == removalInfo.ComponentPtr)
+				{
+					mComponentsPendingRemoval.push_back(std::move(*itr));
+					itr = currContainer.erase(itr);
+				}
+				else
+					++itr;
+			}
+		}
+
+		mComponentsMarkedForRemovalDuringUpdateArr.clear();
+
+		// Similarly, we now fulfill any component creation requests which were made during the
+		// update.
+		for (auto& additionInfo : mComponentsPendingAddition)
+			mComponentMap[additionInfo.CompID].push_back(std::move(additionInfo.ComponentPtr));
+
+		mComponentsPendingAddition.clear();
 	}
 
 	void ComponentCollection::ExecutePendingRemovals()
