@@ -1210,6 +1210,8 @@
     <ClCompile Include="src\Win32AssetIORequestTracker.cpp" />
     <ClCompile Include="src\Win32AssetIORequestTracker.ixx" />
     <ClCompile Include="src\WrappedZSTDContext.ixx" />
+    <ClCompile Include="src\ZSTDCompressionOperation.cpp" />
+    <ClCompile Include="src\ZSTDCompressionOperation.ixx" />
     <ClCompile Include="src\ZSTDContext.ixx" />
     <ClCompile Include="src\ZSTDContextQueue.ixx" />
     <ClCompile Include="src\ZSTDDecompressionOperation.cpp" />

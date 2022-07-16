@@ -99,6 +99,7 @@ namespace Brawler
 				if (zstdError == 0)
 				{
 					mOperationFinished = true;
+					currBlock.resize(outputBuffer.pos);
 					currBlock.shrink_to_fit();
 				}
 
