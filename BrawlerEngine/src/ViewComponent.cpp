@@ -138,6 +138,45 @@ namespace
 
 		return CreateProjectionMatrix<DEFAULT_USE_REVERSE_Z_VALUE>(defaultParams);
 	}() };
+
+	static constexpr Brawler::Math::Float3 DEFAULT_TRANSLATION_VECTOR{};
+
+	struct ViewProjectionMatrixParameters
+	{
+		const Brawler::Math::Quaternion& ViewSpaceQuaternion;
+		const Brawler::Math::Float3& ViewOrigin;
+		const Brawler::Math::Float4x4& ProjectionMatrix;
+	};
+
+	constexpr Brawler::Math::Float4x4 CreateViewProjectionMatrix(const ViewProjectionMatrixParameters& params)
+	{
+		const Brawler::Math::Float3 negatedOrigin{ params.ViewOrigin * -1.0f };
+
+		// Construct the complete view matrix by combining the orthogonal matrix constructed from
+		// the view space quaternion with the translation.
+		Brawler::Math::Float4x4 viewSpaceMatrix{ params.ViewSpaceQuaternion.ConvertToRotationMatrix().ExpandDimensions() };
+
+		const Brawler::Math::Float3 xAxisVector{ viewSpaceMatrix.GetElement(0, 0), viewSpaceMatrix.GetElement(1, 0), viewSpaceMatrix.GetElement(2, 0) };
+		const Brawler::Math::Float3 yAxisVector{ viewSpaceMatrix.GetElement(0, 1), viewSpaceMatrix.GetElement(1, 1), viewSpaceMatrix.GetElement(2, 1) };
+		const Brawler::Math::Float3 zAxisVector{ viewSpaceMatrix.GetElement(0, 2), viewSpaceMatrix.GetElement(1, 2), viewSpaceMatrix.GetElement(2, 2) };
+
+		viewSpaceMatrix.GetElement(3, 0) = negatedOrigin.Dot(xAxisVector);
+		viewSpaceMatrix.GetElement(3, 1) = negatedOrigin.Dot(yAxisVector);
+		viewSpaceMatrix.GetElement(3, 2) = negatedOrigin.Dot(zAxisVector);
+
+		return (viewSpaceMatrix * params.ProjectionMatrix);
+	}
+
+	static constexpr Brawler::Math::Float4x4 DEFAULT_VIEW_PROJECTION_MATRIX{ []()
+	{
+		const ViewProjectionMatrixParameters defaultParams{
+			.ViewSpaceQuaternion{ DEFAULT_VIEW_SPACE_QUATERNION },
+			.ViewOrigin{ DEFAULT_TRANSLATION_VECTOR },
+			.ProjectionMatrix{ DEFAULT_PROJECTION_MATRIX }
+		};
+
+		return CreateViewProjectionMatrix(defaultParams);
+	}() };
 }
 
 namespace Brawler
@@ -147,9 +186,10 @@ namespace Brawler
 	// matrices! In addition, if we ever change any of the values above, then the calculated 
 	// value will correctly change with it!
 	//
-	// Unfortunately, however, we still need to do the view-projection matrix calculation
-	// within the constructor, since the complete view matrix needs the position of the view
-	// in world space.
+	// In addition to those, the view-projection matrix calculated at compile time will also
+	// be correct if the associated SceneNode's translation vector is [0 0 0]. Even if this
+	// is not the case, however, the view space quaternion and projection matrix will still
+	// be correct until any of their associated parameters are changed.
 
 	ViewComponent::ViewComponent() :
 		mViewSpaceQuaternion(DEFAULT_VIEW_SPACE_QUATERNION),
@@ -161,15 +201,14 @@ namespace Brawler
 		mNearPlaneDistance(DEFAULT_NEAR_PLANE_DISTANCE_METERS),
 		mFarPlaneDistance(DEFAULT_FAR_PLANE_DISTANCE_METERS),
 		mIsProjectionMatrixDirty(false),
-		mViewProjectionMatrix(),
+		mViewProjectionMatrix(DEFAULT_VIEW_PROJECTION_MATRIX),
+		mLastRecordedTranslation(DEFAULT_TRANSLATION_VECTOR),
 		mUseReverseZDepth(DEFAULT_USE_REVERSE_Z_VALUE)
-	{
-		ReBuildViewProjectionMatrix();
-	}
+	{}
 
 	void ViewComponent::Update(const float dt)
 	{
-		const bool viewProjectionMatrixNeedsUpdate = (mIsViewSpaceQuaternionDirty || mIsProjectionMatrixDirty);
+		const bool areInternalComponentsOutdated = (mIsViewSpaceQuaternionDirty || mIsProjectionMatrixDirty);
 
 		if (mIsViewSpaceQuaternionDirty) [[unlikely]]
 			ReBuildViewSpaceQuaternion();
@@ -177,8 +216,80 @@ namespace Brawler
 		if (mIsProjectionMatrixDirty) [[unlikely]]
 			ReBuildProjectionMatrix();
 
+		// In addition to the view space quaternion and the projection matrix, we need to check if
+		// the SceneNode itself has moved in world space. If so, then we need to re-build the
+		// view-projection matrix, but not necessarily the view space quaternion or the projection
+		// matrix.
+		//
+		// (Here, we see another benefit of using quaternions to represent the view space basis:
+		// We only have to update that part of the view matrix if the actual view direction
+		// changes.)
+		const TransformComponent* const transformPtr = GetSceneNode().GetComponent<TransformComponent>();
+		assert(transformPtr != nullptr && "ERROR: A ViewComponent was assigned to a SceneNode, but it was never given a TransformComponent!");
+
+		const bool isCachedTranslationOutdated = (transformPtr->GetTranslation() != mLastRecordedTranslation);
+
+		if (isCachedTranslationOutdated) [[unlikely]]
+			mLastRecordedTranslation = transformPtr->GetTranslation();
+
+		const bool viewProjectionMatrixNeedsUpdate = (areInternalComponentsOutdated || isCachedTranslationOutdated);
+
 		if (viewProjectionMatrixNeedsUpdate) [[unlikely]]
 			ReBuildViewProjectionMatrix();
+	}
+
+	void ViewComponent::SetViewDirection(Math::Float3&& normalizedViewDirection)
+	{
+		assert(normalizedViewDirection.IsNormalized() && "ERROR: An unnormalized view direction vector was specified in a call to ViewComponent::SetViewDirection()!");
+
+		mViewDirection = std::move(normalizedViewDirection);
+		MarkViewSpaceQuaternionAsDirty();
+	}
+
+	void ViewComponent::SetVerticalFieldOfView(const float fovInRadians)
+	{
+		mVerticalFOVRadians = fovInRadians;
+		MarkProjectionMatrixAsDirty();
+	}
+
+	void ViewComponent::SetHorizontalFieldOfView(const float fovInRadians)
+	{
+		// We need to explicitly convert horizontal FoV values into vertical FoV values. There is
+		// an equation to do this, but it is rather expensive...
+
+		const float aspectRatio = static_cast<float>(mViewDimensions.GetX()) / static_cast<float>(mViewDimensions.GetY());
+		const float tangentHalfHorizontalFOV = std::tanf(fovInRadians / 2.0f);
+
+		mVerticalFOVRadians = (2.0f * std::atanf(tangentHalfHorizontalFOV / aspectRatio));
+		MarkProjectionMatrixAsDirty();
+	}
+
+	void ViewComponent::SetViewDimensions(const std::uint32_t width, const std::uint32_t height)
+	{
+		mViewDimensions = Math::UInt2{ width, height };
+		MarkProjectionMatrixAsDirty();
+	}
+
+	void ViewComponent::SetNearPlaneDistance(const float nearPlaneDistanceInMeters)
+	{
+		assert(nearPlaneDistanceInMeters <= mFarPlaneDistance && "ERROR: An attempt was made to set the near plane distance of a ViewComponent past the far plane!");
+
+		mNearPlaneDistance = nearPlaneDistanceInMeters;
+		MarkProjectionMatrixAsDirty();
+	}
+
+	void ViewComponent::SetFarPlaneDistance(const float farPlaneDistanceInMeters)
+	{
+		assert(farPlaneDistanceInMeters >= mNearPlaneDistance && "ERROR: An attempt was made to set the far plane distance of a ViewComponent closer than the near plane!");
+
+		mFarPlaneDistance = farPlaneDistanceInMeters;
+		MarkProjectionMatrixAsDirty();
+	}
+
+	void ViewComponent::SetReverseZDepthState(const bool useReverseZ)
+	{
+		mUseReverseZDepth = useReverseZ;
+		MarkProjectionMatrixAsDirty();
 	}
 
 	void ViewComponent::ReBuildViewSpaceQuaternion()
@@ -222,7 +333,7 @@ namespace Brawler
 		assert(mIsProjectionMatrixDirty && "ERROR: ViewComponent::ReBuildProjectionMatrix() was called even though the associated matrix was never marked as dirty!");
 
 		const ProjectionMatrixParameters matrixParams{
-			.ViewDimensions{mViewDimensions},
+			.ViewDimensions{ mViewDimensions },
 			.VerticalFOVInRadians = mVerticalFOVRadians,
 			.NearPlaneDistance = mNearPlaneDistance,
 			.FarPlaneDistance = mFarPlaneDistance
@@ -243,15 +354,15 @@ namespace Brawler
 
 	void ViewComponent::ReBuildViewProjectionMatrix()
 	{
-		// Get the world space position of the SceneNode; we'll need it to define the origin of the
-		// view space coordinate system.
-		const TransformComponent* const sceneNodeTransformPtr{ GetSceneNode().GetComponent<TransformComponent>() };
-		assert(sceneNodeTransformPtr != nullptr && "ERROR: A SceneNode was given a ViewComponent, but not a TransformComponent! (The ViewComponent relies on the TransformComponent to define the origin of the view space coordinate system.)");
+		assert(!mIsViewSpaceQuaternionDirty && "ERROR: ViewComponent::ReBuildViewProjectionMatrix() was called even though the view space quaternion it was going to use was marked as dirty!");
+		assert(!mIsProjectionMatrixDirty && "ERROR: ViewComponent::ReBuildViewProjectionMatrix() was called even though the projection matrix it was going to use was marked as dirty!");
 
-		const Math::Float3 negatedSceneNodeTranslation{ sceneNodeTransformPtr->GetTranslation() * -1.0f };
+		const ViewProjectionMatrixParameters matrixParams{
+			.ViewSpaceQuaternion{ mViewSpaceQuaternion },
+			.ViewOrigin{ mLastRecordedTranslation },
+			.ProjectionMatrix{ mProjectionMatrix }
+		};
 
-		// Construct the complete view matrix by combining the orthogonal matrix constructed from
-		// the view space quaternion with the translation.
-		Math::Float4x4 viewSpaceMatrix{ mViewSpaceQuaternion.ConvertToRotationMatrix().ExpandDimensions() };
+		mViewProjectionMatrix = CreateViewProjectionMatrix(matrixParams);
 	}
 }

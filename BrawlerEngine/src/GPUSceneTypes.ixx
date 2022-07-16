@@ -41,16 +41,15 @@ export namespace Brawler
 		DirectX::XMFLOAT4X4 PreviousFrameViewProjectionMatrix;
 		DirectX::XMFLOAT4X4 PreviousFrameInverseViewProjectionMatrix;
 
-		// We can save on memory by realizing that the view matrix is an orthogonal matrix.
-		// Since every orthogonal matrix represents a unique rotation, we can convert our
-		// view matrices into quaternions and store those, instead.
-		//
-		// We need to add them at the very end of the structure for the sake of alignment.
-		// Thankfully, the Brawler Engine uses reflection to throw a compile-time error if
-		// it detects that a type is not properly defined/aligned for transfer to the GPU.
-
 		DirectX::XMFLOAT4 CurrentFrameViewSpaceQuaternion;
+
+		DirectX::XMFLOAT3 CurrentFrameViewSpaceOrigin;
+		std::uint32_t __Pad0;
+
 		DirectX::XMFLOAT4 PreviousFrameViewSpaceQuaternion;
+
+		DirectX::XMFLOAT3 PreviousFrameViewSpaceOrigin;
+		std::uint32_t __Pad1;
 	};
 
 	struct ViewDimensionsData

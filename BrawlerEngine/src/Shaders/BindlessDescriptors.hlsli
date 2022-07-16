@@ -23,6 +23,9 @@ namespace IMPL
 	
 namespace IMPL
 {
+	// NOTE: The values given here should match the underlying values of the GPUSceneBufferID
+	// enumeration values found in GPUSceneBufferID.ixx.
+		
 	static const uint BINDLESS_GLOBAL_VERTEX_BUFFER_INDEX = 0;
 	static const uint BINDLESS_GLOBAL_INDEX_BUFFER_INDEX = 1;
 	static const uint BINDLESS_MODEL_INSTANCE_TRANSFORM_DATA_BUFFER_INDEX = 2;
@@ -30,6 +33,7 @@ namespace IMPL
 	static const uint BINDLESS_VIEW_TRANSFORM_DATA_BUFFER_INDEX = 4;
 	static const uint BINDLESS_VIEW_DIMENSIONS_DATA_BUFFER_INDEX = 5;
 	static const uint BINDLESS_GLOBAL_TRIANGLE_CLUSTER_BUFFER_INDEX = 6;
+	static const uint BINDLESS_LOD_MESH_DATA_INDEX_BUFFER_INDEX = 7;
 }
 
 namespace BrawlerHLSL
@@ -59,9 +63,11 @@ namespace BrawlerHLSL
 
 		BrawlerHLSL::LODMeshData GetGlobalModelInstanceLODMeshData(in const uint modelInstanceID)
 		{
-			StructuredBuffer<BrawlerHLSL::LODMeshData> lodMeshDataBuffer = IMPL::Bindless_GlobalLODMeshDataBuffer[IMPL::BINDLESS_LOD_MESH_DATA_BUFFER_INDEX];
+			Buffer<uint> lodMeshDataIndexBuffer = IMPL::Bindless_GlobalUIntBuffer[IMPL::BINDLESS_LOD_MESH_DATA_INDEX_BUFFER_INDEX];
+			const uint modelInstanceLODMeshDataIndex = lodMeshDataIndexBuffer[NonUniformResourceIndex(modelInstanceID)];
 				
-			return lodMeshDataBuffer[NonUniformResourceIndex(modelInstanceID)];
+			StructuredBuffer<BrawlerHLSL::LODMeshData> lodMeshDataBuffer = IMPL::Bindless_GlobalLODMeshDataBuffer[IMPL::BINDLESS_LOD_MESH_DATA_BUFFER_INDEX];
+			return lodMeshDataBuffer[NonUniformResourceIndex(modelInstanceLODMeshDataIndex)];
 		}
 
 		BrawlerHLSL::ViewTransformData GetGlobalViewTransformData(in const uint viewID)

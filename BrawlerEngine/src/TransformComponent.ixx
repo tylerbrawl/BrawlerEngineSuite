@@ -45,9 +45,12 @@ export namespace Brawler
 		const Math::Float3& GetTranslation() const;
 
 		const Math::Float4x4& GetWorldMatrix() const;
-		bool IsWorldMatrixDirty() const;
+		bool HasWorldMatrixChangedThisUpdate() const;
 
 	private:
+		bool IsWorldMatrixDirty() const;
+		void CheckParentWorldMatrix();
+
 		void ReBuildWorldMatrix();
 		void MarkWorldMatrixAsDirty();
 
@@ -57,5 +60,6 @@ export namespace Brawler
 		Math::Quaternion mRotation;
 		Math::Float3 mTranslation;
 		bool mIsWorldMatrixDirty;
+		bool mHasWorldMatrixChangedThisUpdate;
 	};
 }

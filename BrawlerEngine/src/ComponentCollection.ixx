@@ -188,8 +188,6 @@ namespace Brawler
 		requires std::derived_from<T, Brawler::I_Component>
 	void ComponentCollection::CreateComponent(Args&&... args)
 	{
-		assert(!mIsUpdating && "ERROR: An attempt was made to add a component to a ComponentCollection while it was being updated!");
-
 		constexpr ComponentID COMPONENT_ID{ Brawler::GetComponentID<T>() };
 
 		std::unique_ptr<I_Component> compPtr{ std::make_unique<T>(std::forward<Args>(args)...) };

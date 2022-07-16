@@ -5,6 +5,7 @@ module;
 
 module Brawler.TransformComponent;
 import Brawler.Math.MathConstants;
+import Brawler.SceneNode;
 
 namespace
 {
@@ -40,11 +41,30 @@ namespace Brawler
 		mScale(DirectX::XMFLOAT3{ 1.0f, 1.0f, 1.0f }),
 		mRotation(Math::IDENTITY_QUATERNION),
 		mTranslation(),
-		mIsWorldMatrixDirty(false)
-	{}
+		mIsWorldMatrixDirty(false),
+		mHasWorldMatrixChangedThisUpdate(false)
+	{
+		// To complete the construction of the world matrix, we need to append it to the world matrix
+		// of the parent SceneNode, should it exist. This "append" operation is actually just a copy
+		// of the value in this case, because by default, the world matrix of a TransformComponent is
+		// just the identity matrix.
+		const SceneNode& currNode{ GetSceneNode() };
+
+		if (currNode.HasParentSceneNode()) [[likely]]
+		{
+			const TransformComponent* const parentNodeTransformPtr = currNode.GetParentSceneNode().GetComponent<TransformComponent>();
+
+			if (parentNodeTransformPtr != nullptr) [[likely]]
+				mWorldMatrix = parentNodeTransformPtr->GetWorldMatrix();
+		}
+	}
 
 	void TransformComponent::Update(const float dt)
 	{
+		mHasWorldMatrixChangedThisUpdate = false;
+
+		CheckParentWorldMatrix();
+		
 		if (mIsWorldMatrixDirty) [[unlikely]]
 			ReBuildWorldMatrix();
 	}
@@ -161,13 +181,34 @@ namespace Brawler
 
 	const Math::Float4x4& TransformComponent::GetWorldMatrix() const
 	{
-		assert(!IsWorldMatrixDirty() && "ERROR: TransformComponent::GetWorldMatrix() *MUST* be a thread-safe function so that child nodes in the SceneGraph can concurrently get its value! Thus, it cannot be called if TransformComponent::IsWorldMatrixDirty() returns true!");
 		return mWorldMatrix;
+	}
+
+	bool TransformComponent::HasWorldMatrixChangedThisUpdate() const
+	{
+		return mHasWorldMatrixChangedThisUpdate;
 	}
 
 	bool TransformComponent::IsWorldMatrixDirty() const
 	{
 		return mIsWorldMatrixDirty;
+	}
+
+	void TransformComponent::CheckParentWorldMatrix()
+	{
+		// Check if the world matrix of this SceneNode's parent has changed this update. If so,
+		// then we need to re-build the world matrix. Otherwise, we assume that the "parent"
+		// transform is the identity matrix.
+
+		const SceneNode& currNode{ GetSceneNode() };
+
+		if (!currNode.HasParentSceneNode()) [[unlikely]]
+			return;
+
+		const TransformComponent* const parentNodeTransformPtr = currNode.GetParentSceneNode().GetComponent<TransformComponent>();
+
+		if (parentNodeTransformPtr != nullptr && parentNodeTransformPtr->HasWorldMatrixChangedThisUpdate()) [[unlikely]]
+			MarkWorldMatrixAsDirty();
 	}
 
 	void TransformComponent::ReBuildWorldMatrix()
@@ -197,7 +238,24 @@ namespace Brawler
 		}
 
 		mWorldMatrix = scaleMatrix * rotationAndTranslationMatrix;
+
+		// Check for the parent transform and concatenate parentOffsetMatrix to it. If the
+		// parent transform does not exist, then we assume that it is the identity transform.
+		const SceneNode& currNode{ GetSceneNode() };
+
+		if (currNode.HasParentSceneNode()) [[likely]]
+		{
+			const TransformComponent* const parentNodeTransformPtr = currNode.GetParentSceneNode().GetComponent<TransformComponent>();
+			
+			if (parentNodeTransformPtr != nullptr) [[likely]]
+			{
+				assert(!parentNodeTransformPtr->IsWorldMatrixDirty() && "ERROR: A parent SceneNode's world matrix was still marked as dirty when a child node attempted to access it!");
+				mWorldMatrix = (parentNodeTransformPtr->GetWorldMatrix() * mWorldMatrix);
+			}
+		}
+
 		mIsWorldMatrixDirty = false;
+		mHasWorldMatrixChangedThisUpdate = true;
 	}
 
 	void TransformComponent::MarkWorldMatrixAsDirty()

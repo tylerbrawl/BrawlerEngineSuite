@@ -70,6 +70,10 @@ namespace Brawler
 	template <>
 	struct GPUSceneBufferInfo<GPUSceneBufferID::GLOBAL_TRIANGLE_CLUSTER_BUFFER> : public GPUSceneBufferInfoInstantiation<PackedTriangleCluster, MAX_TRIANGLE_CLUSTERS>
 	{};
+
+	template <>
+	struct GPUSceneBufferInfo<GPUSceneBufferID::LOD_MESH_DATA_INDEX_BUFFER> : public GPUSceneBufferInfoInstantiation<std::uint32_t, MAX_MODEL_INSTANCES>
+	{};
 }
 
 namespace Brawler

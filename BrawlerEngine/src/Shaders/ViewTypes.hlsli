@@ -9,7 +9,14 @@ namespace BrawlerHLSL
 		float4x4 PreviousFrameInverseViewProjectionMatrix;
 		
 		float4 CurrentFrameViewSpaceQuaternion;
+		
+		float3 CurrentFrameViewOrigin;
+		uint __Pad0;
+		
 		float4 PreviousFrameViewSpaceQuaternion;
+		
+		float3 PreviousFrameViewOrigin;
+		uint __Pad1;
 		
 		// In addition, the following matrices can be calculated in a shader, should
 		// they prove necessary:

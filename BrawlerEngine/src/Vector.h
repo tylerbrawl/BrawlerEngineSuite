@@ -91,6 +91,9 @@ namespace Brawler
 			constexpr Vector() = default;
 			constexpr explicit Vector(const StorageType& vectorData);
 			constexpr explicit Vector(const ElementType replicatedScalar);
+			constexpr Vector(const ElementType x, const ElementType y) requires (NumElements == 2);
+			constexpr Vector(const ElementType x, const ElementType y, const ElementType z) requires (NumElements == 3);
+			constexpr Vector(const ElementType x, const ElementType y, const ElementType z, const ElementType w) requires (NumElements == 4);
 
 			constexpr Vector(const Vector& rhs) = default;
 			constexpr Vector& operator=(const Vector& rhs) = default;
@@ -150,6 +153,8 @@ namespace Brawler
 			constexpr Vector& operator/=(const ElementType rhs);
 
 			constexpr Vector& operator*=(const Matrix<NumElements, NumElements>& rhs);
+
+			constexpr bool operator==(const Vector& rhs) const;
 
 		private:
 			StorageType mStoredVector;
@@ -224,6 +229,30 @@ namespace Brawler
 
 			if constexpr (NumElements >= 4)
 				mStoredVector.w = replicatedScalar;
+		}
+
+		template <typename ElementType, std::size_t NumElements>
+		constexpr Vector<ElementType, NumElements>::Vector(const ElementType x, const ElementType y) requires (NumElements == 2)
+		{
+			mStoredVector.x = x;
+			mStoredVector.y = y;
+		}
+
+		template <typename ElementType, std::size_t NumElements>
+		constexpr Vector<ElementType, NumElements>::Vector(const ElementType x, const ElementType y, const ElementType z) requires (NumElements == 3)
+		{
+			mStoredVector.x = x;
+			mStoredVector.y = y;
+			mStoredVector.z = z;
+		}
+
+		template <typename ElementType, std::size_t NumElements>
+		constexpr Vector<ElementType, NumElements>::Vector(const ElementType x, const ElementType y, const ElementType z, const ElementType w) requires (NumElements == 4)
+		{
+			mStoredVector.x = x;
+			mStoredVector.y = y;
+			mStoredVector.z = z;
+			mStoredVector.w = w;
 		}
 
 		template <typename ElementType, std::size_t NumElements>
@@ -667,19 +696,7 @@ namespace Brawler
 		constexpr float Vector<ElementType, NumElements>::GetLength() const
 		{
 			if (std::is_constant_evaluated())
-			{
-				ElementType elementsSum = 0;
-				elementsSum += (mStoredVector.x * mStoredVector.x);
-				elementsSum += (mStoredVector.y * mStoredVector.y);
-
-				if constexpr (NumElements >= 3)
-					elementsSum += (mStoredVector.z * mStoredVector.z);
-
-				if constexpr (NumElements >= 4)
-					elementsSum += (mStoredVector.w * mStoredVector.w);
-
-				return Util::Math::GetSquareRoot(elementsSum);
-			}
+				return Util::Math::GetSquareRoot(GetLengthSquared());
 			else
 			{
 				const MathType loadedThis{ LOAD_FUNCTION(&mStoredVector) };
@@ -980,6 +997,71 @@ namespace Brawler
 		{
 			*this = TransformByMatrix(rhs);
 			return *this;
+		}
+
+		template <typename ElementType, std::size_t NumElements>
+		constexpr bool Vector<ElementType, NumElements>::operator==(const Vector& rhs) const
+		{
+			if (std::is_constant_evaluated())
+			{
+				if (GetX() != rhs.GetX() || GetY() != rhs.GetY())
+					return false;
+
+				if constexpr (NumElements >= 3)
+				{
+					if (GetZ() != rhs.GetZ())
+						return false;
+				}
+
+				if constexpr (NumElements >= 4)
+				{
+					if (GetW() != rhs.GetW())
+						return false;
+				}
+
+				return true;
+			}
+			else
+			{
+				constexpr bool IS_FLOATING_POINT_VECTOR = std::is_same_v<ElementType, float>;
+				using MathType = typename VectorInfo<ElementType, NumElements>::MathType;
+
+				const MathType loadedLHS{ GetDirectXMathVector() };
+				const MathType loadedRHS{ rhs.GetDirectXMathVector() };
+
+				std::uint32_t comparisonResult{};
+
+				if constexpr (NumElements == 2)
+				{
+					if constexpr (IS_FLOATING_POINT_VECTOR)
+						comparisonResult = DirectX::XMVector2EqualR(loadedLHS, loadedRHS);
+					else
+						comparisonResult = DirectX::XMVector2EqualIntR(loadedLHS, loadedRHS);
+				}
+				else if constexpr (NumElements == 3)
+				{
+					if constexpr (IS_FLOATING_POINT_VECTOR)
+						comparisonResult = DirectX::XMVector3EqualR(loadedLHS, loadedRHS);
+					else
+						comparisonResult = DirectX::XMVector3EqualIntR(loadedLHS, loadedRHS);
+				}
+				else if constexpr (NumElements == 4)
+				{
+					if constexpr (IS_FLOATING_POINT_VECTOR)
+						comparisonResult = DirectX::XMVector4EqualR(loadedLHS, loadedRHS);
+					else
+						comparisonResult = DirectX::XMVector4EqualIntR(loadedLHS, loadedRHS);
+				}
+				else
+				{
+					if constexpr (IS_FLOATING_POINT_VECTOR)
+						DirectX::XMVectorEqualR(&comparisonResult, loadedLHS, loadedRHS);
+					else
+						DirectX::XMVectorEqualIntR(&comparisonResult, loadedLHS, loadedRHS);
+				}
+
+				return DirectX::XMComparisonAllTrue(comparisonResult);
+			}
 		}
 	}
 }

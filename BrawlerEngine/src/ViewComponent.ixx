@@ -69,6 +69,7 @@ export namespace Brawler
 		bool mIsProjectionMatrixDirty;
 
 		Math::Float4x4 mViewProjectionMatrix;
+		Math::Float3 mLastRecordedTranslation;
 
 		bool mUseReverseZDepth;
 	};

@@ -58,6 +58,8 @@ export namespace Brawler
 		SceneGraph& GetSceneGraph();
 		const SceneGraph& GetSceneGraph() const;
 
+		bool HasParentSceneNode() const;
+
 		SceneNode& GetParentSceneNode();
 		const SceneNode& GetParentSceneNode() const;
 

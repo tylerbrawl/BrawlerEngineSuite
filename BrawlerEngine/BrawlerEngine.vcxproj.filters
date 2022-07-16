@@ -237,17 +237,11 @@
     <ClCompile Include="src\World.cpp">
       <Filter>Source Files\Scene Graph</Filter>
     </ClCompile>
-    <ClCompile Include="src\I_ViewComponent.ixx">
-      <Filter>Module Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="src\Components.ixx">
       <Filter>Module Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="src\ComponentMap.ixx">
       <Filter>Module Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="src\I_ViewComponent.cpp">
-      <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="src\MonitorHub.ixx">
       <Filter>Module Files\Window Management</Filter>

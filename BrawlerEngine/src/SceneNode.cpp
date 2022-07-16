@@ -49,6 +49,11 @@ namespace Brawler
 		return *mSceneGraph;
 	}
 
+	bool SceneNode::HasParentSceneNode() const
+	{
+		return (mParentNodePtr != nullptr);
+	}
+
 	SceneNode& SceneNode::GetParentSceneNode()
 	{
 		assert(mParentNodePtr != nullptr);
