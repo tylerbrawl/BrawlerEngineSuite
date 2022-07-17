@@ -20,7 +20,7 @@ import Brawler.Win32EventHandle;
 import Brawler.Win32.SafeHandle;
 import Brawler.AssetManagement.AssetLoadingMode;
 import Brawler.AssetManagement.AssetManager;
-import Brawler.AssetManagement.ZSTDDecompressionOperation;
+import Brawler.ZSTDDecompressionOperation;
 
 namespace
 {
@@ -30,13 +30,13 @@ namespace
 		
 		const std::span<std::byte> destDataSpan{ reinterpret_cast<std::byte*>(decompressionRequest.DstBuffer), decompressionRequest.DstSize };
 		const std::span<const std::byte> srcDataSpan{ reinterpret_cast<const std::byte*>(decompressionRequest.SrcBuffer), decompressionRequest.SrcSize };
-		Brawler::AssetManagement::ZSTDDecompressionOperation decompressOperation{};
+		Brawler::ZSTDDecompressionOperation decompressOperation{};
 
 		HRESULT hr = decompressOperation.BeginDecompressionOperation(srcDataSpan);
 
 		// Pro Tip: Resources created in UPLOAD heaps are located in write-combined memory, which is incredibly
 		// slow to read from. To avoid ZStandard reading from this memory, when the destination buffer is located
-		// within an UPLOAD heap, we will instead decompress the data intoto a temporary array of bytes and
+		// within an UPLOAD heap, we will instead decompress the data into a temporary array of bytes and
 		// copy that into the UPLOAD heap.
 
 		if ((decompressionRequest.Flags & DSTORAGE_CUSTOM_DECOMPRESSION_FLAGS::DSTORAGE_CUSTOM_DECOMPRESSION_FLAG_DEST_IN_UPLOAD_HEAP) != 0)
@@ -44,7 +44,7 @@ namespace
 			// Calling ZSTDDecompressionOperation::FinishDecompressionOperation() without specifying a destination
 			// std::span copies the remaining data into a temporary std::vector of bytes for us. This works great
 			// for when the destination resource is in an UPLOAD heap.
-			Brawler::AssetManagement::ZSTDDecompressionOperation::DecompressionResults zstdDecompressResults{ decompressOperation.FinishDecompressionOperation() };
+			Brawler::ZSTDDecompressionOperation::DecompressionResults zstdDecompressResults{ decompressOperation.FinishDecompressionOperation() };
 
 			if (FAILED(zstdDecompressResults.HResult)) [[unlikely]]
 				return DSTORAGE_CUSTOM_DECOMPRESSION_RESULT{

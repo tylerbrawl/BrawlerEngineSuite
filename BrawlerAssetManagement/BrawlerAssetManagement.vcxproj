@@ -1200,7 +1200,6 @@
     <ClCompile Include="src\PendingDirectStorageRequest.cpp" />
     <ClCompile Include="src\PendingDirectStorageRequest.ixx" />
     <ClCompile Include="src\SerializedStruct.ixx" />
-    <ClCompile Include="src\UnderlyingZSTDContextTypes.ixx" />
     <ClCompile Include="src\Win32AssetIORequest.cpp" />
     <ClCompile Include="src\Win32AssetIORequestBuilder.cpp" />
     <ClCompile Include="src\Win32AssetIORequestBuilder.ixx" />
@@ -1209,15 +1208,6 @@
     <ClCompile Include="src\Win32AssetIORequest.ixx" />
     <ClCompile Include="src\Win32AssetIORequestTracker.cpp" />
     <ClCompile Include="src\Win32AssetIORequestTracker.ixx" />
-    <ClCompile Include="src\WrappedZSTDContext.ixx" />
-    <ClCompile Include="src\ZSTDCompressionOperation.cpp" />
-    <ClCompile Include="src\ZSTDCompressionOperation.ixx" />
-    <ClCompile Include="src\ZSTDContext.ixx" />
-    <ClCompile Include="src\ZSTDContextQueue.ixx" />
-    <ClCompile Include="src\ZSTDDecompressionOperation.cpp" />
-    <ClCompile Include="src\ZSTDDecompressionOperation.ixx" />
-    <ClCompile Include="src\ZSTDUtil.cpp" />
-    <ClCompile Include="src\ZSTDUtil.ixx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -10,7 +10,7 @@ module;
 module Brawler.AssetManagement.Win32AssetIORequestBuilder;
 import Brawler.D3D12.BufferResource;
 import Brawler.AssetManagement.BPKArchiveReader;
-import Brawler.AssetManagement.ZSTDDecompressionOperation;
+import Brawler.ZSTDDecompressionOperation;
 import Util.General;
 
 namespace Brawler

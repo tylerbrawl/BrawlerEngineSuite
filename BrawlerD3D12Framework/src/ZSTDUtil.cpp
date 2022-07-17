@@ -1,7 +1,7 @@
 module;
 #include <zstd.h>
 #include <zstd_errors.h>
-#include <DxDef.h>
+#include "DxDef.h"
 
 module Util.ZSTD;
 

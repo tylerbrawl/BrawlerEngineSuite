@@ -214,6 +214,15 @@
     <Filter Include="Source Files\File I/O">
       <UniqueIdentifier>{db9c111c-9688-4b77-ae05-586181768420}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\File I/O\ZStandard">
+      <UniqueIdentifier>{67a43dc5-85ca-44a3-b864-2ba3acbcfb83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\File I/O\ZStandard\Context Types">
+      <UniqueIdentifier>{f3f76bc3-2d84-4d61-8943-89527f7873fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File I/O\ZStandard">
+      <UniqueIdentifier>{5e748d61-e1a8-495b-a91d-fec9071a892a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GeneralUtil.ixx">
@@ -1136,6 +1145,36 @@
     </ClCompile>
     <ClCompile Include="src\PresentationManager.cpp">
       <Filter>Source Files\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDCompressionOperation.ixx">
+      <Filter>Module Files\File I/O\ZStandard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDDecompressionOperation.ixx">
+      <Filter>Module Files\File I/O\ZStandard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UnderlyingZSTDContextTypes.ixx">
+      <Filter>Module Files\File I/O\ZStandard\Context Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WrappedZSTDContext.ixx">
+      <Filter>Module Files\File I/O\ZStandard\Context Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDContext.ixx">
+      <Filter>Module Files\File I/O\ZStandard\Context Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDContextQueue.ixx">
+      <Filter>Module Files\File I/O\ZStandard\Context Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDCompressionOperation.cpp">
+      <Filter>Source Files\File I/O\ZStandard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDDecompressionOperation.cpp">
+      <Filter>Source Files\File I/O\ZStandard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDUtil.ixx">
+      <Filter>Module Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDUtil.cpp">
+      <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

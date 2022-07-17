@@ -583,6 +583,7 @@
     <ClCompile Include="src\UAVCounterSubAllocation.cpp" />
     <ClCompile Include="src\UAVCounterSubAllocation.ixx" />
     <ClCompile Include="src\UAVDimensionInfo.ixx" />
+    <ClCompile Include="src\UnderlyingZSTDContextTypes.ixx" />
     <ClCompile Include="src\UnorderedAccessView.ixx" />
     <ClCompile Include="src\Win32EventHandle.cpp" />
     <ClCompile Include="src\Win32EventHandle.ixx" />
@@ -592,6 +593,15 @@
     <ClCompile Include="src\WorkerThread.ixx" />
     <ClCompile Include="src\WorkerThreadPool.cpp" />
     <ClCompile Include="src\WorkerThreadPool.ixx" />
+    <ClCompile Include="src\WrappedZSTDContext.ixx" />
+    <ClCompile Include="src\ZSTDCompressionOperation.cpp" />
+    <ClCompile Include="src\ZSTDCompressionOperation.ixx" />
+    <ClCompile Include="src\ZSTDContext.ixx" />
+    <ClCompile Include="src\ZSTDContextQueue.ixx" />
+    <ClCompile Include="src\ZSTDDecompressionOperation.cpp" />
+    <ClCompile Include="src\ZSTDDecompressionOperation.ixx" />
+    <ClCompile Include="src\ZSTDUtil.cpp" />
+    <ClCompile Include="src\ZSTDUtil.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h" />

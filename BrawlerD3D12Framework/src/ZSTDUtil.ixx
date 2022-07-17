@@ -1,5 +1,5 @@
 module;
-#include <DxDef.h>
+#include "DxDef.h"
 
 export module Util.ZSTD;
 
