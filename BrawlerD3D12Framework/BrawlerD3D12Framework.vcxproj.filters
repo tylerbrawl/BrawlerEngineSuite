@@ -1164,9 +1164,6 @@
     <ClCompile Include="src\ZSTDContextQueue.ixx">
       <Filter>Module Files\File I/O\ZStandard\Context Types</Filter>
     </ClCompile>
-    <ClCompile Include="src\ZSTDCompressionOperation.cpp">
-      <Filter>Source Files\File I/O\ZStandard</Filter>
-    </ClCompile>
     <ClCompile Include="src\ZSTDDecompressionOperation.cpp">
       <Filter>Source Files\File I/O\ZStandard</Filter>
     </ClCompile>
@@ -1175,6 +1172,15 @@
     </ClCompile>
     <ClCompile Include="src\ZSTDUtil.cpp">
       <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BufferResourceDataMapping.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BufferResourceDataMapping.cpp">
+      <Filter>Source Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZSTDCompressionOperation.cpp">
+      <Filter>Source Files\File I/O\ZStandard</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

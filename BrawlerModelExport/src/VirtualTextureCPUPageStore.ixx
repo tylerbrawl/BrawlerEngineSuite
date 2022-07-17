@@ -4,6 +4,7 @@ module;
 #include <filesystem>
 #include <optional>
 #include <format>
+#include <vector>
 #include <span>
 #include <DxDef.h>
 #include <DirectXMath/DirectXMath.h>
@@ -16,6 +17,7 @@ import Brawler.D3D12.FrameGraphBuilding;
 import Brawler.D3D12.BufferResource;
 import Brawler.D3D12.BufferResourceInitializationInfo;
 import Util.D3D12;
+import Util.General;
 import Brawler.D3D12.Texture2D;
 import Brawler.D3D12.StructuredBufferSubAllocation;
 import Brawler.D3D12.ByteAddressBufferSubAllocation;
@@ -24,15 +26,14 @@ import Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.FilePathHash;
 import Brawler.NZStringView;
 import Util.ModelExport;
-import Brawler.LaunchParams;
-import Brawler.MappedFileView;
-import Brawler.FileAccessMode;
+import Brawler.D3D12.BufferResourceDataMapping;
+import Brawler.ZSTDCompressionOperation;
 
 export namespace Brawler
 {
 	struct TextureDataWriteInfo
 	{
-		FilePathHash TextureDataPathHash;
+		std::vector<std::byte> CompressedTexturePageByteArr;
 		std::uint32_t StartingLogicalMipLevel;
 		DirectX::XMUINT2 PageCoordinates;
 	};
@@ -54,7 +55,7 @@ export namespace Brawler
 		VirtualTextureCPUPageStore& operator=(VirtualTextureCPUPageStore&& rhs) noexcept = default;
 
 		void CreatePageDataReadBackRenderPass(VirtualTexturePage& page, D3D12::RenderPassBundle& renderPassBundle);
-		std::unique_ptr<TextureDataWriteInfo> SerializeVirtualTexturePage(const Brawler::NZWStringView srcTextureName) const;
+		std::unique_ptr<TextureDataWriteInfo> CompressVirtualTexturePage() const;
 
 	private:
 		auto GetRenderPassForUncompressedTextureReadBack(D3D12::Texture2DSubResource pageTextureSubResource);
@@ -113,8 +114,42 @@ namespace Brawler
 	}
 
 	template <DXGI_FORMAT TextureFormat, VirtualTexturePageFilterMode FilterMode>
-	std::unique_ptr<TextureDataWriteInfo> VirtualTextureCPUPageStore<TextureFormat, FilterMode>::SerializeVirtualTexturePage(const Brawler::NZWStringView srcTextureName) const
+	std::unique_ptr<TextureDataWriteInfo> VirtualTextureCPUPageStore<TextureFormat, FilterMode>::CompressVirtualTexturePage() const
 	{
+		std::unique_ptr<TextureDataWriteInfo> dataWriteInfoPtr{ std::make_unique<TextureDataWriteInfo>(TextureDataWriteInfo{
+			.CompressedTexturePageByteArr{},
+			.StartingLogicalMipLevel{ mStartingLogicalMipLevel },
+			.PageCoordinates{ mPageCoordinates }
+		}) };
+
+		static constexpr std::size_t NUM_BYTES_PER_PAGE = GetVirtualTexturePageSizeInBytes<TextureFormat, FilterMode>();
+
+		std::optional<D3D12::ByteAddressBufferSubAllocation<NUM_BYTES_PER_PAGE>> texturePageDataSubAllocation{ mReadbackBufferPtr->CreateBufferSubAllocation<D3D12::ByteAddressBufferSubAllocation<NUM_BYTES_PER_PAGE>>() };
+		assert(texturePageDataSubAllocation.has_value());
+
+		// Create a data mapping to the buffer data.
+		const D3D12::ReadBackBufferResourceDataMapping texturePageMapping{ *texturePageDataSubAllocation };
+
+		// Begin the texture page data compression. Each page is compressed as a CPU job, so multiple pages can be
+		// compressed concurrently.
+
+		Util::General::DebugBreak();
+
+		ZSTDCompressionOperation texturePageCompressionOperation{};
+		Util::General::CheckHRESULT(texturePageCompressionOperation.BeginCompressionOperation(texturePageMapping.GetReadBackDataSpan()));
+
+		// Rather than doing streaming compression, we can just compress all of the data at once, since this is just
+		// a tool and we need the texture page data before we can continue model exports. To be clear, however,
+		// ZSTDCompressionOperation *DOES* support streaming compression, and ZSTDDecompressionOperation supports
+		// streaming decompression.
+		ZSTDCompressionOperation::CompressionResults compressionResults{ texturePageCompressionOperation.FinishCompressionOperation() };
+		Util::General::CheckHRESULT(compressionResults.HResult);
+
+		dataWriteInfoPtr->CompressedTexturePageByteArr = std::move(compressionResults.CompressedByteArr);
+
+		return dataWriteInfoPtr;
+
+		/*
 		const Brawler::LaunchParams& launchParams{ Util::ModelExport::GetLaunchParameters() };
 		const std::filesystem::path partialOutputTexturePageFilePath{ std::filesystem::path{ L"Textures" } / launchParams.GetModelName() / std::format(
 			L"{}_VTPage_Mip{}_{}_{}.bvtp",
@@ -153,6 +188,7 @@ namespace Brawler
 		readbackDataSubAllocation->ReadRawBytesFromBuffer(mappedPageDataSpan);
 
 		return dataWriteInfo;
+		*/
 	}
 
 	template <DXGI_FORMAT TextureFormat, VirtualTexturePageFilterMode FilterMode>
@@ -194,17 +230,17 @@ namespace Brawler
 		constexpr std::size_t NUM_BYTES_PER_PAGE = GetVirtualTexturePageSizeInBytes<TextureFormat, FilterMode>();
 		assert(hCompressedDataReservation->GetReservationSize() == NUM_BYTES_PER_PAGE);
 
-		D3D12::DynamicByteAddressBufferSubAllocation compressedDataSubAllocation{ NUM_BYTES_PER_PAGE };
+		D3D12::ByteAddressBufferSubAllocation<NUM_BYTES_PER_PAGE> compressedDataSubAllocation{};
 		assert(compressedDataSubAllocation.IsReservationCompatible(hCompressedDataReservation));
 		compressedDataSubAllocation.AssignReservation(std::move(hCompressedDataReservation));
 
-		std::optional<D3D12::DynamicByteAddressBufferSubAllocation> destBufferSubAllocation{ mReadbackBufferPtr->CreateBufferSubAllocation<D3D12::DynamicByteAddressBufferSubAllocation>(NUM_BYTES_PER_PAGE) };
+		std::optional<D3D12::ByteAddressBufferSubAllocation<NUM_BYTES_PER_PAGE>> destBufferSubAllocation{ mReadbackBufferPtr->CreateBufferSubAllocation<D3D12::ByteAddressBufferSubAllocation<NUM_BYTES_PER_PAGE>>() };
 		assert(destBufferSubAllocation.has_value());
 
 		struct CompressedTextureCopyPassInfo
 		{
-			D3D12::DynamicByteAddressBufferSnapshot SrcBufferSnapshot;
-			D3D12::DynamicByteAddressBufferSnapshot DestBufferSnapshot;
+			D3D12::ByteAddressBufferSnapshot<NUM_BYTES_PER_PAGE> SrcBufferSnapshot;
+			D3D12::ByteAddressBufferSnapshot<NUM_BYTES_PER_PAGE> DestBufferSnapshot;
 		};
 
 		D3D12::RenderPass<D3D12::GPUCommandQueueType::DIRECT, CompressedTextureCopyPassInfo> compressedCopyPass{};

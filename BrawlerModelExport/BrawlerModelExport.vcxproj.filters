@@ -121,6 +121,12 @@
     <Filter Include="Source Files\Textures\Virtual Textures">
       <UniqueIdentifier>{6d91a75d-da4b-4422-ba6a-6f56ab9dedd1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\File I/O\BCA Info Writing">
+      <UniqueIdentifier>{bc742ebe-baf7-49fa-add1-4a2001628ffa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File I/O\BCA Info Writing">
+      <UniqueIdentifier>{2bd865fa-f0b9-4300-8a2f-1bbbb5c8978f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -404,6 +410,18 @@
     </ClCompile>
     <ClCompile Include="src\ModelTextureNameGenerator.ixx">
       <Filter>Module Files\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAInfoWriter.ixx">
+      <Filter>Module Files\File I/O\BCA Info Writing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAInfoEntry.ixx">
+      <Filter>Module Files\File I/O\BCA Info Writing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAInfoEntry.cpp">
+      <Filter>Source Files\File I/O\BCA Info Writing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BCAInfoWriter.cpp">
+      <Filter>Source Files\File I/O\BCA Info Writing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

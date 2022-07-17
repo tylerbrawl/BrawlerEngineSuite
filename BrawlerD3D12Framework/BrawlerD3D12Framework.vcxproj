@@ -256,6 +256,8 @@
     <ClCompile Include="src\BindlessSRVSentinel.ixx" />
     <ClCompile Include="src\BufferCopyRegion.cpp" />
     <ClCompile Include="src\BufferCopyRegion.ixx" />
+    <ClCompile Include="src\BufferResourceDataMapping.cpp" />
+    <ClCompile Include="src\BufferResourceDataMapping.ixx" />
     <ClCompile Include="src\ByteAddressBufferSubAllocation.ixx" />
     <ClCompile Include="src\ComputeCapableCommandGenerator.ixx" />
     <ClCompile Include="src\CustomEventHandle.ixx" />

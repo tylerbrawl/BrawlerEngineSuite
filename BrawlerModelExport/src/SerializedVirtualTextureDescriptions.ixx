@@ -38,9 +38,15 @@ export namespace Brawler
 
 	struct SerializedVirtualTexturePageDescription
 	{
-		std::uint64_t LogicalMipLevel;
+		// NOTE: ALL virtual texture pages are compressed with zstandard! The compressed size
+		// of a given texture page can be calculated as follows:
+		//
+		// - CompressedSize = NextPage.OffsetFromDescriptionStart - ThisPage.OffsetFromDescriptionStart iff ThisPage is not the last page.
+		// - CompressedSize = VirtualTextureDescription.UncompressedSizeInBytes - ThisPage.OffsetFromDescriptionStart iff ThisPage is the last page.
+
+		std::uint64_t OffsetFromDescriptionStart;
+		std::uint32_t LogicalMipLevel;
 		DirectX::XMUINT2 PageCoordinates;
-		std::uint64_t PageTextureDataFilePathHash;
 	};
 #pragma pack(pop)
 }

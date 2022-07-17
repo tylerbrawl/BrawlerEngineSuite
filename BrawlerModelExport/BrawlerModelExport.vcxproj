@@ -286,6 +286,10 @@
     <ClCompile Include="src\AssimpMaterials.ixx" />
     <ClCompile Include="src\AssimpTextureConverter.ixx" />
     <ClCompile Include="src\AssimpTextureMaterialColorMap.ixx" />
+    <ClCompile Include="src\BCAInfoEntry.cpp" />
+    <ClCompile Include="src\BCAInfoEntry.ixx" />
+    <ClCompile Include="src\BCAInfoWriter.cpp" />
+    <ClCompile Include="src\BCAInfoWriter.ixx" />
     <ClCompile Include="src\ByteStream.ixx" />
     <ClCompile Include="src\FileMagicHandler.ixx" />
     <ClCompile Include="src\IndexBuffer.cpp" />

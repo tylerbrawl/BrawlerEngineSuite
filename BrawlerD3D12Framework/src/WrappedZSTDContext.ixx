@@ -1,7 +1,5 @@
 module;
-#include <memory>
-#include <cassert>
-#include <zstd.h>
+#include <utility>
 
 export module Brawler.ZSTDContext:WrappedZSTDContext;
 import :UnderlyingZSTDContextTypes;

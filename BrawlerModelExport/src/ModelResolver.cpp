@@ -6,6 +6,7 @@ module;
 #include <format>
 #include <filesystem>
 #include <fstream>
+#include <atomic>
 
 #define NOMINMAX
 #include <DirectXTex.h>
@@ -21,6 +22,8 @@ import Brawler.FileMagicHandler;
 import Brawler.ByteStream;
 import Util.Win32;
 import Brawler.Win32.FormattedConsoleMessageBuilder;
+import Brawler.BCAInfoEntry;
+import Brawler.BCAInfoWriter;
 
 #pragma push_macro("AddJob")
 #undef AddJob
@@ -56,6 +59,43 @@ namespace
 		.Magic = MODEL_FILE_MAGIC_HANDLER.GetMagicIntegerValue(),
 		.Version = CURRENT_MODEL_FILE_VERSION
 	};
+
+	void CreateBCAInfoFileForVirtualTextures()
+	{
+		// As of writing this, virtual texture page data is already compressed with zstandard when it
+		// gets written out to the file system (see VirtualTextureCPUPageStore::CompressVirtualTexturePage()),
+		// so we don't want the Brawler File Packer to compress it again. To do that, we need to explicitly
+		// disable compression with a .BCAINFO file.
+		//
+		// To do this, we are going to search the output texture directory and add a "DoNotCompress" entry for
+		// each file we find. Theoretically, we could make this a member function of ModelResolver and
+		// have the LODResolver instances provide us with a list of output texture files. However, since the
+		// BrawlerFilePacker always blindly copies all of the files in a directory into the .bpk archive
+		// (excluding the .BCAINFO file), I don't see doing this as being worth the added complexity.
+
+		const Brawler::LaunchParams& launchParams{ Util::ModelExport::GetLaunchParameters() };
+		const std::filesystem::path completeOutputDirectoryPath{ launchParams.GetRootOutputDirectory() / L"Textures" / launchParams.GetModelName() };
+
+		// Delete any existing .BCAINFO file, should one exist.
+		{
+			const std::filesystem::path completeBCAInfoOutputPath{ completeOutputDirectoryPath / L".BCAINFO" };
+			std::filesystem::remove(completeBCAInfoOutputPath);
+		}
+
+		Brawler::BCAInfoWriter bcaInfoWriter{};
+
+		for (const auto& filePath : std::filesystem::directory_iterator{ completeOutputDirectoryPath })
+		{
+			// std::filesystem::directory_iterator only returns const& values, so we have to create a
+			// copy.
+			Brawler::BCAInfoEntry currEntry{ std::filesystem::path{ filePath } };
+			currEntry.SetCompressionStatus(false);
+
+			bcaInfoWriter.AddEntry(std::move(currEntry));
+		}
+
+		bcaInfoWriter.SerializeBCAInfoFile(completeOutputDirectoryPath);
+	}
 }
 
 namespace Brawler
@@ -124,6 +164,33 @@ namespace Brawler
 
 		lodResolverSerializationGroup.ExecuteJobs();
 
+		// After we have gotten all of the serialized mesh data, we know that the texture data
+		// has also been written out; this is because the I_MaterialDefinition instance of a
+		// MeshResolver is responsible for serializing the data.
+		//
+		// As of writing this, virtual texture data is already compressed with zstandard, so
+		// we don't want the BrawlerFilePacker to run compression again. To prevent that from
+		// happening, we create a .BCAINFO file in the same directory as the model texture
+		// data which specifies to disable compression for every texture file contained within
+		// it.
+		//
+		// To increase parallelism, we can do this concurrently with the file I/O for the .bmdl
+		// file.
+		Brawler::JobGroup postModelSerializationGroup{};
+		postModelSerializationGroup.Reserve(1);
+
+		std::atomic<bool> bcaInfoCreationCompleted{ false };
+
+		postModelSerializationGroup.AddJob([&bcaInfoCreationCompleted] ()
+		{
+			CreateBCAInfoFileForVirtualTextures();
+
+			bcaInfoCreationCompleted.store(true, std::memory_order::relaxed);
+			bcaInfoCreationCompleted.notify_one();
+		});
+
+		postModelSerializationGroup.ExecuteJobsAsync();
+
 		for (auto& lodMeshByteStream : serializedLODMeshByteStreamArr)
 			modelFileByteStream << lodMeshByteStream;
 
@@ -144,6 +211,10 @@ namespace Brawler
 
 		Win32::FormattedConsoleMessageBuilder modelExportedMsgBuilder{ Util::Win32::ConsoleFormat::SUCCESS };
 		modelExportedMsgBuilder << L"Model Exported: " << Util::Win32::ConsoleFormat::NORMAL << std::format(L"{} -> {}", modelName, outputFilePath.c_str());
+
+		// Wait to report that we are finished until after the .BCAINFO file could be created.
+		// (Oh, and we also don't want to exit this function until after that, either.)
+		bcaInfoCreationCompleted.wait(false, std::memory_order::relaxed);
 		
 		modelExportedMsgBuilder.WriteFormattedConsoleMessage();
 	}
