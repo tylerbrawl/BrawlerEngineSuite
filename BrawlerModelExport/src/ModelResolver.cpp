@@ -191,6 +191,16 @@ namespace Brawler
 
 		postModelSerializationGroup.ExecuteJobsAsync();
 
+		// Before we add the actual LOD mesh data to the .bmdl file, we should specify the file
+		// offsets for each definition. That way, they can be quickly loaded at runtime.
+		std::uint64_t currLODMeshDataOffset = modelFileByteStream.GetByteCount() + (sizeof(std::uint64_t) * serializedLODMeshByteStreamArr.size());
+
+		for (const auto& lodMeshByteStream : serializedLODMeshByteStreamArr)
+		{
+			modelFileByteStream << currLODMeshDataOffset;
+			currLODMeshDataOffset += lodMeshByteStream.GetByteCount();
+		}
+
 		for (auto& lodMeshByteStream : serializedLODMeshByteStreamArr)
 			modelFileByteStream << lodMeshByteStream;
 

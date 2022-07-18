@@ -70,6 +70,7 @@ export namespace Brawler
 		constexpr ByteStream(ByteStream&& rhs) noexcept = default;
 		constexpr ByteStream& operator=(ByteStream&& rhs) noexcept = default;
 
+		constexpr std::size_t GetByteCount() const;
 		constexpr void ResetStream();
 
 	private:
@@ -86,6 +87,11 @@ export namespace Brawler
 
 namespace Brawler
 {
+	constexpr std::size_t ByteStream::GetByteCount() const
+	{
+		return (mCurrIndex < mByteArr.size() ? (mByteArr.size() - mCurrIndex) : 0);
+	}
+
 	constexpr void ByteStream::ResetStream()
 	{
 		mByteArr.clear();

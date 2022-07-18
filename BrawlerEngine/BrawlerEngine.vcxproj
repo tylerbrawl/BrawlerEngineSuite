@@ -270,10 +270,12 @@
     <ClCompile Include="src\I_GPUSceneBufferUpdateSource.cpp" />
     <ClCompile Include="src\I_GPUSceneBufferUpdateSource.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequest.ixx" />
+    <ClCompile Include="src\I_LODMeshDefinition.ixx" />
     <ClCompile Include="src\I_WindowState.cpp" />
     <ClCompile Include="src\I_WindowState.ixx" />
     <ClCompile Include="src\MathConstants.ixx" />
     <ClCompile Include="src\MathTypes.ixx" />
+    <ClCompile Include="src\Model.ixx" />
     <ClCompile Include="src\ModelLoader.ixx" />
     <ClCompile Include="src\ModelLoadEventHandle.ixx" />
     <ClCompile Include="src\Monitor.cpp" />
@@ -305,6 +307,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\StaticLODMeshDefinition.cpp" />
+    <ClCompile Include="src\StaticLODMeshDefinition.ixx" />
     <ClCompile Include="src\SwapChain.cpp" />
     <ClCompile Include="src\SwapChain.ixx" />
     <ClCompile Include="src\TransformComponent.cpp" />
