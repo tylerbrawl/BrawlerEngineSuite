@@ -45,8 +45,8 @@ namespace Brawler
 
 		struct IndexBufferJobInfo
 		{
-			std::uint32_t IndexCount;
 			std::uint64_t IndexBufferFilePathHash;
+			IndexBufferHeader Header;
 		};
 
 		Brawler::JobGroup meshDataSerializationGroup{};
@@ -71,20 +71,23 @@ namespace Brawler
 		meshDataSerializationGroup.AddJob([this, &ibInfo] ()
 		{
 			assert(mIndexBuffer.GetIndexCount() <= std::numeric_limits<std::uint32_t>::max());
-			ibInfo.IndexCount = static_cast<std::uint32_t>(mIndexBuffer.GetIndexCount());
 
 			ibInfo.IndexBufferFilePathHash = mIndexBuffer.SerializeIndexBuffer();
+			ibInfo.Header = mIndexBuffer.GetIndexBufferHeader();
 		});
 
 		meshDataSerializationGroup.ExecuteJobs();
 
 		return SerializedMeshData{
 			.AABBMinPoint{std::move(vbInfo.AABBMinPoint)},
-			.VertexCount = vbInfo.VertexCount,
 			.AABBMaxPoint{std::move(vbInfo.AABBMaxPoint)},
-			.IndexCount = ibInfo.IndexCount,
 			.VertexBufferFilePathHash = vbInfo.VertexBufferFilePathHash,
-			.IndexBufferFilePathHash = ibInfo.IndexBufferFilePathHash
+			.IndexBufferFilePathHash = ibInfo.IndexBufferFilePathHash,
+			.IndexBufferInfo{
+				.TriangleClusterCount = ibInfo.Header.TriangleClusterCount,
+				.NumTrianglesInFinalCluster = ibInfo.Header.NumTrianglesInFinalCluster
+			},
+			.VertexCount = vbInfo.VertexCount
 		};
 	}
 }

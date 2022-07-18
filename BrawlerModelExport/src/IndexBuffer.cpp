@@ -11,11 +11,12 @@ module Brawler.IndexBuffer;
 import Util.ModelExport;
 import Util.General;
 import Brawler.LaunchParams;
+import Brawler.Math.AABB;
 
 namespace Brawler
 {
 	IndexBuffer::IndexBuffer(const ImportedMesh& mesh) :
-		mIndexArr(),
+		mClusterArr(),
 		mMeshPtr(&mesh)
 	{
 		const aiMesh& assimpMesh{ mesh.GetMesh() };
@@ -23,15 +24,24 @@ namespace Brawler
 		// We should have guaranteed that the mesh was triangulated in the SceneLoader class.
 		assert(assimpMesh.mPrimitiveTypes == aiPrimitiveType::aiPrimitiveType_TRIANGLE && "ERROR: A mesh was not properly triangulated during loading!");
 
-		mIndexArr.reserve(static_cast<std::size_t>(assimpMesh.mNumFaces) * 3);
+		static constexpr std::size_t MAXIMUM_TRIANGLES_PER_CLUSTER = TriangleCluster::GetMaximumTriangleCount();
 
+		TriangleCluster currCluster{ mesh };
 		const std::span<const aiFace> meshFaceArr{ assimpMesh.mFaces, static_cast<std::size_t>(assimpMesh.mNumFaces) };
+
 		for (const auto& face : meshFaceArr)
 		{
-			mIndexArr.push_back(face.mIndices[0]);
-			mIndexArr.push_back(face.mIndices[1]);
-			mIndexArr.push_back(face.mIndices[2]);
+			currCluster.AddTriangle(face);
+
+			if (currCluster.GetTriangleCount() == MAXIMUM_TRIANGLES_PER_CLUSTER) [[unlikely]]
+			{
+				mClusterArr.push_back(std::move(currCluster));
+				currCluster = TriangleCluster{ mesh };
+			}
 		}
+
+		if (currCluster.HasTriangles()) [[likely]]
+			mClusterArr.push_back(std::move(currCluster));
 	}
 
 	void IndexBuffer::Update()
@@ -62,16 +72,32 @@ namespace Brawler
 
 		{
 			std::ofstream indexBufferFileStream{ fullOutputPath, std::ios::out | std::ios::binary };
-			const std::span<const std::uint32_t> indexSpan{ mIndexArr };
+			
+			// For each triangle cluster, write out its list of indices, followed by the minimum and
+			// maximum points of its AABB.
+			for (const auto& cluster : mClusterArr)
+			{
+				const std::span<const std::uint32_t> indexSpan{ cluster.GetIndexSpan() };
+				indexBufferFileStream.write(reinterpret_cast<const char*>(indexSpan.data()), indexSpan.size_bytes());
 
-			indexBufferFileStream.write(reinterpret_cast<const char*>(indexSpan.data()), indexSpan.size_bytes());
+				const Math::AABB clusterBoundingBox{ cluster.CalculateBoundingBox() };
+				
+				const DirectX::XMFLOAT3& aabbMinPoint{ clusterBoundingBox.GetMinimumBoundingPoint() };
+				indexBufferFileStream.write(reinterpret_cast<const char*>(&aabbMinPoint), sizeof(aabbMinPoint));
+
+				const DirectX::XMFLOAT3& aabbMaxPoint{ clusterBoundingBox.GetMaximumBoundingPoint() };
+				indexBufferFileStream.write(reinterpret_cast<const char*>(&aabbMaxPoint), sizeof(aabbMaxPoint));
+			}
 		}
 
 		return indexBufferPathHash;
 	}
 
-	std::size_t IndexBuffer::GetIndexCount() const
+	IndexBufferHeader IndexBuffer::GetIndexBufferHeader() const
 	{
-		return mIndexArr.size();
+		return IndexBufferHeader{
+			.TriangleClusterCount = static_cast<std::uint32_t>(mClusterArr.size()),
+			.NumTrianglesInFinalCluster = (mClusterArr.empty() ? 0 : static_cast<std::uint32_t>(mClusterArr.back().GetTriangleCount()))
+		};
 	}
 }

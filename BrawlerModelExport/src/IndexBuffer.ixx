@@ -4,6 +4,8 @@ module;
 export module Brawler.IndexBuffer;
 import Brawler.FilePathHash;
 import Brawler.ImportedMesh;
+import Brawler.TriangleCluster;
+import Brawler.IndexBufferHeader;
 
 export namespace Brawler
 {
@@ -23,10 +25,10 @@ export namespace Brawler
 
 		FilePathHash SerializeIndexBuffer() const;
 
-		std::size_t GetIndexCount() const;
+		IndexBufferHeader GetIndexBufferHeader() const;
 
 	private:
-		std::vector<std::uint32_t> mIndexArr;
+		std::vector<TriangleCluster> mClusterArr;
 		const ImportedMesh* mMeshPtr;
 	};
 }

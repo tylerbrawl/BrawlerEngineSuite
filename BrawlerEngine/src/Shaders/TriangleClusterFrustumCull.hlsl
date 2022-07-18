@@ -97,7 +97,7 @@ struct ProcessedModelInstance
 struct GPUJobQueueTriangleClusterBatch
 {
 	uint ModelInstanceID;
-	uint StartingTriangleClusterIDForBatch;
+	uint BatchIDForModelInstance;
 };
 	
 struct UnpackedQueueIndices
@@ -187,7 +187,7 @@ namespace GPUJobQueue
 		// We need to make sure that the writes to the job queue buffer are always done before the
 		// write to the acknowledgement buffer.
 			
-		const uint2 rawQueueEntryValue = uint2(clusterBatch.ModelInstanceID, clusterBatch.StartingTriangleClusterIDForBatch);
+		const uint2 rawQueueEntryValue = uint2(clusterBatch.ModelInstanceID, clusterBatch.BatchIDForModelInstance);
 			
 		[branch]
 		if (WaveIsFirstLane())
@@ -206,7 +206,7 @@ namespace GPUJobQueue
 		
 	GPUJobQueueTriangleClusterBatch TryRemoveBatchFromQueue()
 	{
-		uint claimedIndex;
+		uint2 rawQueueEntryValue;
 			
 		[allow_uav_condition]
 		while (true)
@@ -235,12 +235,37 @@ namespace GPUJobQueue
 				return invalidBatch;
 			}
 				
+			// Otherwise, if the queue is *NOT* empty, then check the corresponding element in
+			// the acknowledgement array to see if a producer thread has actually written the
+			// value to the queue.
+			uint isDataElementAvailable;
+				
+			[branch]
+			if (WaveIsFirstLane())
+				GPUJobQueueAcknowledgementBuffer.InterlockedExchange((unpackedIndices.BeginIndex * 4) + 4, 0, isDataElementAvailable);
+				
+			isDataElementAvailable = WaveReadLaneFirst(isDataElementAvailable);
+				
+			// If we got to this point and isDataElementAvailable == 0, then another consumer
+			// thread got here before us. We have to block until we can get a valid value.
+				
+			// [Coherent]
+			[branch]
+			if (isDataElementAvailable == 0)
+				continue;
+				
+			const uint originalBeginIndex = unpackedIndices.BeginIndex;
 			unpackedIndices.BeginIndex = ((unpackedIndices.BeginIndex + 1) % ConstantsInfo.NumQueueElementsPlusOne);
-			claimedIndex = unpackedIndices.BeginIndex;
+				
+			// If we were successful, then copy the value into rawQueueEntryValue for now.
+			DeviceMemoryBarrierWithGroupSync();
+			rawQueueEntryValue = TriangleClusterGPUJobQueue.Load2((originalBeginIndex * 8) + 4);
 				
 			packedIndices = PackQueueIndices(unpackedIndices);
 			uint actualStoredValue;
 				
+			// Do a compare-exchange operation on the indices. If we are successful, then we can
+			// exit.
 			[branch]
 			if (WaveIsFirstLane())
 			{
@@ -254,56 +279,22 @@ namespace GPUJobQueue
 				
 			actualStoredValue = WaveReadLaneFirst(actualStoredValue);
 				
-			// Exit the loop if this wave passed the compare-exchange test.
-				
 			// [Coherent]
 			[branch]
 			if (actualStoredValue == expectedStoredValue)
-				break;
-		}
-			
-		// Do a short spinlock until a producer thread/wave notes that it has written out
-		// the value which we are looking for.
-		[allow_uav_condition]
-		while (true)
-		{
-			static const uint EXPECTED_ACKNOWLEDGEMENT_BUFFER_VALUE = 1;
+			{
+				GPUJobQueueTriangleClusterBatch clusterBatch;
+				clusterBatch.ModelInstanceID = rawQueueEntryValue.x;
+				clusterBatch.BatchIDForModelInstance = rawQueueEntryValue.y;
+					
+				return clusterBatch;
+			}
 				
-			uint actualAcknowledgementBufferValue;
-				
+			// If we failed, then we need to flag the acknowledgement array value again.
 			[branch]
 			if (WaveIsFirstLane())
-				GPUJobQueueAcknowledgementBuffer.InterlockedExchange((claimedIndex * 4) + 4, 0, actualAcknowledgementBufferValue);
-				
-			actualAcknowledgementBufferValue = WaveReadLaneFirst(actualAcknowledgementBufferValue);
-				
-			// Exit the loop if the value which was originally stored was a 1 (that is,
-			// the value was written by a producer to signify that it has written out the required
-			// value).
-				
-			// [Coherent]
-			[branch]
-			if (actualAcknowledgementBufferValue == EXPECTED_ACKNOWLEDGEMENT_BUFFER_VALUE)
-				break;
+				GPUJobQueueAcknowledgementBuffer.Store((originalBeginIndex * 4) + 4, 1);
 		}
-			
-		// The read from TriangleClusterGPUJobQueue "synchronizes-with" the read/write from
-		// GPUJobQueueAcknowledgementBuffer.
-		DeviceMemoryBarrierWithGroupSync();
-			
-		uint2 rawQueueEntryValue;
-			
-		[branch]
-		if (WaveIsFirstLane())
-			rawQueueEntryValue = TriangleClusterGPUJobQueue.Load2((claimedIndex * 8) + 4);
-			
-		rawQueueEntryValue = WaveReadLaneFirst(rawQueueEntryValue);
-			
-		GPUJobQueueTriangleClusterBatch clusterBatch;
-		clusterBatch.ModelInstanceID = rawQueueEntryValue.x;
-		clusterBatch.StartingTriangleClusterIDForBatch = rawQueueEntryValue.y;
-			
-		return clusterBatch;
 	}
 }
 	
@@ -317,10 +308,12 @@ void ProcessTriangleClusterBatch(in const GPUJobQueueTriangleClusterBatch cluste
 	const BrawlerHLSL::ViewDimensionsData viewDimensionsData = BrawlerHLSL::Bindless::GetGlobalViewDimensionsData(ConstantsInfo.ViewID);
 	const BrawlerHLSL::ModelInstanceTransformData modelInstanceTransformData = BrawlerHLSL::Bindless::GetGlobalModelInstanceTransformData(clusterBatch.ModelInstanceID);
 	const BrawlerHLSL::LODMeshData lodMeshDataForBatch = BrawlerHLSL::Bindless::GetGlobalModelInstanceLODMeshData(clusterBatch.ModelInstanceID);
-	const uint numTriangleClustersForBatch = lodMeshDataForBatch.NumTriangleClusters - (clusterBatch.StartingTriangleClusterIDForBatch - lodMeshDataForBatch.StartingTriangleClusterID);
+	const uint numTriangleClustersForBatch = min(lodMeshDataForBatch.NumTriangleClusters - (clusterBatch.BatchIDForModelInstance * WaveGetLaneCount()), WaveGetLaneCount());
 		
 	const bool doesCurrLaneHaveTriangleCluster = (WaveGetLaneIndex() < numTriangleClustersForBatch);
-	const uint currLaneTriangleClusterID = (clusterBatch.StartingTriangleClusterIDForBatch + WaveGetLaneIndex());
+		
+	const uint baseTriangleClusterIDForBatch = (lodMeshDataForBatch.StartingTriangleClusterID + (clusterBatch.BatchIDForModelInstance * WaveGetLaneCount()));
+	const uint currLaneTriangleClusterID = (baseTriangleClusterIDForBatch + WaveGetLaneIndex());
 	const BrawlerHLSL::UnpackedTriangleCluster currLaneCluster = BrawlerHLSL::UnpackTriangleCluster(BrawlerHLSL::Bindless::GetGlobalPackedTriangleCluster(currLaneTriangleClusterID));
 		
 	// Perform additional frustum culling for the bounding box of each triangle cluster in
@@ -366,12 +359,12 @@ struct BatchAdder
 			// Explicitly scalarize the lane which we are processing.
 			const uint laneToProcess = WaveReadLaneFirst(firstbitlow(currBallot) + LaneOffset);
 			
-			// Get both the model instance ID and the starting triangle cluster ID. In addition, since
-			// we already calculated it, get the number of batches required for this model instance. The 
-			// retrieved values will be uniform (scalarized) because laneToProcess is uniform (scalarized).
+			// Get the model instance ID. In addition, since we already calculated it, get the number of 
+			// batches required for this model instance. The retrieved values will be uniform (scalarized) 
+			// because laneToProcess is uniform (scalarized).
 			GPUJobQueueTriangleClusterBatch currBatch;
 			currBatch.ModelInstanceID = WaveReadLaneAt(modelInstance.ModelInstanceID, laneToProcess);
-			currBatch.StartingTriangleClusterIDForBatch = WaveReadLaneAt(modelInstance.InstanceData.LODMesh.StartingTriangleClusterID, laneToProcess);
+			currBatch.BatchIDForModelInstance = 0;
 			
 			const uint numBatchesToAdd = WaveReadLaneAt(numBatchesForCurrLane, laneToProcess);
 			
@@ -381,7 +374,7 @@ struct BatchAdder
 				if (!GPUJobQueue::TryAddBatchToQueue(currBatch))
 					ProcessTriangleClusterBatch(currBatch);
 				
-				currBatch.StartingTriangleClusterIDForBatch += WaveGetLaneCount();
+				++(currBatch.BatchIDForModelInstance);
 			}
 			
 			// Cancel out the lane which we just handled.

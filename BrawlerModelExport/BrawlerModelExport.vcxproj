@@ -349,6 +349,7 @@
     <ClCompile Include="src\OpaqueMaterialDefinition.cpp" />
     <ClCompile Include="src\OpaqueMaterialDefinition.ixx" />
     <ClCompile Include="src\SerializationContext.ixx" />
+    <ClCompile Include="src\IndexBufferHeader.ixx" />
     <ClCompile Include="src\SerializedMaterialDefinition.ixx" />
     <ClCompile Include="src\SerializedStaticMeshData.ixx" />
     <ClCompile Include="src\SerializedVirtualTextureDescriptions.ixx" />
@@ -384,6 +385,8 @@
     <ClCompile Include="src\StaticVertexBuffer.ixx" />
     <ClCompile Include="src\StaticVertexData.ixx" />
     <ClCompile Include="src\TextureTypeMap.ixx" />
+    <ClCompile Include="src\TriangleCluster.cpp" />
+    <ClCompile Include="src\TriangleCluster.ixx" />
     <ClCompile Include="src\VirtualTextureConstants.ixx" />
     <ClCompile Include="src\VirtualTextureCPUDataStore.ixx" />
     <ClCompile Include="src\VirtualTextureCPUPageStore.ixx" />

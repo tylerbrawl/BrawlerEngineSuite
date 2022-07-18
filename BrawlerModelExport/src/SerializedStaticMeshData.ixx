@@ -3,7 +3,7 @@ module;
 #include <DirectXMath/DirectXMath.h>
 
 export module Brawler.SerializedStaticMeshData;
-import Brawler.SerializedMaterialDefinition;
+import Brawler.IndexBufferHeader;
 
 export namespace Brawler
 {
@@ -12,13 +12,13 @@ export namespace Brawler
 	struct SerializedStaticMeshData
 	{
 		DirectX::XMFLOAT3 AABBMinPoint;
-		std::uint32_t VertexCount;
-
 		DirectX::XMFLOAT3 AABBMaxPoint;
-		std::uint32_t IndexCount;
 
 		std::uint64_t VertexBufferFilePathHash;
 		std::uint64_t IndexBufferFilePathHash;
+
+		SerializedIndexBufferHeader IndexBufferInfo;
+		std::uint32_t VertexCount;
 	};
 #pragma pack(pop)
 }

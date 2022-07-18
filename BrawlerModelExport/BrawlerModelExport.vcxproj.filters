@@ -423,6 +423,15 @@
     <ClCompile Include="src\BCAInfoWriter.cpp">
       <Filter>Source Files\File I/O\BCA Info Writing</Filter>
     </ClCompile>
+    <ClCompile Include="src\TriangleCluster.ixx">
+      <Filter>Module Files\Mesh Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TriangleCluster.cpp">
+      <Filter>Source Files\Mesh Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IndexBufferHeader.ixx">
+      <Filter>Module Files\Static Mesh Data</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\Shaders\BC7Encode.hlsl">

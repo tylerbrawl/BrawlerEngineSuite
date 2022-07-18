@@ -104,9 +104,6 @@ namespace Brawler
 		// We will only support 16-bit indices... well, at least for now, anyways.
 		const std::size_t vertexCount = static_cast<std::size_t>(assimpMesh.mNumVertices);
 
-		if (vertexCount > std::numeric_limits<std::uint16_t>::max()) [[unlikely]]
-			throw std::runtime_error{ std::format("ERROR: The mesh {} has more vertices than can be represented with 16-bit indices (i.e., it has more than 65,536 vertices)!", assimpMesh.mName.C_Str()) };
-
 		if (vertexCount == 0) [[unlikely]]
 			throw std::runtime_error{ std::format("ERROR: The mesh {} has no vertices!", assimpMesh.mName.C_Str()) };
 
