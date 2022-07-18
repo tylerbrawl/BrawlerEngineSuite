@@ -4,6 +4,7 @@ module;
 #include <array>
 #include <optional>
 #include <memory>
+#include <thread>
 
 export module Brawler.ThreadSafeQueue;
 
@@ -26,20 +27,6 @@ export namespace Brawler
 		static_assert(NumElements > 0, "ERROR: An attempt was made to create a ThreadSafeQueue with no elements!");
 
 	private:
-		// This is used to prevent a race condition where the following happens:
-		//
-		//   - Thread A performs a successful compare/exchange for mPackedOffsets, stating
-		//     that a new element is available.
-		// 
-		//   - Thread B performs a successful compare/exchange for mPackedOffsets, stating
-		//     that this element has been claimed.
-		//
-		//   - Thread B accesses the array to try to claim an element. However, this value
-		//     is invalid, because Thread A has not actually stored any value yet.
-		//
-		//   - Thread A stores the element in the array.
-		using QueueElementPtr = std::atomic<T*>;
-
 		struct QueueInfo
 		{
 			std::uint32_t BeginIndex;
@@ -48,8 +35,8 @@ export namespace Brawler
 
 		// tl;dr: Ensure that we have no more than UINT32_MAX elements in the queue.
 		// 
-		// Internally, we will use two arrays to represent the queue. The first array, mArr, stores atomic
-		// T* values which reference values in the second array, mBackingMemory. Each mArr entry has a
+		// Internally, we will use two arrays to represent the queue. The first array, mAcknowledgementArr, stores atomic
+		// T* values which reference values in the second array, mBackingMemory. Each mAcknowledgementArr entry has a
 		// corresponding mBackingMemory entry with the same index.
 		// 
 		// To make insertion and removal operations atomic, we need to make sure that both the beginning
@@ -143,7 +130,7 @@ export namespace Brawler
 		// but then we would need to make heap allocations. Trust me: From a pure efficiency
 		// point of view, this is better.
 
-		std::array<QueueElementPtr, (NumElements + 1)> mArr;
+		std::array<std::atomic<bool>, (NumElements + 1)> mAcknowledgementArr;
 		std::array<T, (NumElements + 1)> mBackingMemory;
 		std::atomic<std::uint64_t> mPackedOffsets;
 	};
@@ -155,7 +142,7 @@ namespace Brawler
 {
 	template <typename T, std::size_t NumElements>
 	ThreadSafeQueue<T, NumElements>::ThreadSafeQueue() :
-		mArr(),
+		mAcknowledgementArr(),
 		mBackingMemory(),
 		mPackedOffsets(0)
 	{}
@@ -177,18 +164,18 @@ namespace Brawler
 			QueueInfo desiredClaim{ UnpackOffsets(currOffsets) };
 
 			// If the queue is full, then return false.
-			if ((desiredClaim.EndIndex + 1) % mArr.size() == desiredClaim.BeginIndex)
+			if ((desiredClaim.EndIndex + 1) % mAcknowledgementArr.size() == desiredClaim.BeginIndex)
 				return false;
 
 			// Otherwise, if the queue is *NOT* full, then proceed with setting the claim normally.
 			claimedIndex = static_cast<std::size_t>(desiredClaim.EndIndex);
-			desiredClaim.EndIndex = ((desiredClaim.EndIndex + 1) % mArr.size());
+			desiredClaim.EndIndex = ((desiredClaim.EndIndex + 1) % mAcknowledgementArr.size());
 
 			newCurrOffsets = PackOffsets(desiredClaim);
 		} while (!mPackedOffsets.compare_exchange_weak(currOffsets, newCurrOffsets));
 
 		mBackingMemory[claimedIndex] = std::forward<U>(val);
-		mArr[claimedIndex].store(&(mBackingMemory[claimedIndex]));
+		mAcknowledgementArr[claimedIndex].store(true);
 
 		return true;
 	}
@@ -196,29 +183,52 @@ namespace Brawler
 	template <typename T, std::size_t NumElements>
 	std::optional<T> ThreadSafeQueue<T, NumElements>::TryPop()
 	{
-		std::uint64_t currOffsets = mPackedOffsets.load();
-		QueueElementPtr* claimedPtr = nullptr;
 		std::uint64_t newCurrOffsets = 0;
 
-		do
+		// Keep a local captured object here.
+		std::optional<T> capturedElement{};
+
+		while (true)
 		{
+			std::uint64_t currOffsets = mPackedOffsets.load();
 			QueueInfo queueInfo{ UnpackOffsets(currOffsets) };
 
 			// If the queue is empty, then return nothing.
 			if (queueInfo.BeginIndex == queueInfo.EndIndex)
 				return std::optional<T>{};
 
-			claimedPtr = &(mArr[queueInfo.BeginIndex]);
-			queueInfo.BeginIndex = ((queueInfo.BeginIndex + 1) % mArr.size());
+			// Otherwise, check the corresponding element in the acknowledgement array to see
+			// if a producer thread has actually written the value to the queue. We do an
+			// atomic exchange to prevent other threads from potentially getting the result.
+			const bool isDataElementAvailable = mAcknowledgementArr[queueInfo.BeginIndex].exchange(false);
+
+			// If we got to this point and isDataElementAvailable == false, then another consumer
+			// thread got here before us. We have to block until we can get a valid value. (Another
+			// possibility might be to look ahead to try and extract future elements, but to
+			// ensure FIFO ordering, we would need to wait, anyways.)
+			if (!isDataElementAvailable)
+			{
+				std::this_thread::yield();
+				continue;
+			}
+
+			// If we were successful, then move the value into capturedElement for now.
+			capturedElement = std::move(mBackingMemory[queueInfo.BeginIndex]);
+			const std::size_t originalBeginIndex = queueInfo.BeginIndex;
+			queueInfo.BeginIndex = ((queueInfo.BeginIndex + 1) % mAcknowledgementArr.size());
 
 			newCurrOffsets = PackOffsets(queueInfo);
-		} while (!mPackedOffsets.compare_exchange_weak(currOffsets, newCurrOffsets));
 
-		// Wait for the element to be filled.
-		T* claimedElement = nullptr;
-		while (!claimedPtr->compare_exchange_weak(claimedElement, nullptr) || claimedElement == nullptr);
+			// Do a compare-exchange operation on the indices. If we are successful, then we
+			// can exit.
+			if (mPackedOffsets.compare_exchange_strong(currOffsets, newCurrOffsets))
+				return capturedElement;
 
-		return std::optional<T>{std::move(*claimedElement)};
+			// If we failed, then we need to move the element back into the queue and flag the
+			// acknowledgement array value.
+			mBackingMemory[originalBeginIndex] = std::move(*capturedElement);
+			mAcknowledgementArr[originalBeginIndex].store(true);
+		}
 	}
 
 	template <typename T, std::size_t NumElements>
