@@ -204,9 +204,6 @@
     <ClCompile Include="src\I_MeshManager.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
     </ClCompile>
-    <ClCompile Include="src\MeshTypeID.ixx">
-      <Filter>Module Files\Mesh Parsing</Filter>
-    </ClCompile>
     <ClCompile Include="src\ModelResolver.ixx">
       <Filter>Module Files\Mesh Parsing</Filter>
     </ClCompile>
@@ -431,6 +428,9 @@
     </ClCompile>
     <ClCompile Include="src\IndexBufferHeader.ixx">
       <Filter>Module Files\Static Mesh Data</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshTypeID.ixx">
+      <Filter>Module Files\Mesh Parsing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

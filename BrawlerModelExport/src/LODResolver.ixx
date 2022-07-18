@@ -43,6 +43,7 @@ export namespace Brawler
 
 		const aiScene& GetScene() const;
 		std::uint32_t GetLODLevel() const;
+		MeshTypeID GetMeshTypeID() const;
 
 	private:
 		void CreateAIScene();

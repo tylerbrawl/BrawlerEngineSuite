@@ -1189,6 +1189,7 @@
     <ClCompile Include="src\DirectStorageQueue.ixx" />
     <ClCompile Include="src\DirectStorageStatusArrayEntry.ixx" />
     <ClCompile Include="src\EnqueuedAssetDependency.ixx" />
+    <ClCompile Include="src\FileMagicHandler.ixx" />
     <ClCompile Include="src\I_AssetIORequestBuilder.cpp" />
     <ClCompile Include="src\I_AssetIORequestBuilder.ixx" />
     <ClCompile Include="src\DirectStorageUtil.cpp" />

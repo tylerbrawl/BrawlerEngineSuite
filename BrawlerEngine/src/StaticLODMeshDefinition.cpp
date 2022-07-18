@@ -2,6 +2,7 @@ module;
 #include <cstdint>
 
 module Brawler.StaticLODMeshDefinition;
+import Brawler.MappedFileView;
 
 namespace Brawler
 {

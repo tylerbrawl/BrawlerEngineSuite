@@ -24,6 +24,7 @@ import Util.Win32;
 import Brawler.Win32.FormattedConsoleMessageBuilder;
 import Brawler.BCAInfoEntry;
 import Brawler.BCAInfoWriter;
+import Brawler.MeshTypeID;
 
 #pragma push_macro("AddJob")
 #undef AddJob
@@ -94,6 +95,26 @@ namespace
 			bcaInfoWriter.AddEntry(std::move(currEntry));
 		}
 
+		bcaInfoWriter.SerializeBCAInfoFile(completeOutputDirectoryPath);
+	}
+
+	void CreateBCAInfoFileForBMDLFile()
+	{
+		const Brawler::LaunchParams& launchParams{ Util::ModelExport::GetLaunchParameters() };
+		const std::filesystem::path completeOutputDirectoryPath{ launchParams.GetRootOutputDirectory() / L"Models" / launchParams.GetModelName() };
+
+		// Delete any existing .BCAINFO file, should one exist.
+		{
+			const std::filesystem::path completeBCAInfoOutputPath{ completeOutputDirectoryPath / L".BCAINFO" };
+			std::filesystem::remove(completeBCAInfoOutputPath);
+		}
+
+		Brawler::BCAInfoWriter bcaInfoWriter{};
+
+		Brawler::BCAInfoEntry bmdlFileEntry{ completeOutputDirectoryPath / std::format(L"{}.bmdl", launchParams.GetModelName()) };
+		bmdlFileEntry.SetCompressionStatus(false);
+
+		bcaInfoWriter.AddEntry(std::move(bmdlFileEntry));
 		bcaInfoWriter.SerializeBCAInfoFile(completeOutputDirectoryPath);
 	}
 }
@@ -173,32 +194,49 @@ namespace Brawler
 		// happening, we create a .BCAINFO file in the same directory as the model texture
 		// data which specifies to disable compression for every texture file contained within
 		// it.
+		// 
+		// In addition, we also want to create a .BCAINFO file to disable compression for the
+		// .bmdl file which we are generating. These files contain the metadata needed to do
+		// further asset loading, and are typically small enough that compression does not help
+		// much.
 		//
-		// To increase parallelism, we can do this concurrently with the file I/O for the .bmdl
-		// file.
+		// To increase parallelism, we can do both of these tasks concurrently with the file I/O 
+		// for the .bmdl file.
 		Brawler::JobGroup postModelSerializationGroup{};
-		postModelSerializationGroup.Reserve(1);
+		postModelSerializationGroup.Reserve(2);
 
-		std::atomic<bool> bcaInfoCreationCompleted{ false };
+		std::atomic<std::uint64_t> bcaInfoCreationCompletedCount{ 2 };
 
-		postModelSerializationGroup.AddJob([&bcaInfoCreationCompleted] ()
+		postModelSerializationGroup.AddJob([&bcaInfoCreationCompletedCount] ()
 		{
 			CreateBCAInfoFileForVirtualTextures();
 
-			bcaInfoCreationCompleted.store(true, std::memory_order::relaxed);
-			bcaInfoCreationCompleted.notify_one();
+			bcaInfoCreationCompletedCount.fetch_sub(1, std::memory_order::relaxed);
+			bcaInfoCreationCompletedCount.notify_one();
+		});
+
+		postModelSerializationGroup.AddJob([&bcaInfoCreationCompletedCount] ()
+		{
+			CreateBCAInfoFileForBMDLFile();
+
+			bcaInfoCreationCompletedCount.fetch_sub(1, std::memory_order::relaxed);
+			bcaInfoCreationCompletedCount.notify_one();
 		});
 
 		postModelSerializationGroup.ExecuteJobsAsync();
 
-		// Before we add the actual LOD mesh data to the .bmdl file, we should specify the file
-		// offsets for each definition. That way, they can be quickly loaded at runtime.
-		std::uint64_t currLODMeshDataOffset = modelFileByteStream.GetByteCount() + (sizeof(std::uint64_t) * serializedLODMeshByteStreamArr.size());
+		// Before we add the actual LOD mesh data to the .bmdl file, we should specify both the file
+		// offsets for each definition and the MeshTypeID of the LOD mesh. That way, they can be quickly 
+		// loaded at runtime.
+		std::uint64_t currLODMeshDataOffset = modelFileByteStream.GetByteCount() + ((sizeof(std::uint64_t) + sizeof(MeshTypeID)) * serializedLODMeshByteStreamArr.size());
 
-		for (const auto& lodMeshByteStream : serializedLODMeshByteStreamArr)
+		for (const auto i : std::views::iota(0u, mLODResolverPtrArr.size()))
 		{
-			modelFileByteStream << currLODMeshDataOffset;
-			currLODMeshDataOffset += lodMeshByteStream.GetByteCount();
+			const MeshTypeID lodResolverMeshType{ mLODResolverPtrArr[i]->GetMeshTypeID() };
+			assert(lodResolverMeshType != MeshTypeID::COUNT_OR_ERROR);
+
+			modelFileByteStream << currLODMeshDataOffset << std::to_underlying(lodResolverMeshType);
+			currLODMeshDataOffset += serializedLODMeshByteStreamArr[i].GetByteCount();
 		}
 
 		for (auto& lodMeshByteStream : serializedLODMeshByteStreamArr)
@@ -222,9 +260,14 @@ namespace Brawler
 		Win32::FormattedConsoleMessageBuilder modelExportedMsgBuilder{ Util::Win32::ConsoleFormat::SUCCESS };
 		modelExportedMsgBuilder << L"Model Exported: " << Util::Win32::ConsoleFormat::NORMAL << std::format(L"{} -> {}", modelName, outputFilePath.c_str());
 
-		// Wait to report that we are finished until after the .BCAINFO file could be created.
+		// Wait to report that we are finished until after the .BCAINFO files could be created.
 		// (Oh, and we also don't want to exit this function until after that, either.)
-		bcaInfoCreationCompleted.wait(false, std::memory_order::relaxed);
+		std::uint64_t expectedBCAInfoCompletionCountValue = 2;
+		while (expectedBCAInfoCompletionCountValue != 0)
+		{
+			bcaInfoCreationCompletedCount.wait(expectedBCAInfoCompletionCountValue, std::memory_order::relaxed);
+			expectedBCAInfoCompletionCountValue = bcaInfoCreationCompletedCount.load(std::memory_order::relaxed);
+		}
 		
 		modelExportedMsgBuilder.WriteFormattedConsoleMessage();
 	}

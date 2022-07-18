@@ -261,7 +261,7 @@ export namespace Brawler
 namespace Brawler
 {
 	template <typename T, std::size_t FieldIndex>
-	constexpr void SerializeField(SerializedStruct<T>& destStruct, const T& srcStruct)
+	void SerializeField(SerializedStruct<T>& destStruct, const T& srcStruct)
 	{
 		if constexpr (FieldIndex != Util::Reflection::GetFieldCount<T>())
 		{
@@ -275,7 +275,7 @@ namespace Brawler
 	}
 
 	template <typename T, std::size_t FieldIndex>
-	constexpr void DeserializeField(T& destStruct, const SerializedStruct<T>& srcStruct)
+	void DeserializeField(T& destStruct, const SerializedStruct<T>& srcStruct)
 	{
 		if constexpr (FieldIndex != Util::Reflection::GetFieldCount<T>())
 		{
@@ -293,7 +293,7 @@ export namespace Brawler
 {
 	template <typename T>
 		requires IsSerializable<T>
-	constexpr SerializedStruct<T> SerializeData(const T& data)
+	SerializedStruct<T> SerializeData(const T& data)
 	{
 		SerializedStruct<T> serializedData;
 
@@ -310,7 +310,7 @@ export namespace Brawler
 
 	template <typename T>
 		requires IsSerializable<T>
-	constexpr T DeserializeData(const SerializedStruct<T>& serializedData)
+	T DeserializeData(const SerializedStruct<T>& serializedData)
 	{
 		T data;
 

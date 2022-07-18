@@ -232,6 +232,7 @@
     <Manifest />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\BrawlerModelExport\src\MeshTypeID.ixx" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Application.ixx" />
     <ClCompile Include="src\ApplicationStateID.ixx" />
@@ -275,6 +276,7 @@
     <ClCompile Include="src\I_WindowState.ixx" />
     <ClCompile Include="src\MathConstants.ixx" />
     <ClCompile Include="src\MathTypes.ixx" />
+    <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Model.ixx" />
     <ClCompile Include="src\ModelLoader.ixx" />
     <ClCompile Include="src\ModelLoadEventHandle.ixx" />

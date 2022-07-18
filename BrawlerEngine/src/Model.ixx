@@ -21,6 +21,9 @@ export namespace Brawler
 		Model& operator=(Model&& rhs) noexcept = default;
 
 	private:
+		void CreateLODMeshDefinitions(const FilePathHash bmdlFileHash);
+
+	private:
 		std::vector<std::unique_ptr<I_LODMeshDefinition>> mLODMeshDefinitionPtrArr;
 	};
 }

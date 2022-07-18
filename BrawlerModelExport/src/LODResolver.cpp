@@ -24,7 +24,7 @@ import Brawler.StaticMeshResolver;
 
 namespace
 {
-	Brawler::MeshTypeID GetMeshTypeID(const aiMesh& mesh)
+	Brawler::MeshTypeID GetMeshTypeIDForAssimpMesh(const aiMesh& mesh)
 	{
 		// TODO: Add support for skinned meshes. For now, we assert that the mesh is not
 		// skinned and simply create StaticMeshResolvers.
@@ -72,10 +72,7 @@ namespace Brawler
 
 		ByteStream lodMeshByteStream{};
 
-		// Before adding the actual mesh data, specify the MeshTypeID for the LODResolver and the number
-		// of meshes.
-		assert(mMeshTypeID != MeshTypeID::COUNT_OR_ERROR);
-		lodMeshByteStream << static_cast<std::uint32_t>(mMeshTypeID);
+		// Before adding the actual mesh data, specify the number of meshes.
 
 		assert(mMeshResolverCollectionPtr->GetMeshResolverCount() <= std::numeric_limits<std::uint32_t>::max());
 		lodMeshByteStream << static_cast<std::uint32_t>(mMeshResolverCollectionPtr->GetMeshResolverCount());
@@ -97,6 +94,11 @@ namespace Brawler
 	std::uint32_t LODResolver::GetLODLevel() const
 	{
 		return mLODLevel;
+	}
+
+	MeshTypeID LODResolver::GetMeshTypeID() const
+	{
+		return mMeshTypeID;
 	}
 
 	void LODResolver::CreateAIScene()
@@ -145,7 +147,7 @@ namespace Brawler
 
 		for (const auto meshPtr : meshSpan)
 		{
-			const MeshTypeID currTypeID = GetMeshTypeID(*meshPtr);
+			const MeshTypeID currTypeID = GetMeshTypeIDForAssimpMesh(*meshPtr);
 
 			if (!lodMeshTypeID.has_value()) [[unlikely]]
 				lodMeshTypeID = currTypeID;
