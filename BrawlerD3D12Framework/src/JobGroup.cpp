@@ -3,6 +3,7 @@ module;
 #include <memory>
 #include <coroutine>
 #include <functional>
+#include <cassert>
 
 module Brawler.JobGroup;
 import Brawler.JobPriority;
@@ -26,6 +27,7 @@ namespace Brawler
 
 	void JobGroup::AddJob(std::move_only_function<void()>&& job)
 	{
+		assert(job && "ERROR: A std::move_only_function<void()> which was never assigned a callback was provided to a JobGroup!");
 		mJobArr.push_back(Job{ std::move(job), mCounter, mPriority });
 	}
 

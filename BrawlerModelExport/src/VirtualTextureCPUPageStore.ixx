@@ -133,8 +133,6 @@ namespace Brawler
 		// Begin the texture page data compression. Each page is compressed as a CPU job, so multiple pages can be
 		// compressed concurrently.
 
-		Util::General::DebugBreak();
-
 		ZSTDCompressionOperation texturePageCompressionOperation{};
 		Util::General::CheckHRESULT(texturePageCompressionOperation.BeginCompressionOperation(texturePageMapping.GetReadBackDataSpan()));
 
