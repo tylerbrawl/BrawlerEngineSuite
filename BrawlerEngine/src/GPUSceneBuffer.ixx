@@ -2,6 +2,7 @@ module;
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <cassert>
 #include <DxDef.h>
 
 export module Brawler.GPUSceneBuffer;
@@ -25,8 +26,8 @@ namespace Brawler
 		requires (SRVFormat != DXGI_FORMAT::DXGI_FORMAT_UNKNOWN)
 	struct PrimitiveTypeGPUSceneBufferSubAllocationInfo
 	{
-		using SubAllocationType = D3D12::ByteAddressBufferSubAllocation<(NumElements * sizeof(T))>;
-		using SnapshotType = D3D12::ByteAddressBufferSnapshot<(NumElements * sizeof(T))>;
+		using SubAllocationType = D3D12::ByteAddressBufferSubAllocation<sizeof(T)>;
+		using SnapshotType = D3D12::ByteAddressBufferSnapshot<sizeof(T)>;
 
 		static std::optional<SubAllocationType> CreateSubAllocation(D3D12::BufferResource& bufferResource)
 		{
@@ -62,11 +63,11 @@ namespace Brawler
 	template <typename T, std::size_t NumElements>
 		requires requires ()
 	{
-		D3D12::StructuredBufferSubAllocation<T, NumElements>{};
+		D3D12::StructuredBufferSubAllocation<T, 1>{};
 	}
 	struct GPUSceneBufferSubAllocationInfo<T, NumElements>
 	{
-		using SubAllocationType = D3D12::StructuredBufferSubAllocation<T, NumElements>;
+		using SubAllocationType = D3D12::StructuredBufferSubAllocation<T, 1>;
 		using SnapshotType = D3D12::StructuredBufferSnapshot<T>;
 
 		static std::optional<SubAllocationType> CreateSubAllocation(D3D12::BufferResource& bufferResource)
@@ -109,9 +110,11 @@ export namespace Brawler
 
 		void Initialize();
 
+		D3D12::BufferResource& GetBufferResource();
+		const D3D12::BufferResource& GetBufferResource() const;
+
 	private:
 		std::unique_ptr<D3D12::BufferResource> mBufferPtr;
-		SubAllocationType mBufferSubAllocation;
 		D3D12::BindlessSRVAllocation mBindlessAllocation;
 	};
 }
@@ -130,18 +133,30 @@ namespace Brawler
 
 		mBufferPtr = std::make_unique<D3D12::BufferResource>(BUFFER_INITIALIZATION_INFO);
 
-		std::optional<SubAllocationType> bufferSubAllocation{ GPUSceneBufferSubAllocationInfo<ElementType, NumElements>::CreateSubAllocation(*mBufferPtr) };
-		assert(bufferSubAllocation.has_value());
-
-		mBufferSubAllocation = std::move(*bufferSubAllocation);
-
 		// Create the BindlessSRVAllocation here. The order in which GPUSceneBuffer instances are initialized
 		// should match the order in which the buffers should appear in the GPUResourceDescriptorHeap.
 		//
 		// Specifically, the shaders will assume that a given GPUSceneBuffer is located at a constant index
 		// within the bindless SRV segment of the GPUResourceDescriptorHeap. We need the calls to
 		// GPUSceneBuffer::Initialize() to match this ordering.
+		//
+		// To be clear, the SRV gets bound to the pipeline as a part of the bindless resource descriptor table.
+		// There is no need to create views for the individual elements of the buffer.
 		D3D12_SHADER_RESOURCE_VIEW_DESC bindlessSRVDesc{ GPUSceneBufferSubAllocationInfo<ElementType, NumElements>::DEFAULT_SRV_DESC };
 		mBindlessAllocation = static_cast<D3D12::I_GPUResource&>(*mBufferPtr).CreateBindlessSRV(std::move(bindlessSRVDesc));
+	}
+
+	template <typename ElementType, std::size_t NumElements>
+	D3D12::BufferResource& GPUSceneBuffer<ElementType, NumElements>::GetBufferResource()
+	{
+		assert(mBufferPtr != nullptr);
+		return *mBufferPtr;
+	}
+
+	template <typename ElementType, std::size_t NumElements>
+	const D3D12::BufferResource& GPUSceneBuffer<ElementType, NumElements>::GetBufferResource() const
+	{
+		assert(mBufferPtr != nullptr);
+		return *mBufferPtr;
 	}
 }

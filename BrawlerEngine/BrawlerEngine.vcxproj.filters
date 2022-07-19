@@ -136,6 +136,15 @@
     <Filter Include="Module Files\Streaming Systems\Texture Streaming">
       <UniqueIdentifier>{19ba826c-994b-42a8-9509-73733d1bc3c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\Texture Types">
+      <UniqueIdentifier>{1a6409ae-f248-4e2a-953b-a2b585f9fe79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Streaming Systems\Texture Streaming">
+      <UniqueIdentifier>{b428d8a0-1179-4916-89b1-e788ba464012}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Streaming Systems\Texture Streaming\Global Texture Data Uploads">
+      <UniqueIdentifier>{784c6270-9065-4e5a-9313-7495c073f43d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -414,6 +423,21 @@
     <ClCompile Include="..\BrawlerModelExport\src\MeshTypeID.ixx">
       <Filter>Module Files\Streaming Systems\Model Streaming\Model Data Definitions</Filter>
     </ClCompile>
+    <ClCompile Include="src\VirtualTexture.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTexture.cpp">
+      <Filter>Source Files\Streaming Systems\Texture Streaming</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTextureUploadBuffer.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Texture Data Uploads</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StreamingVirtualTexturePage.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTextureDatabase.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -465,6 +489,9 @@
     </None>
     <None Include="src\Shaders\TransformUtil.hlsli">
       <Filter>Shader Files\Utilities</Filter>
+    </None>
+    <None Include="src\Shaders\VirtualTextureDescription.hlsli">
+      <Filter>Shader Files\Texture Types</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -23,8 +23,6 @@ export namespace Brawler
 		consteval std::uint32_t GetMagicIntegerValue() const;
 		consteval NZStringView GetMagicString() const;
 
-		constexpr bool DoesMagicIntegerMatch(const std::uint32_t magicNumberToValidate) const;
-
 	private:
 		NZStringView mMagicStr;
 	};
@@ -59,11 +57,5 @@ namespace Brawler
 	consteval NZStringView FileMagicHandler::GetMagicString() const
 	{
 		return mMagicStr;
-	}
-
-	constexpr bool FileMagicHandler::DoesMagicIntegerMatch(const std::uint32_t magicNumberToValidate) const
-	{
-		constexpr std::uint32_t REQUIRED_VALUE = GetMagicIntegerValue();
-		return (magicNumberToValidate == REQUIRED_VALUE);
 	}
 }

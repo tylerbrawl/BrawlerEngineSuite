@@ -23,6 +23,8 @@ namespace Brawler
 	struct ArraySolver<std::array<DataType, Size>>
 	{
 		static constexpr bool IS_ARRAY = true;
+
+		using ElementType = DataType;
 	};
 
 	template <typename FieldType>
@@ -32,15 +34,16 @@ namespace Brawler
 		if constexpr (std::is_pointer_v<FieldType> || std::is_reference_v<FieldType>)
 			return false;
 
-		// Do, however, allow arithmetic primitives.
-		if constexpr (std::is_arithmetic_v<FieldType>)
+		// Do, however, allow arithmetic primitives and enumeration types.
+		if constexpr (std::is_arithmetic_v<FieldType> || std::is_enum_v<FieldType>)
 			return true;
 
-		// Add explicit support for std::array.
+		// Add explicit support for std::array, but only if the type it refers
+		// to is serializable.
 		constexpr bool IS_ARRAY = ArraySolver<FieldType>::IS_ARRAY;
 
 		if constexpr (IS_ARRAY)
-			return true;
+			return IsFieldSerializable<typename ArraySolver<FieldType>::ElementType>();
 
 		// If we cannot verify that the type is serializable via reflection, then
 		// do not allow its serialization.

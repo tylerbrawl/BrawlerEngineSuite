@@ -1,4 +1,5 @@
 module;
+#include <source_location>
 #include "DxDef.h"
 
 export module Util.D3D12:Formats;
@@ -460,6 +461,199 @@ export namespace Util
 			default:
 				return 0;
 			}
+		}
+	}
+}
+
+export namespace Util
+{
+	namespace D3D12
+	{
+		struct SubResourceDecompositionResults
+		{
+			std::uint32_t MipSlice;
+			std::uint32_t ArraySlice;
+			std::uint32_t PlaneSlice;
+		};
+
+		constexpr SubResourceDecompositionResults DecomposeSubResource(const std::uint32_t subResourceIndex, const std::uint32_t numMipLevels, const std::uint32_t arraySize)
+		{
+			// The implementation for this is basically a carbon copy of what can be found on the MSDN at
+			// https://docs.microsoft.com/en-us/windows/win32/direct3d12/d3d12decomposesubresource. I just
+			// re-implemented it as a constexpr function, since it isn't marked as such in the D3D12 header
+			// file.
+
+			return SubResourceDecompositionResults{
+				.MipSlice = (subResourceIndex % numMipLevels),
+				.ArraySlice = ((subResourceIndex / numMipLevels) % arraySize),
+				.PlaneSlice = (subResourceIndex / (numMipLevels * arraySize))
+			};
+		}
+	}
+}
+
+export namespace Util
+{
+	namespace D3D12
+	{
+		struct CopyableFootprintsParams
+		{
+			const Brawler::D3D12_RESOURCE_DESC ResourceDesc;
+			std::uint32_t FirstSubResource;
+			std::uint32_t NumSubResources;
+			std::uint64_t BaseOffset;
+		};
+
+		struct CopyableFootprint
+		{
+			/// <summary>
+			/// Provides additional information regarding the sub-allocation within an
+			/// upload buffer which must be designated for this sub-resource. Note that
+			/// Layout.Footprint.RowPitch *IS* aligned to 
+			/// D3D12_TEXTURE_DATA_PITCH_ALIGNMENT. For more details, refer to
+			/// https://docs.microsoft.com/en-us/windows/win32/api/d3d12/ns-d3d12-d3d12_placed_subresource_footprint.
+			/// </summary>
+			D3D12_PLACED_SUBRESOURCE_FOOTPRINT Layout;
+
+			/// <summary>
+			/// The number of rows consumed by this sub-resource. This should be the same
+			/// as Layout.Footprint.Height.
+			/// </summary>
+			std::uint32_t NumRows;
+
+			/// <summary>
+			/// The *UNPADDED* size, in bytes, of a row of texture data for this
+			/// sub-resource. Unlike Layout.Footprint.RowPitch, this value *MIGHT NOT* be
+			/// aligned to D3D12_TEXTURE_DATA_PITCH_ALIGNMENT.
+			/// </summary>
+			std::uint64_t RowSizeInBytes;
+		};
+
+		struct CopyableFootprintsResults
+		{
+			/// <summary>
+			/// A std::vector&lt;CopyableFootprint&gt; instance which describes, for each
+			/// requested sub-resource, the layout, number of rows, and *UNPADDED* row size
+			/// of said sub-resource. More details can be found in the documentation of
+			/// CopyableFootprint, as well as in the MSDN.
+			/// </summary>
+			std::vector<CopyableFootprint> FootprintsArr;
+
+			/// <summary>
+			/// Returns the requires upload buffer size for copying all of the sub-resources
+			/// requested. This value does account for any padding required by the D3D12 API,
+			/// both for the required alignment of texture data within a buffer and the required
+			/// alignment of texture row data.
+			/// </summary>
+			std::uint64_t TotalBytes;
+		};
+
+		/// <summary>
+		/// Attempts to evaluate the result of ID3D12Device::GetCopyableFootprints1() in a
+		/// constant-evaluated context. Since the return value of that function is device-agnostic,
+		/// it should theoretically be a good candidate for constexpr. However, few, if any, functions
+		/// in the D3D12 API are actually labeled constexpr. (I guess they wanted to remain compatible
+		/// with C++11, but couldn't they just use pre-processor macros like the MSVC STL?)
+		/// 
+		/// Testing should be done to validate the results of this function. The implementation of
+		/// ID3D12Device::GetCopyableFootprints1() is not open source, but the MSDN states that all of
+		/// the details needed to implement the function are exposed to application developers. The
+		/// returned result should work for most trivial (i.e., non-planar) DXGI_FORMAT values, but again,
+		/// this should be verified with ground truth results from the D3D12 API.
+		/// 
+		/// The function is consteval, rather than constexpr, for two reasons:
+		///	  1. Unlike ID3D12Device::GetCopyableFootprints1() which calculates only the return values
+		///      which you ask for, this function calculates and returns every value. This is fine at
+		///      compile time, but is admittedly less efficient at run-time.
+		/// 
+		///	  2. ID3D12Device::GetCopyableFootprints1() is guaranteed to always return correct results.
+		///      This function should work for most trivial (i.e., non-planar) DXGI_FORMAT values, but
+		///      the returned values should be verified with ground truth results from the D3D12 API.
+		///      So, if you have to get this information at run-time for some reason, then you should
+		///      always prefer ID3D12Device::GetCopyableFootprints1().
+		/// </summary>
+		/// <param name="params">
+		/// - A const CopyableFootprintsParams&amp; which describes the sub-resource(s) whose copyable footprint(s)
+		///   are to be returned. Rather than having a function with eight parameters, this function wraps
+		///   the input parameters into a struct and returns the output values in another struct.
+		/// </param>
+		/// <returns>
+		/// The function returns a CopyableFootprintsResults instance which describes the total size
+		/// of the upload buffer required to upload all sub-resources requested, as well as a CopyableFootprint
+		/// instance for each sub-resource requested.
+		/// </returns>
+		consteval CopyableFootprintsResults GetCopyableFootprints(const CopyableFootprintsParams& params)
+		{
+			// The assert() macro is causing the MSVC to spit out false errors (again).
+			constexpr auto SAFE_ASSERT = [] (const bool expression, const std::source_location srcLocation = std::source_location::current())
+			{
+				(void)(
+					(!!(expression)) ||
+					(_wassert(L"ERROR: An assertion failed!", L"D3D12UtilFormats.ixx", srcLocation.line()), 0)
+					);
+			};
+			
+			SAFE_ASSERT(params.FirstSubResource < params.NumSubResources);
+			SAFE_ASSERT(params.ResourceDesc.Dimension != D3D12_RESOURCE_DIMENSION::D3D12_RESOURCE_DIMENSION_BUFFER && params.ResourceDesc.Dimension != D3D12_RESOURCE_DIMENSION::D3D12_RESOURCE_DIMENSION_UNKNOWN);
+
+			SAFE_ASSERT(params.ResourceDesc.Format != DXGI_FORMAT::DXGI_FORMAT_UNKNOWN);
+			const std::size_t numBitsPerPixel = GetBitsPerPixelForFormat(params.ResourceDesc.Format);
+
+			const std::uint32_t numMipLevels = params.ResourceDesc.MipLevels;
+			const std::uint32_t numArrayElements = (params.ResourceDesc.Dimension == D3D12_RESOURCE_DIMENSION::D3D12_RESOURCE_DIMENSION_TEXTURE3D ? 1 : params.ResourceDesc.DepthOrArraySize);
+
+			constexpr auto ALIGN_TO_POWER_OF_TWO = []<std::size_t Alignment>(const std::uint64_t value)
+			{
+				return ((value + (Alignment - 1)) & ~(Alignment - 1));
+			};
+
+			CopyableFootprintsResults results{};
+			std::uint64_t currUploadOffset = ALIGN_TO_POWER_OF_TWO.operator()<D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT>(params.BaseOffset);
+
+			for (std::uint32_t i = 0; i < params.NumSubResources; ++i)
+			{
+				CopyableFootprint currFootprint{};
+				const std::uint32_t currSubResource = (params.FirstSubResource + i);
+
+				const SubResourceDecompositionResults decomposedResults{ DecomposeSubResource(currSubResource, numMipLevels, numArrayElements) };
+
+				// TODO: Does this still work for multi-planar formats?
+				const std::uint64_t subResourceWidth = (params.ResourceDesc.Width >> decomposedResults.MipSlice);
+				const std::uint32_t subResourceHeight = (params.ResourceDesc.Dimension == D3D12_RESOURCE_DIMENSION::D3D12_RESOURCE_DIMENSION_TEXTURE1D ? 1 : (params.ResourceDesc.Height >> decomposedResults.MipSlice));
+				const std::uint32_t subResourceDepth = (params.ResourceDesc.Dimension != D3D12_RESOURCE_DIMENSION::D3D12_RESOURCE_DIMENSION_TEXTURE3D ? 1 : (params.ResourceDesc.DepthOrArraySize >> decomposedResults.MipSlice));
+
+				const std::size_t subResourceBitsPerRow = (subResourceWidth * numBitsPerPixel);
+				const std::size_t subResourceUnalignedBytesPerRow = ((subResourceBitsPerRow / 8) + std::min<std::size_t>(subResourceBitsPerRow % 8, 1));
+
+				currFootprint.Layout = D3D12_PLACED_SUBRESOURCE_FOOTPRINT{
+					.Offset = currUploadOffset,
+					.Footprint{
+						.Format = params.ResourceDesc.Format,
+						.Width = static_cast<std::uint32_t>(subResourceWidth),
+						.Height = subResourceHeight,
+						.Depth = subResourceDepth,
+						.RowPitch = static_cast<std::uint32_t>(ALIGN_TO_POWER_OF_TWO.operator()<D3D12_TEXTURE_DATA_PITCH_ALIGNMENT>(subResourceUnalignedBytesPerRow))
+					}
+				};
+
+				currFootprint.NumRows = subResourceHeight;
+				currFootprint.RowSizeInBytes = subResourceUnalignedBytesPerRow;
+
+				const std::uint64_t totalSubResourceSize = (static_cast<std::uint64_t>(currFootprint.Layout.Footprint.RowPitch) * static_cast<std::uint64_t>(subResourceHeight) * currFootprint.Layout.Footprint.Depth);
+				results.TotalBytes += totalSubResourceSize;
+
+				results.FootprintsArr.push_back(std::move(currFootprint));
+
+				// Adjust the offset from the start of the buffer for the next sub-resource.
+				const std::uint64_t unalignedNewUploadOffset = (currUploadOffset + totalSubResourceSize);
+				currUploadOffset = ALIGN_TO_POWER_OF_TWO.operator()<D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT>(unalignedNewUploadOffset);
+
+				// If aligning unalignedNewUploadOffset to D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT required padding
+				// out the buffer, then the returned size needs to reflect that.
+				results.TotalBytes += (currUploadOffset - unalignedNewUploadOffset);
+			}
+
+			return results;
 		}
 	}
 }

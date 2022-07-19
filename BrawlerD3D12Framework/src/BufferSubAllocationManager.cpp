@@ -175,7 +175,7 @@ namespace Brawler
 			{
 				// The destructor of BufferSubAllocationReservation will automatically return its TLSFMemoryBlock
 				// to the TLSFAllocator of this BufferSubAllocationManager instance. Thus, with the power of RAII,
-				// all we need to do here is return true if the BufferSubAllocationReservation instances announces
+				// all we need to do here is return true if the BufferSubAllocationReservation instance announces
 				// that it is ready to be destroyed and false otherwise.
 
 				return (reservationPtr->ReadyForDestruction());

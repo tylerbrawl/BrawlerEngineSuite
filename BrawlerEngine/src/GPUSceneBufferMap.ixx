@@ -24,6 +24,10 @@ namespace Brawler
 	static constexpr std::size_t MAX_MATERIAL_DEFINITIONS = (static_cast<std::size_t>(1) << 22);
 	static constexpr std::size_t MAX_VIEWS = (static_cast<std::size_t>(1) << 12);
 	static constexpr std::size_t MAX_TRIANGLE_CLUSTERS = (static_cast<std::size_t>(1) << 25);
+
+	// There's no point in having more virtual texture descriptions than we do bindless
+	// SRVs.
+	static constexpr std::size_t MAX_VIRTUAL_TEXTURE_DESCRIPTIONS = 500000;
 }
 
 namespace Brawler
@@ -73,6 +77,10 @@ namespace Brawler
 
 	template <>
 	struct GPUSceneBufferInfo<GPUSceneBufferID::LOD_MESH_DATA_INDEX_BUFFER> : public GPUSceneBufferInfoInstantiation<std::uint32_t, MAX_MODEL_INSTANCES>
+	{};
+
+	template <>
+	struct GPUSceneBufferInfo<GPUSceneBufferID::VIRTUAL_TEXTURE_DESCRIPTION_BUFFER> : public GPUSceneBufferInfoInstantiation<VirtualTextureDescription, MAX_VIRTUAL_TEXTURE_DESCRIPTIONS>
 	{};
 }
 

@@ -47,13 +47,13 @@ namespace Brawler
 		requires (BufferID != GPUSceneBufferID::COUNT_OR_ERROR)
 	auto& GPUSceneManager::GetGPUSceneBufferResource()
 	{
-		return std::get<std::to_underlying(BufferID)>(mBufferTuple);
+		return std::get<std::to_underlying(BufferID)>(mBufferTuple).GetBufferResource();
 	}
 
 	template <GPUSceneBufferID BufferID>
 		requires (BufferID != GPUSceneBufferID::COUNT_OR_ERROR)
 	const auto& GPUSceneManager::GetGPUSceneBufferResource() const
 	{
-		return std::get<std::to_underlying(BufferID)>(mBufferTuple);
+		return std::get<std::to_underlying(BufferID)>(mBufferTuple).GetBufferResource();
 	}
 }

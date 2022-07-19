@@ -51,7 +51,7 @@ namespace
 		Brawler::MeshTypeID MeshType;
 	};
 
-	bool IsModelFileCommonHeaderValid(const Brawler::MappedFileView<FileAccessMode::READ_ONLY>& bmdlFileMappedView)
+	bool IsModelFileCommonHeaderValid(const Brawler::MappedFileView<Brawler::FileAccessMode::READ_ONLY>& bmdlFileMappedView)
 	{
 		const std::span<const std::byte> mappedDataSpan{ bmdlFileMappedView.GetMappedData() };
 
@@ -64,7 +64,8 @@ namespace
 		const CommonModelFileHeader deserializedCommonHeader{ Brawler::DeserializeData(serializedCommonHeader) };
 
 		// Ensure that the magic matches.
-		if (!MODEL_FILE_MAGIC_HANDLER.DoesMagicIntegerMatch(deserializedCommonHeader.Magic)) [[unlikely]]
+		constexpr std::uint32_t EXPECTED_MAGIC_VALUE = MODEL_FILE_MAGIC_HANDLER.GetMagicIntegerValue();
+		if (EXPECTED_MAGIC_VALUE != deserializedCommonHeader.Magic) [[unlikely]]
 			return false;
 
 		// Only allow model files with the current version.
@@ -152,10 +153,12 @@ namespace Brawler
 		for (const auto i : std::views::iota(0u, versionedHeader.LODMeshCount))
 		{
 			std::unique_ptr<I_LODMeshDefinition>& currDefinitionPtr{ mLODMeshDefinitionPtrArr[i] };
+			const LODMeshTOCEntry currTOCEntry{ Brawler::DeserializeData(serializedTOCEntryArr[i]) };
+
 			const LODMeshDefinitionCreationParams creationParams{
 				.BMDLFileHash = bmdlFileHash,
 				.LODMeshID = i,
-				.TypeID = serializedTOCEntryArr[i].MeshType
+				.TypeID = currTOCEntry.MeshType
 			};
 
 			lodMeshDefinitionGroup.AddJob([&currDefinitionPtr, creationParams] ()

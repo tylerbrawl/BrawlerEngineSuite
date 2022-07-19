@@ -5,6 +5,10 @@ module;
 export module Brawler.GPUSceneTypes;
 import Util.HLSL;
 
+// NOTE: For some of these types, you will see that their corresponding HLSL structure has bit packing,
+// while their C++ types combine them into a single member. The reflection used by the Brawler Engine
+// cannot correctly infer the sizes of members with bit packing, so we don't use it on this end.
+
 export namespace Brawler
 {
 	struct PackedStaticVertex
@@ -65,5 +69,12 @@ export namespace Brawler
 
 		DirectX::XMFLOAT3 CurrentFrameAABBMax;
 		std::uint32_t StartingIndexBufferIndex;
+	};
+
+	struct VirtualTextureDescription
+	{
+		std::uint32_t IndirectionTextureIndexAndLog2VTSize;
+		std::uint32_t CombinedPageXAndYCoord;
+		DirectX::XMUINT2 __Pad0;
 	};
 }

@@ -67,7 +67,7 @@ namespace Brawler
 	template <GPUSceneBufferID BufferID>
 	std::span<const std::byte> GPUSceneBufferUpdater<BufferID>::GetGPUSceneUploadData() const
 	{
-		const std::span<const ElementType> dataSpan{ 1, &mDataToUpload };
+		const std::span<const ElementType> dataSpan{ &mDataToUpload, 1 };
 		return std::as_bytes(dataSpan);
 	}
 
