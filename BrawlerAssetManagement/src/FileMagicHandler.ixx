@@ -20,8 +20,23 @@ export namespace Brawler
 		consteval FileMagicHandler(FileMagicHandler&& rhs) noexcept = default;
 		consteval FileMagicHandler& operator=(FileMagicHandler&& rhs) noexcept = default;
 
+		/// <summary>
+		/// Retrieves the corresponding little-endian integer value for the magic string.
+		/// This is the default integer value which should be used on Windows. For systems
+		/// which use big-endian format, use FileMagicHandler::GetBitEndianMagicIntegerValue().
+		/// 
+		/// If the provided string has less than four characters, then the remaining bytes
+		/// in the integer value are zeroed.
+		/// </summary>
+		/// <returns>
+		/// The function returns the corresponding little-endian integer value for the magic
+		/// string.
+		/// </returns>
 		consteval std::uint32_t GetMagicIntegerValue() const;
+
 		consteval NZStringView GetMagicString() const;
+
+		consteval std::uint32_t GetBigEndianMagicIntegerValue() const;
 
 	private:
 		NZStringView mMagicStr;
@@ -57,5 +72,19 @@ namespace Brawler
 	consteval NZStringView FileMagicHandler::GetMagicString() const
 	{
 		return mMagicStr;
+	}
+
+	consteval std::uint32_t FileMagicHandler::GetBigEndianMagicIntegerValue() const
+	{
+		std::uint32_t magicValue = 0;
+		std::uint32_t bitShiftAmount = 0;
+
+		for (const auto c : mMagicStr)
+		{
+			magicValue |= (static_cast<std::uint32_t>(c) << bitShiftAmount);
+			bitShiftAmount += 8;
+		}
+
+		return magicValue;
 	}
 }

@@ -244,6 +244,9 @@
     <ClCompile Include="src\AppWindow.cpp" />
     <ClCompile Include="src\AppWindow.ixx" />
     <ClCompile Include="src\GlobalTextureCollection.ixx" />
+    <ClCompile Include="src\GlobalTexturePageSwapOperation.ixx" />
+    <ClCompile Include="src\GlobalTextureReservedPage.cpp" />
+    <ClCompile Include="src\GlobalTextureReservedPage.ixx" />
     <ClCompile Include="src\GlobalTextureUploadBuffer.ixx" />
     <ClCompile Include="src\GPUSceneBuffer.ixx" />
     <ClCompile Include="src\BorderlessWindowedModeWindowState.cpp" />
@@ -327,6 +330,9 @@
     <ClCompile Include="src\VirtualTextureDatabase.ixx" />
     <ClCompile Include="src\VirtualTextureHandle.cpp" />
     <ClCompile Include="src\VirtualTextureHandle.ixx" />
+    <ClCompile Include="src\VirtualTextureLogicalPage.ixx" />
+    <ClCompile Include="src\VirtualTextureMetadata.cpp" />
+    <ClCompile Include="src\VirtualTextureMetadata.ixx" />
     <ClCompile Include="src\WindowDisplayMode.ixx" />
     <ClCompile Include="src\WindowedModeWindowState.cpp" />
     <ClCompile Include="src\WindowedModeWindowState.ixx" />

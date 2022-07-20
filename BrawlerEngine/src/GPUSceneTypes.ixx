@@ -75,6 +75,7 @@ export namespace Brawler
 	{
 		std::uint32_t IndirectionTextureIndexAndLog2VTSize;
 		std::uint32_t CombinedPageXAndYCoord;
-		DirectX::XMUINT2 __Pad0;
+		std::uint32_t GlobalTextureIndex;
+		std::uint32_t __Pad0;
 	};
 }
