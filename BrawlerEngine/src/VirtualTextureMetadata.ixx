@@ -31,9 +31,15 @@ export namespace Brawler
 
 		const VirtualTexturePageMetadata& GetPageMetadata(const std::uint32_t mipLevel, const std::uint32_t pageXCoord, const std::uint32_t pageYCoord) const;
 		std::size_t GetPageCountForMipLevel(const std::uint32_t mipLevel) const;
+		std::uint32_t GetFirstMipLevelInCombinedPage() const;
+
+		DXGI_FORMAT GetTextureFormat() const;
+		std::uint32_t GetLogicalMipLevel0Dimensions() const;
+		std::uint32_t GetLogicalMipLevelCount() const;
+
+		std::size_t GetCopyableFootprintsPageSize() const;
 
 	private:
-		std::uint32_t GetFirstMipLevelInCombinedPage() const;
 		std::size_t CalculatePageMetadataArrayIndex(const std::uint32_t mipLevel, const std::uint32_t pageXCoord, const std::uint32_t pageYCoord) const;
 
 	private:

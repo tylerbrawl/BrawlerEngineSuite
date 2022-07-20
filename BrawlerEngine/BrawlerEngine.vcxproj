@@ -243,7 +243,10 @@
     <ClCompile Include="src\ApplicationStateStackRequestBundle.cpp" />
     <ClCompile Include="src\AppWindow.cpp" />
     <ClCompile Include="src\AppWindow.ixx" />
+    <ClCompile Include="src\GlobalTexture.ixx" />
     <ClCompile Include="src\GlobalTextureCollection.ixx" />
+    <ClCompile Include="src\GlobalTextureFormatInfo.ixx" />
+    <ClCompile Include="src\GlobalTexturePageSwapOperation.cpp" />
     <ClCompile Include="src\GlobalTexturePageSwapOperation.ixx" />
     <ClCompile Include="src\GlobalTextureReservedPage.cpp" />
     <ClCompile Include="src\GlobalTextureReservedPage.ixx" />

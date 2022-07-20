@@ -17,7 +17,7 @@ namespace Brawler
 	VirtualTextureHandle VirtualTextureDatabase::CreateVirtualTexture(const FilePathHash bvtxFileHash)
 	{
 		std::unique_ptr<VirtualTexture> virtualTexturePtr{ std::make_unique<VirtualTexture>(bvtxFileHash) };
-		const VirtualTextureHandle hVirtualTexture{ *virtualTexturePtr };
+		VirtualTextureHandle hVirtualTexture{ *virtualTexturePtr };
 
 		// The constructor of VirtualTexture will attempt to reserve the VirtualTexture instance an
 		// element in the VirtualTextureDescription GPUSceneBuffer; its index within this buffer becomes
@@ -35,7 +35,7 @@ namespace Brawler
 		assert(virtualTexturePtr->GetVirtualTextureID() < mVirtualTexturePtrArr.size());
 		mVirtualTexturePtrArr[virtualTexturePtr->GetVirtualTextureID()] = std::move(virtualTexturePtr);
 
-		return hVirtualTexture;
+		return std::move(hVirtualTexture);
 	}
 
 	void VirtualTextureDatabase::DeleteVirtualTexture(VirtualTextureHandle& hVirtualTexture)

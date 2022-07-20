@@ -9,6 +9,7 @@ import Brawler.D3D12.StructuredBufferSubAllocation;
 import Brawler.GPUSceneTypes;
 import Brawler.GPUSceneBufferUpdater;
 import Brawler.GPUSceneBufferID;
+import Brawler.VirtualTextureMetadata;
 
 namespace Brawler
 {
@@ -32,6 +33,7 @@ export namespace Brawler
 		VirtualTexture& operator=(VirtualTexture&& rhs) noexcept = default;
 
 		std::uint32_t GetVirtualTextureID() const;
+		const VirtualTextureMetadata& GetVirtualTextureMetadata() const;
 
 	private:
 		void ReserveGPUSceneVirtualTextureDescription();
@@ -44,6 +46,7 @@ export namespace Brawler
 		FilePathHash mBVTXFileHash;
 		D3D12::StructuredBufferSubAllocation<VirtualTextureDescription, 1> mDescriptionSubAllocation;
 		GPUSceneBufferUpdater<GPUSceneBufferID::VIRTUAL_TEXTURE_DESCRIPTION_BUFFER> mDescriptionBufferUpdater;
+		VirtualTextureMetadata mMetadata;
 		std::atomic<std::uint64_t> mStreamingRequestsInFlight;
 	};
 }

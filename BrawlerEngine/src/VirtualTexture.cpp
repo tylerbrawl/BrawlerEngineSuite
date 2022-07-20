@@ -19,9 +19,11 @@ namespace Brawler
 		mBVTXFileHash(bvtxFileHash),
 		mDescriptionSubAllocation(),
 		mDescriptionBufferUpdater(),
+		mMetadata(),
 		mStreamingRequestsInFlight(0)
 	{
 		ReserveGPUSceneVirtualTextureDescription();
+		mMetadata.InitializeFromVirtualTextureFile(mBVTXFileHash);
 	}
 
 	std::uint32_t VirtualTexture::GetVirtualTextureID() const
@@ -29,6 +31,11 @@ namespace Brawler
 		// The ID of a VirtualTexture instance is inferred based on its location within the global
 		// VirtualTextureDescription GPUSceneBuffer.
 		return static_cast<std::uint32_t>(mDescriptionSubAllocation.GetOffsetFromBufferStart() / sizeof(VirtualTextureDescription));
+	}
+
+	const VirtualTextureMetadata& VirtualTexture::GetVirtualTextureMetadata() const
+	{
+		return mMetadata;
 	}
 
 	void VirtualTexture::ReserveGPUSceneVirtualTextureDescription()

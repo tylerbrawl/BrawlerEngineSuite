@@ -54,7 +54,8 @@ namespace
 
 		std::uint64_t OffsetFromFileStart;
 		std::uint32_t LogicalMipLevel;
-		DirectX::XMUINT2 PageCoordinates;
+		std::uint32_t PageXCoordinate;
+		std::uint32_t PageYCoordinate;
 	};
 
 	static constexpr std::uint32_t LOGICAL_PAGE_DIMENSIONS = 128;
@@ -122,7 +123,7 @@ namespace Brawler
 		for (const auto i : std::views::iota(0ull, deserializedPageDescriptionArr.size()))
 		{
 			const SerializedVirtualTexturePageDescription& currPageDescription{ deserializedPageDescriptionArr[i] };
-			const std::size_t pageMetadataArrIndex = CalculatePageMetadataArrayIndex(currPageDescription.LogicalMipLevel, currPageDescription.PageCoordinates.x, currPageDescription.PageCoordinates.y);
+			const std::size_t pageMetadataArrIndex = CalculatePageMetadataArrayIndex(currPageDescription.LogicalMipLevel, currPageDescription.PageXCoordinate, currPageDescription.PageYCoordinate);
 
 			// The file does not explicitly include the compressed size of each virtual texture page, but
 			// this data can be inferred based on the offsets to these pages.
@@ -168,11 +169,31 @@ namespace Brawler
 		return static_cast<std::uint32_t>(std::max<std::int32_t>(static_cast<std::int32_t>(mLogicalMipLevelCount) - MAX_MIP_LEVEL_COUNT_IN_COMBINED_PAGE, 0));
 	}
 
+	DXGI_FORMAT VirtualTextureMetadata::GetTextureFormat() const
+	{
+		return mTextureFormat;
+	}
+
+	std::uint32_t VirtualTextureMetadata::GetLogicalMipLevel0Dimensions() const
+	{
+		return mLogicalTextureMip0Dimensions;
+	}
+
+	std::uint32_t VirtualTextureMetadata::GetLogicalMipLevelCount() const
+	{
+		return mLogicalMipLevelCount;
+	}
+
+	std::size_t VirtualTextureMetadata::GetCopyableFootprintsPageSize() const
+	{
+		return mCopyableFootprintsPageSizeInBytes;
+	}
+
 	std::size_t VirtualTextureMetadata::CalculatePageMetadataArrayIndex(const std::uint32_t mipLevel, const std::uint32_t pageXCoord, const std::uint32_t pageYCoord) const
 	{
 		assert(mipLevel < mLogicalMipLevelCount);
 
-		const std::uint32_t clampedMipLevel = std::clamp(mipLevel, 0, GetFirstMipLevelInCombinedPage());
+		const std::uint32_t clampedMipLevel = std::clamp<std::uint32_t>(mipLevel, 0, GetFirstMipLevelInCombinedPage());
 		const std::uint32_t numPagesPerMip0Dimension = (mLogicalTextureMip0Dimensions / LOGICAL_PAGE_DIMENSIONS);
 		const std::uint32_t numPagesPerMipLevelDimension = (numPagesPerMip0Dimension >> clampedMipLevel);
 

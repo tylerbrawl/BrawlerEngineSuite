@@ -4,6 +4,7 @@ module;
 export module Brawler.GlobalTextureReservedPage;
 import Brawler.VirtualTexture;
 import Brawler.VirtualTextureLogicalPage;
+import Brawler.VirtualTextureMetadata;
 
 export namespace Brawler
 {
@@ -21,7 +22,8 @@ export namespace Brawler
 		/// </summary>
 		COMBINED_PAGE,
 
-		OTHER
+		OTHER,
+		NO_PAGE_ALLOCATED
 	};
 }
 
@@ -42,20 +44,32 @@ export namespace Brawler
 
 		template <typename T>
 			requires std::is_same_v<std::decay_t<T>, VirtualTextureLogicalPage>
-		void SetVirtualTexture(VirtualTexture& virtualTexture, T&& logicalPage);
+		void SetVirtualTexturePage(T&& logicalPage);
 
-		void ClearVirtualTexture();
+		void ClearVirtualTexturePage();
 
 		VirtualTexture& GetVirtualTexture();
 		const VirtualTexture& GetVirtualTexture() const;
 
 		const VirtualTextureLogicalPage& GetAllocatedLogicalPage() const;
+		const VirtualTexturePageMetadata& GetAllocatedPageMetadata() const;
 
 		VirtualTexturePageType GetAllocatedPageType() const;
 
+		void NotifyUsageInCurrentFrame();
+		std::uint64_t GetLastUsedFrameNumber() const;
+
 	private:
-		VirtualTexture* mVirtualTexturePtr;
 		VirtualTextureLogicalPage mLogicalPage;
+
+		/// <summary>
+		/// VirtualTextureMetadata::GetPageMetadata() has to calculate the index of the relevant
+		/// metadata within its internal array every time it is called. So, to avoid this, we
+		/// store a pointer here.
+		/// </summary>
+		const VirtualTexturePageMetadata* mPageMetadataPtr;
+
+		std::uint64_t mLastUsedFrameNumber;
 	};
 }
 
@@ -65,9 +79,9 @@ namespace Brawler
 {
 	template <typename T>
 		requires std::is_same_v<std::decay_t<T>, VirtualTextureLogicalPage>
-	void GlobalTextureReservedPage::SetVirtualTexture(VirtualTexture& virtualTexture, T&& logicalPage)
+	void GlobalTextureReservedPage::SetVirtualTexturePage(T&& logicalPage)
 	{
-		mVirtualTexturePtr = &virtualTexture;
 		mLogicalPage = std::forward<T>(logicalPage);
+		mPageMetadataPtr = &(mLogicalPage.VirtualTexturePtr->GetVirtualTextureMetadata().GetPageMetadata(mLogicalPage.LogicalMipLevel, mLogicalPage.LogicalPageXCoordinate, mLogicalPage.LogicalPageYCoordinate));
 	}
 }
