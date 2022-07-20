@@ -145,6 +145,9 @@
     <Filter Include="Module Files\Streaming Systems\Texture Streaming\Global Texture Data Uploads">
       <UniqueIdentifier>{784c6270-9065-4e5a-9313-7495c073f43d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Streaming Systems\Texture Streaming\Global Textures">
+      <UniqueIdentifier>{8abb3617-6891-423f-8601-4bbd13749fcf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -437,6 +440,21 @@
     </ClCompile>
     <ClCompile Include="src\VirtualTextureDatabase.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneLimits.ixx">
+      <Filter>Module Files\GPU Scene Representation\Bindless Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTextureHandle.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTextureHandle.cpp">
+      <Filter>Source Files\Streaming Systems\Texture Streaming</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTextureDatabase.cpp">
+      <Filter>Source Files\Streaming Systems\Texture Streaming</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTextureCollection.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

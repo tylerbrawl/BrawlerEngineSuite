@@ -149,14 +149,14 @@ namespace Brawler
 	template <typename ElementType, std::size_t NumElements>
 	D3D12::BufferResource& GPUSceneBuffer<ElementType, NumElements>::GetBufferResource()
 	{
-		assert(mBufferPtr != nullptr);
+		assert(mBufferPtr.get() != nullptr);
 		return *mBufferPtr;
 	}
 
 	template <typename ElementType, std::size_t NumElements>
 	const D3D12::BufferResource& GPUSceneBuffer<ElementType, NumElements>::GetBufferResource() const
 	{
-		assert(mBufferPtr != nullptr);
+		assert(mBufferPtr.get() != nullptr);
 		return *mBufferPtr;
 	}
 }

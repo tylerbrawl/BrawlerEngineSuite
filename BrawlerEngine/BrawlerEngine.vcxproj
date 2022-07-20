@@ -243,6 +243,7 @@
     <ClCompile Include="src\ApplicationStateStackRequestBundle.cpp" />
     <ClCompile Include="src\AppWindow.cpp" />
     <ClCompile Include="src\AppWindow.ixx" />
+    <ClCompile Include="src\GlobalTextureCollection.ixx" />
     <ClCompile Include="src\GlobalTextureUploadBuffer.ixx" />
     <ClCompile Include="src\GPUSceneBuffer.ixx" />
     <ClCompile Include="src\BorderlessWindowedModeWindowState.cpp" />
@@ -262,6 +263,7 @@
     <ClCompile Include="src\GPUSceneBufferID.ixx" />
     <ClCompile Include="src\GPUSceneBufferMap.ixx" />
     <ClCompile Include="src\GPUSceneBufferUpdater.ixx" />
+    <ClCompile Include="src\GPUSceneLimits.ixx" />
     <ClCompile Include="src\GPUSceneManager.cpp" />
     <ClCompile Include="src\GPUSceneManager.ixx" />
     <ClCompile Include="src\GPUSceneTypes.ixx" />
@@ -321,7 +323,10 @@
     <ClCompile Include="src\VirtualTexture.cpp" />
     <ClCompile Include="src\VirtualTexture.ixx" />
     <ClCompile Include="src\StreamingVirtualTexturePage.ixx" />
+    <ClCompile Include="src\VirtualTextureDatabase.cpp" />
     <ClCompile Include="src\VirtualTextureDatabase.ixx" />
+    <ClCompile Include="src\VirtualTextureHandle.cpp" />
+    <ClCompile Include="src\VirtualTextureHandle.ixx" />
     <ClCompile Include="src\WindowDisplayMode.ixx" />
     <ClCompile Include="src\WindowedModeWindowState.cpp" />
     <ClCompile Include="src\WindowedModeWindowState.ixx" />
