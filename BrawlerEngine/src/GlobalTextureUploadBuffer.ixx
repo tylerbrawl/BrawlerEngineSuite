@@ -8,24 +8,11 @@ export module Brawler.GlobalTextureUploadBuffer;
 import Brawler.D3D12.BufferResource;
 import Util.D3D12;
 import Util.Math;
+import Brawler.GlobalTextureFormatInfo;
 
 namespace Brawler
 {
 	static constexpr std::size_t MAX_PAGES_PER_UPLOAD_BUFFER = 50;
-
-	template <DXGI_FORMAT Format>
-	struct UploadFormatInfo
-	{
-		static_assert(sizeof(Format) != sizeof(Format), "ERROR: An explicit template specialization of UploadFormatInfo was never provided for a given DXGI_FORMAT! (See GlobalTextureUploadBuffer.ixx.)");
-	};
-
-	template <>
-	struct UploadFormatInfo<DXGI_FORMAT::DXGI_FORMAT_BC7_UNORM_SRGB>
-	{
-		// BC7_UNORM_SRGB virtual texture pages are padded to support anisotropic 8x filtering.
-		// The default page size is 128 x 128, but these pages have sizes of 136 x 136.
-		static constexpr std::uint32_t PADDED_PAGE_DIMENSIONS = 136;
-	};
 
 	template <DXGI_FORMAT Format>
 	consteval std::size_t GetVirtualTexturePageSizeForUploadBuffer()
@@ -33,8 +20,8 @@ namespace Brawler
 		const Brawler::D3D12_RESOURCE_DESC pageDesc{
 			.Dimension = D3D12_RESOURCE_DIMENSION::D3D12_RESOURCE_DIMENSION_TEXTURE2D,
 			.Alignment = 0,
-			.Width = UploadFormatInfo<Format>::PADDED_PAGE_DIMENSIONS,
-			.Height = UploadFormatInfo<Format>::PADDED_PAGE_DIMENSIONS,
+			.Width = GlobalTextureFormatInfo<Format>::PADDED_PAGE_DIMENSIONS,
+			.Height = GlobalTextureFormatInfo<Format>::PADDED_PAGE_DIMENSIONS,
 			.DepthOrArraySize = 1,
 			.MipLevels = 1,
 			.Format = DXGI_FORMAT::DXGI_FORMAT_BC7_UNORM_SRGB,

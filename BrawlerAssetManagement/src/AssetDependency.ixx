@@ -10,14 +10,6 @@ export namespace Brawler
 {
 	namespace AssetManagement
 	{
-		class I_AssetResolver;
-	}
-}
-
-export namespace Brawler
-{
-	namespace AssetManagement
-	{
 		class AssetDependency
 		{
 		private:

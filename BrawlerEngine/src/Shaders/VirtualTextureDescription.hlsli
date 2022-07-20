@@ -8,8 +8,7 @@ namespace BrawlerHLSL
 		uint CombinedPageXCoord : 16;
 		uint CombinedPageYCoord : 16;
 		
-		uint GlobalTextureIndex;
-		uint __Pad0;
+		uint2 __Pad0;
 		
 		inline uint GetMipLevelCount()
 		{

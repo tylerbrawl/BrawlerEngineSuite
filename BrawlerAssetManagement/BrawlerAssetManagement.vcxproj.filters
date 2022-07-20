@@ -81,9 +81,6 @@
     <ClCompile Include="src\FilePathHash.ixx">
       <Filter>Module Files\File I/O</Filter>
     </ClCompile>
-    <ClCompile Include="src\I_AssetResolver.ixx">
-      <Filter>Module Files\Asset Dependencies</Filter>
-    </ClCompile>
     <ClCompile Include="src\I_AssetIORequestBuilder.ixx">
       <Filter>Module Files\Asset Management\Asset I/O Requests</Filter>
     </ClCompile>
