@@ -1,6 +1,7 @@
 module;
 #include <cstdint>
 #include <cassert>
+#include <optional>
 #include "DxDef.h"
 
 export module Brawler.D3D12.Texture2D;
@@ -119,6 +120,8 @@ export namespace Brawler
 			template <DXGI_FORMAT Format>
 			Texture2DUnorderedAccessView<Format> CreateUnorderedAccessView(const std::uint32_t mipSlice = 0) const;
 
+			std::optional<D3D12_CLEAR_VALUE> GetOptimizedClearValue() const override;
+
 			/// <summary>
 			/// Creates and returns a Texture2DSubResource instance which refers to the mip level
 			/// of this Texture2D indicated by mipSlice. This directly corresponds to the idea of
@@ -137,6 +140,9 @@ export namespace Brawler
 
 			template <DXGI_FORMAT Format>
 			BindlessSRVAllocation CreateBindlessSRV();
+
+		private:
+			std::optional<D3D12_CLEAR_VALUE> mOptimizedClearValue;
 		};
 	}
 }

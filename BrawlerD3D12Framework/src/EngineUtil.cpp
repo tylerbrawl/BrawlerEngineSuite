@@ -9,6 +9,7 @@ import Brawler.D3D12.GPUDevice;
 import Util.Threading;
 import Brawler.ThreadLocalResources;
 import Brawler.D3D12.FrameGraphManager;
+import Brawler.D3D12.GPUResourceRTVDSVHeap;
 
 namespace Brawler
 {
@@ -91,6 +92,16 @@ namespace Util
 			thread_local Brawler::D3D12::GPUResourceDescriptorHeap& descriptorHeap{ GetGPUDevice().GetGPUResourceDescriptorHeap() };
 
 			return descriptorHeap;
+		}
+
+		Brawler::D3D12::GPUResourceRTVHeap& GetGPUResourceRTVHeap()
+		{
+			return Brawler::D3D12::GPUResourceRTVHeap::GetInstance();
+		}
+
+		Brawler::D3D12::GPUResourceDSVHeap& GetGPUResourceDSVHeap()
+		{
+			return Brawler::D3D12::GPUResourceDSVHeap::GetInstance();
 		}
 
 		std::uint32_t GetDescriptorHandleIncrementSize(const D3D12_DESCRIPTOR_HEAP_TYPE descriptorType)

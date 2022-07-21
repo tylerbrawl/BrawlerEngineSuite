@@ -1,5 +1,6 @@
 module;
 #include <cassert>
+#include <optional>
 #include "DxDef.h"
 
 module Brawler.D3D12.Texture2D;
@@ -24,8 +25,14 @@ namespace Brawler
 	namespace D3D12
 	{
 		Texture2D::Texture2D(const Texture2DBuilder& builder) :
-			I_GPUResource(CreateInitializationInfoFromBuilder(builder))
+			I_GPUResource(CreateInitializationInfoFromBuilder(builder)),
+			mOptimizedClearValue(builder.GetOptimizedClearValue())
 		{}
+
+		std::optional<D3D12_CLEAR_VALUE> Texture2D::GetOptimizedClearValue() const
+		{
+			return mOptimizedClearValue;
+		}
 
 		Texture2DSubResource Texture2D::GetSubResource(const std::uint32_t mipSlice)
 		{

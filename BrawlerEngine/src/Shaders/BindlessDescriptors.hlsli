@@ -1,6 +1,7 @@
 #include "MeshTypes.hlsli"
 #include "ViewTypes.hlsli"
 #include "VirtualTextureDescription.hlsli"
+#include "GlobalTextureDescription.hlsli"
 #include "TriangleCluster.hlsli"
 #include "GPUSceneLimits.hlsli"
 
@@ -20,8 +21,11 @@ namespace IMPL
 	StructuredBuffer<BrawlerHLSL::ViewTransformData> Bindless_GlobalViewTransformDataBuffer[] : register(t0, space5);
 	StructuredBuffer<BrawlerHLSL::ViewDimensionsData> Bindless_GlobalViewDimensionsDataBuffer[] : register(t0, space6);
 	StructuredBuffer<BrawlerHLSL::PackedTriangleCluster> Bindless_GlobalTriangleClusterBuffer[] : register(t0, space7);
-	Texture2D Bindless_Texture2D[] : register(t0, space8);
-	StructuredBuffer<BrawlerHLSL::VirtualTextureDescription> Bindless_GlobalVirtualTextureDescriptionBuffer[] : register(t0, space9);
+	StructuredBuffer<BrawlerHLSL::VirtualTextureDescription> Bindless_GlobalVirtualTextureDescriptionBuffer[] : register(t0, space8);
+	StructuredBuffer<BrawlerHLSL::GlobalTextureDescription> Bindless_GlobalGlobalTextureDescriptionBuffer[] : register(t0, space9);
+	
+	Texture2D<float> Bindless_GlobalTexture2DFloatArray[] : register(t0, space10);
+	Texture2D<uint> Bindless_GlobalTexture2DUInt[] : register(t0, space11);
 }
 	
 namespace IMPL
@@ -38,6 +42,7 @@ namespace IMPL
 	static const uint BINDLESS_GLOBAL_TRIANGLE_CLUSTER_BUFFER_INDEX = 6;
 	static const uint BINDLESS_LOD_MESH_DATA_INDEX_BUFFER_INDEX = 7;
 	static const uint BINDLESS_VIRTUAL_TEXTURE_DESCRIPTION_BUFFER_INDEX = 8;
+	static const uint BINDLESS_GLOBAL_TEXTURE_DESCRIPTION_BUFFER_INDEX = 9;
 }
 
 namespace BrawlerHLSL
@@ -60,7 +65,7 @@ namespace BrawlerHLSL
 			
 		BrawlerHLSL::ModelInstanceTransformData GetGlobalModelInstanceTransformData(in const uint modelInstanceID)
 		{
-			StructuredBuffer<BrawlerHLSL::ModelInstanceTransformData> transformDataBuffer = IMPL::Bindless_GlobalModelInstanceTransformDataBuffer[IMPL::BINDLESS_MODEL_INSTANCE_TRANSFORM_DATA_BUFFER_INDEX];
+			StructuredBuffer<BrawlerHLSL::ModelInstanceTransformData > transformDataBuffer = IMPL::Bindless_GlobalModelInstanceTransformDataBuffer[IMPL::BINDLESS_MODEL_INSTANCE_TRANSFORM_DATA_BUFFER_INDEX];
 
 			return transformDataBuffer[NonUniformResourceIndex(modelInstanceID)];
 		}
@@ -94,17 +99,56 @@ namespace BrawlerHLSL
 
 			return triangleClusterBuffer[NonUniformResourceIndex(clusterID)];
 		}
-		
-		Texture2D GetGlobalBindlessTexture2D(in const uint textureSRVIndex)
-		{
-			return IMPL::Bindless_Texture2D[NonUniformResourceIndex(textureSRVIndex)];
-		}
 			
 		BrawlerHLSL::VirtualTextureDescription GetGlobalVirtualTextureDescription(in const uint virtualTextureID)
 		{
-			StructuredBuffer<BrawlerHLSL:: VirtualTextureDescription> vtDescriptionBuffer = IMPL::Bindless_GlobalVirtualTextureDescriptionBuffer[IMPL::BINDLESS_VIRTUAL_TEXTURE_DESCRIPTION_BUFFER_INDEX];
+			StructuredBuffer<BrawlerHLSL::VirtualTextureDescription> vtDescriptionBuffer = IMPL::Bindless_GlobalVirtualTextureDescriptionBuffer[IMPL::BINDLESS_VIRTUAL_TEXTURE_DESCRIPTION_BUFFER_INDEX];
 				
 			return vtDescriptionBuffer[NonUniformResourceIndex(virtualTextureID)];
+		}
+			
+		BrawlerHLSL::GlobalTextureDescription GetGlobalTextureDescription(in const uint globalTextureID)
+		{
+			StructuredBuffer<BrawlerHLSL::GlobalTextureDescription> globalTextureDescriptionBuffer = IMPL::Bindless_GlobalGlobalTextureDescription[IMPL::BINDLESS_GLOBAL_TEXTURE_DESCRIPTION_BUFFER_INDEX];
+				
+			return globalTextureDescriptionBuffer[NonUniformResourceIndex(globalTextureID)];
+		}
+	}
+}
+
+namespace IMPL
+{
+	template <typename T>
+	struct TextureFinder
+	{};
+	
+	template <>
+	struct TextureFinder<Texture2D<float>>
+	{
+		static Texture2D<float> GetBindlessTexture(in const uint textureID)
+		{
+			return Bindless_GlobalTexture2DFloatArray[NonUniformResourceIndex(textureID)];
+		}
+	};
+	
+	template <>
+	struct TextureFinder<Texture2D<uint>>
+	{
+		static Texture2D<uint> GetBindlessTexture(in const uint textureID)
+		{
+			return Bindless_GlobalTexture2DUIntArray[NonUniformResourceIndex(textureID)];
+		}
+	};
+}
+
+namespace BrawlerHLSL
+{
+	namespace Bindless
+	{
+		template <typename T>
+		T GetBindlessTexture(in const uint textureID)
+		{
+			return TextureFinder<T>::GetBindlessTexture(textureID);
 		}
 	}
 }

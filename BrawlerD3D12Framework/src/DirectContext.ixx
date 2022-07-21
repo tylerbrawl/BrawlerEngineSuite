@@ -14,6 +14,7 @@ import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.D3D12.RootParameterCache;
 import Brawler.PSOs.PSOID;
 import Brawler.PSOs.PSODefinition;
+import Brawler.D3D12.RenderTargetView;
 
 namespace Brawler
 {
@@ -69,6 +70,38 @@ export namespace Brawler
 			/// </summary>
 			void Present() const;
 
+			/// <summary>
+			/// Clears the I_GPUResource referred to by the RenderTargetView rtv such that the entire view
+			/// is filled with a single value. The value chosen to clear the I_GPUResource instance depends
+			/// on the std::optional&lt;D3D12_CLEAR_VALUE&gt; returned by I_GPUResource::GetOptimizedClearValue():
+			/// 
+			///   - If the returned std::optional instance has a value, then this value is used to clear the
+			///     resource view.
+			/// 
+			///   - If the returned std::optional instance has no value, then the entire resource view is
+			///     zeroed.
+			/// 
+			/// Keep in mind that clearing textures with values other than the optimized clear value is often
+			/// significantly slower; regardless, if no optimized clear value is provided, then the Brawler Engine
+			/// will *NOT* fire an assert. One instance in which not having an optimized clear value specified would
+			/// be justifiable is when DirectContext::ClearRenderTargetView() is called for a BufferResource. This
+			/// is because buffers cannot have optimized clear values in the D3D12 API.
+			/// </summary>
+			/// <typeparam name="Format">
+			/// - The DXGI_FORMAT of the RenderTargetView. If one is present, the optimized clear value provided
+			///   by I_GPUResource::GetOptimizedClearValue() will be interpreted according to this format.
+			/// </typeparam>
+			/// <typeparam name="ViewDimension">
+			/// - The D3D12_RTV_DIMENSION of the RenderTargetView. In other words, this essentially acts as a
+			///   compile-time description of the resource's type.
+			/// </typeparam>
+			/// <param name="rtv">
+			/// - The RenderTargetView which describes the contents of the I_GPUResource which are to be cleared.
+			///   Refer to the summary for details regarding which value is used to clear the resource.
+			/// </param>
+			template <DXGI_FORMAT Format, D3D12_RTV_DIMENSION ViewDimension>
+			void ClearRenderTargetView(const RenderTargetView<Format, ViewDimension>& rtv) const;
+
 		protected:
 			void PrepareCommandListIMPL() override;
 
@@ -77,6 +110,7 @@ export namespace Brawler
 			GPUResourceBinder<PSOIdentifier> SetPipelineState();
 
 		private:
+			void ClearRenderTargetViewIMPL(const I_GPUResource& resource, const D3D12_RENDER_TARGET_VIEW_DESC& rtvDesc) const;
 			void PerformSpecialGPUResourceInitialization(I_GPUResource& resource);
 
 		private:
@@ -92,6 +126,15 @@ namespace Brawler
 {
 	namespace D3D12
 	{
+		template <DXGI_FORMAT Format, D3D12_RTV_DIMENSION ViewDimension>
+		void DirectContext::ClearRenderTargetView(const RenderTargetView<Format, ViewDimension>& rtv) const
+		{
+			const I_GPUResource& resource{ rtv.GetGPUResource() };
+			const D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{ rtv.CreateRTVDescription() };
+
+			ClearRenderTargetViewIMPL(resource, rtvDesc);
+		}
+
 		template <Brawler::PSOs::PSOID PSOIdentifier>
 		GPUResourceBinder<PSOIdentifier> DirectContext::SetPipelineState()
 		{

@@ -34,7 +34,8 @@ namespace Brawler
 			bool EnableDenySRVOption,
 			bool EnableInitialResourceStateOption,
 			bool EnableSampleDescOption,
-			bool EnableSimultaneousAccessOption
+			bool EnableSimultaneousAccessOption,
+			bool EnableOptimizedClearValueOption
 		>
 		struct BuilderInfoInstantiation
 		{
@@ -79,6 +80,12 @@ namespace Brawler
 			/// simultaneously will be available for this Texture2DBuilderIMPL.
 			/// </summary>
 			static constexpr bool ENABLE_SIMULTANEOUS_ACCESS_OPTION = EnableSimultaneousAccessOption;
+
+			/// <summary>
+			/// If this is true, then the option to change the optimized clear value of created
+			/// textures will be available for this Texture2DBuilderIMPL.
+			/// </summary>
+			static constexpr bool ENABLE_OPTIMIZED_CLAR_VALUE_OPTION = EnableOptimizedClearValueOption;
 		};
 
 		// A lot of the choices here come from AMD's best practices for DirectX 12 resources.
@@ -109,7 +116,11 @@ namespace Brawler
 
 			// If necessary, general textures can be made simultaneously accessible across
 			// multiple queues.
-			true
+			true,
+
+			// Only render targets and depth/stencil textures may have optimized clear
+			// values.
+			false
 		>
 		{};
 
@@ -138,7 +149,11 @@ namespace Brawler
 
 			// AMD suggests avoiding simultaneous access for render targets and depth/stencil
 			// textures.
-			false
+			false,
+
+			// Only render targets and depth/stencil textures may have optimized clear
+			// values.
+			true
 		>
 		{};
 
@@ -169,7 +184,11 @@ namespace Brawler
 
 			// AMD suggests avoiding simultaneous access for render targets and depth/stencil
 			// textures.
-			false
+			false,
+
+			// Only render targets and depth/stencil textures may have optimized clear
+			// values.
+			true
 		>
 		{};
 
@@ -203,11 +222,15 @@ namespace Brawler
 
 			constexpr void SetMultisampleDescription(DXGI_SAMPLE_DESC&& sampleDesc) requires BuilderInfo<Type>::ENABLE_SAMPLE_DESC_OPTION;
 
+			constexpr void SetOptimizedClearValue(D3D12_CLEAR_VALUE&& clearValue) requires BuilderInfo<Type>::ENABLE_OPTIMIZED_CLEAR_VALUE_OPTION;
+
 			constexpr const Brawler::D3D12_RESOURCE_DESC& GetResourceDescription() const;
+			constexpr const std::optional<D3D12_CLEAR_VALUE>& GetOptimizedClearValue() const;
 
 		private:
 			Brawler::D3D12_RESOURCE_DESC mResourceDesc;
 			std::optional<D3D12_RESOURCE_STATES> mInitialResourceState;
+			std::optional<D3D12_CLEAR_VALUE> mOptimizedClearValue;
 		};
 	}
 }
@@ -221,7 +244,8 @@ namespace Brawler
 		template <BuilderType Type>
 		constexpr Texture2DBuilderIMPL<Type>::Texture2DBuilderIMPL() :
 			mResourceDesc(),
-			mInitialResourceState(BuilderInfo<Type>::INITIAL_RESOURCE_STATE)
+			mInitialResourceState(BuilderInfo<Type>::INITIAL_RESOURCE_STATE),
+			mOptimizedClearValue()
 		{
 			mResourceDesc.DepthOrArraySize = 1;
 			
@@ -240,6 +264,12 @@ namespace Brawler
 
 			mResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION::D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 			mResourceDesc.Flags = BuilderInfo<Type>::DEFAULT_FLAGS;
+
+			// For render targets and depth/stencil textures, set the default optimized clear value
+			// to zero. This is consistent with the APIs for clearing views in DirectContext and
+			// ComputeContext.
+			if constexpr (BuilderInfo<Type>::ENABLE_OPTIMIZED_CLEAR_VALUE_OPTION)
+				mOptimizedClearValue = D3D12_CLEAR_VALUE{};
 		}
 
 		template <BuilderType Type>
@@ -262,6 +292,13 @@ namespace Brawler
 		constexpr void Texture2DBuilderIMPL<Type>::SetTextureFormat(const DXGI_FORMAT format)
 		{
 			mResourceDesc.Format = format;
+
+			// If the clear value is allowed, then set the format associated with it to format.
+			if constexpr (BuilderInfo<Type>::ENABLE_OPTIMIZED_CLEAR_VALUE_OPTION)
+			{
+				assert(mOptimizedClearValue.has_value());
+				mOptimizedClearValue->Format = format;
+			}
 		}
 
 		template <BuilderType Type>
@@ -327,6 +364,15 @@ namespace Brawler
 		}
 
 		template <BuilderType Type>
+		constexpr void Texture2DBuilderIMPL<Type>::SetOptimizedClearValue(D3D12_CLEAR_VALUE&& clearValue) requires BuilderInfo<Type>::ENABLE_OPTIMIZED_CLEAR_VALUE_OPTION
+		{
+			mOptimizedClearValue = std::move(clearValue);
+
+			// Set the format based on what is current present in the resource description.
+			mOptimizedClearValue->Format = mResourceDesc.Format;
+		}
+
+		template <BuilderType Type>
 		constexpr const Brawler::D3D12_RESOURCE_DESC& Texture2DBuilderIMPL<Type>::GetResourceDescription() const
 		{
 			// Perform additional sanity checks in Debug builds.
@@ -341,6 +387,12 @@ namespace Brawler
 			}
 
 			return mResourceDesc;
+		}
+
+		template <BuilderType Type>
+		constexpr const std::optional<D3D12_CLEAR_VALUE>& Texture2DBuilderIMPL<Type>::GetOptimizedClearValue() const
+		{
+			return mOptimizedClearValue;
 		}
 	}
 }

@@ -544,6 +544,9 @@
     <None Include="src\Shaders\VirtualTextureDescription.hlsli">
       <Filter>Shader Files\Texture Types</Filter>
     </None>
+    <None Include="src\Shaders\GlobalTextureDescription.hlsli">
+      <Filter>Shader Files\Texture Types</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="BrawlerEngine.manifest">

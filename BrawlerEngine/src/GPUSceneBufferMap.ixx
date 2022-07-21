@@ -64,6 +64,10 @@ namespace Brawler
 	template <>
 	struct GPUSceneBufferInfo<GPUSceneBufferID::VIRTUAL_TEXTURE_DESCRIPTION_BUFFER> : public GPUSceneBufferInfoInstantiation<VirtualTextureDescription, MAX_VIRTUAL_TEXTURE_DESCRIPTIONS>
 	{};
+
+	template <>
+	struct GPUSceneBufferInfo<GPUSceneBufferID::GLOBAL_TEXTURE_DESCRIPTION_BUFFER> : public GPUSceneBufferInfoInstantiation<GlobalTextureDescription, MAX_GLOBAL_TEXTURE_DESCRIPTIONS>
+	{};
 }
 
 namespace Brawler

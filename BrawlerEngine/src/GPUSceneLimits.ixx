@@ -20,4 +20,6 @@ export namespace Brawler
 	// There's no point in having more virtual texture descriptions than we do bindless
 	// SRVs.
 	constexpr std::size_t MAX_VIRTUAL_TEXTURE_DESCRIPTIONS = 500000;
+
+	constexpr std::size_t MAX_GLOBAL_TEXTURE_DESCRIPTIONS = (static_cast<std::size_t>(1) << 8);
 }

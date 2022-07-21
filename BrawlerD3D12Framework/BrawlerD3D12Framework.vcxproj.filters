@@ -223,6 +223,12 @@
     <Filter Include="Source Files\File I/O\ZStandard">
       <UniqueIdentifier>{5e748d61-e1a8-495b-a91d-fec9071a892a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\GPU Resources\GPU Resource Descriptors\Non-Shader-Visible Descriptors">
+      <UniqueIdentifier>{07abc753-be23-49d9-8901-636c22f1f3a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Resources\GPU Resource Descriptors\Non-Shader-Visible Descriptors">
+      <UniqueIdentifier>{5dc7e971-8872-438e-b3ed-71e659da841e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GeneralUtil.ixx">
@@ -521,9 +527,6 @@
     </ClCompile>
     <ClCompile Include="src\OptionalRef.ixx">
       <Filter>Module Files\Convenience Types</Filter>
-    </ClCompile>
-    <ClCompile Include="src\RTVDSVHandle.ixx">
-      <Filter>Module Files\GPU Resources\GPU Resource Descriptors</Filter>
     </ClCompile>
     <ClCompile Include="src\FrameGraphInjection.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\Compilation</Filter>
@@ -1187,6 +1190,21 @@
     </ClCompile>
     <ClCompile Include="src\TextureCopyRegion.cpp">
       <Filter>Source Files\GPU Resources\Texture Resource Types\General Texture Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceRTVDSVHeap.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors\Non-Shader-Visible Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NonShaderVisibleDescriptorType.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors\Non-Shader-Visible Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUResourceRTVDSVHeap.cpp">
+      <Filter>Source Files\GPU Resources\GPU Resource Descriptors\Non-Shader-Visible Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderTargetView.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors\Non-Shader-Visible Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RTVDimensionInfo.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors\Non-Shader-Visible Descriptors</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

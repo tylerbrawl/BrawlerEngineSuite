@@ -3,19 +3,46 @@ module;
 #include <cassert>
 #include <atomic>
 #include <optional>
+#include <DxDef.h>
 
 module Brawler.VirtualTexture;
 import Brawler.GPUSceneManager;
+import Brawler.D3D12.Texture2DBuilder;
 
 namespace
 {
 	static constexpr std::uint64_t DELETION_FLAG = (static_cast<std::uint64_t>(1) << 63);
+
+	consteval Brawler::D3D12::Texture2DBuilder CreateDefaultIndirectionTextureBuilder()
+	{
+		Brawler::D3D12::Texture2DBuilder indirectionTextureBuilder{};
+		indirectionTextureBuilder.DenyUnorderedAccessViews();
+		indirectionTextureBuilder.SetMipLevelCount(1);
+		indirectionTextureBuilder.SetInitialResourceState()
+
+		// The format for indirection textures is DXGI_FORMAT_R8G8B8A8_UINT. The channels
+		// are assigned as follows:
+		//
+		//  - R8: Global Texture Page X Coordinates
+		//  - G8: Global Texture Page Y Coordinates
+		//  - B8: Global Texture Description Buffer Index
+		//  - A8: Bit Flag
+		//    * Lower 1 Bit:
+		//      - True: This page has a valid allocation.
+		//      - False: This page has no allocation.
+		// 
+		//    * Upper 7 Bits: Reserved - Must Be Zeroed
+		indirectionTextureBuilder.SetTextureFormat(DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UINT);
+
+
+	}
 }
 
 namespace Brawler
 {
 	VirtualTexture::VirtualTexture(const FilePathHash bvtxFileHash) :
 		mIndirectionTexture(),
+		mIndirectionTextureBindlessAllocation(),
 		mBVTXFileHash(bvtxFileHash),
 		mDescriptionSubAllocation(),
 		mDescriptionBufferUpdater(),
@@ -24,6 +51,7 @@ namespace Brawler
 	{
 		ReserveGPUSceneVirtualTextureDescription();
 		mMetadata.InitializeFromVirtualTextureFile(mBVTXFileHash);
+		InitializeIndirectionTexture();
 	}
 
 	std::uint32_t VirtualTexture::GetVirtualTextureID() const
@@ -49,10 +77,15 @@ namespace Brawler
 		// virtual texture descriptions. If we fail to do this, then we have run out of virtual texture
 		// description memory.
 		std::optional<D3D12::StructuredBufferSubAllocation<VirtualTextureDescription, 1>> descriptionSubAllocation{ GPUSceneManager::GetInstance().GetGPUSceneBufferResource<GPUSceneBufferID::VIRTUAL_TEXTURE_DESCRIPTION_BUFFER>().CreateBufferSubAllocation<D3D12::StructuredBufferSubAllocation<VirtualTextureDescription, 1>>() };
-		assert(descriptionSubAllocation.has_value() && "ERROR: We have run out of virtual texture description memory!");
+		assert(descriptionSubAllocation.has_value() && "ERROR: We have run out of virtual texture slots in the GPUScene buffer!");
 
 		mDescriptionSubAllocation = std::move(*descriptionSubAllocation);
 		mDescriptionBufferUpdater = GPUSceneBufferUpdater<GPUSceneBufferID::VIRTUAL_TEXTURE_DESCRIPTION_BUFFER>{ mDescriptionSubAllocation.GetBufferCopyRegion() };
+	}
+
+	void VirtualTexture::InitializeIndirectionTexture()
+	{
+
 	}
 
 	void VirtualTexture::MarkForDeletion()

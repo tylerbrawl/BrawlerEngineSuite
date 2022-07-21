@@ -9,6 +9,7 @@ import Brawler.D3D12.StructuredBufferSubAllocation;
 import Brawler.GPUSceneTypes;
 import Brawler.GPUSceneBufferUpdater;
 import Brawler.GPUSceneBufferID;
+import Brawler.D3D12.BindlessSRVAllocation;
 import Brawler.VirtualTextureMetadata;
 
 namespace Brawler
@@ -38,12 +39,14 @@ export namespace Brawler
 
 	private:
 		void ReserveGPUSceneVirtualTextureDescription();
+		void InitializeIndirectionTexture();
 
 		void MarkForDeletion();
 		bool SafeToDelete() const;
 
 	private:
 		std::unique_ptr<D3D12::Texture2D> mIndirectionTexture;
+		D3D12::BindlessSRVAllocation mIndirectionTextureBindlessAllocation;
 		FilePathHash mBVTXFileHash;
 		D3D12::StructuredBufferSubAllocation<VirtualTextureDescription, 1> mDescriptionSubAllocation;
 		GPUSceneBufferUpdater<GPUSceneBufferID::VIRTUAL_TEXTURE_DESCRIPTION_BUFFER> mDescriptionBufferUpdater;

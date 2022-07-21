@@ -6,6 +6,7 @@ import Brawler.D3D12.BindlessSRVAllocation;
 import Brawler.D3D12.GPUVendor;
 import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.D3D12.GPUCapabilities;
+import Brawler.D3D12.GPUResourceRTVDSVHeap;
 
 export namespace Brawler
 {
@@ -82,6 +83,9 @@ export namespace Util
 		std::uint64_t GetTrueFrameNumber();
 
 		Brawler::D3D12::GPUResourceDescriptorHeap& GetGPUResourceDescriptorHeap();
+		Brawler::D3D12::GPUResourceRTVHeap& GetGPUResourceRTVHeap();
+		Brawler::D3D12::GPUResourceDSVHeap& GetGPUResourceDSVHeap();
+
 		std::uint32_t GetDescriptorHandleIncrementSize(const D3D12_DESCRIPTOR_HEAP_TYPE descriptorType);
 		
 		Brawler::D3D12Device& GetD3D12Device();

@@ -77,4 +77,12 @@ export namespace Brawler
 		std::uint32_t CombinedPageXAndYCoord;
 		DirectX::XMUINT2 __Pad0;
 	};
+
+	struct GlobalTextureDescription
+	{
+		std::uint32_t BindlessIndex;
+		std::uint32_t GlobalTextureDimensions;
+		std::uint32_t PaddedPageDimensions;
+		std::uint32_t __Pad0;
+	};
 }
