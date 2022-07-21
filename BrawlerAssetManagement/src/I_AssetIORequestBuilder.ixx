@@ -14,9 +14,31 @@ export namespace Brawler
 	{
 		struct CustomFileAssetIORequest
 		{
+			/// <summary>
+			/// Specifies the path to the file which is to be loaded. This does not have to be
+			/// the BPK archive, but it can be.
+			/// 
+			/// To get the path of the BPK archive, call BPKArchiveReader::GetBPKArchiveFilePath().
+			/// </summary>
 			const std::filesystem::path& FilePath;
-			std::span<std::byte> DestDataSpan;
+
+			/// <summary>
+			/// The offset, in bytes, from the start of the file to begin reading data.
+			/// </summary>
 			std::size_t FileOffset;
+
+			/// <summary>
+			/// The size, in bytes, of the compressed data which must be read. If this value is 0,
+			/// then the data is assumed to *NOT* be compressed; otherwise, zstandard is used to
+			/// decompress the data.
+			/// </summary>
+			std::size_t CompressedDataSizeInBytes;
+
+			/// <summary>
+			/// The size, in bytess, of the uncompressed data which must be read. The destination
+			/// for the request's data *MUST* be large enough to hold this amount of bytes.
+			/// </summary>
+			std::size_t UncompressedDataSizeInBytes;
 		};
 	}
 }
@@ -40,8 +62,7 @@ export namespace Brawler
 			I_AssetIORequestBuilder& operator=(I_AssetIORequestBuilder&& rhs) noexcept = default;
 
 			virtual void AddAssetIORequest(const Brawler::FilePathHash pashHash, Brawler::D3D12::I_BufferSubAllocation& bufferSubAllocation) = 0;
-
-			virtual void AddAssetIORequest(const CustomFileAssetIORequest& customFileRequest) = 0;
+			virtual void AddAssetIORequest(const CustomFileAssetIORequest& customFileRequest, Brawler::D3D12::I_BufferSubAllocation& bufferSubAllocation) = 0;
 
 			/// <summary>
 			/// Sets the priority for requests made in subsequent calls to

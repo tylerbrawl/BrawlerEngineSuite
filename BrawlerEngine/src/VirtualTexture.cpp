@@ -38,6 +38,11 @@ namespace Brawler
 		return mMetadata;
 	}
 
+	FilePathHash VirtualTexture::GetBVTXFilePathHash() const
+	{
+		return mBVTXFileHash;
+	}
+
 	void VirtualTexture::ReserveGPUSceneVirtualTextureDescription()
 	{
 		// Get a sub-allocation (and, more importantly, a reservation) from the GPUSceneBuffer for

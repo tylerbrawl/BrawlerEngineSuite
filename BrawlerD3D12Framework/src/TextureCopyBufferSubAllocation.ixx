@@ -8,15 +8,7 @@ export import :TextureCopyBufferSnapshot;
 import Brawler.D3D12.I_BufferSubAllocation;
 import Util.Math;
 import Brawler.D3D12.TextureCopyRegion;
-
-
-export namespace Brawler
-{
-	namespace D3D12
-	{
-		class TextureSubResource;
-	}
-}
+import Brawler.D3D12.TextureSubResource;
 
 export namespace Brawler
 {

@@ -30,8 +30,7 @@ export namespace Brawler
 			DirectStorageAssetIORequestBuilder& operator=(DirectStorageAssetIORequestBuilder&& rhs) noexcept = default;
 
 			void AddAssetIORequest(const Brawler::FilePathHash pathHash, Brawler::D3D12::I_BufferSubAllocation& bufferSubAllocation) override;
-
-			void AddAssetIORequest(const CustomFileAssetIORequest& customFileRequest) override;
+			void AddAssetIORequest(const CustomFileAssetIORequest& customFileRequest, Brawler::D3D12::I_BufferSubAllocation& bufferSubAllocation) override;
 
 			std::span<const DSTORAGE_REQUEST> GetDStorageRequestSpan(const Brawler::JobPriority priority) const;
 

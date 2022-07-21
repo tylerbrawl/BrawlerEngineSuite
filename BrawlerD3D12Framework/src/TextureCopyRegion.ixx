@@ -21,7 +21,6 @@ export namespace Brawler
 			TextureCopyRegion(TextureCopyRegion&& rhs) noexcept = default;
 			TextureCopyRegion& operator=(TextureCopyRegion&& rhs) noexcept = default;
 
-			I_GPUResource& GetGPUResource();
 			const I_GPUResource& GetGPUResource() const;
 
 			Brawler::D3D12Resource& GetD3D12Resource() const;
@@ -31,7 +30,7 @@ export namespace Brawler
 			const CD3DX12_BOX& GetCopyRegionBox() const;
 
 		private:
-			I_GPUResource* mResourcePtr;
+			const I_GPUResource* mResourcePtr;
 			std::uint32_t mSubResourceIndex;
 			CD3DX12_BOX mTargetBox;
 		};

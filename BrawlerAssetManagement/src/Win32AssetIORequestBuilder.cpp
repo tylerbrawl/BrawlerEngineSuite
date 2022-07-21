@@ -58,26 +58,28 @@ namespace Brawler
 			GetCurrentRequestContainer().push_back(std::move(assetIORequest));
 		}
 
-		void Win32AssetIORequestBuilder::AddAssetIORequest(const CustomFileAssetIORequest& customFileRequest)
+		void Win32AssetIORequestBuilder::AddAssetIORequest(const CustomFileAssetIORequest& customFileRequest, Brawler::D3D12::I_BufferSubAllocation& bufferSubAllocation)
 		{
-			if constexpr (Util::General::IsDebugModeEnabled())
-			{
-				// Make sure that the provided std::span instance can contain the contents of the
-				// entire file.
-
-				std::error_code errorCode{};
-
-				const auto fileSize = std::filesystem::file_size(customFileRequest.FilePath, errorCode);
-				Util::General::CheckErrorCode(errorCode);
-
-				assert((customFileRequest.FileOffset + customFileRequest.DestDataSpan.size_bytes()) <= fileSize && "ERROR: The size of the provided std::span for an asset I/O request from a custom file was too large compared to the size of the file minus the specified offset from the start of the file!");
-			}
+			assert(bufferSubAllocation.GetBufferResource().GetHeapType() == D3D12_HEAP_TYPE::D3D12_HEAP_TYPE_UPLOAD && "ERROR: An attempt was made to write asset data into an I_BufferSubAllocation whose associated BufferResource was not located in an UPLOAD heap!");
+			assert(bufferSubAllocation.GetSubAllocationSize() >= customFileRequest.UncompressedDataSizeInBytes);
 
 			Win32AssetIORequest assetIORequest{ customFileRequest, mRequestTracker };
-			assetIORequest.SetWriteDataCallback([destSpan = customFileRequest.DestDataSpan] (const std::span<const std::byte> srcDataSpan)
+			const bool isDataCompressed = (customFileRequest.CompressedDataSizeInBytes != 0);
+
+			assetIORequest.SetWriteDataCallback([isDataCompressed, &bufferSubAllocation] (const std::span<const std::byte> srcDataSpan)
 			{
-				assert(destSpan.size_bytes() == srcDataSpan.size_bytes());
-				std::memcpy(destSpan.data(), srcDataSpan.data(), srcDataSpan.size_bytes());
+				if (isDataCompressed)
+				{
+					ZSTDDecompressionOperation decompressionOperation{};
+					Util::General::CheckHRESULT(decompressionOperation.BeginDecompressionOperation(srcDataSpan));
+
+					const ZSTDDecompressionOperation::DecompressionResults decompressResults{ decompressionOperation.FinishDecompressionOperation() };
+					Util::General::CheckHRESULT(decompressResults.HResult);
+
+					bufferSubAllocation.WriteToBuffer(std::span<const std::byte>{ decompressResults.DecompressedByteArr }, 0);
+				}
+				else
+					bufferSubAllocation.WriteToBuffer(srcDataSpan, 0);
 			});
 
 			GetCurrentRequestContainer().push_back(std::move(assetIORequest));

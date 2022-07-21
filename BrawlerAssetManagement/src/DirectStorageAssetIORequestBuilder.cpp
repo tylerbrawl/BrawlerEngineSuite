@@ -77,27 +77,19 @@ namespace Brawler
 			});
 		}
 
-		void DirectStorageAssetIORequestBuilder::AddAssetIORequest(const CustomFileAssetIORequest& customFileRequest)
+		void DirectStorageAssetIORequestBuilder::AddAssetIORequest(const CustomFileAssetIORequest& customFileRequest, Brawler::D3D12::I_BufferSubAllocation& bufferSubAllocation)
 		{
 			IDStorageFile& dStorageFile{ GetDStorageFileForCustomPath(customFileRequest.FilePath) };
+
+			assert(bufferSubAllocation.GetSubAllocationSize() >= customFileRequest.UncompressedDataSizeInBytes && "ERROR: An attempt was made to write asset data directly into an I_BufferSubAllocation, but the sub-allocation was not large enough!");
+			assert(bufferSubAllocation.HasReservation() && "ERROR: An I_BufferSubAllocation instance without a BufferSubAllocationReservation (i.e., without backing GPU memory) was provided to DirectStorageAssetIORequestBuilder::AddAssetIORequest()!");
 			
-			if constexpr (Util::General::IsDebugModeEnabled())
-			{
-				// Make sure that the provided std::span instance can contain the contents of the
-				// entire file.
-
-				std::error_code errorCode{};
-
-				const auto fileSize = std::filesystem::file_size(customFileRequest.FilePath, errorCode);
-				Util::General::CheckErrorCode(errorCode);
-
-				assert((customFileRequest.FileOffset + customFileRequest.DestDataSpan.size_bytes()) <= fileSize && "ERROR: The size of the provided std::span for an asset I/O request from a custom file was too large compared to the size of the file minus the specified offset from the start of the file!");
-			}
+			const bool isDataCompressed = (customFileRequest.CompressedDataSizeInBytes != 0);
 
 			DSTORAGE_REQUEST_OPTIONS requestOptions{
-				.CompressionFormat = DSTORAGE_COMPRESSION_FORMAT::DSTORAGE_COMPRESSION_FORMAT_NONE,
+				.CompressionFormat = (isDataCompressed ? DSTORAGE_COMPRESSION_FORMAT::DSTORAGE_CUSTOM_COMPRESSION_0 : DSTORAGE_COMPRESSION_FORMAT::DSTORAGE_COMPRESSION_FORMAT_NONE),
 				.SourceType = DSTORAGE_REQUEST_SOURCE_TYPE::DSTORAGE_REQUEST_SOURCE_FILE,
-				.DestinationType = DSTORAGE_REQUEST_DESTINATION_TYPE::DSTORAGE_REQUEST_DESTINATION_MEMORY,
+				.DestinationType = DSTORAGE_REQUEST_DESTINATION_TYPE::DSTORAGE_REQUEST_DESTINATION_BUFFER,
 				.Reserved{}
 			};
 
@@ -105,14 +97,15 @@ namespace Brawler
 				.File{
 					.Source = &dStorageFile,
 					.Offset = customFileRequest.FileOffset,
-					.Size = static_cast<std::uint32_t>(customFileRequest.DestDataSpan.size_bytes())
+					.Size = (isDataCompressed ? static_cast<std::uint32_t>(customFileRequest.CompressedDataSizeInBytes) : static_cast<std::uint32_t>(customFileRequest.UncompressedDataSizeInBytes))
 				}
 			};
 
 			DSTORAGE_DESTINATION requestDest{
-				.Memory{
-					.Buffer = customFileRequest.DestDataSpan.data(),
-					.Size = static_cast<std::uint32_t>(customFileRequest.DestDataSpan.size_bytes())
+				.Buffer{
+					.Resource = &(bufferSubAllocation.GetD3D12Resource()),
+					.Offset = bufferSubAllocation.GetOffsetFromBufferStart(),
+					.Size = static_cast<std::uint32_t>(customFileRequest.UncompressedDataSizeInBytes)
 				}
 			};
 
@@ -120,7 +113,7 @@ namespace Brawler
 				.Options{std::move(requestOptions)},
 				.Source{std::move(requestSrc)},
 				.Destination{std::move(requestDest)},
-				.UncompressedSize = static_cast<std::uint32_t>(customFileRequest.DestDataSpan.size_bytes()),
+				.UncompressedSize = static_cast<std::uint32_t>(customFileRequest.UncompressedDataSizeInBytes),
 				.CancellationTag{},
 				.Name{ nullptr }
 			});

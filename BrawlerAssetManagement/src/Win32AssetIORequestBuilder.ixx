@@ -33,8 +33,7 @@ export namespace Brawler
 			Win32AssetIORequestBuilder& operator=(Win32AssetIORequestBuilder&& rhs) noexcept = default;
 
 			void AddAssetIORequest(const Brawler::FilePathHash pathHash, Brawler::D3D12::I_BufferSubAllocation& bufferSubAllocation) override;
-
-			void AddAssetIORequest(const CustomFileAssetIORequest& customFileRequest) override;
+			void AddAssetIORequest(const CustomFileAssetIORequest& customFileRequest, Brawler::D3D12::I_BufferSubAllocation& bufferSubAllocation) override;
 
 			std::span<Win32AssetIORequest> GetAssetIORequestSpan(const Brawler::JobPriority priority);
 			std::span<const Win32AssetIORequest> GetAssetIORequestSpan(const Brawler::JobPriority priority) const;

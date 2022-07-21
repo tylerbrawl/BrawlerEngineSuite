@@ -151,6 +151,9 @@
     <Filter Include="Source Files\Streaming Systems\Texture Streaming\Global Textures">
       <UniqueIdentifier>{1c817e54-3fca-4168-b123-52fa6bf31767}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Streaming Systems\Texture Streaming\Global Texture Data Uploads">
+      <UniqueIdentifier>{5c2aad5e-8c5b-4ed9-a240-96977bab4a6a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -483,8 +486,8 @@
     <ClCompile Include="src\GlobalTextureFormatInfo.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
     </ClCompile>
-    <ClCompile Include="src\GlobalTexturePageSwapOperation.cpp">
-      <Filter>Source Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    <ClCompile Include="src\GlobalTextureUploadBuffer.cpp">
+      <Filter>Source Files\Streaming Systems\Texture Streaming\Global Texture Data Uploads</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

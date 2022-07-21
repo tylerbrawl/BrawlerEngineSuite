@@ -34,6 +34,7 @@ export namespace Brawler
 
 		std::uint32_t GetVirtualTextureID() const;
 		const VirtualTextureMetadata& GetVirtualTextureMetadata() const;
+		FilePathHash GetBVTXFilePathHash() const;
 
 	private:
 		void ReserveGPUSceneVirtualTextureDescription();

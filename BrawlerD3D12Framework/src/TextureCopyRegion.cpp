@@ -30,12 +30,6 @@ namespace Brawler
 			}
 		}
 
-		I_GPUResource& TextureCopyRegion::GetGPUResource()
-		{
-			assert(mResourcePtr != nullptr);
-			return *mResourcePtr;
-		}
-
 		const I_GPUResource& TextureCopyRegion::GetGPUResource() const
 		{
 			assert(mResourcePtr != nullptr);

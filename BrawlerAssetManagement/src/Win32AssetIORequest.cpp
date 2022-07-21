@@ -21,7 +21,7 @@ namespace Brawler
 			mWriteDataCallback(),
 			mMappedFileView(customFileRequest.FilePath, MappedFileView<FileAccessMode::READ_ONLY>::ViewParams{
 				.FileOffsetInBytes = customFileRequest.FileOffset,
-				.ViewSizeInBytes = customFileRequest.DestDataSpan.size_bytes()
+				.ViewSizeInBytes = (customFileRequest.CompressedDataSizeInBytes == 0 ? customFileRequest.UncompressedDataSizeInBytes : customFileRequest.CompressedDataSizeInBytes)
 			}),
 			mRequestTrackerPtr(&requestTracker)
 		{}
