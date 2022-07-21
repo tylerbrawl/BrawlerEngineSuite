@@ -4,10 +4,11 @@ module;
 #include "DxDef.h"
 
 export module Brawler.D3D12.TextureCopyBufferSubAllocation;
+export import :TextureCopyBufferSnapshot;
 import Brawler.D3D12.I_BufferSubAllocation;
 import Util.Math;
+import Brawler.D3D12.TextureCopyRegion;
 
-export import :TextureCopyBufferSnapshot;
 
 export namespace Brawler
 {
@@ -35,6 +36,7 @@ export namespace Brawler
 		public:
 			TextureCopyBufferSubAllocation() = default;
 			explicit TextureCopyBufferSubAllocation(const TextureSubResource& textureSubResource);
+			explicit TextureCopyBufferSubAllocation(const TextureCopyRegion& textureCopyRegion);
 
 			TextureCopyBufferSubAllocation(const TextureCopyBufferSubAllocation& rhs) = delete;
 			TextureCopyBufferSubAllocation& operator=(const TextureCopyBufferSubAllocation& rhs) = delete;
@@ -74,7 +76,7 @@ export namespace Brawler
 			CD3DX12_TEXTURE_COPY_LOCATION GetBufferTextureCopyLocation() const;
 
 		private:
-			void InitializeTextureInfo(const TextureSubResource& textureSubResource);
+			void InitializeTextureInfo(const Brawler::D3D12_RESOURCE_DESC& resourceDesc, const std::uint32_t subResourceIndex);
 
 		private:
 			TextureInfo mTextureInfo;
@@ -104,7 +106,7 @@ namespace Brawler
 		void TextureCopyBufferSubAllocation::ReadTextureData(const std::uint32_t rowIndex, const std::span<T> destDataSpan) const
 		{
 			assert(destDataSpan.size_bytes() == mTextureInfo.UnpaddedRowSizeInBytes && "ERROR: An attempt was made to read a row of texture data in a call to TextureCopyBufferSubAllocation::ReadTextureData(), but the provided std::span for storing the read data was not equal in size to the unpadded size of a row of texture data!");
-			assert(rowIndex <= mTextureInfo.RowCount && "ERROR: An out-of-bounds row index was provided in a call to TextureCopyBufferSubAllocation::ReadTextureData()!");
+			assert(rowIndex < mTextureInfo.RowCount && "ERROR: An out-of-bounds row index was provided in a call to TextureCopyBufferSubAllocation::ReadTextureData()!");
 
 			// Texture data in buffers is stored in row-major format, but the row sizes are aligned to
 			// D3D12_TEXTURE_DATA_PITCH_ALIGNMENT.

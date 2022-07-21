@@ -1182,6 +1182,12 @@
     <ClCompile Include="src\ZSTDCompressionOperation.cpp">
       <Filter>Source Files\File I/O\ZStandard</Filter>
     </ClCompile>
+    <ClCompile Include="src\TextureCopyRegion.ixx">
+      <Filter>Module Files\GPU Resources\Texture Resource Types\General Texture Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TextureCopyRegion.cpp">
+      <Filter>Source Files\GPU Resources\Texture Resource Types\General Texture Resource Types</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

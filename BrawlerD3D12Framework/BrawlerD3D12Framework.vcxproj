@@ -419,6 +419,8 @@
     <ClCompile Include="src\TextureCopyBufferSnapshot.ixx" />
     <ClCompile Include="src\TextureCopyBufferSubAllocation.cpp" />
     <ClCompile Include="src\TextureCopyBufferSubAllocation.ixx" />
+    <ClCompile Include="src\TextureCopyRegion.cpp" />
+    <ClCompile Include="src\TextureCopyRegion.ixx" />
     <ClCompile Include="src\TextureSubResource.cpp" />
     <ClCompile Include="src\TextureSubResource.ixx" />
     <ClCompile Include="src\ThreadLocalResources.cpp" />

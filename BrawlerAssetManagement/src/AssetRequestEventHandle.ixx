@@ -23,10 +23,9 @@ export namespace Brawler
 			friend class AssetManager;
 			friend class AssetRequestEventNotifier;
 
-		private:
+		public:
 			AssetRequestEventHandle();
 
-		public:
 			~AssetRequestEventHandle() = default;
 
 			AssetRequestEventHandle(const AssetRequestEventHandle& rhs) = default;
