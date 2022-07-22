@@ -10,6 +10,7 @@ import Brawler.D3D12.Texture2DBuilders;
 import Brawler.D3D12.GPUResourceViews;
 import Util.Engine;
 import Brawler.D3D12.TextureSubResource;
+import Brawler.D3D12.GPUResourceSpecialInitializationMethod;
 
 export namespace Brawler
 {
@@ -121,6 +122,7 @@ export namespace Brawler
 			Texture2DUnorderedAccessView<Format> CreateUnorderedAccessView(const std::uint32_t mipSlice = 0) const;
 
 			std::optional<D3D12_CLEAR_VALUE> GetOptimizedClearValue() const override;
+			GPUResourceSpecialInitializationMethod GetPreferredSpecialInitializationMethod() const override;
 
 			/// <summary>
 			/// Creates and returns a Texture2DSubResource instance which refers to the mip level
@@ -143,6 +145,7 @@ export namespace Brawler
 
 		private:
 			std::optional<D3D12_CLEAR_VALUE> mOptimizedClearValue;
+			GPUResourceSpecialInitializationMethod mInitMethod;
 		};
 	}
 }

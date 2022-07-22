@@ -5,6 +5,7 @@ module;
 
 export module Brawler.D3D12.Texture2DBuilders;
 import Util.General;
+import Brawler.D3D12.GPUResourceSpecialInitializationMethod;
 
 namespace Brawler
 {
@@ -220,17 +221,25 @@ namespace Brawler
 			constexpr void SetInitialResourceState(const D3D12_RESOURCE_STATES initialState) requires BuilderInfo<Type>::ENABLE_INITIAL_RESOURCE_STATE_OPTION;
 			constexpr D3D12_RESOURCE_STATES GetInitialResourceState() const;
 
-			constexpr void SetMultisampleDescription(DXGI_SAMPLE_DESC&& sampleDesc) requires BuilderInfo<Type>::ENABLE_SAMPLE_DESC_OPTION;
+			template <typename T>
+				requires std::is_same_v<std::decay_t<T>, DXGI_SAMPLE_DESC>
+			constexpr void SetMultisampleDescription(T&& sampleDesc) requires BuilderInfo<Type>::ENABLE_SAMPLE_DESC_OPTION;
 
-			constexpr void SetOptimizedClearValue(D3D12_CLEAR_VALUE&& clearValue) requires BuilderInfo<Type>::ENABLE_OPTIMIZED_CLEAR_VALUE_OPTION;
+			template <typename T>
+				requires std::is_same_v<std::decay_t<T>, D3D12_CLEAR_VALUE>
+			constexpr void SetOptimizedClearValue(T&& clearValue) requires BuilderInfo<Type>::ENABLE_OPTIMIZED_CLEAR_VALUE_OPTION;
+
+			constexpr void SetPreferredSpecialInitializationMethod(const GPUResourceSpecialInitializationMethod initMethod) requires BuilderInfo<Type>::ENABLE_OPTIMIZED_CLEAR_VALUE_OPTION;
 
 			constexpr const Brawler::D3D12_RESOURCE_DESC& GetResourceDescription() const;
 			constexpr const std::optional<D3D12_CLEAR_VALUE>& GetOptimizedClearValue() const;
+			constexpr GPUResourceSpecialInitializationMethod GetPreferredSpecialInitializationMethod() const;
 
 		private:
 			Brawler::D3D12_RESOURCE_DESC mResourceDesc;
 			std::optional<D3D12_RESOURCE_STATES> mInitialResourceState;
 			std::optional<D3D12_CLEAR_VALUE> mOptimizedClearValue;
+			GPUResourceSpecialInitializationMethod mInitMethod;
 		};
 	}
 }
@@ -245,7 +254,10 @@ namespace Brawler
 		constexpr Texture2DBuilderIMPL<Type>::Texture2DBuilderIMPL() :
 			mResourceDesc(),
 			mInitialResourceState(BuilderInfo<Type>::INITIAL_RESOURCE_STATE),
-			mOptimizedClearValue()
+			mOptimizedClearValue(),
+
+			// For performance, always prefer DISCARD by default.
+			mInitMethod(GPUResourceSpecialInitializationMethod::DISCARD)
 		{
 			mResourceDesc.DepthOrArraySize = 1;
 			
@@ -267,7 +279,8 @@ namespace Brawler
 
 			// For render targets and depth/stencil textures, set the default optimized clear value
 			// to zero. This is consistent with the APIs for clearing views in DirectContext and
-			// ComputeContext.
+			// ComputeContext. (Depth/Stencil textures which are meant to be used as reverse-Z depth
+			// buffers will need to explicitly modify the clear value.)
 			if constexpr (BuilderInfo<Type>::ENABLE_OPTIMIZED_CLEAR_VALUE_OPTION)
 				mOptimizedClearValue = D3D12_CLEAR_VALUE{};
 		}
@@ -358,18 +371,28 @@ namespace Brawler
 		}
 
 		template <BuilderType Type>
-		constexpr void Texture2DBuilderIMPL<Type>::SetMultisampleDescription(DXGI_SAMPLE_DESC&& sampleDesc) requires BuilderInfo<Type>::ENABLE_SAMPLE_DESC_OPTION
+		template <typename T>
+			requires std::is_same_v<std::decay_t<T>, DXGI_SAMPLE_DESC>
+		constexpr void Texture2DBuilderIMPL<Type>::SetMultisampleDescription(T&& sampleDesc) requires BuilderInfo<Type>::ENABLE_SAMPLE_DESC_OPTION
 		{
-			mResourceDesc.SampleDesc = std::move(sampleDesc);
+			mResourceDesc.SampleDesc = std::forward<T>(sampleDesc);
 		}
 
 		template <BuilderType Type>
-		constexpr void Texture2DBuilderIMPL<Type>::SetOptimizedClearValue(D3D12_CLEAR_VALUE&& clearValue) requires BuilderInfo<Type>::ENABLE_OPTIMIZED_CLEAR_VALUE_OPTION
+		template <typename T>
+			requires std::is_same_v<std::decay_t<T>, D3D12_CLEAR_VALUE>
+		constexpr void Texture2DBuilderIMPL<Type>::SetOptimizedClearValue(T&& clearValue) requires BuilderInfo<Type>::ENABLE_OPTIMIZED_CLEAR_VALUE_OPTION
 		{
-			mOptimizedClearValue = std::move(clearValue);
+			mOptimizedClearValue = std::forward<T>(clearValue);
 
-			// Set the format based on what is current present in the resource description.
+			// Set the format based on what is currently present in the resource description.
 			mOptimizedClearValue->Format = mResourceDesc.Format;
+		}
+
+		template <BuilderType Type>
+		constexpr void Texture2DBuilderIMPL<Type>::SetPreferredSpecialInitializationMethod(const GPUResourceSpecialInitializationMethod initMethod) requires BuilderInfo<Type>::ENABLE_OPTIMIZED_CLEAR_VALUE_OPTION
+		{
+			mInitMethod = initMethod;
 		}
 
 		template <BuilderType Type>
@@ -394,6 +417,12 @@ namespace Brawler
 		{
 			return mOptimizedClearValue;
 		}
+
+		template <BuilderType Type>
+		constexpr GPUResourceSpecialInitializationMethod Texture2DBuilderIMPL<Type>::GetPreferredSpecialInitializationMethod() const
+		{
+			return mInitMethod;
+		}
 	}
 }
 
@@ -402,7 +431,7 @@ export namespace Brawler
 	namespace D3D12
 	{
 		using Texture2DBuilder = Texture2DBuilderIMPL<BuilderType::GENERIC_TEXTURE_2D>;
-		using RenderTargetBuilder = Texture2DBuilderIMPL<BuilderType::RENDER_TARGET>;
+		using RenderTargetTexture2DBuilder = Texture2DBuilderIMPL<BuilderType::RENDER_TARGET>;
 		using DepthStencilTextureBuilder = Texture2DBuilderIMPL<BuilderType::DEPTH_STENCIL>;
 	}
 }

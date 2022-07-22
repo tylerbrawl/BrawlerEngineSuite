@@ -148,7 +148,7 @@ namespace BrawlerHLSL
 		template <typename T>
 		T GetBindlessTexture(in const uint textureID)
 		{
-			return TextureFinder<T>::GetBindlessTexture(textureID);
+			return IMPL::TextureFinder<T>::GetBindlessTexture(textureID);
 		}
 	}
 }

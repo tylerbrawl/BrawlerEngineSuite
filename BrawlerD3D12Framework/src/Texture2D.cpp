@@ -26,12 +26,18 @@ namespace Brawler
 	{
 		Texture2D::Texture2D(const Texture2DBuilder& builder) :
 			I_GPUResource(CreateInitializationInfoFromBuilder(builder)),
-			mOptimizedClearValue(builder.GetOptimizedClearValue())
+			mOptimizedClearValue(builder.GetOptimizedClearValue()),
+			mInitMethod(builder.GetPreferredSpecialInitializationMethod())
 		{}
 
 		std::optional<D3D12_CLEAR_VALUE> Texture2D::GetOptimizedClearValue() const
 		{
 			return mOptimizedClearValue;
+		}
+
+		GPUResourceSpecialInitializationMethod Texture2D::GetPreferredSpecialInitializationMethod() const
+		{
+			return mInitMethod;
 		}
 
 		Texture2DSubResource Texture2D::GetSubResource(const std::uint32_t mipSlice)

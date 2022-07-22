@@ -329,6 +329,7 @@
     <ClCompile Include="src\VirtualTexture.cpp" />
     <ClCompile Include="src\VirtualTexture.ixx" />
     <ClCompile Include="src\StreamingVirtualTexturePage.ixx" />
+    <ClCompile Include="src\VirtualTextureConstants.ixx" />
     <ClCompile Include="src\VirtualTextureDatabase.cpp" />
     <ClCompile Include="src\VirtualTextureDatabase.ixx" />
     <ClCompile Include="src\VirtualTextureHandle.cpp" />

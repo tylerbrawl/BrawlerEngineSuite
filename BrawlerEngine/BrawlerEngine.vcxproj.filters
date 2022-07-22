@@ -489,6 +489,9 @@
     <ClCompile Include="src\GlobalTextureUploadBuffer.cpp">
       <Filter>Source Files\Streaming Systems\Texture Streaming\Global Texture Data Uploads</Filter>
     </ClCompile>
+    <ClCompile Include="src\VirtualTextureConstants.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
