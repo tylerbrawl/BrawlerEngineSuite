@@ -277,6 +277,8 @@
     <ClCompile Include="src\GPUSceneTypes.ixx" />
     <ClCompile Include="src\GPUSceneUpdateRenderModule.cpp" />
     <ClCompile Include="src\GPUSceneUpdateRenderModule.ixx" />
+    <ClCompile Include="src\IndirectionTextureUpdater.cpp" />
+    <ClCompile Include="src\IndirectionTextureUpdater.ixx" />
     <ClCompile Include="src\I_ApplicationState.cpp" />
     <ClCompile Include="src\I_ApplicationState.ixx" />
     <ClCompile Include="src\I_GPUSceneBufferUpdateSource.cpp" />

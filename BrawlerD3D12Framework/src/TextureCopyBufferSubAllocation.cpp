@@ -33,6 +33,16 @@ namespace Brawler
 			InitializeTextureInfo(resourceDesc, 0);
 		}
 
+		TextureCopyBufferSubAllocation::TextureCopyBufferSubAllocation(const Util::D3D12::CopyableFootprint& footprint) :
+			mTextureInfo()
+		{
+			mTextureInfo.Footprint = footprint.Layout;
+			mTextureInfo.RowCount = footprint.NumRows;
+			mTextureInfo.UnpaddedRowSizeInBytes = footprint.RowSizeInBytes;
+
+			mTextureInfo.TotalBytesRequired = ((footprint.Layout.Footprint.RowPitch * (footprint.NumRows - 1)) + mTextureInfo.UnpaddedRowSizeInBytes);
+		}
+
 		std::size_t TextureCopyBufferSubAllocation::GetSubAllocationSize() const
 		{
 			return mTextureInfo.TotalBytesRequired;

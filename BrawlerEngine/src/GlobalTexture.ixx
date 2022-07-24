@@ -211,6 +211,7 @@ namespace Brawler
 					const DirectX::XMUINT2 unflattenedCoordinates{ GetUnflattenedCoordinates(currFlattenedPageCoordinates) };
 					reservationResults.ActivePageSwapArr.emplace_back(GlobalTexturePageSwapOperation::InitInfo{
 						.GlobalTexture{ *mTexture2DPtr },
+						.PageDimensions = GlobalTextureFormatInfo<Format>::PADDED_PAGE_DIMENSIONS,
 						.NewReservedPage{ reservedPage },
 						.OldReservedPage{},
 						.GlobalTextureXPageCoordinates = static_cast<std::uint16_t>(unflattenedCoordinates.x),
@@ -255,6 +256,7 @@ namespace Brawler
 			const DirectX::XMUINT2 unflattenedCoordinates{ GetUnflattenedCoordinates(candidatePage.FlattenedPageCoordinates) };
 			reservationResults.ActivePageSwapArr.emplace_back(GlobalTexturePageSwapOperation::InitInfo{
 				.GlobalTexture{ *mTexture2DPtr },
+				.PageDimensions = GlobalTextureFormatInfo<Format>::PADDED_PAGE_DIMENSIONS,
 				.NewReservedPage{ *(candidatePage.CandidatePagePtr) },
 				.OldReservedPage{ std::move(oldPageCopy) },
 				.GlobalTextureXPageCoordinates = static_cast<std::uint16_t>(unflattenedCoordinates.x),

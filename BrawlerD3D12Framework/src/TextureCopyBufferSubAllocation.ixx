@@ -7,6 +7,7 @@ export module Brawler.D3D12.TextureCopyBufferSubAllocation;
 export import :TextureCopyBufferSnapshot;
 import Brawler.D3D12.I_BufferSubAllocation;
 import Util.Math;
+import Util.D3D12;
 import Brawler.D3D12.TextureCopyRegion;
 import Brawler.D3D12.TextureSubResource;
 
@@ -29,6 +30,7 @@ export namespace Brawler
 			TextureCopyBufferSubAllocation() = default;
 			explicit TextureCopyBufferSubAllocation(const TextureSubResource& textureSubResource);
 			explicit TextureCopyBufferSubAllocation(const TextureCopyRegion& textureCopyRegion);
+			explicit TextureCopyBufferSubAllocation(const Util::D3D12::CopyableFootprint& footprint);
 
 			TextureCopyBufferSubAllocation(const TextureCopyBufferSubAllocation& rhs) = delete;
 			TextureCopyBufferSubAllocation& operator=(const TextureCopyBufferSubAllocation& rhs) = delete;

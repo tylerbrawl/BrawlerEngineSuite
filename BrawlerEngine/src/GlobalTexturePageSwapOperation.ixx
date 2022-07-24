@@ -22,8 +22,8 @@ export namespace Brawler
 			std::uint32_t PageDimensions;
 			GlobalTextureReservedPage NewReservedPage;
 			std::optional<GlobalTextureReservedPage> OldReservedPage;
-			std::uint16_t GlobalTextureXPageCoordinates;
-			std::uint16_t GlobalTextureYPageCoordinates;
+			std::uint8_t GlobalTextureXPageCoordinates;
+			std::uint8_t GlobalTextureYPageCoordinates;
 			std::uint8_t GlobalTextureDescriptionBufferIndex;
 		};
 
@@ -47,10 +47,10 @@ export namespace Brawler
 		bool IsReplacingOlderPage() const;
 		const GlobalTextureReservedPage& GetPreviousPage() const;
 
-		std::uint16_t GetGlobalTextureXPageCoordinates() const;
-		std::uint16_t GetGlobalTextureYPageCoordinates() const;
+		std::uint32_t GetGlobalTextureXPageCoordinates() const;
+		std::uint32_t GetGlobalTextureYPageCoordinates() const;
 
-		std::uint8_t GetGlobalTextureDescriptionBufferIndex() const;
+		std::uint32_t GetGlobalTextureDescriptionBufferIndex() const;
 
 		CD3DX12_BOX GetGlobalTextureCopyRegionBox() const;
 
@@ -108,19 +108,19 @@ namespace Brawler
 		return *(mInitInfo.OldReservedPage);
 	}
 
-	std::uint16_t GlobalTexturePageSwapOperation::GetGlobalTextureXPageCoordinates() const
+	std::uint32_t GlobalTexturePageSwapOperation::GetGlobalTextureXPageCoordinates() const
 	{
-		return mInitInfo.GlobalTextureXPageCoordinates;
+		return static_cast<std::uint32_t>(mInitInfo.GlobalTextureXPageCoordinates);
 	}
 
-	std::uint16_t GlobalTexturePageSwapOperation::GetGlobalTextureYPageCoordinates() const
+	std::uint32_t GlobalTexturePageSwapOperation::GetGlobalTextureYPageCoordinates() const
 	{
-		return mInitInfo.GlobalTextureYPageCoordinates;
+		return static_cast<std::uint32_t>(mInitInfo.GlobalTextureYPageCoordinates);
 	}
 
-	std::uint8_t GlobalTexturePageSwapOperation::GetGlobalTextureDescriptionBufferIndex() const
+	std::uint32_t GlobalTexturePageSwapOperation::GetGlobalTextureDescriptionBufferIndex() const
 	{
-		return mInitInfo.GlobalTextureDescriptionBufferIndex;
+		return static_cast<std::uint32_t>(mInitInfo.GlobalTextureDescriptionBufferIndex);
 	}
 
 	CD3DX12_BOX GlobalTexturePageSwapOperation::GetGlobalTextureCopyRegionBox() const

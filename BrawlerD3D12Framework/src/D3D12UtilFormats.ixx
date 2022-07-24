@@ -540,7 +540,7 @@ export namespace Util
 			std::vector<CopyableFootprint> FootprintsArr;
 
 			/// <summary>
-			/// Returns the requires upload buffer size for copying all of the sub-resources
+			/// Returns the required upload buffer size for copying all of the sub-resources
 			/// requested. This value does account for any padding required by the D3D12 API,
 			/// both for the required alignment of texture data within a buffer and the required
 			/// alignment of texture row data.
@@ -644,13 +644,17 @@ export namespace Util
 
 				results.FootprintsArr.push_back(std::move(currFootprint));
 
-				// Adjust the offset from the start of the buffer for the next sub-resource.
-				const std::uint64_t unalignedNewUploadOffset = (currUploadOffset + totalSubResourceSize);
-				currUploadOffset = ALIGN_TO_POWER_OF_TWO.operator()<D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT>(unalignedNewUploadOffset);
+				// Adjust the offset from the start of the buffer for the next sub-resource, but only
+				// if there are more sub-resources which need to be processed.
+				if (i != (params.NumSubResources - 1)) [[likely]]
+				{
+					const std::uint64_t unalignedNewUploadOffset = (currUploadOffset + totalSubResourceSize);
+					currUploadOffset = ALIGN_TO_POWER_OF_TWO.operator() < D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT > (unalignedNewUploadOffset);
 
-				// If aligning unalignedNewUploadOffset to D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT required padding
-				// out the buffer, then the returned size needs to reflect that.
-				results.TotalBytes += (currUploadOffset - unalignedNewUploadOffset);
+					// If aligning unalignedNewUploadOffset to D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT required padding
+					// out the buffer, then the returned size needs to reflect that.
+					results.TotalBytes += (currUploadOffset - unalignedNewUploadOffset);
+				}
 			}
 
 			return results;
