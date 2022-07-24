@@ -15,6 +15,7 @@ import Brawler.D3D12.D3D12ResourceContainer;
 import Brawler.D3D12.GPUResourceCreationType;
 import Brawler.D3D12.BindlessSRVAllocation;
 import Brawler.D3D12.GPUSubResourceStateManager;
+import Brawler.D3D12.BindlessGPUResourceGroupRegistration;
 
 namespace Brawler
 {
@@ -67,6 +68,9 @@ export namespace Brawler
 			void CreatePlacedD3D12Resource(GPUResourceAllocationHandle&& hAllocation);
 
 			BindlessSRVAllocation CreateBindlessSRV(D3D12_SHADER_RESOURCE_VIEW_DESC&& srvDesc);
+
+			void AddBindlessGPUResourceGroupAssociation(BindlessGPUResourceGroupRegistration& groupRegistration);
+			void RemoveBindlessGPUResourceGroupAssociation(BindlessGPUResourceGroupRegistration& groupRegistration);
 
 		protected:
 			/// <summary>

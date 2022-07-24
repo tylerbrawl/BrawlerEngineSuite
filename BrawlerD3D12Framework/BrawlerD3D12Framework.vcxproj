@@ -252,6 +252,10 @@
     <ClCompile Include="src\AliasedGPUMemoryManager.ixx" />
     <ClCompile Include="src\AsyncGPUResourceBuilder.ixx" />
     <ClCompile Include="src\BarrierMergerStateContainer.ixx" />
+    <ClCompile Include="src\BindlessGPUResourceGroup.cpp" />
+    <ClCompile Include="src\BindlessGPUResourceGroup.ixx" />
+    <ClCompile Include="src\BindlessGPUResourceGroupRegistration.cpp" />
+    <ClCompile Include="src\BindlessGPUResourceGroupRegistration.ixx" />
     <ClCompile Include="src\BindlessSRVSentinel.cpp" />
     <ClCompile Include="src\BindlessSRVSentinel.ixx" />
     <ClCompile Include="src\BufferCopyRegion.cpp" />

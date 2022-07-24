@@ -1206,6 +1206,18 @@
     <ClCompile Include="src\RTVDimensionInfo.ixx">
       <Filter>Module Files\GPU Resources\GPU Resource Descriptors\Non-Shader-Visible Descriptors</Filter>
     </ClCompile>
+    <ClCompile Include="src\BindlessGPUResourceGroup.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BindlessGPUResourceGroup.cpp">
+      <Filter>Source Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BindlessGPUResourceGroupRegistration.ixx">
+      <Filter>Module Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BindlessGPUResourceGroupRegistration.cpp">
+      <Filter>Source Files\GPU Resources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

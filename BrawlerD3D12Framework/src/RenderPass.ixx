@@ -19,6 +19,7 @@ import Util.D3D12;
 import Util.General;
 import Brawler.D3D12.I_BufferSubAllocation;
 import Brawler.D3D12.TextureSubResource;
+import Brawler.D3D12.BindlessGPUResourceGroup;
 
 namespace Brawler
 {
@@ -175,6 +176,8 @@ export namespace Brawler
 			void AddResourceDependency(I_BufferSubAllocation& bufferSubAllocation, const D3D12_RESOURCE_STATES requiredState);
 			void AddResourceDependency(TextureSubResource& textureSubResource, const D3D12_RESOURCE_STATES requiredState);
 
+			void AddBindlessResourceGroupDependency(BindlessGPUResourceGroup& bindlessGroup, const D3D12_RESOURCE_STATES requiredState);
+
 			std::span<const FrameGraphResourceDependency> GetResourceDependencies() const override;
 
 			void SetRenderPassName(const std::string_view name);
@@ -316,6 +319,16 @@ namespace Brawler
 				.RequiredState = requiredState,
 				.SubResourceIndex = textureSubResource.GetSubResourceIndex()
 			});
+		}
+
+		template <GPUCommandQueueType QueueType, typename InputDataType>
+		void RenderPass<QueueType, InputDataType>::AddBindlessResourceGroupDependency(BindlessGPUResourceGroup& bindlessGroup, const D3D12_RESOURCE_STATES requiredState)
+		{
+			std::vector<FrameGraphResourceDependency> groupDependencyArr{ bindlessGroup.CreateResourceDependencyArray(requiredState) };
+			mResourceDependencyArr.reserve(mResourceDependencyArr.size() + groupDependencyArr.size());
+
+			for (auto&& dependency : groupDependencyArr)
+				AddResourceDependency(std::move(dependency));
 		}
 
 		template <GPUCommandQueueType QueueType, typename InputDataType>

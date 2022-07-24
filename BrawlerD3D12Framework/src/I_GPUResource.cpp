@@ -150,6 +150,16 @@ namespace Brawler
 			return mBindlessSRVManager.CreateBindlessSRV(std::move(srvDesc), Brawler::OptionalRef<Brawler::D3D12Resource>{});
 		}
 
+		void I_GPUResource::AddBindlessGPUResourceGroupAssociation(BindlessGPUResourceGroupRegistration& groupRegistration)
+		{
+			mBindlessSRVManager.AddBindlessGPUResourceGroupAssociation(groupRegistration);
+		}
+
+		void I_GPUResource::RemoveBindlessGPUResourceGroupAssociation(BindlessGPUResourceGroupRegistration& groupRegistration)
+		{
+			mBindlessSRVManager.RemoveBindlessGPUResourceGroupAssociation(groupRegistration);
+		}
+
 		void I_GPUResource::ExecutePostD3D12ResourceInitializationCallback()
 		{}
 
