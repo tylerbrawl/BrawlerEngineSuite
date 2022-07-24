@@ -48,8 +48,7 @@ export namespace Brawler
 
 		void ClearVirtualTexturePage();
 
-		VirtualTexture& GetVirtualTexture();
-		const VirtualTexture& GetVirtualTexture() const;
+		VirtualTexture& GetVirtualTexture() const;
 
 		const VirtualTextureLogicalPage& GetAllocatedLogicalPage() const;
 		const VirtualTexturePageMetadata& GetAllocatedPageMetadata() const;

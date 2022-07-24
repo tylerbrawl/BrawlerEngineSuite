@@ -74,8 +74,7 @@ export namespace Brawler
 	struct VirtualTextureDescription
 	{
 		std::uint32_t IndirectionTextureIndexAndLog2VTSize;
-		std::uint32_t CombinedPageXAndYCoord;
-		DirectX::XMUINT2 __Pad0;
+		DirectX::XMUINT3 __Pad0;
 	};
 
 	struct GlobalTextureDescription

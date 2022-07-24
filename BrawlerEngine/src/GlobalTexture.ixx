@@ -4,6 +4,7 @@ module;
 #include <span>
 #include <memory>
 #include <algorithm>
+#include <optional>
 #include <cassert>
 #include <DxDef.h>
 #include <DirectXMath/DirectXMath.h>
@@ -11,6 +12,7 @@ module;
 export module Brawler.GlobalTexture;
 import Brawler.GlobalTextureFormatInfo;
 import Brawler.D3D12.Texture2D;
+import Brawler.D3D12.BindlessSRVAllocation;
 import Brawler.D3D12.Texture2DBuilders;
 import Brawler.GlobalTextureReservedPage;
 import Brawler.GlobalTexturePageSwapOperation;
@@ -18,6 +20,12 @@ import Brawler.VirtualTextureLogicalPage;
 import Util.General;
 import Brawler.VirtualTexture;
 import Brawler.VirtualTextureMetadata;
+import Brawler.D3D12.StructuredBufferSubAllocation;
+import Brawler.GPUSceneTypes;
+import Brawler.GPUSceneManager;
+import Brawler.GPUSceneBuffer;
+import Brawler.GPUSceneBufferID;
+import Brawler.GPUSceneBufferUpdater;
 
 export namespace Brawler
 {
@@ -112,9 +120,14 @@ export namespace Brawler
 	private:
 		DirectX::XMUINT2 GetUnflattenedCoordinates(const std::uint32_t flattenedCoordinates) const;
 
+		std::uint8_t GetGlobalTextureDescriptionBufferIndex() const;
+
 	private:
 		std::unique_ptr<D3D12::Texture2D> mTexture2DPtr;
+		D3D12::BindlessSRVAllocation mGlobalTextureBindlessAllocation;
 		std::array<GlobalTextureReservedPage, NUM_PAGES_IN_GLOBAL_TEXTURE> mReservedPageArr;
+		D3D12::StructuredBufferSubAllocation<GlobalTextureDescription, 1> mGlobalTextureDescriptionBufferSubAllocation;
+		std::unique_ptr<GPUSceneBufferUpdater<GPUSceneBufferID::GLOBAL_TEXTURE_DESCRIPTION_BUFFER>> mGlobalTextureDescriptionBufferUpdaterPtr;
 	};
 }
 
@@ -125,8 +138,32 @@ namespace Brawler
 	template <DXGI_FORMAT Format>
 	GlobalTexture<Format>::GlobalTexture() :
 		mTexture2DPtr(std::make_unique<D3D12::Texture2D>(TEXTURE_2D_BUILDER)),
-		mReservedPageArr()
-	{}
+		mGlobalTextureBindlessAllocation(),
+		mReservedPageArr(),
+		mGlobalTextureDescriptionBufferSubAllocation(),
+		mGlobalTextureDescriptionBufferUpdaterPtr()
+	{
+		// Reserve a description within the global texture description GPU scene buffer.
+		std::optional<D3D12::StructuredBufferSubAllocation<GlobalTextureDescription, 1>> descriptionBufferSubAllocation = GPUSceneManager::GetInstance().GetGPUSceneBufferResource<GPUSceneBufferID::GLOBAL_TEXTURE_DESCRIPTION_BUFFER>().CreateBufferSubAllocation<D3D12::StructuredBufferSubAllocation<GlobalTextureDescription, 1>>();
+		assert(descriptionBufferSubAllocation.has_value() && "ERROR: We have run out of global texture description memory!");
+
+		mGlobalTextureDescriptionBufferSubAllocation = std::move(*descriptionBufferSubAllocation);
+
+		// Reserve a bindless SRV index for the global texture.
+		mGlobalTextureBindlessAllocation = mTexture2DPtr->CreateBindlessSRV<Format>();
+		
+		// Create a GPUSceneBufferUpdater for this global texture description. We use a
+		// std::unique_ptr to ensure that the GPUSceneUpdateRenderModule retains a valid pointer value.
+		static constexpr std::uint32_t GLOBAL_TEXTURE_DIMENSIONS = static_cast<std::uint32_t>(TEXTURE_2D_BUILDER.GetResourceDescription().Width);
+		static constexpr std::uint32_t PADDED_PAGE_DIMENSIONS = GlobalTextureFormatInfo<Format>::PADDED_PAGE_DIMENSIONS;
+
+		mGlobalTextureDescriptionBufferUpdaterPtr = std::make_unique<GPUSceneBufferUpdater<GPUSceneBufferID::GLOBAL_TEXTURE_DESCRIPTION_BUFFER>>(mGlobalTextureDescriptionBufferSubAllocation.GetBufferCopyRegion());
+		mGlobalTextureDescriptionBufferUpdaterPtr->UpdateGPUSceneData(GlobalTextureDescription{
+			.BindlessIndex = mGlobalTextureBindlessAllocation.GetBindlessSRVIndex(),
+			.GlobalTextureDimensions = GLOBAL_TEXTURE_DIMENSIONS,
+			.PaddedPageDimensions = PADDED_PAGE_DIMENSIONS
+		});
+	}
 
 	template <DXGI_FORMAT Format>
 	GlobalTexture<Format>::PageReservationResults GlobalTexture<Format>::BeginGlobalTexturePageSwaps(const std::span<const VirtualTextureLogicalPage> logicalPageSpan)
@@ -177,7 +214,8 @@ namespace Brawler
 						.NewReservedPage{ reservedPage },
 						.OldReservedPage{},
 						.GlobalTextureXPageCoordinates = static_cast<std::uint16_t>(unflattenedCoordinates.x),
-						.GlobalTextureYPageCoordinates = static_cast<std::uint16_t>(unflattenedCoordinates.y)
+						.GlobalTextureYPageCoordinates = static_cast<std::uint16_t>(unflattenedCoordinates.y),
+						.GlobalTextureDescriptionBufferIndex = GetGlobalTextureDescriptionBufferIndex()
 					});
 
 					// Exit early if that was the last page which needed to be assigned.
@@ -220,7 +258,8 @@ namespace Brawler
 				.NewReservedPage{ *(candidatePage.CandidatePagePtr) },
 				.OldReservedPage{ std::move(oldPageCopy) },
 				.GlobalTextureXPageCoordinates = static_cast<std::uint16_t>(unflattenedCoordinates.x),
-				.GlobalTextureYPageCoordinates = static_cast<std::uint16_t>(unflattenedCoordinates.y)
+				.GlobalTextureYPageCoordinates = static_cast<std::uint16_t>(unflattenedCoordinates.y),
+				.GlobalTextureDescriptionBufferIndex = GetGlobalTextureDescriptionBufferIndex()
 			});
 
 			// Exit if that was the last page which needed to be assigned.
@@ -246,5 +285,11 @@ namespace Brawler
 			(flattenedCoordinates % NUM_PAGES_PER_GLOBAL_TEXTURE_ROW),
 			(flattenedCoordinates / NUM_PAGES_PER_GLOBAL_TEXTURE_ROW)
 		};
+	}
+
+	template <DXGI_FORMAT Format>
+	std::uint8_t GlobalTexture<Format>::GetGlobalTextureDescriptionBufferIndex() const
+	{
+		return static_cast<std::uint8_t>(mGlobalTextureDescriptionBufferSubAllocation.GetOffsetFromBufferStart() / sizeof(GlobalTextureDescription));
 	}
 }

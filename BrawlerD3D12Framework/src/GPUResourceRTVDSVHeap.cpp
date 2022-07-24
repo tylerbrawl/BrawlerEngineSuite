@@ -14,6 +14,11 @@ namespace Brawler
 	namespace D3D12
 	{
 		template <NonShaderVisibleDescriptorType DescriptorType>
+		GPUResourceRTVDSVHeapAllocation<DescriptorType>::GPUResourceRTVDSVHeapAllocation(const std::uint32_t heapIndex) :
+			mAllocatedIndex(heapIndex)
+		{}
+		
+		template <NonShaderVisibleDescriptorType DescriptorType>
 		GPUResourceRTVDSVHeapAllocation<DescriptorType>::~GPUResourceRTVDSVHeapAllocation()
 		{
 			ReturnAllocation();

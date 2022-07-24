@@ -154,6 +154,12 @@
     <Filter Include="Source Files\Streaming Systems\Texture Streaming\Global Texture Data Uploads">
       <UniqueIdentifier>{5c2aad5e-8c5b-4ed9-a240-96977bab4a6a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Render Modules\GPU Scene Update">
+      <UniqueIdentifier>{98793c70-e885-45ec-8800-571e5ce14aaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render Modules\GPU Scene Update">
+      <UniqueIdentifier>{c96ceedd-5bb4-49a5-b382-40f3a388744f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -372,17 +378,11 @@
     <ClCompile Include="src\GPUSceneBufferUpdater.ixx">
       <Filter>Module Files\GPU Scene Representation\Bindless Resources</Filter>
     </ClCompile>
-    <ClCompile Include="src\GPUSceneUpdateRenderModule.ixx">
-      <Filter>Module Files\Render Modules</Filter>
-    </ClCompile>
     <ClCompile Include="src\I_GPUSceneBufferUpdateSource.ixx">
       <Filter>Module Files\GPU Scene Representation\Bindless Resources</Filter>
     </ClCompile>
     <ClCompile Include="src\I_GPUSceneBufferUpdateSource.cpp">
       <Filter>Source Files\GPU Scene Representation\Bindless Resources</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUSceneUpdateRenderModule.cpp">
-      <Filter>Source Files\Render Modules</Filter>
     </ClCompile>
     <ClCompile Include="src\GPUSceneManager.ixx">
       <Filter>Module Files\GPU Scene Representation</Filter>
@@ -491,6 +491,24 @@
     </ClCompile>
     <ClCompile Include="src\VirtualTextureConstants.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneUpdateRenderModule.ixx">
+      <Filter>Module Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneBufferUpdateSubModule.ixx">
+      <Filter>Module Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneUpdateRenderModule.cpp">
+      <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneBufferUpdateSubModule.cpp">
+      <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTextureManagementSubModule.ixx">
+      <Filter>Module Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTextureManagementSubModule.cpp">
+      <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

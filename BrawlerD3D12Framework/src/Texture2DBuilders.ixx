@@ -86,7 +86,7 @@ namespace Brawler
 			/// If this is true, then the option to change the optimized clear value of created
 			/// textures will be available for this Texture2DBuilderIMPL.
 			/// </summary>
-			static constexpr bool ENABLE_OPTIMIZED_CLAR_VALUE_OPTION = EnableOptimizedClearValueOption;
+			static constexpr bool ENABLE_OPTIMIZED_CLEAR_VALUE_OPTION = EnableOptimizedClearValueOption;
 		};
 
 		// A lot of the choices here come from AMD's best practices for DirectX 12 resources.

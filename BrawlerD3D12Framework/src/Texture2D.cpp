@@ -8,7 +8,8 @@ import Brawler.D3D12.GPUResourceInitializationInfo;
 
 namespace
 {
-	Brawler::D3D12::GPUResourceInitializationInfo CreateInitializationInfoFromBuilder(const Brawler::D3D12::Texture2DBuilder& builder)
+	template <typename BuilderType>
+	Brawler::D3D12::GPUResourceInitializationInfo CreateInitializationInfoFromBuilder(const BuilderType& builder)
 	{
 		return Brawler::D3D12::GPUResourceInitializationInfo{
 			.ResourceDesc{ builder.GetResourceDescription() },
@@ -25,6 +26,12 @@ namespace Brawler
 	namespace D3D12
 	{
 		Texture2D::Texture2D(const Texture2DBuilder& builder) :
+			I_GPUResource(CreateInitializationInfoFromBuilder(builder)),
+			mOptimizedClearValue(builder.GetOptimizedClearValue()),
+			mInitMethod(builder.GetPreferredSpecialInitializationMethod())
+		{}
+
+		Texture2D::Texture2D(const RenderTargetTexture2DBuilder& builder) :
 			I_GPUResource(CreateInitializationInfoFromBuilder(builder)),
 			mOptimizedClearValue(builder.GetOptimizedClearValue()),
 			mInitMethod(builder.GetPreferredSpecialInitializationMethod())

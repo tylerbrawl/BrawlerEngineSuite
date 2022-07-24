@@ -269,6 +269,8 @@
     <ClCompile Include="src\GPUSceneBufferID.ixx" />
     <ClCompile Include="src\GPUSceneBufferMap.ixx" />
     <ClCompile Include="src\GPUSceneBufferUpdater.ixx" />
+    <ClCompile Include="src\GPUSceneBufferUpdateSubModule.cpp" />
+    <ClCompile Include="src\GPUSceneBufferUpdateSubModule.ixx" />
     <ClCompile Include="src\GPUSceneLimits.ixx" />
     <ClCompile Include="src\GPUSceneManager.cpp" />
     <ClCompile Include="src\GPUSceneManager.ixx" />
@@ -335,6 +337,8 @@
     <ClCompile Include="src\VirtualTextureHandle.cpp" />
     <ClCompile Include="src\VirtualTextureHandle.ixx" />
     <ClCompile Include="src\VirtualTextureLogicalPage.ixx" />
+    <ClCompile Include="src\VirtualTextureManagementSubModule.cpp" />
+    <ClCompile Include="src\VirtualTextureManagementSubModule.ixx" />
     <ClCompile Include="src\VirtualTextureMetadata.cpp" />
     <ClCompile Include="src\VirtualTextureMetadata.ixx" />
     <ClCompile Include="src\WindowDisplayMode.ixx" />

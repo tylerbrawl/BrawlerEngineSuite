@@ -18,13 +18,7 @@ namespace Brawler
 		mPageMetadataPtr = nullptr;
 	}
 
-	VirtualTexture& GlobalTextureReservedPage::GetVirtualTexture()
-	{
-		assert(HasAllocation());
-		return *(mLogicalPage.VirtualTexturePtr);
-	}
-
-	const VirtualTexture& GlobalTextureReservedPage::GetVirtualTexture() const
+	VirtualTexture& GlobalTextureReservedPage::GetVirtualTexture() const
 	{
 		assert(HasAllocation());
 		return *(mLogicalPage.VirtualTexturePtr);

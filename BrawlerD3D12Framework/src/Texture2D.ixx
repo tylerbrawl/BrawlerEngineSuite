@@ -108,6 +108,7 @@ export namespace Brawler
 		{
 		public:
 			explicit Texture2D(const Texture2DBuilder& builder);
+			explicit Texture2D(const RenderTargetTexture2DBuilder& builder);
 
 			Texture2D(const Texture2D& rhs) = delete;
 			Texture2D& operator=(const Texture2D& rhs) = delete;

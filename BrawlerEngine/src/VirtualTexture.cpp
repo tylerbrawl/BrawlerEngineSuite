@@ -7,13 +7,16 @@ module;
 
 module Brawler.VirtualTexture;
 import Brawler.GPUSceneManager;
-import Brawler.D3D12.Texture2DBuilder;
+import Brawler.D3D12.Texture2DBuilders;
 import Brawler.D3D12.GPUResourceSpecialInitializationMethod;
 import Brawler.VirtualTextureConstants;
+import Brawler.D3D12.ShaderResourceView;
+import Util.Math;
 
 namespace
 {
 	static constexpr std::uint64_t DELETION_FLAG = (static_cast<std::uint64_t>(1) << 63);
+	static constexpr DXGI_FORMAT INDIRECTION_TEXTURE_FORMAT = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UINT;
 
 	consteval Brawler::D3D12::RenderTargetTexture2DBuilder CreateDefaultIndirectionTextureBuilder()
 	{
@@ -39,10 +42,9 @@ namespace
 		//      - False: This page has no allocation.
 		// 
 		//    * Upper 7 Bits: Reserved - Must Be Zeroed
-		static constexpr DXGI_FORMAT INDIRECTION_TEXTURE_FORMAT = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UINT;
 		indirectionTextureBuilder.SetTextureFormat(INDIRECTION_TEXTURE_FORMAT);
 
-		static constexpr D3D12_CLEAR_VALUE INDIRECTION_TEXTURE_OPTIMIZED_CLEAR_VALUE{
+		constexpr D3D12_CLEAR_VALUE INDIRECTION_TEXTURE_OPTIMIZED_CLEAR_VALUE{
 			.Format = INDIRECTION_TEXTURE_FORMAT,
 			.Color{ 0.0f, 0.0f, 0.0f, 0.0f }
 		};
@@ -67,7 +69,7 @@ namespace
 		indirectionTextureBuilder.SetPreferredSpecialInitializationMethod(Brawler::D3D12::GPUResourceSpecialInitializationMethod::CLEAR);
 
 		// This is all of the information which we can set at compile time.
-		return indirectionTextureBuilder.
+		return indirectionTextureBuilder;
 	}
 }
 
@@ -82,9 +84,9 @@ namespace Brawler
 		mMetadata(),
 		mStreamingRequestsInFlight(0)
 	{
-		ReserveGPUSceneVirtualTextureDescription();
 		mMetadata.InitializeFromVirtualTextureFile(mBVTXFileHash);
 		InitializeIndirectionTexture();
+		InitializeGPUSceneVirtualTextureDescription();
 	}
 
 	std::uint32_t VirtualTexture::GetVirtualTextureID() const
@@ -104,18 +106,18 @@ namespace Brawler
 		return mBVTXFileHash;
 	}
 
-	void VirtualTexture::ReserveGPUSceneVirtualTextureDescription()
+	D3D12::Texture2D& VirtualTexture::GetIndirectionTexture()
 	{
-		// Get a sub-allocation (and, more importantly, a reservation) from the GPUSceneBuffer for
-		// virtual texture descriptions. If we fail to do this, then we have run out of virtual texture
-		// description memory.
-		std::optional<D3D12::StructuredBufferSubAllocation<VirtualTextureDescription, 1>> descriptionSubAllocation{ GPUSceneManager::GetInstance().GetGPUSceneBufferResource<GPUSceneBufferID::VIRTUAL_TEXTURE_DESCRIPTION_BUFFER>().CreateBufferSubAllocation<D3D12::StructuredBufferSubAllocation<VirtualTextureDescription, 1>>() };
-		assert(descriptionSubAllocation.has_value() && "ERROR: We have run out of virtual texture slots in the GPUScene buffer!");
-
-		mDescriptionSubAllocation = std::move(*descriptionSubAllocation);
-		mDescriptionBufferUpdater = GPUSceneBufferUpdater<GPUSceneBufferID::VIRTUAL_TEXTURE_DESCRIPTION_BUFFER>{ mDescriptionSubAllocation.GetBufferCopyRegion() };
+		assert(mIndirectionTexture != nullptr);
+		return *mIndirectionTexture;
 	}
 
+	const D3D12::Texture2D& VirtualTexture::GetIndirectionTexture() const
+	{
+		assert(mIndirectionTexture != nullptr);
+		return *mIndirectionTexture;
+	}
+	
 	void VirtualTexture::InitializeIndirectionTexture()
 	{
 		static constexpr D3D12::RenderTargetTexture2DBuilder DEFAULT_INDIRECTION_TEXTURE_BUILDER{ CreateDefaultIndirectionTextureBuilder() };
@@ -125,21 +127,60 @@ namespace Brawler
 		// mip level of the virtual texture. However, this type of set up does not support mip levels
 		// of virtual textures whose dimensions are smaller than that of a page.
 		//
-		// For the Brawler Engine, we use an indirection texture to represent each mip level which
-		// is *NOT* found in the combined page. To get the page coordinates within the global texture
-		// for the combined page of a virtual texture, we dynamically branch to instead look into
-		// the VirtualTextureDescription buffer.
-		//
-		// Another idea I had for this was to lay out the indirection texture in a manner similar
-		// to the combined page such that it can represent every mip level inside of one texture.
-		// By doing this, you reduce the potential for divergence within a wave, but you also lose
-		// access to hardware mip level selection for indirection for all mip levels not found
-		// in the combined page.
-		//
-		// In practice, assuming that lanes within a wave are logically located adjacent to each
-		// other, I don't expect divergence to be too bad with the current set up.
+		// For the Brawler Engine, we also use an indirection texture, but the layout is slightly
+		// different. The very last mip level in the mip chain of the indirection texture will describe
+		// the information of the combined page, and every other mip level will describe the corresponding
+		// logical mip level of the virtual texture which does not fit in the combined page. These other
+		// mip levels will need a 2x2 quad to represent each page of the logical mip level, since we
+		// need to double the dimensions of the indirection texture in order to add a mip level for
+		// the combined page.
 
+		// Normally, to calculate the dimensions of the top mip level of the indirection texture, we
+		// would do (MipLevel0Dimensions / UnpaddedPageDimensions) * 2. This can be optimized as
+		// (MipLevel0Dimensions / (UnpaddedPageDimensions / 2)), where (UnpaddedPageDimensions / 2) can
+		// be calculated at compile time.
+		static constexpr std::uint32_t HALF_UNPADDED_PAGE_DIMENSIONS = (UNPADDED_VIRTUAL_TEXTURE_PAGE_SIZE / 2);
+		const std::uint32_t indirectionTextureMip0Dimensions = (mMetadata.GetLogicalMipLevel0Dimensions() / HALF_UNPADDED_PAGE_DIMENSIONS);
 
+		D3D12::RenderTargetTexture2DBuilder indirectionTextureBuilder{ DEFAULT_INDIRECTION_TEXTURE_BUILDER };
+		indirectionTextureBuilder.SetTextureDimensions(indirectionTextureMip0Dimensions, indirectionTextureMip0Dimensions);
+
+		const std::uint32_t indirectionTextureMipLevelCount = (mMetadata.GetFirstMipLevelInCombinedPage() + 1);
+		indirectionTextureBuilder.SetMipLevelCount(static_cast<std::uint16_t>(indirectionTextureMipLevelCount));
+
+		mIndirectionTexture = std::make_unique<D3D12::Texture2D>(indirectionTextureBuilder);
+
+		// Reserve a bindless SRV for the indirection texture.
+		const Brawler::D3D12::Texture2DShaderResourceView<INDIRECTION_TEXTURE_FORMAT> indirectionTextureSRV{ *mIndirectionTexture, D3D12_TEX2D_SRV{
+			.MostDetailedMip = 0,
+			.MipLevels = indirectionTextureMipLevelCount,
+			.PlaneSlice = 0,
+			.ResourceMinLODClamp = 0.0f
+		} };
+		mIndirectionTextureBindlessAllocation = static_cast<D3D12::I_GPUResource&>(*mIndirectionTexture).CreateBindlessSRV(indirectionTextureSRV.CreateSRVDescription());
+	}
+
+	void VirtualTexture::InitializeGPUSceneVirtualTextureDescription()
+	{
+		// Get a sub-allocation (and, more importantly, a reservation) from the GPUSceneBuffer for
+		// virtual texture descriptions. If we fail to do this, then we have run out of virtual texture
+		// description memory.
+		std::optional<D3D12::StructuredBufferSubAllocation<VirtualTextureDescription, 1>> descriptionSubAllocation{ GPUSceneManager::GetInstance().GetGPUSceneBufferResource<GPUSceneBufferID::VIRTUAL_TEXTURE_DESCRIPTION_BUFFER>().CreateBufferSubAllocation<D3D12::StructuredBufferSubAllocation<VirtualTextureDescription, 1>>() };
+		assert(descriptionSubAllocation.has_value() && "ERROR: We have run out of virtual texture slots in the GPUScene buffer!");
+
+		mDescriptionSubAllocation = std::move(*descriptionSubAllocation);
+		mDescriptionBufferUpdater = GPUSceneBufferUpdater<GPUSceneBufferID::VIRTUAL_TEXTURE_DESCRIPTION_BUFFER>{ mDescriptionSubAllocation.GetBufferCopyRegion() };
+
+		assert(Util::Math::IsPowerOfTwo(mMetadata.GetLogicalMipLevel0Dimensions()));
+		const std::uint32_t log2VTSize = std::countr_zero(mMetadata.GetLogicalMipLevel0Dimensions());
+		assert(log2VTSize <= std::numeric_limits<std::uint8_t>::max());
+
+		const std::uint32_t packedIndirectionTextureIndexAndLog2VTSize = ((mIndirectionTextureBindlessAllocation.GetBindlessSRVIndex() << 8) | log2VTSize);
+
+		// Set the new value for the VirtualTextureDescription within the GPUScene buffer.
+		mDescriptionBufferUpdater.UpdateGPUSceneData(VirtualTextureDescription{
+			.IndirectionTextureIndexAndLog2VTSize = packedIndirectionTextureIndexAndLog2VTSize
+		});
 	}
 
 	void VirtualTexture::MarkForDeletion()

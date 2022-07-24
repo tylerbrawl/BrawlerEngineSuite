@@ -37,9 +37,12 @@ export namespace Brawler
 		const VirtualTextureMetadata& GetVirtualTextureMetadata() const;
 		FilePathHash GetBVTXFilePathHash() const;
 
+		D3D12::Texture2D& GetIndirectionTexture();
+		const D3D12::Texture2D& GetIndirectionTexture() const;
+
 	private:
-		void ReserveGPUSceneVirtualTextureDescription();
-		void InitializeIndirectionTexture();
+		void InitializeIndirectionTexture(); 
+		void InitializeGPUSceneVirtualTextureDescription();
 
 		void MarkForDeletion();
 		bool SafeToDelete() const;

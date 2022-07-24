@@ -1,10 +1,12 @@
 module;
-#include <mutex>
-#include <unordered_set>
+#include <memory>
 
 export module Brawler.GPUSceneUpdateRenderModule;
 import Brawler.D3D12.I_RenderModule;
 import Brawler.I_GPUSceneBufferUpdateSource;
+import Brawler.GPUSceneBufferUpdateSubModule;
+import Brawler.GlobalTextureUpdateBuffer;
+import Brawler.VirtualTextureManagementSubModule;
 
 export namespace Brawler
 {
@@ -20,6 +22,7 @@ export namespace Brawler
 		GPUSceneUpdateRenderModule& operator=(GPUSceneUpdateRenderModule&& rhs) noexcept = default;
 
 		void ScheduleGPUSceneBufferUpdateForNextFrame(const I_GPUSceneBufferUpdateSource& bufferUpdateSource);
+		void CommitGlobalTextureChanges(std::unique_ptr<GlobalTextureUploadBuffer>&& preparedBufferPtr);
 
 		bool IsRenderModuleEnabled() const override;
 
@@ -27,10 +30,7 @@ export namespace Brawler
 		void BuildFrameGraph(D3D12::FrameGraphBuilder& builder) override;
 
 	private:
-		void UpdateGPUSceneBuffers(D3D12::FrameGraphBuilder& builder);
-
-	private:
-		std::unordered_set<const I_GPUSceneBufferUpdateSource*> mBufferUpdateSrcPtrSet;
-		mutable std::mutex mCritSection;
+		GPUSceneBufferUpdateSubModule mBufferUpdateSubModule;
+		VirtualTextureManagementSubModule mVTManagementSubModule;
 	};
 }

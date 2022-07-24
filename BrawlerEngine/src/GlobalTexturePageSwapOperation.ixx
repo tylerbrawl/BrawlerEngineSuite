@@ -24,6 +24,7 @@ export namespace Brawler
 			std::optional<GlobalTextureReservedPage> OldReservedPage;
 			std::uint16_t GlobalTextureXPageCoordinates;
 			std::uint16_t GlobalTextureYPageCoordinates;
+			std::uint8_t GlobalTextureDescriptionBufferIndex;
 		};
 
 	public:
@@ -48,6 +49,8 @@ export namespace Brawler
 
 		std::uint16_t GetGlobalTextureXPageCoordinates() const;
 		std::uint16_t GetGlobalTextureYPageCoordinates() const;
+
+		std::uint8_t GetGlobalTextureDescriptionBufferIndex() const;
 
 		CD3DX12_BOX GetGlobalTextureCopyRegionBox() const;
 
@@ -113,6 +116,11 @@ namespace Brawler
 	std::uint16_t GlobalTexturePageSwapOperation::GetGlobalTextureYPageCoordinates() const
 	{
 		return mInitInfo.GlobalTextureYPageCoordinates;
+	}
+
+	std::uint8_t GlobalTexturePageSwapOperation::GetGlobalTextureDescriptionBufferIndex() const
+	{
+		return mInitInfo.GlobalTextureDescriptionBufferIndex;
 	}
 
 	CD3DX12_BOX GlobalTexturePageSwapOperation::GetGlobalTextureCopyRegionBox() const
