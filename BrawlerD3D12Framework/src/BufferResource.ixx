@@ -188,6 +188,8 @@ export namespace Brawler
 				requires std::derived_from<SubAllocationType, I_BufferSubAllocation>
 			[[nodiscard]] std::optional<SubAllocationType> CreateBufferSubAllocation(Args&&... args);
 
+			[[nodiscard]] bool AssignReservation(I_BufferSubAllocation& subAllocation);
+
 			template <DXGI_FORMAT Format>
 			BindlessSRVAllocation CreateBindlessSRV(const ShaderResourceView<Format, D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_BUFFER>& srv);
 

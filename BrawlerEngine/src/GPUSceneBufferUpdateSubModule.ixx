@@ -1,17 +1,25 @@
 module;
 #include <vector>
-#include <unordered_set>
+#include <unordered_map>
+#include <array>
 #include <mutex>
 
 export module Brawler.GPUSceneBufferUpdateSubModule;
 import Brawler.I_GPUSceneBufferUpdateSource;
 import Brawler.D3D12.FrameGraphBuilding;
+import Brawler.D3D12.BufferCopyRegion;
 
 export namespace Brawler
 {
 	class GPUSceneBufferUpdateSubModule
 	{
 	private:
+		struct GPUSceneBufferUpdateCopyRegions
+		{
+			const D3D12::BufferCopyRegion* UploadDestRegionPtr;
+			D3D12::BufferCopyRegion UploadSrcRegion;
+		};
+
 		struct GPUSceneBufferUpdatePassInfo
 		{
 			std::vector<GPUSceneBufferUpdateCopyRegions> CopyRegionsArr;

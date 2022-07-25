@@ -79,6 +79,11 @@ namespace Brawler
 			mSubAllocationManager(*this, initInfo.SizeInBytes)
 		{}
 
+		[[nodiscard]] bool BufferResource::AssignReservation(I_BufferSubAllocation& subAllocation)
+		{
+			return mSubAllocationManager.AssignReservationToSubAllocation(subAllocation);
+		}
+
 		void BufferResource::ExecutePostD3D12ResourceInitializationCallback()
 		{
 			mSubAllocationManager.OnD3D12ResourceInitialized();

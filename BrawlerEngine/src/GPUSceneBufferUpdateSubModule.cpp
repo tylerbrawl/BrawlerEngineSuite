@@ -6,7 +6,6 @@ module;
 #include <mutex>
 
 module Brawler.GPUSceneBufferUpdateSubModule;
-import Brawler.D3D12.BufferCopyRegion;
 import Brawler.D3D12.BufferResource;
 import Brawler.D3D12.BufferResourceInitializationInfo;
 import Brawler.D3D12.ByteAddressBufferSubAllocation;
@@ -70,12 +69,6 @@ namespace Brawler
 
 		std::optional<D3D12::DynamicByteAddressBufferSubAllocation> byteAddressSubAllocation{ uploadBuffer.CreateBufferSubAllocation<D3D12::DynamicByteAddressBufferSubAllocation>(requiredBufferSize) };
 		assert(byteAddressSubAllocation.has_value());
-
-		struct GPUSceneBufferUpdateCopyRegions
-		{
-			const D3D12::BufferCopyRegion* UploadDestRegionPtr;
-			D3D12::BufferCopyRegion UploadSrcRegion;
-		};
 
 		std::unordered_set<D3D12::BufferResource*> updatedGPUSceneBufferPtrSet{};
 		std::vector<GPUSceneBufferUpdateCopyRegions> copyRegionsArr{};

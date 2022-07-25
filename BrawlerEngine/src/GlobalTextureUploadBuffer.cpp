@@ -5,6 +5,7 @@ module;
 #include <optional>
 #include <ranges>
 #include <filesystem>
+#include <span>
 #include <DxDef.h>
 
 module Brawler.GlobalTextureUploadBuffer;
@@ -134,5 +135,10 @@ namespace Brawler
 	bool GlobalTextureUploadBuffer::IsTextureDataPrepared() const
 	{
 		return mHPageDataLoadEvent.IsAssetRequestComplete();
+	}
+
+	std::span<const std::unique_ptr<GlobalTexturePageSwapOperation>> GlobalTextureUploadBuffer::GetPageSwapOperationSpan() const
+	{
+		return std::span<const std::unique_ptr<GlobalTexturePageSwapOperation>>{ mPageSwapOperationPtrArr };
 	}
 }

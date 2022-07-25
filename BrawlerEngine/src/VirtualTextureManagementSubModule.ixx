@@ -4,6 +4,7 @@ module;
 #include <vector>
 
 export module Brawler.VirtualTextureManagementSubModule;
+import :IndirectionTextureUpdater;
 import Brawler.ThreadSafeVector;
 import Brawler.GlobalTextureUploadBuffer;
 import Brawler.D3D12.FrameGraphBuilding;
@@ -20,6 +21,9 @@ export namespace Brawler
 		};
 
 	public:
+		using IndirectionTextureUpdatePass_T = IndirectionTextureUpdater::IndirectionTextureUpdatePass_T;
+
+	public:
 		VirtualTextureManagementSubModule() = default;
 
 		VirtualTextureManagementSubModule(const VirtualTextureManagementSubModule& rhs) = delete;
@@ -31,11 +35,11 @@ export namespace Brawler
 		void CommitGlobalTextureChanges(std::unique_ptr<GlobalTextureUploadBuffer>&& preparedBufferPtr);
 		bool HasCommittedGlobalTextureChanges() const;
 
-	public:
 		void PrepareForGlobalTextureUpdates();
-		void FinishGlobalTextureUpdates();
 
-		auto CreateIndirectionTextureUpdateRenderPass(D3D12::FrameGraphBuilder& builder) const;
+		IndirectionTextureUpdatePass_T CreateIndirectionTextureUpdatesRenderPass(D3D12::FrameGraphBuilder& builder) const;
+
+		void FinishGlobalTextureUpdates();
 
 	private:
 		Brawler::ThreadSafeVector<std::unique_ptr<GlobalTextureUploadBuffer>> mPreparedBufferPtrArr;

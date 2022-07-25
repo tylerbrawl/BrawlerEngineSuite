@@ -1,6 +1,8 @@
 module;
 #include <memory>
 #include <vector>
+#include <span>
+#include <cassert>
 
 module Brawler.VirtualTextureManagementSubModule;
 import Brawler.JobSystem;
@@ -13,7 +15,7 @@ namespace Brawler
 		mPreparedBufferPtrArr.PushBack(std::move(preparedBufferPtr));
 	}
 
-	bool VirtualTextureManagementSubModule::IsRenderModuleEnabled() const
+	bool VirtualTextureManagementSubModule::HasCommittedGlobalTextureChanges() const
 	{
 		// Don't bother if we do not have any buffers ready to handle.
 		return !mPreparedBufferPtrArr.Empty();
@@ -61,7 +63,7 @@ namespace Brawler
 		mCurrentBufferArr.clear();
 	}
 
-	auto VirtualTextureManagementSubModule::CreateIndirectionTextureUpdateRenderPass(D3D12::FrameGraphBuilder& builder) const
+	auto VirtualTextureManagementSubModule::CreateIndirectionTextureUpdatesRenderPass(D3D12::FrameGraphBuilder& builder) const
 	{
 		/*
 		Updating Indirection Textures
@@ -88,6 +90,19 @@ namespace Brawler
 		the tasks are independent (which they are in this particular case).
 		*/
 
+		assert(!mCurrentBufferArr.empty());
 
+		IndirectionTextureUpdater updater{};
+
+		for (const auto& uploadBufferPtr : mCurrentBufferArr)
+		{
+			const std::span<const std::unique_ptr<GlobalTexturePageSwapOperation>> pageSwapOperationSpan{ uploadBufferPtr->GetPageSwapOperationSpan() };
+			assert(!pageSwapOperationSpan.empty());
+
+			for (const auto& pageSwapOperationPtr : pageSwapOperationSpan)
+				updater.AddUpdatesForPageSwapOperation(*pageSwapOperationPtr);
+		}
+
+		return updater.CreateIndirectionTextureUpdatesRenderPass(builder);
 	}
 }

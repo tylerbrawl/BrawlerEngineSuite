@@ -1,6 +1,7 @@
 module;
 #include <memory>
 #include <vector>
+#include <span>
 
 export module Brawler.GlobalTextureUploadBuffer;
 import Brawler.D3D12.BufferResource;
@@ -24,6 +25,7 @@ export namespace Brawler
 		void BeginTextureDataStreaming();
 
 		bool IsTextureDataPrepared() const;
+		std::span<const std::unique_ptr<GlobalTexturePageSwapOperation>> GetPageSwapOperationSpan() const;
 
 	private:
 		std::unique_ptr<D3D12::BufferResource> mUploadBufferPtr;

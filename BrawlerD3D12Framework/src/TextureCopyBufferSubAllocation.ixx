@@ -49,12 +49,20 @@ export namespace Brawler
 			template <typename T>
 			void ReadTextureData(const std::uint32_t rowIndex, const std::span<T> destDataSpan) const;
 
+			const D3D12_PLACED_SUBRESOURCE_FOOTPRINT& GetFootprint() const;
 			std::uint32_t GetRowCount() const;
 
 			/// <summary>
 			/// Returns the size, in bytes, of a row of texture data for this TextureCopyBufferSubAllocation
 			/// instance. Calling code should use this function to determine how large their std::span instances must
 			/// be for writing and reading texture data.
+			/// 
+			/// To be perfectly clear, the value returned by this function is *NOT* aligned to
+			/// D3D12_TEXTURE_DATA_PITCH_ALIGNMENT. To get the aligned value, either call 
+			/// TextureCopyBufferSubAllocation::GetFootprint() and inspect the Footprint.RowPitch value (which is
+			/// guaranteed to be properly aligned) or align the return value of this function manually by calling
+			/// Util::Math::AlignToPowerOfTwo(), specifying D3D12_TEXTURE_DATA_PITCH_ALIGNMENT as the alignment value.
+			/// (The first method is preferred because it is slightly more efficient.)
 			/// 
 			/// *NOTE*: Internally, the D3D12 API requires rows of texture data within buffers to be aligned to
 			/// D3D12_TEXTURE_DATA_PITCH_ALIGNMENT. This is handled automatically by the Brawler Engine. When creating

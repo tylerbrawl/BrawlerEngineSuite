@@ -63,6 +63,11 @@ namespace Brawler
 			// Update the offset from the start of the buffer.
 			mTextureInfo.Footprint.Offset = GetOffsetFromBufferStart();
 		}
+
+		const D3D12_PLACED_SUBRESOURCE_FOOTPRINT& TextureCopyBufferSubAllocation::GetFootprint() const
+		{
+			return mTextureInfo.Footprint;
+		}
 		
 		std::uint32_t TextureCopyBufferSubAllocation::GetRowCount() const
 		{

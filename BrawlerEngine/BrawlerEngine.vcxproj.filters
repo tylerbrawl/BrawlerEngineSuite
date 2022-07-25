@@ -97,17 +97,11 @@
     <Filter Include="Shader Files\Resource Binding">
       <UniqueIdentifier>{42b719f3-83ee-4393-8435-1735e36be1f2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module Files\GPU Scene Representation\Bindless Resources">
-      <UniqueIdentifier>{03d904ca-4faa-446b-b6c8-74d3861df559}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Module Files\Render Modules">
       <UniqueIdentifier>{6e2e2294-8781-43b5-acc0-66245b872370}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\GPU Scene Representation">
       <UniqueIdentifier>{36f406fe-db1b-4800-8423-56411877012b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\GPU Scene Representation\Bindless Resources">
-      <UniqueIdentifier>{d77c6a82-6651-4a8f-bfcf-f19dffe4ad15}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Render Modules">
       <UniqueIdentifier>{33184f11-adb6-4c43-9c60-cb87275ccb6a}</UniqueIdentifier>
@@ -372,26 +366,8 @@
     <ClCompile Include="src\Shaders\TriangleClusterFrustumCull.hlsl">
       <Filter>Shader Files\Culling</Filter>
     </ClCompile>
-    <ClCompile Include="src\GPUSceneBuffer.ixx">
-      <Filter>Module Files\GPU Scene Representation\Bindless Resources</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUSceneBufferUpdater.ixx">
-      <Filter>Module Files\GPU Scene Representation\Bindless Resources</Filter>
-    </ClCompile>
-    <ClCompile Include="src\I_GPUSceneBufferUpdateSource.ixx">
-      <Filter>Module Files\GPU Scene Representation\Bindless Resources</Filter>
-    </ClCompile>
-    <ClCompile Include="src\I_GPUSceneBufferUpdateSource.cpp">
-      <Filter>Source Files\GPU Scene Representation\Bindless Resources</Filter>
-    </ClCompile>
     <ClCompile Include="src\GPUSceneManager.ixx">
       <Filter>Module Files\GPU Scene Representation</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUSceneBufferID.ixx">
-      <Filter>Module Files\GPU Scene Representation\Bindless Resources</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUSceneBufferMap.ixx">
-      <Filter>Module Files\GPU Scene Representation\Bindless Resources</Filter>
     </ClCompile>
     <ClCompile Include="src\GPUSceneTypes.ixx">
       <Filter>Module Files\GPU Scene Representation</Filter>
@@ -446,9 +422,6 @@
     </ClCompile>
     <ClCompile Include="src\VirtualTextureDatabase.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUSceneLimits.ixx">
-      <Filter>Module Files\GPU Scene Representation\Bindless Resources</Filter>
     </ClCompile>
     <ClCompile Include="src\VirtualTextureHandle.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
@@ -515,6 +488,30 @@
     </ClCompile>
     <ClCompile Include="src\IndirectionTextureUpdater.cpp">
       <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneBuffer.ixx">
+      <Filter>Module Files\GPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneBufferID.ixx">
+      <Filter>Module Files\GPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneBufferMap.ixx">
+      <Filter>Module Files\GPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneBufferUpdater.ixx">
+      <Filter>Module Files\GPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneLimits.ixx">
+      <Filter>Module Files\GPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_GPUSceneBufferUpdateSource.ixx">
+      <Filter>Module Files\GPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_GPUSceneBufferUpdateSource.cpp">
+      <Filter>Source Files\GPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUSceneBufferUpdateOperation.ixx">
+      <Filter>Module Files\GPU Scene Representation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
