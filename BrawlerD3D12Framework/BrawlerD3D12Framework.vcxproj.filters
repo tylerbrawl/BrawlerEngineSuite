@@ -229,6 +229,9 @@
     <Filter Include="Source Files\GPU Resources\GPU Resource Descriptors\Non-Shader-Visible Descriptors">
       <UniqueIdentifier>{5dc7e971-8872-438e-b3ed-71e659da841e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Threading\Atomic Shared Pointer">
+      <UniqueIdentifier>{72091017-f778-4868-8a4f-d480cb8b9875}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GeneralUtil.ixx">
@@ -425,9 +428,6 @@
     </ClCompile>
     <ClCompile Include="src\GPUCommandQueueType.ixx">
       <Filter>Module Files\GPU Work Submission</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ThreadSafeMap.ixx">
-      <Filter>Module Files\Threading</Filter>
     </ClCompile>
     <ClCompile Include="src\I_RenderModule.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
@@ -1217,6 +1217,21 @@
     </ClCompile>
     <ClCompile Include="src\BindlessGPUResourceGroupRegistration.cpp">
       <Filter>Source Files\GPU Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadSafeUnorderedMap.ixx">
+      <Filter>Module Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AtomicSharedPtr.ixx">
+      <Filter>Module Files\Threading\Atomic Shared Pointer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SharedPtr.ixx">
+      <Filter>Module Files\Threading\Atomic Shared Pointer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SharedPtrControlBlock.ixx">
+      <Filter>Module Files\Threading\Atomic Shared Pointer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SharedPtrIMPL.ixx">
+      <Filter>Module Files\Threading\Atomic Shared Pointer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

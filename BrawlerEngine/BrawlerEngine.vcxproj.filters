@@ -513,6 +513,9 @@
     <ClCompile Include="src\GPUSceneBufferUpdateOperation.ixx">
       <Filter>Module Files\GPU Scene Representation</Filter>
     </ClCompile>
+    <ClCompile Include="src\GPUSceneBufferUpdateMonitor.ixx">
+      <Filter>Module Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

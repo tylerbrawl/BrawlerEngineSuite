@@ -251,6 +251,7 @@
     <ClCompile Include="src\AliasedGPUMemoryManager.cpp" />
     <ClCompile Include="src\AliasedGPUMemoryManager.ixx" />
     <ClCompile Include="src\AsyncGPUResourceBuilder.ixx" />
+    <ClCompile Include="src\AtomicSharedPtr.ixx" />
     <ClCompile Include="src\BarrierMergerStateContainer.ixx" />
     <ClCompile Include="src\BindlessGPUResourceGroup.cpp" />
     <ClCompile Include="src\BindlessGPUResourceGroup.ixx" />
@@ -417,6 +418,9 @@
     <ClCompile Include="src\ShaderCompilerFiles\RootSignatureDefinition.ixx" />
     <ClCompile Include="src\ShaderCompilerFiles\RootSignatureID.ixx" />
     <ClCompile Include="src\ShaderResourceView.ixx" />
+    <ClCompile Include="src\SharedPtr.ixx" />
+    <ClCompile Include="src\SharedPtrControlBlock.ixx" />
+    <ClCompile Include="src\SharedPtrIMPL.ixx" />
     <ClCompile Include="src\SRVDimensionInfo.ixx" />
     <ClCompile Include="src\StructuredBufferElementRange.ixx" />
     <ClCompile Include="src\StructuredBufferSubAllocation.ixx" />
@@ -433,6 +437,7 @@
     <ClCompile Include="src\TextureSubResource.cpp" />
     <ClCompile Include="src\TextureSubResource.ixx" />
     <ClCompile Include="src\ThreadLocalResources.cpp" />
+    <ClCompile Include="src\ThreadSafeUnorderedMap.ixx" />
     <ClCompile Include="src\TLSFAllocator.cpp" />
     <ClCompile Include="src\TLSFAllocator.ixx" />
     <ClCompile Include="src\TLSFAllocationRequestInfo.ixx" />
@@ -580,7 +585,6 @@
     <ClCompile Include="src\ThreadingUtil.cpp" />
     <ClCompile Include="src\ThreadingUtil.ixx" />
     <ClCompile Include="src\ThreadLocalResources.ixx" />
-    <ClCompile Include="src\ThreadSafeMap.ixx" />
     <ClCompile Include="src\ThreadSafeQueue.ixx" />
     <ClCompile Include="src\ThreadSafeVector.ixx" />
     <ClCompile Include="src\Tier1GPUResourceHeapManager.ixx" />
