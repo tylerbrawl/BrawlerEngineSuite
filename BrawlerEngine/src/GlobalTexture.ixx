@@ -127,7 +127,6 @@ export namespace Brawler
 		D3D12::BindlessSRVAllocation mGlobalTextureBindlessAllocation;
 		std::array<GlobalTextureReservedPage, NUM_PAGES_IN_GLOBAL_TEXTURE> mReservedPageArr;
 		D3D12::StructuredBufferSubAllocation<GlobalTextureDescription, 1> mGlobalTextureDescriptionBufferSubAllocation;
-		std::unique_ptr<GPUSceneBufferUpdater<GPUSceneBufferID::GLOBAL_TEXTURE_DESCRIPTION_BUFFER>> mGlobalTextureDescriptionBufferUpdaterPtr;
 	};
 }
 
@@ -140,8 +139,7 @@ namespace Brawler
 		mTexture2DPtr(std::make_unique<D3D12::Texture2D>(TEXTURE_2D_BUILDER)),
 		mGlobalTextureBindlessAllocation(),
 		mReservedPageArr(),
-		mGlobalTextureDescriptionBufferSubAllocation(),
-		mGlobalTextureDescriptionBufferUpdaterPtr()
+		mGlobalTextureDescriptionBufferSubAllocation()
 	{
 		// Reserve a description within the global texture description GPU scene buffer.
 		std::optional<D3D12::StructuredBufferSubAllocation<GlobalTextureDescription, 1>> descriptionBufferSubAllocation = GPUSceneManager::GetInstance().GetGPUSceneBufferResource<GPUSceneBufferID::GLOBAL_TEXTURE_DESCRIPTION_BUFFER>().CreateBufferSubAllocation<D3D12::StructuredBufferSubAllocation<GlobalTextureDescription, 1>>();
@@ -152,16 +150,15 @@ namespace Brawler
 		// Reserve a bindless SRV index for the global texture.
 		mGlobalTextureBindlessAllocation = mTexture2DPtr->CreateBindlessSRV<Format>();
 		
-		// Create a GPUSceneBufferUpdater for this global texture description. We use a
-		// std::unique_ptr to ensure that the GPUSceneUpdateRenderModule retains a valid pointer value.
+		// Create a GPUSceneBufferUpdater for this global texture description.
 		static constexpr std::uint32_t GLOBAL_TEXTURE_DIMENSIONS = static_cast<std::uint32_t>(TEXTURE_2D_BUILDER.GetResourceDescription().Width);
 		static constexpr std::uint32_t PADDED_PAGE_DIMENSIONS = GlobalTextureFormatInfo<Format>::PADDED_PAGE_DIMENSIONS;
 
-		mGlobalTextureDescriptionBufferUpdaterPtr = std::make_unique<GPUSceneBufferUpdater<GPUSceneBufferID::GLOBAL_TEXTURE_DESCRIPTION_BUFFER>>(mGlobalTextureDescriptionBufferSubAllocation.GetBufferCopyRegion());
-		mGlobalTextureDescriptionBufferUpdaterPtr->UpdateGPUSceneData(GlobalTextureDescription{
+		const GPUSceneBufferUpdater<GPUSceneBufferID::GLOBAL_TEXTURE_DESCRIPTION_BUFFER> gtDescriptionUpdater{ mGlobalTextureDescriptionBufferSubAllocation.GetBufferCopyRegion() };
+		gtDescriptionUpdater.UpdateGPUSceneData(GlobalTextureDescription{
 			.BindlessIndex = mGlobalTextureBindlessAllocation.GetBindlessSRVIndex(),
 			.GlobalTextureDimensions = GLOBAL_TEXTURE_DIMENSIONS,
-			.PaddedPageDimensions = PADDED_PAGE_DIMENSIONS
+			.PaggedPageDimensions = PADDED_PAGE_DIMENSIONS
 		});
 	}
 

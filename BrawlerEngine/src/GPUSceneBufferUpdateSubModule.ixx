@@ -61,6 +61,9 @@ export namespace Brawler
 		static_assert(std::atomic<UpdateControlBlock>::is_always_lock_free);
 
 	public:
+		using GPUSceneBufferUpdatePassTuple = GPUSceneBufferUpdateRenderPassTuple;
+
+	public:
 		GPUSceneBufferUpdateSubModule() = default;
 
 		GPUSceneBufferUpdateSubModule(const GPUSceneBufferUpdateSubModule& rhs) = delete;
@@ -73,7 +76,7 @@ export namespace Brawler
 		void ScheduleGPUSceneBufferUpdateForNextFrame(GPUSceneBufferUpdateOperation<BufferID>&& updateOperation);
 
 		bool HasScheduledBufferUpdates() const;
-		GPUSceneBufferUpdateRenderPassTuple CreateGPUSceneBufferUpdateRenderPassTuple(D3D12::FrameGraphBuilder& builder);
+		GPUSceneBufferUpdatePassTuple CreateGPUSceneBufferUpdateRenderPassTuple(D3D12::FrameGraphBuilder& builder);
 
 	private:
 		UpdateMonitorTuple mMonitorTuple;

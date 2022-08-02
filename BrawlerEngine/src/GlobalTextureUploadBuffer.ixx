@@ -27,6 +27,9 @@ export namespace Brawler
 		bool IsTextureDataPrepared() const;
 		std::span<const std::unique_ptr<GlobalTexturePageSwapOperation>> GetPageSwapOperationSpan() const;
 
+		D3D12::BufferResource& GetUploadBufferResource();
+		const D3D12::BufferResource& GetUploadBufferResource() const;
+
 	private:
 		std::unique_ptr<D3D12::BufferResource> mUploadBufferPtr;
 		std::vector<std::unique_ptr<GlobalTexturePageSwapOperation>> mPageSwapOperationPtrArr;

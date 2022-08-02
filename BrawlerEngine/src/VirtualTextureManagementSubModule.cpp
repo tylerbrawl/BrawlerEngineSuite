@@ -81,13 +81,13 @@ namespace Brawler
 		was done so that the final mip level of the indirection texture can describe the page coordinates
 		of the combined page.
 
-		Contrary to GPU scene buffer updates and global texture updates, indirection texture updates
-		are done on the DIRECT queue. This is primarily done because indirection textures are created
-		as render targets, and we might need to transition the resource from D3D12_RESOURCE_STATE_RENDER_TARGET
-		to D3D12_RESOURCE_STATE_COPY_XXX; this transition can only be done on the DIRECT queue. An added
-		benefit of this is that on AMD hardware, according to https://gpuopen.com/performance/, work on
-		the DIRECT queue can proceed uninterrupted concurrently with work on the COPY queue, so long as
-		the tasks are independent (which they are in this particular case).
+		Contrary to GPU scene buffer updates, indirection texture updates are done on the DIRECT queue. This is 
+		primarily done because indirection textures are created as render targets, and we might need to 
+		transition the resource from D3D12_RESOURCE_STATE_RENDER_TARGET to D3D12_RESOURCE_STATE_COPY_XXX; this
+		transition can only be done on the DIRECT queue. An added benefit of this is that on AMD hardware, 
+		according to https://gpuopen.com/performance/, work on the DIRECT queue can proceed uninterrupted 
+		concurrently with work on the COPY queue, so long as the tasks are independent (which they are in this 
+		particular case).
 		*/
 
 		assert(!mCurrentBufferArr.empty());
@@ -104,5 +104,13 @@ namespace Brawler
 		}
 
 		return updater.CreateIndirectionTextureUpdatesRenderPass(builder);
+	}
+
+	VirtualTextureManagementSubModule::GlobalTextureUpdatePass_T VirtualTextureManagementSubModule::CreateGlobalTextureUpdatesRenderPass() const
+	{
+		assert(!mCurrentBufferArr.empty());
+
+		GlobalTextureUpdater updater{};
+		return updater.CreateGlobalTextureUpdatesRenderPass(std::span<const std::unique_ptr<GlobalTextureUploadBuffer>>{ mCurrentBufferArr });
 	}
 }

@@ -61,7 +61,7 @@ namespace Brawler
 		return monitorWithUpdatesFound;
 	}
 
-	GPUSceneBufferUpdateRenderPassTuple GPUSceneBufferUpdateSubModule::CreateGPUSceneBufferUpdateRenderPassTuple(D3D12::FrameGraphBuilder& builder)
+	GPUSceneBufferUpdateSubModule::GPUSceneBufferUpdatePassTuple GPUSceneBufferUpdateSubModule::CreateGPUSceneBufferUpdateRenderPassTuple(D3D12::FrameGraphBuilder& builder)
 	{
 		UpdateControlBlock expectedControlBlock{ mControlBlock.load(std::memory_order::relaxed) };
 		UpdateControlBlock desiredControlBlock{};
@@ -84,7 +84,7 @@ namespace Brawler
 			expectedControlBlock = mControlBlock.load(std::memory_order::relaxed);
 		}
 
-		GPUSceneBufferUpdateRenderPassTuple renderPassTuple{};
+		GPUSceneBufferUpdatePassTuple renderPassTuple{};
 		const auto createRenderPassesLambda = [this, &renderPassTuple, &builder]<GPUSceneBufferID BufferID>(this const auto& self)
 		{
 			if constexpr (BufferID != GPUSceneBufferID::COUNT_OR_ERROR)

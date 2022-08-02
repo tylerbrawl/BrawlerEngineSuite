@@ -249,6 +249,8 @@
     <ClCompile Include="src\GlobalTexturePageSwapOperation.ixx" />
     <ClCompile Include="src\GlobalTextureReservedPage.cpp" />
     <ClCompile Include="src\GlobalTextureReservedPage.ixx" />
+    <ClCompile Include="src\GlobalTextureUpdater.cpp" />
+    <ClCompile Include="src\GlobalTextureUpdater.ixx" />
     <ClCompile Include="src\GlobalTextureUploadBuffer.cpp" />
     <ClCompile Include="src\GlobalTextureUploadBuffer.ixx" />
     <ClCompile Include="src\GPUSceneBuffer.ixx" />

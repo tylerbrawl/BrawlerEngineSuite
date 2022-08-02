@@ -141,4 +141,16 @@ namespace Brawler
 	{
 		return std::span<const std::unique_ptr<GlobalTexturePageSwapOperation>>{ mPageSwapOperationPtrArr };
 	}
+
+	D3D12::BufferResource& GlobalTextureUploadBuffer::GetUploadBufferResource()
+	{
+		assert(mUploadBufferPtr != nullptr);
+		return *mUploadBufferPtr;
+	}
+
+	const D3D12::BufferResource& GlobalTextureUploadBuffer::GetUploadBufferResource() const
+	{
+		assert(mUploadBufferPtr != nullptr);
+		return *mUploadBufferPtr;
+	}
 }
