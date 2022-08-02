@@ -3,6 +3,7 @@ module;
 #include <vector>
 
 export module Brawler.VirtualTextureManagementSubModule:IndirectionTextureUpdater;
+import Brawler.D3D12.Texture2D;
 import Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.D3D12.TextureCopyRegion;
 import Brawler.GlobalTexturePageSwapOperation;

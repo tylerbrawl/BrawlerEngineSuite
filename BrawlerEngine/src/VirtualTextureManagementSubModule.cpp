@@ -34,7 +34,7 @@ namespace Brawler
 		// Move all of the std::unique_ptr<GlobalTextureUploadBuffer> instances into the std::vector
 		// instance containing the buffers which we will use for this frame. We use 
 		// Brawler::ThreadSafeVector::EraseIf() to make this an atomic operation.
-		mPreparedBufferPtrArr.EraseIf([this] (std::unique_ptr<GlobalTextureUploadBuffer>&& bufferPtr)
+		mPreparedBufferPtrArr.EraseIf([this] (std::unique_ptr<GlobalTextureUploadBuffer>& bufferPtr)
 		{
 			mCurrentBufferArr.push_back(std::move(bufferPtr));
 			return true;
@@ -63,7 +63,7 @@ namespace Brawler
 		mCurrentBufferArr.clear();
 	}
 
-	auto VirtualTextureManagementSubModule::CreateIndirectionTextureUpdatesRenderPass(D3D12::FrameGraphBuilder& builder) const
+	VirtualTextureManagementSubModule::IndirectionTextureUpdatePass_T VirtualTextureManagementSubModule::CreateIndirectionTextureUpdatesRenderPass(D3D12::FrameGraphBuilder& builder) const
 	{
 		/*
 		Updating Indirection Textures

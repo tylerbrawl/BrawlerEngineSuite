@@ -12,6 +12,8 @@ import Brawler.D3D12.GPUResourceSpecialInitializationMethod;
 import Brawler.VirtualTextureConstants;
 import Brawler.D3D12.ShaderResourceView;
 import Util.Math;
+import Brawler.GPUSceneBufferUpdater;
+import Brawler.GPUSceneBufferID;
 
 namespace
 {
@@ -80,7 +82,6 @@ namespace Brawler
 		mIndirectionTextureBindlessAllocation(),
 		mBVTXFileHash(bvtxFileHash),
 		mDescriptionSubAllocation(),
-		mDescriptionBufferUpdater(),
 		mMetadata(),
 		mStreamingRequestsInFlight(0)
 	{
@@ -169,7 +170,6 @@ namespace Brawler
 		assert(descriptionSubAllocation.has_value() && "ERROR: We have run out of virtual texture slots in the GPUScene buffer!");
 
 		mDescriptionSubAllocation = std::move(*descriptionSubAllocation);
-		mDescriptionBufferUpdater = GPUSceneBufferUpdater<GPUSceneBufferID::VIRTUAL_TEXTURE_DESCRIPTION_BUFFER>{ mDescriptionSubAllocation.GetBufferCopyRegion() };
 
 		assert(Util::Math::IsPowerOfTwo(mMetadata.GetLogicalMipLevel0Dimensions()));
 		const std::uint32_t log2VTSize = std::countr_zero(mMetadata.GetLogicalMipLevel0Dimensions());
@@ -178,7 +178,8 @@ namespace Brawler
 		const std::uint32_t packedIndirectionTextureIndexAndLog2VTSize = ((mIndirectionTextureBindlessAllocation.GetBindlessSRVIndex() << 8) | log2VTSize);
 
 		// Set the new value for the VirtualTextureDescription within the GPUScene buffer.
-		mDescriptionBufferUpdater.UpdateGPUSceneData(VirtualTextureDescription{
+		const GPUSceneBufferUpdater<GPUSceneBufferID::VIRTUAL_TEXTURE_DESCRIPTION_BUFFER> vtDescriptionBufferUpdater{ mDescriptionSubAllocation.GetBufferCopyRegion() };
+		vtDescriptionBufferUpdater.UpdateGPUSceneData(VirtualTextureDescription{
 			.IndirectionTextureIndexAndLog2VTSize = packedIndirectionTextureIndexAndLog2VTSize
 		});
 	}

@@ -504,12 +504,6 @@
     <ClCompile Include="src\GPUSceneLimits.ixx">
       <Filter>Module Files\GPU Scene Representation</Filter>
     </ClCompile>
-    <ClCompile Include="src\I_GPUSceneBufferUpdateSource.ixx">
-      <Filter>Module Files\GPU Scene Representation</Filter>
-    </ClCompile>
-    <ClCompile Include="src\I_GPUSceneBufferUpdateSource.cpp">
-      <Filter>Source Files\GPU Scene Representation</Filter>
-    </ClCompile>
     <ClCompile Include="src\GPUSceneBufferUpdateOperation.ixx">
       <Filter>Module Files\GPU Scene Representation</Filter>
     </ClCompile>

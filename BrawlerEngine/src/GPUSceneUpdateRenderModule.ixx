@@ -3,10 +3,11 @@ module;
 
 export module Brawler.GPUSceneUpdateRenderModule;
 import Brawler.D3D12.I_RenderModule;
-import Brawler.I_GPUSceneBufferUpdateSource;
 import Brawler.GPUSceneBufferUpdateSubModule;
-import Brawler.GlobalTextureUpdateBuffer;
+import Brawler.GlobalTextureUploadBuffer;
 import Brawler.VirtualTextureManagementSubModule;
+import Brawler.GPUSceneBufferID;
+import Brawler.GPUSceneBufferUpdateOperation;
 
 export namespace Brawler
 {
@@ -21,7 +22,9 @@ export namespace Brawler
 		GPUSceneUpdateRenderModule(GPUSceneUpdateRenderModule&& rhs) noexcept = default;
 		GPUSceneUpdateRenderModule& operator=(GPUSceneUpdateRenderModule&& rhs) noexcept = default;
 
-		void ScheduleGPUSceneBufferUpdateForNextFrame(const I_GPUSceneBufferUpdateSource& bufferUpdateSource);
+		template <GPUSceneBufferID BufferID>
+		void ScheduleGPUSceneBufferUpdateForNextFrame(GPUSceneBufferUpdateOperation<BufferID>&& updateOperation);
+
 		void CommitGlobalTextureChanges(std::unique_ptr<GlobalTextureUploadBuffer>&& preparedBufferPtr);
 
 		bool IsRenderModuleEnabled() const override;
@@ -33,4 +36,15 @@ export namespace Brawler
 		GPUSceneBufferUpdateSubModule mBufferUpdateSubModule;
 		VirtualTextureManagementSubModule mVTManagementSubModule;
 	};
+}
+
+// ----------------------------------------------------------------------------------------------------------------------------------------
+
+namespace Brawler
+{
+	template <GPUSceneBufferID BufferID>
+	void GPUSceneUpdateRenderModule::ScheduleGPUSceneBufferUpdateForNextFrame(GPUSceneBufferUpdateOperation<BufferID>&& updateOperation)
+	{
+		mBufferUpdateSubModule.ScheduleGPUSceneBufferUpdateForNextFrame(std::move(updateOperation));
+	}
 }

@@ -191,6 +191,9 @@ export namespace Brawler
 		template <Brawler::Function<void, const Value&> Callback>
 		bool AccessData(const Key& key, const Callback& callback) const;
 
+		bool Contains(const Key& key) const;
+		bool Empty() const;
+
 		template <Brawler::Function<void, Value&> Callback>
 		void ForEach(const Callback& callback);
 
@@ -334,6 +337,32 @@ namespace Brawler
 			return false;
 
 		relevantNodePtr->Data.AccessData(callback);
+		return true;
+	}
+
+	template <typename Key, typename Value, typename LockType, typename Hasher>
+	bool ThreadSafeUnorderedMap<Key, Value, LockType, Hasher>::Contains(const Key& key) const
+	{
+		const Brawler::SharedPtr<MapNode> relevantNodePtr{ TryFindExistingNodeForKey(key).Lock() };
+		return (relevantNodePtr != nullptr);
+	}
+
+	template <typename Key, typename Value, typename LockType, typename Hasher>
+	bool ThreadSafeUnorderedMap<Key, Value, LockType, Hasher>::Empty() const
+	{
+		// To check if the map is empty, we just need to see if none of the head nodes are
+		// storing a nullptr. Since we are not actually reading any of the data pointed to
+		// by the head node Brawler::SharedPtr instances, we can get away with only using
+		// std::memory_order::relaxed.
+		
+		for (const auto& headNode : mHeadNodeArr)
+		{
+			const Brawler::SharedPtr<MapNode> headNodePtr{ headNode.Load(std::memory_order::relaxed) };
+
+			if (headNodePtr != nullptr)
+				return false;
+		}
+
 		return true;
 	}
 

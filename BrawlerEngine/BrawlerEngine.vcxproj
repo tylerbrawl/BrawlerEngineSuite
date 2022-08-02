@@ -283,8 +283,6 @@
     <ClCompile Include="src\IndirectionTextureUpdater.ixx" />
     <ClCompile Include="src\I_ApplicationState.cpp" />
     <ClCompile Include="src\I_ApplicationState.ixx" />
-    <ClCompile Include="src\I_GPUSceneBufferUpdateSource.cpp" />
-    <ClCompile Include="src\I_GPUSceneBufferUpdateSource.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequest.ixx" />
     <ClCompile Include="src\I_LODMeshDefinition.ixx" />
     <ClCompile Include="src\I_WindowState.cpp" />

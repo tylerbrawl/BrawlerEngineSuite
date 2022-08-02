@@ -4,6 +4,7 @@ module;
 #include <array>
 #include <cassert>
 #include <ranges>
+#include <algorithm>
 #include <DxDef.h>
 
 module Brawler.VirtualTextureManagementSubModule;
@@ -46,7 +47,7 @@ namespace
 					.Width = pageDimensions,
 					.Height = pageDimensions,
 					.Depth = 1,
-					.RowPitch = Util::Math::AlignToPowerOfTwo(NUM_BYTES_PER_INDIRECTION_TEXEL * pageDimensions, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT)
+					.RowPitch = static_cast<std::uint32_t>(Util::Math::AlignToPowerOfTwo(NUM_BYTES_PER_INDIRECTION_TEXEL * pageDimensions, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT))
 				}
 			},
 			.NumRows = pageDimensions,
@@ -166,7 +167,7 @@ namespace Brawler
 		mRequiredUploadBufferSize = Util::Math::AlignToPowerOfTwo(mRequiredUploadBufferSize, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
 
 		const GlobalTextureReservedPage& oldPage{ pageSwapOperation.GetPreviousPage() };
-		assert(oldPage.GetAllocatedPageType == VirtualTexturePageType::OTHER && "ERROR: Combined pages should *NEVER* be swapped out for another page as part of a GlobalTexturePageSwapOperation! (They should only be vacated from a global texture once their VirtualTexture instance has been destroyed!)");
+		assert(oldPage.GetAllocatedPageType() == VirtualTexturePageType::OTHER && "ERROR: Combined pages should *NEVER* be swapped out for another page as part of a GlobalTexturePageSwapOperation! (They should only be vacated from a global texture once their VirtualTexture instance has been destroyed!)");
 
 		D3D12::Texture2D& destinationIndirectionTexture{ oldPage.GetVirtualTexture().GetIndirectionTexture() };
 
@@ -236,7 +237,7 @@ namespace Brawler
 			const std::span<const std::uint32_t> indirectionTextureRowDataSpan{ rowDataArr.data(), numTexelsPerRow };
 
 			for (const auto i : std::views::iota(0u, rowCount))
-				updateInfo.WriteTextureData(i, indirectionTextureRowDataSpan);
+				updateInfo.SourceCopySubAllocation.WriteTextureData(i, indirectionTextureRowDataSpan);
 		}
 	}
 }

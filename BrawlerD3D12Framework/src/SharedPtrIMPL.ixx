@@ -45,6 +45,8 @@ export namespace Brawler
 		explicit SharedPtr(SharedPtrControlBlock<DataType>& controlBlock);
 
 	public:
+		SharedPtr(const std::nullptr_t nullPtr);
+
 		~SharedPtr();
 
 		SharedPtr(const SharedPtr& rhs);
@@ -71,6 +73,17 @@ export namespace Brawler
 namespace Brawler
 {
 	template <typename DataType>
+	SharedPtr<DataType>::SharedPtr(const std::nullptr_t nullPtr) :
+		mControlBlockPtr(nullptr)
+	{}
+	
+	template <typename DataType>
+	SharedPtr<DataType>::~SharedPtr()
+	{
+		ReleaseControl();
+	}
+	
+	template <typename DataType>
 	SharedPtr<DataType>::SharedPtr(const SharedPtr& rhs) :
 		mControlBlockPtr(rhs.mControlBlockPtr)
 	{
@@ -84,12 +97,6 @@ namespace Brawler
 	{
 		// Don't increment the strong count when a SharedPtr instance is manually assigned a
 		// control block. The assumption is that the caller would already have done this.
-	}
-
-	template <typename DataType>
-	SharedPtr<DataType>::~SharedPtr()
-	{
-		ReleaseControl();
 	}
 
 	template <typename DataType>

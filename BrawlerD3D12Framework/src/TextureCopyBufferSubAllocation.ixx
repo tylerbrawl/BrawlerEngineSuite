@@ -4,12 +4,45 @@ module;
 #include "DxDef.h"
 
 export module Brawler.D3D12.TextureCopyBufferSubAllocation;
-export import :TextureCopyBufferSnapshot;
 import Brawler.D3D12.I_BufferSubAllocation;
+import Brawler.D3D12.I_BufferSnapshot;
 import Util.Math;
 import Util.D3D12;
 import Brawler.D3D12.TextureCopyRegion;
 import Brawler.D3D12.TextureSubResource;
+
+namespace Brawler
+{
+	namespace D3D12
+	{
+		class TextureCopyBufferSubAllocation;
+	}
+}
+
+export namespace Brawler
+{
+	namespace D3D12
+	{
+		class TextureCopyBufferSnapshot final : public I_BufferSnapshot
+		{
+		public:
+			explicit TextureCopyBufferSnapshot(const TextureCopyBufferSubAllocation& textureCopySubAllocation);
+
+			TextureCopyBufferSnapshot(const TextureCopyBufferSnapshot& rhs) = default;
+			TextureCopyBufferSnapshot& operator=(const TextureCopyBufferSnapshot& rhs) = default;
+
+			TextureCopyBufferSnapshot(TextureCopyBufferSnapshot&& rhs) noexcept = default;
+			TextureCopyBufferSnapshot& operator=(TextureCopyBufferSnapshot&& rhs) noexcept = default;
+
+			const CD3DX12_TEXTURE_COPY_LOCATION& GetBufferTextureCopyLocation() const;
+
+		private:
+			CD3DX12_TEXTURE_COPY_LOCATION mTextureCopyLocation;
+		};
+	}
+}
+
+// ----------------------------------------------------------------------------------------------------------------------------------
 
 export namespace Brawler
 {

@@ -1023,9 +1023,6 @@
     <ClCompile Include="src\I_BufferSnapshot.cpp">
       <Filter>Source Files\GPU Resources\Buffer Resource Types</Filter>
     </ClCompile>
-    <ClCompile Include="src\TextureCopyBufferSnapshot.ixx">
-      <Filter>Module Files\GPU Resources\Buffer Resource Types\Buffer Snapshot Types</Filter>
-    </ClCompile>
     <ClCompile Include="src\TextureCopyBufferSnapshot.cpp">
       <Filter>Source Files\GPU Resources\Buffer Resource Types\Buffer Snapshot Types</Filter>
     </ClCompile>

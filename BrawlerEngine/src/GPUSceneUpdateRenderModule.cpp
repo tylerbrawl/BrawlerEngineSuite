@@ -1,15 +1,11 @@
 module;
+#include <memory>
 
 module Brawler.GPUSceneUpdateRenderModule;
 
 namespace Brawler
 {
-	void GPUSceneUpdateRenderModule::ScheduleGPUSceneBufferUpdateForNextFrame(const I_GPUSceneBufferUpdateSource& bufferUpdateSource)
-	{
-		mBufferUpdateSubModule.ScheduleGPUSceneBufferUpdateForNextFrame(bufferUpdateSource);
-	}
-
-	void GPUSceneUpdateRenderModule::CommitGlobalTextureChanges(std::unique_ptr<GlobalTextureUpdateModule>&& preparedBufferPtr)
+	void GPUSceneUpdateRenderModule::CommitGlobalTextureChanges(std::unique_ptr<GlobalTextureUploadBuffer>&& preparedBufferPtr)
 	{
 		mVTManagementSubModule.CommitGlobalTextureChanges(std::move(preparedBufferPtr));
 	}
@@ -24,6 +20,6 @@ namespace Brawler
 
 	void GPUSceneUpdateRenderModule::BuildFrameGraph(D3D12::FrameGraphBuilder& builder)
 	{
-		UpdateGPUSceneBuffers(builder);
+		
 	}
 }

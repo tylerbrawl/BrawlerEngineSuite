@@ -1,21 +1,20 @@
 module;
-#include <span>
+#include <utility>
+#include <type_traits>
 
 export module Brawler.GPUSceneBufferUpdater;
-import Brawler.I_GPUSceneBufferUpdateSource;
 import Brawler.D3D12.BufferCopyRegion;
 import Brawler.Application;
 import Brawler.D3D12.Renderer;
 import Brawler.GPUSceneUpdateRenderModule;
 import Brawler.GPUSceneBufferMap;
+import Brawler.GPUSceneBufferUpdateOperation;
 import Brawler.GPUSceneBufferID;
-import Brawler.D3D12.BufferResource;
-import Brawler.GPUSceneManager;
 
 export namespace Brawler
 {
 	template <GPUSceneBufferID BufferID>
-	class GPUSceneBufferUpdater final : public I_GPUSceneBufferUpdateSource
+	class GPUSceneBufferUpdater
 	{
 	public:
 		using ElementType = GPUSceneBufferElementType<BufferID>;
@@ -32,13 +31,10 @@ export namespace Brawler
 
 		template <typename U>
 			requires std::is_same_v<std::decay_t<GPUSceneBufferElementType<BufferID>>, std::decay_t<U>>
-		void UpdateGPUSceneData(U&& newValue);
-
-		std::span<const std::byte> GetGPUSceneUploadData() const override;
-		D3D12::BufferResource& GetGPUSceneBufferResource() const override;
+		void UpdateGPUSceneData(U&& newValue) const;
 
 	private:
-		ElementType mDataToUpload;
+		D3D12::BufferCopyRegion mCopyDestRegion;
 	};
 }
 
@@ -48,32 +44,20 @@ namespace Brawler
 {
 	template <GPUSceneBufferID BufferID>
 	GPUSceneBufferUpdater<BufferID>::GPUSceneBufferUpdater(D3D12::BufferCopyRegion&& gpuSceneBufferCopyDest) :
-		I_GPUSceneBufferUpdateSource(std::move(gpuSceneBufferCopyDest)),
-		mDataToUpload()
+		mCopyDestRegion(std::move(gpuSceneBufferCopyDest))
 	{}
 
 	template <GPUSceneBufferID BufferID>
 	template <typename U>
 		requires std::is_same_v<std::decay_t<GPUSceneBufferElementType<BufferID>>, std::decay_t<U>>
-	void GPUSceneBufferUpdater<BufferID>::UpdateGPUSceneData(U&& newValue)
+	void GPUSceneBufferUpdater<BufferID>::UpdateGPUSceneData(U&& newValue) const
 	{
-		mDataToUpload = std::forward<U>(newValue);
+		// Create a GPUSceneBufferUpdateOperation for this update.
+		GPUSceneBufferUpdateOperation<BufferID> updateOperation{ mCopyDestRegion };
+		updateOperation.SetUpdateSourceData(std::forward<U>(newValue));
 
 		// Notify the GPUSceneUpdateRenderModule that we have new data which needs to be sent to
 		// the GPU.
-		Brawler::GetRenderer().GetRenderModule<GPUSceneUpdateRenderModule>().ScheduleGPUSceneBufferUpdateForNextFrame(*this);
-	}
-
-	template <GPUSceneBufferID BufferID>
-	std::span<const std::byte> GPUSceneBufferUpdater<BufferID>::GetGPUSceneUploadData() const
-	{
-		const std::span<const ElementType> dataSpan{ &mDataToUpload, 1 };
-		return std::as_bytes(dataSpan);
-	}
-
-	template <GPUSceneBufferID BufferID>
-	D3D12::BufferResource& GPUSceneBufferUpdater<BufferID>::GetGPUSceneBufferResource() const
-	{
-		return GPUSceneManager::GetInstance().GetGPUSceneBufferResource<BufferID>();
+		Brawler::GetRenderer().GetRenderModule<GPUSceneUpdateRenderModule>().ScheduleGPUSceneBufferUpdateForNextFrame(std::move(updateOperation));
 	}
 }

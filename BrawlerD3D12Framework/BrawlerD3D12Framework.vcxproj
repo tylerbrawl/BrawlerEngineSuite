@@ -429,7 +429,6 @@
     <ClCompile Include="src\Texture2D.ixx" />
     <ClCompile Include="src\Texture2DBuilders.ixx" />
     <ClCompile Include="src\TextureCopyBufferSnapshot.cpp" />
-    <ClCompile Include="src\TextureCopyBufferSnapshot.ixx" />
     <ClCompile Include="src\TextureCopyBufferSubAllocation.cpp" />
     <ClCompile Include="src\TextureCopyBufferSubAllocation.ixx" />
     <ClCompile Include="src\TextureCopyRegion.cpp" />

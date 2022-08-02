@@ -29,10 +29,11 @@ export namespace Brawler
 		GPUSceneBufferUpdateOperation& operator=(GPUSceneBufferUpdateOperation&& rhs) noexcept = default;
 
 		template <typename U>
-			requires std::is_same_v<std::decay_t<U>, DataType>
+			requires std::is_same_v<std::decay_t<U>, std::decay_t<GPUSceneBufferElementType<BufferID>>>
 		void SetUpdateSourceData(U&& data);
 
 		const D3D12::BufferCopyRegion& GetDestinationCopyRegion() const;
+		const DataType& GetUpdateSourceData() const;
 
 	private:
 		D3D12::BufferCopyRegion mDestCopyRegion;
@@ -52,9 +53,21 @@ namespace Brawler
 
 	template <GPUSceneBufferID BufferID>
 	template <typename U>
-		requires std::is_same_v<std::decay_t<U>, GPUSceneBufferUpdateOperation<BufferID>::DataType>
+		requires std::is_same_v<std::decay_t<U>, std::decay_t<GPUSceneBufferElementType<BufferID>>>
 	void GPUSceneBufferUpdateOperation<BufferID>::SetUpdateSourceData(U&& data)
 	{
 		mDataToCopy = std::forward<U>(data);
+	}
+
+	template <GPUSceneBufferID BufferID>
+	const D3D12::BufferCopyRegion& GPUSceneBufferUpdateOperation<BufferID>::GetDestinationCopyRegion() const
+	{
+		return mDestCopyRegion;
+	}
+
+	template <GPUSceneBufferID BufferID>
+	const typename GPUSceneBufferUpdateOperation<BufferID>::DataType& GPUSceneBufferUpdateOperation<BufferID>::GetUpdateSourceData() const
+	{
+		return mDataToCopy;
 	}
 }

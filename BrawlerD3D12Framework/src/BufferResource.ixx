@@ -7,6 +7,7 @@ module;
 #include "DxDef.h"
 
 export module Brawler.D3D12.BufferResource;
+export import Brawler.D3D12.BufferResourceInitializationInfo;
 import Brawler.D3D12.I_GPUResource;
 import Brawler.D3D12.TLSFAllocator;
 import Util.General;
@@ -20,7 +21,6 @@ export namespace Brawler
 {
 	namespace D3D12
 	{
-		struct BufferResourceInitializationInfo;
 		class I_BufferSubAllocation;
 	}
 }

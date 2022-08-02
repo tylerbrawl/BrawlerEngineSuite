@@ -11,7 +11,7 @@ export namespace Brawler
 	class SharedPtrControlBlock
 	{
 	public:
-		SharedPtrControlBlock() requires std::is_default_constructible_v<DataType>;
+		SharedPtrControlBlock() = default;
 
 		template <typename... Args>
 			requires std::constructible_from<DataType, Args...>
@@ -53,14 +53,6 @@ export namespace Brawler
 
 namespace Brawler
 {
-	template <typename DataType>
-	SharedPtrControlBlock<DataType>::SharedPtrControlBlock() requires std::is_default_constructible_v<DataType>
-	{
-		mData = DataType{};
-		mStrongUseCount = 0;
-		mWeakUseCount = 0;
-	}
-
 	template <typename DataType>
 	template <typename... Args>
 		requires std::constructible_from<DataType, Args...>
