@@ -100,7 +100,7 @@ namespace Brawler
 		for (std::size_t i = 0; i < BYTE_COUNT; ++i)
 		{
 			const std::uint8_t currByte = static_cast<std::uint8_t>((mHash >> (i * 8)) & 0xFF);
-			hashStr += GetByteHexString(currByte);
+			hashStr = (GetByteHexString(currByte) + hashStr);
 		}
 
 		return hashStr;

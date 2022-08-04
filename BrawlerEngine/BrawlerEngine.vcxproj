@@ -248,10 +248,16 @@
     <ClCompile Include="src\GlobalTexture.ixx" />
     <ClCompile Include="src\GlobalTextureCollection.ixx" />
     <ClCompile Include="src\GlobalTextureFormatInfo.ixx" />
+    <ClCompile Include="src\GlobalTexturePageInfo.cpp" />
+    <ClCompile Include="src\GlobalTexturePageInfo.ixx" />
+    <ClCompile Include="src\GlobalTexturePageRemovalRequest.ixx" />
     <ClCompile Include="src\GlobalTexturePageReservationResults.ixx" />
     <ClCompile Include="src\GlobalTexturePageSwapOperation.ixx" />
+    <ClCompile Include="src\GlobalTexturePageTransferRequest.ixx" />
+    <ClCompile Include="src\GlobalTexturePageUploadRequest.ixx" />
     <ClCompile Include="src\GlobalTextureReservedPage.cpp" />
     <ClCompile Include="src\GlobalTextureReservedPage.ixx" />
+    <ClCompile Include="src\GlobalTextureUpdateContext.ixx" />
     <ClCompile Include="src\GlobalTextureUpdater.cpp" />
     <ClCompile Include="src\GlobalTextureUpdater.ixx" />
     <ClCompile Include="src\GlobalTextureUploadBuffer.cpp" />
@@ -290,6 +296,7 @@
     <ClCompile Include="src\I_ApplicationState.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequest.ixx" />
     <ClCompile Include="src\I_LODMeshDefinition.ixx" />
+    <ClCompile Include="src\I_VirtualTexturePageState.ixx" />
     <ClCompile Include="src\I_WindowState.cpp" />
     <ClCompile Include="src\I_WindowState.ixx" />
     <ClCompile Include="src\MathConstants.ixx" />
@@ -349,6 +356,9 @@
     <ClCompile Include="src\VirtualTextureManagementSubModule.ixx" />
     <ClCompile Include="src\VirtualTextureMetadata.cpp" />
     <ClCompile Include="src\VirtualTextureMetadata.ixx" />
+    <ClCompile Include="src\VirtualTexturePageStateID.ixx" />
+    <ClCompile Include="src\VirtualTexturePageStates.ixx" />
+    <ClCompile Include="src\VirtualTexturePageStateTraits.ixx" />
     <ClCompile Include="src\VirtualTexturePageStorageTracker.cpp" />
     <ClCompile Include="src\VirtualTexturePageStorageTracker.ixx" />
     <ClCompile Include="src\WindowDisplayMode.ixx" />

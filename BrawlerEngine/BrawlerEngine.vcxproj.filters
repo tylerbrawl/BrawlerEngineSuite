@@ -154,6 +154,9 @@
     <Filter Include="Source Files\Render Modules\GPU Scene Update">
       <UniqueIdentifier>{c96ceedd-5bb4-49a5-b382-40f3a388744f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Streaming Systems\Texture Streaming\Global Texture Updates">
+      <UniqueIdentifier>{6030a4d4-072c-4393-99f1-e9071600a2bd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -533,6 +536,36 @@
     </ClCompile>
     <ClCompile Include="src\GlobalTexturePageReservationResults.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTextureUpdateContext.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_VirtualTexturePageState.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTexturePageInfo.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTexturePageInfo.cpp">
+      <Filter>Source Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTexturePageStates.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTexturePageUploadRequest.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTexturePageRemovalRequest.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTexturePageTransferRequest.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTexturePageStateID.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTexturePageStateTraits.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
