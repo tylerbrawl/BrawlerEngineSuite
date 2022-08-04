@@ -12,12 +12,13 @@ import Brawler.D3D12.GPUResourceSpecialInitializationMethod;
 import Brawler.VirtualTextureConstants;
 import Brawler.D3D12.ShaderResourceView;
 import Util.Math;
+import Util.Engine;
 import Brawler.GPUSceneBufferUpdater;
 import Brawler.GPUSceneBufferID;
 
 namespace
 {
-	static constexpr std::uint64_t DELETION_FLAG = (static_cast<std::uint64_t>(1) << 63);
+	static constexpr std::uint64_t NOT_READY_FRAME_NUMBER = 0;
 	static constexpr DXGI_FORMAT INDIRECTION_TEXTURE_FORMAT = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UINT;
 
 	consteval Brawler::D3D12::RenderTargetTexture2DBuilder CreateDefaultIndirectionTextureBuilder()
@@ -83,7 +84,12 @@ namespace Brawler
 		mBVTXFileHash(bvtxFileHash),
 		mDescriptionSubAllocation(),
 		mMetadata(),
-		mStreamingRequestsInFlight(0)
+
+		// We initialize mStreamingRequestsInFlight to 1, rather than 0, so that we do not need
+		// to perform an additional atomic operation for the mandatory combined page streaming.
+		mStreamingRequestsInFlight(1),
+
+		mFirstAvailableFrameNumber(NOT_READY_FRAME_NUMBER)
 	{
 		mMetadata.InitializeFromVirtualTextureFile(mBVTXFileHash);
 		InitializeIndirectionTexture();
@@ -117,6 +123,16 @@ namespace Brawler
 	{
 		assert(mIndirectionTexture != nullptr);
 		return *mIndirectionTexture;
+	}
+
+	bool VirtualTexture::ReadyForUse() const
+	{
+		const std::uint64_t firstAvailableFrameNumber = mFirstAvailableFrameNumber.load(std::memory_order::relaxed);
+
+		if (firstAvailableFrameNumber == NOT_READY_FRAME_NUMBER) [[unlikely]]
+			return false;
+
+		return (Util::Engine::GetTrueFrameNumber() >= firstAvailableFrameNumber);
 	}
 	
 	void VirtualTexture::InitializeIndirectionTexture()
@@ -184,20 +200,25 @@ namespace Brawler
 		});
 	}
 
-	void VirtualTexture::MarkForDeletion()
+	void VirtualTexture::SetFirstUseableFrameNumber(const std::uint64_t frameNumber)
 	{
-		// The idea is that we don't want to create any page streaming requests for this VirtualTexture
-		// instance after an attempt was made to delete it. We can avoid using a std::mutex by using
-		// an atomic bitwise-OR operation.
-		
-		mStreamingRequestsInFlight.fetch_or(DELETION_FLAG, std::memory_order::relaxed);
+		mFirstAvailableFrameNumber.store(frameNumber, std::memory_order::relaxed);
+	}
+
+	void VirtualTexture::IncrementStreamingRequestCount()
+	{
+		mStreamingRequestsInFlight.fetch_add(1, std::memory_order::relaxed);
+	}
+
+	void VirtualTexture::DecrementStreamingRequestCount()
+	{
+		mStreamingRequestsInFlight.fetch_sub(1, std::memory_order::relaxed);
 	}
 
 	bool VirtualTexture::SafeToDelete() const
 	{
-		// Do not delete this VirtualTexture instance unless we have marked it for deletion and there
-		// are no pending streaming requests.
+		// Do not delete this VirtualTexture instance unless there are no pending streaming requests.
 
-		return (mStreamingRequestsInFlight.load(std::memory_order::relaxed) == DELETION_FLAG);
+		return (mStreamingRequestsInFlight.load(std::memory_order::relaxed) == 0);
 	}
 }

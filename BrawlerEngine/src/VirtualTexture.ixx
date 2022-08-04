@@ -13,6 +13,7 @@ import Brawler.VirtualTextureMetadata;
 namespace Brawler
 {
 	class VirtualTextureDatabase;
+	class VirtualTextureManagementSubModule;
 }
 
 export namespace Brawler
@@ -21,6 +22,7 @@ export namespace Brawler
 	{
 	private:
 		friend class VirtualTextureDatabase;
+		friend class VirtualTextureManagementSubModule;
 
 	public:
 		explicit VirtualTexture(const FilePathHash bvtxFileHash);
@@ -38,11 +40,17 @@ export namespace Brawler
 		D3D12::Texture2D& GetIndirectionTexture();
 		const D3D12::Texture2D& GetIndirectionTexture() const;
 
+		bool ReadyForUse() const;
+
 	private:
 		void InitializeIndirectionTexture(); 
 		void InitializeGPUSceneVirtualTextureDescription();
 
-		void MarkForDeletion();
+		void SetFirstUseableFrameNumber(const std::uint64_t frameNumber);
+
+		void IncrementStreamingRequestCount();
+		void DecrementStreamingRequestCount();
+
 		bool SafeToDelete() const;
 
 	private:
@@ -52,5 +60,6 @@ export namespace Brawler
 		D3D12::StructuredBufferSubAllocation<VirtualTextureDescription, 1> mDescriptionSubAllocation;
 		VirtualTextureMetadata mMetadata;
 		std::atomic<std::uint64_t> mStreamingRequestsInFlight;
+		std::atomic<std::uint64_t> mFirstAvailableFrameNumber;
 	};
 }

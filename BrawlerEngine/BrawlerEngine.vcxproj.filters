@@ -516,6 +516,24 @@
     <ClCompile Include="src\GlobalTextureUpdater.cpp">
       <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
     </ClCompile>
+    <ClCompile Include="src\ActiveGlobalTexturePageDatabase.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTexturePageStorageTracker.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTexturePageStorageTracker.cpp">
+      <Filter>Source Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTextureFeedback.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ActiveGlobalTexturePageDatabase.cpp">
+      <Filter>Source Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTexturePageReservationResults.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

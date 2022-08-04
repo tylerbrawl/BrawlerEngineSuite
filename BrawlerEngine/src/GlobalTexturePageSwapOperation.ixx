@@ -18,10 +18,11 @@ export namespace Brawler
 		// instance is created.
 		struct InitInfo
 		{
-			D3D12::Texture2D& GlobalTexture;
+			D3D12::Texture2D* GlobalTexturePtr;
 			std::uint32_t PageDimensions;
 			GlobalTextureReservedPage NewReservedPage;
 			std::optional<GlobalTextureReservedPage> OldReservedPage;
+			GlobalTextureReservedPage* StorageReservedPagePtr;
 			std::uint8_t GlobalTextureXPageCoordinates;
 			std::uint8_t GlobalTextureYPageCoordinates;
 			std::uint8_t GlobalTextureDescriptionBufferIndex;
@@ -46,6 +47,8 @@ export namespace Brawler
 
 		bool IsReplacingOlderPage() const;
 		const GlobalTextureReservedPage& GetPreviousPage() const;
+
+		GlobalTextureReservedPage& GetStoragePage();
 
 		std::uint32_t GetGlobalTextureXPageCoordinates() const;
 		std::uint32_t GetGlobalTextureYPageCoordinates() const;
@@ -89,7 +92,8 @@ namespace Brawler
 
 	D3D12::Texture2D& GlobalTexturePageSwapOperation::GetGlobalTexture() const
 	{
-		return mInitInfo.GlobalTexture;
+		assert(mInitInfo.GlobalTexturePtr != nullptr);
+		return *(mInitInfo.GlobalTexturePtr);
 	}
 
 	const GlobalTextureReservedPage& GlobalTexturePageSwapOperation::GetReplacementPage() const
@@ -106,6 +110,12 @@ namespace Brawler
 	{
 		assert(IsReplacingOlderPage());
 		return *(mInitInfo.OldReservedPage);
+	}
+
+	GlobalTextureReservedPage& GlobalTexturePageSwapOperation::GetStoragePage()
+	{
+		assert(mInitInfo.StorageReservedPagePtr != nullptr);
+		return *(mInitInfo.StorageReservedPagePtr);
 	}
 
 	std::uint32_t GlobalTexturePageSwapOperation::GetGlobalTextureXPageCoordinates() const

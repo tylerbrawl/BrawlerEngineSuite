@@ -1,6 +1,7 @@
 module;
 #include <array>
 #include <memory>
+#include <mutex>
 
 export module Brawler.VirtualTextureDatabase;
 import Brawler.GPUSceneLimits;
@@ -8,16 +9,17 @@ import Brawler.VirtualTexture;
 import Brawler.VirtualTextureHandle;
 import Brawler.FilePathHash;
 import Brawler.ThreadSafeVector;
+import Brawler.Function;
 
 export namespace Brawler
 {
 	class VirtualTextureDatabase final
 	{
 	private:
-		struct PendingVirtualTextureDeletion
+		struct VirtualTextureStorage
 		{
 			std::unique_ptr<VirtualTexture> VirtualTexturePtr;
-			std::uint64_t DeletionFrameNumber;
+			mutable std::mutex CritSection;
 		};
 
 	private:
@@ -37,6 +39,12 @@ export namespace Brawler
 		VirtualTextureHandle CreateVirtualTexture(const FilePathHash bvtxFileHash);
 		void DeleteVirtualTexture(VirtualTextureHandle& hVirtualTexture);
 
+		template <Brawler::Function<void, VirtualTexture&> Callback>
+		bool AccessVirtualTexture(const std::uint32_t virtualTextureID, const Callback& callback);
+
+		template <Brawler::Function<void, const VirtualTexture&> Callback>
+		bool AccessVirtualTexture(const std::uint32_t virtualTextureID, const Callback& callback) const;
+
 	private:
 		/// <summary>
 		/// This is essentially a map between VirtualTexture IDs and their corresponding
@@ -45,10 +53,50 @@ export namespace Brawler
 		/// 
 		/// We use std::unique_ptr&lt;VirtualTexture&gt; instances rather than just VirtualTexture
 		/// instances because it is highly likely that only a small portion of the array
-		/// will contain actual VirtualTexture data at any given time.
+		/// will contain actual VirtualTexture data at any given time, as well as for the added
+		/// benefit of pointer stability.
 		/// </summary>
-		std::array<std::unique_ptr<VirtualTexture>, MAX_VIRTUAL_TEXTURE_DESCRIPTIONS> mVirtualTexturePtrArr;
+		std::array<VirtualTextureStorage, MAX_VIRTUAL_TEXTURE_DESCRIPTIONS> mVirtualTexturePtrArr;
 
-		ThreadSafeVector<PendingVirtualTextureDeletion> mPendingDeletionArr;
+		ThreadSafeVector<std::unique_ptr<VirtualTexture>> mPendingDeletionArr;
 	};
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------
+
+namespace Brawler
+{
+	template <Brawler::Function<void, VirtualTexture&> Callback>
+	bool VirtualTextureDatabase::AccessVirtualTexture(const std::uint32_t virtualTextureID, const Callback& callback)
+	{
+		std::scoped_lock<std::mutex> lock{ mVirtualTexturePtrArr[virtualTextureID].CritSection };
+
+		{
+			const std::unique_ptr<VirtualTexture>& virtualTexturePtr{ mVirtualTexturePtrArr[virtualTextureID].VirtualTexturePtr };
+
+			if (virtualTexturePtr == nullptr) [[unlikely]]
+				return false;
+
+			callback(*virtualTexturePtr);
+		}
+		
+		return true;
+	}
+
+	template <Brawler::Function<void, const VirtualTexture&> Callback>
+	bool VirtualTextureDatabase::AccessVirtualTexture(const std::uint32_t virtualTextureID, const Callback& callback) const
+	{
+		std::scoped_lock<std::mutex> lock{ mVirtualTexturePtrArr[virtualTextureID].CritSection };
+
+		{
+			const std::unique_ptr<VirtualTexture>& virtualTexturePtr{ mVirtualTexturePtrArr[virtualTextureID].VirtualTexturePtr };
+
+			if (virtualTexturePtr == nullptr) [[unlikely]]
+				return false;
+
+			callback(*virtualTexturePtr);
+		}
+
+		return true;
+	}
 }

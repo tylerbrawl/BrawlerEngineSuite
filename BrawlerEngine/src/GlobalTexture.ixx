@@ -10,6 +10,7 @@ module;
 #include <DirectXMath/DirectXMath.h>
 
 export module Brawler.GlobalTexture;
+import Brawler.GlobalTexturePageReservationResults;
 import Brawler.GlobalTextureFormatInfo;
 import Brawler.D3D12.Texture2D;
 import Brawler.D3D12.BindlessSRVAllocation;
@@ -37,13 +38,6 @@ export namespace Brawler
 		static constexpr std::size_t NUM_PAGES_PER_GLOBAL_TEXTURE_ROW = (TEXTURE_2D_BUILDER.GetResourceDescription().Width / GlobalTextureFormatInfo<Format>::PADDED_PAGE_DIMENSIONS);
 
 		static constexpr std::size_t NUM_PAGES_IN_GLOBAL_TEXTURE = (NUM_PAGES_PER_GLOBAL_TEXTURE_ROW * NUM_PAGES_PER_GLOBAL_TEXTURE_ROW);
-
-	public:
-		struct PageReservationResults
-		{
-			std::vector<GlobalTexturePageSwapOperation> ActivePageSwapArr;
-			HRESULT HResult;
-		};
 
 	public:
 		GlobalTexture();
@@ -97,16 +91,16 @@ export namespace Brawler
 		///   assigned a page in the GlobalTexture.
 		/// </param>
 		/// <returns>
-		/// The returned PageReservationResults contains two fields.
+		/// The returned GlobalTexturePageReservationResults contains two fields.
 		/// 
-		/// PageReservationResults::ActivePageSwapArr contains one GlobalTexturePageSwapOperation for
+		/// GlobalTexturePageReservationResults::ActivePageSwapArr contains one GlobalTexturePageSwapOperation for
 		/// each page in logicalPageSpan which was successfully given a location in the GlobalTexture.
 		/// The ith entry in the array corresponds to the ith entry in logicalPageSpan. The actual
 		/// GlobalTexturePageSwapOperation instances should be given to the GlobalTextureUploadBuffer
 		/// in order to begin actually replacing the GlobalTexture data on the GPU side.
 		/// 
-		/// PageReservationResults::HResult is an HRESULT value which describes the status of the operation.
-		/// The following values are possible:
+		/// GlobalTexturePageReservationResults::HResult is an HRESULT value which describes the status of the 
+		/// operation. The following values are possible:
 		/// 
 		///   - S_OK: The operation completed successfully (that is, every page in logicalPageSpan was
 		///     assigned a location in the GlobalTexture).
@@ -115,11 +109,10 @@ export namespace Brawler
 		///     a location in the GlobalTexture. Keep in mind that ActivePageSwapArr may not be empty
 		///     even if this value is returned.
 		/// </returns>
-		PageReservationResults BeginGlobalTexturePageSwaps(const std::span<const VirtualTextureLogicalPage> logicalPageSpan);
+		GlobalTexturePageReservationResults BeginGlobalTexturePageSwaps(const std::span<const VirtualTextureLogicalPage> logicalPageSpan);
 
 	private:
 		DirectX::XMUINT2 GetUnflattenedCoordinates(const std::uint32_t flattenedCoordinates) const;
-
 		std::uint8_t GetGlobalTextureDescriptionBufferIndex() const;
 
 	private:
@@ -158,12 +151,12 @@ namespace Brawler
 		gtDescriptionUpdater.UpdateGPUSceneData(GlobalTextureDescription{
 			.BindlessIndex = mGlobalTextureBindlessAllocation.GetBindlessSRVIndex(),
 			.GlobalTextureDimensions = GLOBAL_TEXTURE_DIMENSIONS,
-			.PaggedPageDimensions = PADDED_PAGE_DIMENSIONS
+			.PaddedPageDimensions = PADDED_PAGE_DIMENSIONS
 		});
 	}
 
 	template <DXGI_FORMAT Format>
-	GlobalTexture<Format>::PageReservationResults GlobalTexture<Format>::BeginGlobalTexturePageSwaps(const std::span<const VirtualTextureLogicalPage> logicalPageSpan)
+	GlobalTexturePageReservationResults GlobalTexture<Format>::BeginGlobalTexturePageSwaps(const std::span<const VirtualTextureLogicalPage> logicalPageSpan)
 	{
 		assert(mTexture2DPtr != nullptr);
 		
@@ -177,12 +170,12 @@ namespace Brawler
 		}
 
 		if (logicalPageSpan.empty()) [[unlikely]]
-			return PageReservationResults{
+			return GlobalTexturePageReservationResults{
 				.ActivePageSwapArr{},
 				.HResult = S_OK
 			};
 
-		PageReservationResults reservationResults{};
+		GlobalTexturePageReservationResults reservationResults{};
 		reservationResults.ActivePageSwapArr.reserve(logicalPageSpan.size());
 
 		struct CandidatePage
@@ -206,15 +199,16 @@ namespace Brawler
 					reservedPage.SetVirtualTexturePage(logicalPageSpan[currLogicalPageIndex++]);
 
 					const DirectX::XMUINT2 unflattenedCoordinates{ GetUnflattenedCoordinates(currFlattenedPageCoordinates) };
-					reservationResults.ActivePageSwapArr.emplace_back(GlobalTexturePageSwapOperation::InitInfo{
-						.GlobalTexture{ *mTexture2DPtr },
+					reservationResults.ActivePageSwapArr.push_back(std::make_unique<GlobalTexturePageSwapOperation>(GlobalTexturePageSwapOperation::InitInfo{
+						.GlobalTexturePtr = mTexture2DPtr.get(),
 						.PageDimensions = GlobalTextureFormatInfo<Format>::PADDED_PAGE_DIMENSIONS,
 						.NewReservedPage{ reservedPage },
 						.OldReservedPage{},
-						.GlobalTextureXPageCoordinates = static_cast<std::uint16_t>(unflattenedCoordinates.x),
-						.GlobalTextureYPageCoordinates = static_cast<std::uint16_t>(unflattenedCoordinates.y),
+						.StorageReservedPagePtr = &reservedPage,
+						.GlobalTextureXPageCoordinates = static_cast<std::uint8_t>(unflattenedCoordinates.x),
+						.GlobalTextureYPageCoordinates = static_cast<std::uint8_t>(unflattenedCoordinates.y),
 						.GlobalTextureDescriptionBufferIndex = GetGlobalTextureDescriptionBufferIndex()
-					});
+					}));
 
 					// Exit early if that was the last page which needed to be assigned.
 					if (currLogicalPageIndex == logicalPageSpan.size())
@@ -251,15 +245,16 @@ namespace Brawler
 			candidatePage.CandidatePagePtr->SetVirtualTexturePage(logicalPageSpan[currLogicalPageIndex++]);
 
 			const DirectX::XMUINT2 unflattenedCoordinates{ GetUnflattenedCoordinates(candidatePage.FlattenedPageCoordinates) };
-			reservationResults.ActivePageSwapArr.emplace_back(GlobalTexturePageSwapOperation::InitInfo{
-				.GlobalTexture{ *mTexture2DPtr },
+			reservationResults.ActivePageSwapArr.push_back(std::make_unique<GlobalTexturePageSwapOperation>(GlobalTexturePageSwapOperation::InitInfo{
+				.GlobalTexturePtr = mTexture2DPtr.get(),
 				.PageDimensions = GlobalTextureFormatInfo<Format>::PADDED_PAGE_DIMENSIONS,
 				.NewReservedPage{ *(candidatePage.CandidatePagePtr) },
 				.OldReservedPage{ std::move(oldPageCopy) },
-				.GlobalTextureXPageCoordinates = static_cast<std::uint16_t>(unflattenedCoordinates.x),
-				.GlobalTextureYPageCoordinates = static_cast<std::uint16_t>(unflattenedCoordinates.y),
+				.StorageReservedPagePtr = candidatePage.CandidatePagePtr,
+				.GlobalTextureXPageCoordinates = static_cast<std::uint8_t>(unflattenedCoordinates.x),
+				.GlobalTextureYPageCoordinates = static_cast<std::uint8_t>(unflattenedCoordinates.y),
 				.GlobalTextureDescriptionBufferIndex = GetGlobalTextureDescriptionBufferIndex()
-			});
+			}));
 
 			// Exit if that was the last page which needed to be assigned.
 			if (currLogicalPageIndex == logicalPageSpan.size())
