@@ -1230,6 +1230,9 @@
     <ClCompile Include="src\SharedPtrIMPL.ixx">
       <Filter>Module Files\Threading\Atomic Shared Pointer</Filter>
     </ClCompile>
+    <ClCompile Include="src\GeneralHash.ixx">
+      <Filter>Module Files\Convenience Types</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

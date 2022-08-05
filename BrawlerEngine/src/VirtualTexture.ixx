@@ -9,6 +9,7 @@ import Brawler.D3D12.StructuredBufferSubAllocation;
 import Brawler.GPUSceneTypes;
 import Brawler.D3D12.BindlessSRVAllocation;
 import Brawler.VirtualTextureMetadata;
+import Brawler.VirtualTextureActivePageTracker;
 
 namespace Brawler
 {
@@ -40,6 +41,16 @@ export namespace Brawler
 		D3D12::Texture2D& GetIndirectionTexture();
 		const D3D12::Texture2D& GetIndirectionTexture() const;
 
+		VirtualTextureActivePageTracker& GetActivePageTracker();
+
+		/// <summary>
+		/// Describes whether or not the VirtualTexture data has had its combined page data
+		/// loaded into a GlobalTexture on the GPU and is thus ready to be used in rendering.
+		/// </summary>
+		/// <returns>
+		/// The function returns true if this VirtualTexture instance is ready to be used in
+		/// rendering and false otherwise.
+		/// </returns>
 		bool ReadyForUse() const;
 
 	private:
@@ -59,6 +70,7 @@ export namespace Brawler
 		FilePathHash mBVTXFileHash;
 		D3D12::StructuredBufferSubAllocation<VirtualTextureDescription, 1> mDescriptionSubAllocation;
 		VirtualTextureMetadata mMetadata;
+		VirtualTextureActivePageTracker mActivePageTracker;
 		std::atomic<std::uint64_t> mStreamingRequestsInFlight;
 		std::atomic<std::uint64_t> mFirstAvailableFrameNumber;
 	};

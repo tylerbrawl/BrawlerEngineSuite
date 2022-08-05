@@ -84,11 +84,8 @@ namespace Brawler
 		mBVTXFileHash(bvtxFileHash),
 		mDescriptionSubAllocation(),
 		mMetadata(),
-
-		// We initialize mStreamingRequestsInFlight to 1, rather than 0, so that we do not need
-		// to perform an additional atomic operation for the mandatory combined page streaming.
-		mStreamingRequestsInFlight(1),
-
+		mActivePageTracker(),
+		mStreamingRequestsInFlight(0),
 		mFirstAvailableFrameNumber(NOT_READY_FRAME_NUMBER)
 	{
 		mMetadata.InitializeFromVirtualTextureFile(mBVTXFileHash);
@@ -123,6 +120,11 @@ namespace Brawler
 	{
 		assert(mIndirectionTexture != nullptr);
 		return *mIndirectionTexture;
+	}
+
+	VirtualTextureActivePageTracker& VirtualTexture::GetActivePageTracker()
+	{
+		return mActivePageTracker;
 	}
 
 	bool VirtualTexture::ReadyForUse() const

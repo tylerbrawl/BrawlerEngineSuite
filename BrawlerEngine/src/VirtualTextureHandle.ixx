@@ -30,10 +30,7 @@ export namespace Brawler
 		VirtualTextureHandle(VirtualTextureHandle&& rhs) noexcept;
 		VirtualTextureHandle& operator=(VirtualTextureHandle&& rhs) noexcept;
 
-		VirtualTexture& operator*();
 		const VirtualTexture& operator*() const;
-
-		VirtualTexture* operator->();
 		const VirtualTexture* operator->() const;
 
 	private:

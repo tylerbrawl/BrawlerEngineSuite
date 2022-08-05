@@ -10,6 +10,7 @@ import Brawler.GlobalTexturePageInfo;
 import Brawler.GlobalTexturePageUploadRequest;
 import Brawler.GlobalTexturePageRemovalRequest;
 import Brawler.GlobalTexturePageTransferRequest;
+import Brawler.VirtualTextureActivePageTracker;
 
 export namespace Brawler
 {
@@ -93,6 +94,18 @@ export namespace Brawler
 
 namespace Brawler
 {
+	VirtualTextureActivePageTracker::TrackedPage CreateTrackedPage(const VirtualTextureLogicalPage& logicalPage)
+	{
+		return VirtualTextureActivePageTracker::TrackedPage{
+			.LogicalMipLevel = logicalPage.LogicalMipLevel,
+			.LogicalPageXCoordinate = logicalPage.LogicalPageXCoordinate,
+			.LogicalPageYCoordinate = logicalPage.LogicalPageYCoordinate
+		};
+	}
+}
+
+namespace Brawler
+{
 	auto VirtualTexturePageNeutralState::OnPageAddedToGlobalTexture(GlobalTexturePageInfo&& pageInfo)
 	{
 		return std::optional<VirtualTexturePageAdditionState>{ std::in_place, std::move(pageInfo) };
@@ -149,6 +162,10 @@ namespace Brawler
 
 	auto VirtualTexturePageAdditionState::GetOperationDetails(const VirtualTextureLogicalPage& logicalPage)
 	{
+		// Cache the new location for this logical page.
+		assert(logicalPage.VirtualTexturePtr != nullptr);
+		logicalPage.VirtualTexturePtr->GetActivePageTracker().UpdateTrackedPage(CreateTrackedPage(logicalPage), mDestPageInfo.GetPageIdentifier());
+		
 		return std::make_unique<GlobalTexturePageUploadRequest>(logicalPage, std::move(mDestPageInfo));
 	}
 }
@@ -235,6 +252,10 @@ namespace Brawler
 
 	auto VirtualTexturePageCommittedRemovalState::GetOperationDetails(const VirtualTextureLogicalPage& logicalPage)
 	{
+		// Remove any previous cached location for this page.
+		assert(logicalPage.VirtualTexturePtr != nullptr);
+		logicalPage.VirtualTexturePtr->GetActivePageTracker().RemoveTrackedPage(CreateTrackedPage(logicalPage));
+		
 		return std::make_unique<GlobalTexturePageRemovalRequest>(logicalPage);
 	}
 }
@@ -281,6 +302,10 @@ namespace Brawler
 
 	auto VirtualTexturePageTransferState::GetOperationDetails(const VirtualTextureLogicalPage& logicalPage)
 	{
+		// Cache the new location for this logical page.
+		assert(logicalPage.VirtualTexturePtr != nullptr);
+		logicalPage.VirtualTexturePtr->GetActivePageTracker().UpdateTrackedPage(CreateTrackedPage(logicalPage), mDestPageInfo.GetPageIdentifier());
+		
 		return std::make_unique<GlobalTexturePageTransferRequest>(std::move(mDestPageInfo), std::move(mSrcPageInfo));
 	}
 }

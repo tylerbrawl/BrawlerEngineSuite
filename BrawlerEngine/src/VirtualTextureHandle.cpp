@@ -31,22 +31,10 @@ namespace Brawler
 		return *this;
 	}
 
-	VirtualTexture& VirtualTextureHandle::operator*()
-	{
-		assert(mVirtualTexturePtr != nullptr);
-		return *mVirtualTexturePtr;
-	}
-
 	const VirtualTexture& VirtualTextureHandle::operator*() const
 	{
 		assert(mVirtualTexturePtr != nullptr);
 		return *mVirtualTexturePtr;
-	}
-
-	VirtualTexture* VirtualTextureHandle::operator->()
-	{
-		assert(mVirtualTexturePtr != nullptr);
-		return mVirtualTexturePtr;
 	}
 
 	const VirtualTexture* VirtualTextureHandle::operator->() const

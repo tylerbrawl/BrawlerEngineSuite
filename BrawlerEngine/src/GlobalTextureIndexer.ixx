@@ -42,6 +42,8 @@ export namespace Brawler
 		std::optional<std::size_t> GetBestIndexForPageReplacement() const;
 		std::optional<std::size_t> GetBestIndexForPageDefragmentation() const;
 
+		ActiveGlobalTexturePageStats GetActivePageStats() const;
+
 		void UpdateForRegularPageAddition(const std::size_t pageIndex);
 		void UpdateForCombinedPageAddition(const std::size_t pageIndex);
 
@@ -181,6 +183,16 @@ namespace Brawler
 	}
 
 	template <std::size_t StartingIndex, std::size_t NumPagesInRange>
+	ActiveGlobalTexturePageStats GlobalTextureIndexer<StartingIndex, NumPagesInRange>::GetActivePageStats() const
+	{
+		return ActiveGlobalTexturePageStats{
+			.NumPagesFilled = (mLHSPageStats.NumPagesFilled + mRHSPageStats.NumPagesFilled),
+			.NumPagesFilledForCombinedPages = (mLHSPageStats.NumPagesFilledForCombinedPages + mRHSPageStats.NumPagesFilledForCombinedPages),
+			.MostRecentUsedFrameNumber = std::max<std::uint64_t>(mLHSPageStats.MostRecentUsedFrameNumber, mRHSPageStats.MostRecentUsedFrameNumber)
+		};
+	}
+
+	template <std::size_t StartingIndex, std::size_t NumPagesInRange>
 	void GlobalTextureIndexer<StartingIndex, NumPagesInRange>::UpdateForRegularPageAddition(const std::size_t pageIndex)
 	{
 		const SegmentChoice choice = ChooseSegment(pageIndex);
@@ -204,16 +216,12 @@ namespace Brawler
 
 		if (choice == SegmentChoice::LHS)
 		{
-			++(mLHSPageStats.NumPagesFilled);
 			++(mLHSPageStats.NumPagesFilledForCombinedPages);
-
 			mLHSIndexer.UpdateForCombinedPageAddition(pageIndex);
 		}
 		else
 		{
-			++(mRHSPageStats.NumPagesFilled);
 			++(mRHSPageStats.NumPagesFilledForCombinedPages);
-
 			mRHSIndexer.UpdateForCombinedPageAddition(pageIndex);
 		}
 	}
@@ -242,16 +250,12 @@ namespace Brawler
 
 		if (choice == SegmentChoice::LHS)
 		{
-			--(mLHSPageStats.NumPagesFilled);
 			--(mLHSPageStats.NumPagesFilledForCombinedPages);
-
 			mLHSIndexer.UpdateForCombinedPageRemoval(pageIndex);
 		}
 		else
 		{
-			--(mRHSPageStats.NumPagesFilled);
 			--(mRHSPageStats.NumPagesFilledForCombinedPages);
-
 			mRHSIndexer.UpdateForCombinedPageRemoval(pageIndex);
 		}
 	}
@@ -267,14 +271,14 @@ namespace Brawler
 	{
 		const SegmentChoice choice = ChooseSegment(pageIndex);
 
-		if (choice == SegmentChoice::LHS && currFrameNumber > mLHSPageStats.MostRecentUsedFrameNumber)
+		if (choice == SegmentChoice::LHS)
 		{
-			mLHSPageStats.MostRecentUsedFrameNumber = currFrameNumber;
+			mLHSPageStats.MostRecentUsedFrameNumber = std::max<std::uint64_t>(currFrameNumber, mLHSPageStats.MostRecentUsedFrameNumber);
 			mLHSIndexer.UpdateForUseInCurrentFrameIMPL(pageIndex, currFrameNumber);
 		}
-		else if (choice == SegmentChoice::RHS && currFrameNumber > mRHSPageStats.MostRecentUsedFrameNumber)
+		else
 		{
-			mRHSPageStats.MostRecentUsedFrameNumber = currFrameNumber;
+			mRHSPageStats.MostRecentUsedFrameNumber = std::max<std::uint64_t>(currFrameNumber, mRHSPageStats.MostRecentUsedFrameNumber);
 			mRHSIndexer.UpdateForUseInCurrentFrameIMPL(pageIndex, currFrameNumber);
 		}
 	}

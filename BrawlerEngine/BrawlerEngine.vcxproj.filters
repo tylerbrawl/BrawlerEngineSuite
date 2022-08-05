@@ -579,6 +579,21 @@
     <ClCompile Include="src\GlobalTextureIndexer.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
     </ClCompile>
+    <ClCompile Include="src\GlobalTexturePageSlot.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTexturePageSlot.cpp">
+      <Filter>Source Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTextureActivePageTracker.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTexturePageIdentifier.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTextureActivePageTracker.cpp">
+      <Filter>Source Files\Streaming Systems\Texture Streaming</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

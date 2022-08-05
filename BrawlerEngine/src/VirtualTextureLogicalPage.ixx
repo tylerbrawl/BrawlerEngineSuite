@@ -4,6 +4,7 @@ module;
 
 export module Brawler.VirtualTextureLogicalPage;
 import Brawler.VirtualTexture;
+import Brawler.GeneralHash;
 
 export namespace Brawler
 {
@@ -25,15 +26,8 @@ export namespace std
 	{
 		std::size_t operator()(const Brawler::VirtualTextureLogicalPage& key) const noexcept
 		{
-			// Shamelessly copied from http://www.cse.yorku.ca/~oz/hash.html...
-			
-			std::size_t hashValue = 5381;
-			const std::span<const std::byte> keyByteSpan{ std::as_bytes(std::span<const Brawler::VirtualTextureLogicalPage>{ &key, 1 }) };
-
-			for (const auto byte : keyByteSpan)
-				hashValue = (((hashValue << 5) + hashValue) ^ static_cast<std::uint8_t>(byte));
-
-			return hashValue;
+			const Brawler::GeneralHash<Brawler::VirtualTextureLogicalPage> hasher{};
+			return hasher(key);
 		}
 	};
 }

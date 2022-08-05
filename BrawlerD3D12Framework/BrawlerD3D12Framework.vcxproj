@@ -361,6 +361,7 @@
     <ClCompile Include="src\JobCounterGuard.ixx" />
     <ClCompile Include="src\MappedFileView.cpp" />
     <ClCompile Include="src\MappedFileView.ixx" />
+    <ClCompile Include="src\GeneralHash.ixx" />
     <ClCompile Include="src\NonShaderVisibleDescriptorType.ixx" />
     <ClCompile Include="src\NZStringView.ixx" />
     <ClCompile Include="src\PipelineEnums.ixx" />

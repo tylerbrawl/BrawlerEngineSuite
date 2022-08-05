@@ -7,11 +7,6 @@ module Brawler.GlobalTexturePageInfo;
 
 namespace Brawler
 {
-	GlobalTexturePageInfo::GlobalTexturePageInfo(D3D12::Texture2D& globalTexture2D, D3D12::TextureCopyRegion&& pageRegion) :
-		mGlobalTexture2DPtr(&globalTexture2D),
-		mPageRegion(std::move(pageRegion))
-	{}
-
 	D3D12::Texture2D& GlobalTexturePageInfo::GetGlobalTexture2D() const
 	{
 		assert(mGlobalTexture2DPtr != nullptr);
@@ -23,17 +18,23 @@ namespace Brawler
 		return mPageRegion;
 	}
 
+	GlobalTexturePageIdentifier GlobalTexturePageInfo::GetPageIdentifier() const
+	{
+		// These conversions should all be safe; after all, the R8G8B8A8 indirection
+		// textures need to store these values.
+		assert(mGlobalTextureID <= std::numeric_limits<std::uint8_t>::max());
+		assert(mPageCoordinates.GetX() <= std::numeric_limits<std::uint8_t>::max());
+		assert(mPageCoordinates.GetY() <= std::numeric_limits<std::uint8_t>::max());
+
+		return GlobalTexturePageIdentifier{
+			.GlobalTextureID = static_cast<std::uint8_t>(mGlobalTextureID),
+			.GlobalTexturePageXCoordinate = static_cast<std::uint8_t>(mPageCoordinates.GetX()),
+			.GlobalTexturePageYCoordinate = static_cast<std::uint8_t>(mPageCoordinates.GetY())
+		};
+	}
+
 	bool GlobalTexturePageInfo::ArePagesEquivalent(const GlobalTexturePageInfo& rhs) const
 	{
-		// For the two instances to refer to the same GlobalTexture page, they must be
-		// referring to the same GlobalTexture.
-		if (&(GetGlobalTexture2D()) != &(rhs.GetGlobalTexture2D()))
-			return false;
-
-		const CD3DX12_BOX& lhsCopyRegionBox{ mPageRegion.GetCopyRegionBox() };
-		const CD3DX12_BOX& rhsCopyRegionBox{ rhs.mPageRegion.GetCopyRegionBox() };
-
-		return (lhsCopyRegionBox.left == rhsCopyRegionBox.left && lhsCopyRegionBox.top == rhsCopyRegionBox.top && lhsCopyRegionBox.front == rhsCopyRegionBox.front &&
-			lhsCopyRegionBox.right == rhsCopyRegionBox.right && lhsCopyRegionBox.bottom == rhsCopyRegionBox.bottom && lhsCopyRegionBox.back == rhsCopyRegionBox.back);
+		return (mGlobalTextureID == rhs.mGlobalTextureID && mPageCoordinates == rhs.mPageCoordinates);
 	}
 }
