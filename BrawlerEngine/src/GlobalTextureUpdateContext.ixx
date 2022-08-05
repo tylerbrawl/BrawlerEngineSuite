@@ -1,5 +1,7 @@
 module;
+#include <vector>
 #include <unordered_map>
+#include <memory>
 
 export module Brawler.GlobalTextureUpdateContext;
 import Brawler.VirtualTextureLogicalPage;
@@ -7,6 +9,9 @@ import Brawler.PolymorphicAdapter;
 import Brawler.I_VirtualTexturePageState;
 export import Brawler.VirtualTexturePageStateTraits;
 import Brawler.GlobalTexturePageInfo;
+import Brawler.GlobalTexturePageUploadRequest;
+import Brawler.GlobalTexturePageTransferRequest;
+import Brawler.GlobalTexturePageRemovalRequest;
 
 export namespace Brawler
 {
@@ -28,8 +33,12 @@ export namespace Brawler
 
 	private:
 		void FinalizeVirtualTexturePageStates();
+		void CreatePageRequests();
 
 	private:
 		std::unordered_map<VirtualTextureLogicalPage, PolymorphicAdapter<I_VirtualTexturePageState>> mPageStateMap;
+		std::vector<std::unique_ptr<GlobalTexturePageUploadRequest>> mUploadRequestPtrArr;
+		std::vector<std::unique_ptr<GlobalTexturePageTransferRequest>> mTransferRequestPtrArr;
+		std::vector<std::unique_ptr<GlobalTexturePageRemovalRequest>> mRemovalRequestPtrArr;
 	};
 }

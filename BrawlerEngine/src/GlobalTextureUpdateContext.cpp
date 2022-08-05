@@ -1,6 +1,8 @@
 module;
 #include <unordered_map>
 #include <optional>
+#include <vector>
+#include <memory>
 
 module Brawler.GlobalTextureUpdateContext;
 import Brawler.VirtualTexturePageStates;
@@ -47,6 +49,7 @@ namespace Brawler
 	void GlobalTextureUpdateContext::FinalizeContext()
 	{
 		FinalizeVirtualTexturePageStates();
+		CreatePageRequests();
 	}
 
 	void GlobalTextureUpdateContext::FinalizeVirtualTexturePageStates()
@@ -54,7 +57,7 @@ namespace Brawler
 		for (const auto& [logicalPage, stateAdapter] : mPageStateMap)
 		{
 			std::optional<PolymorphicAdapter<I_VirtualTexturePageState>> optionalFinalStateAdapter{};
-			mPageStateMap[logicalPage].AccessData([&optionalFinalStateAdapter]<typename StateType>(StateType & state)
+			stateAdapter.AccessData([&optionalFinalStateAdapter]<typename StateType>(StateType & state)
 			{
 				auto optionalFinalState{ state.OnContextFinalization() };
 
@@ -64,6 +67,27 @@ namespace Brawler
 
 			if (optionalFinalStateAdapter.has_value())
 				stateAdapter = std::move(*optionalFinalStateAdapter);
+		}
+	}
+
+	void GlobalTextureUpdateContext::CreatePageRequests()
+	{
+		for (const auto& [logicalPage, stateAdapter] : mPageStateMap)
+		{
+			stateAdapter.AccessData([this, &logicalPage]<typename StateType>(StateType & state)
+			{
+				auto operationDetailsResult{ state.GetOperationDetails(logicalPage) };
+				using ResultType = std::decay_t<decltype(operationDetailsResult)>;
+
+				if constexpr (std::is_same_v<ResultType, std::unique_ptr<GlobalTexturePageUploadRequest>>)
+					mUploadRequestPtrArr.push_back(std::move(operationDetailsResult));
+
+				else if constexpr (std::is_same_v<ResultType, std::unique_ptr<GlobalTexturePageTransferRequest>>)
+					mTransferRequestPtrArr.push_back(std::move(operationDetailsResult));
+
+				else if constexpr (std::is_same_v<ResultType, std::unique_ptr<GlobalTexturePageRemovalRequest>>)
+					mRemovalRequestPtrArr.push_back(std::move(operationDetailsResult));
+			});
 		}
 	}
 }

@@ -259,6 +259,8 @@
     <ClCompile Include="src\GlobalTexturePageSlot.ixx" />
     <ClCompile Include="src\GlobalTexturePageSwapOperation.ixx" />
     <ClCompile Include="src\GlobalTexturePageTransferRequest.ixx" />
+    <ClCompile Include="src\GlobalTexturePageTransferSubModule.cpp" />
+    <ClCompile Include="src\GlobalTexturePageTransferSubModule.ixx" />
     <ClCompile Include="src\GlobalTexturePageUploadRequest.ixx" />
     <ClCompile Include="src\GlobalTextureReservedPage.cpp" />
     <ClCompile Include="src\GlobalTextureReservedPage.ixx" />

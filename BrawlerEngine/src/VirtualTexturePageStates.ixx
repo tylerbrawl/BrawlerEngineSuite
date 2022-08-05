@@ -123,9 +123,6 @@ namespace Brawler
 
 	auto VirtualTexturePageNeutralState::GetOperationDetails(const VirtualTextureLogicalPage& logicalPage)
 	{
-		assert(false && "ERROR: An attempt was made to proceed with GlobalTexture operations for a virtual texture page with no pending changes!");
-		std::unreachable();
-
 		return std::optional<VirtualTexturePageNeutralState>{};
 	}
 }
