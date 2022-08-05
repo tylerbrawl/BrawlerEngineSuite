@@ -31,9 +31,18 @@ export namespace std
 			const std::span<const std::byte> keyByteSpan{ std::as_bytes(std::span<const Brawler::VirtualTextureLogicalPage>{ &key, 1 }) };
 
 			for (const auto byte : keyByteSpan)
-				hashValue = (((hashValue << 5) + hashValue) ^ byte);
+				hashValue = (((hashValue << 5) + hashValue) ^ static_cast<std::uint8_t>(byte));
 
 			return hashValue;
 		}
 	};
+}
+
+export namespace Brawler
+{
+	bool operator==(const VirtualTextureLogicalPage& lhs, const VirtualTextureLogicalPage& rhs)
+	{
+		return (lhs.VirtualTexturePtr == rhs.VirtualTexturePtr && lhs.LogicalMipLevel == rhs.LogicalMipLevel && lhs.LogicalPageXCoordinate == rhs.LogicalPageXCoordinate &&
+			lhs.LogicalPageYCoordinate == rhs.LogicalPageYCoordinate);
+	}
 }

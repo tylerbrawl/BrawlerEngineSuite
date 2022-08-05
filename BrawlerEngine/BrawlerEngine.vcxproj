@@ -235,6 +235,7 @@
     <ClCompile Include="..\BrawlerModelExport\src\MeshTypeID.ixx" />
     <ClCompile Include="src\ActiveGlobalTexturePageDatabase.cpp" />
     <ClCompile Include="src\ActiveGlobalTexturePageDatabase.ixx" />
+    <ClCompile Include="src\ActiveGlobalTexturePageStats.ixx" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Application.ixx" />
     <ClCompile Include="src\ApplicationStateID.ixx" />
@@ -248,6 +249,7 @@
     <ClCompile Include="src\GlobalTexture.ixx" />
     <ClCompile Include="src\GlobalTextureCollection.ixx" />
     <ClCompile Include="src\GlobalTextureFormatInfo.ixx" />
+    <ClCompile Include="src\GlobalTextureIndexer.ixx" />
     <ClCompile Include="src\GlobalTexturePageInfo.cpp" />
     <ClCompile Include="src\GlobalTexturePageInfo.ixx" />
     <ClCompile Include="src\GlobalTexturePageRemovalRequest.ixx" />
@@ -257,6 +259,7 @@
     <ClCompile Include="src\GlobalTexturePageUploadRequest.ixx" />
     <ClCompile Include="src\GlobalTextureReservedPage.cpp" />
     <ClCompile Include="src\GlobalTextureReservedPage.ixx" />
+    <ClCompile Include="src\GlobalTextureUpdateContext.cpp" />
     <ClCompile Include="src\GlobalTextureUpdateContext.ixx" />
     <ClCompile Include="src\GlobalTextureUpdater.cpp" />
     <ClCompile Include="src\GlobalTextureUpdater.ixx" />

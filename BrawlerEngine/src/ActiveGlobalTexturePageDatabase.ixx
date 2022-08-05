@@ -27,9 +27,6 @@ export namespace Brawler
 		void UpdateForGlobalTexturePageSwaps(const std::span<const std::unique_ptr<GlobalTexturePageSwapOperation>> pageSwapPtrSpan);
 		void UpdateForVirtualTextureDeletion(VirtualTexture& virtualTexture);
 
-		OptionalRef<GlobalTextureReservedPage> GetGlobalTextureStoragePage(const VirtualTextureFeedback feedback);
-		OptionalRef<const GlobalTextureReservedPage> GetGlobalTextureStoragePage(const VirtualTextureFeedback feedback) const;
-
 	private:
 		std::unordered_map<VirtualTexture*, VirtualTexturePageStorageTracker> mStorageTrackerMap;
 	};

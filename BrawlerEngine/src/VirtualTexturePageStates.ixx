@@ -108,7 +108,7 @@ namespace Brawler
 		return std::optional<VirtualTexturePageNeutralState>{};
 	}
 
-	auto VirtualTexturePageNeutralState::GetOperationDetails(const VirtualTextureLogicalPage& logicalPage) const
+	auto VirtualTexturePageNeutralState::GetOperationDetails(const VirtualTextureLogicalPage& logicalPage)
 	{
 		assert(false && "ERROR: An attempt was made to proceed with GlobalTexture operations for a virtual texture page with no pending changes!");
 		std::unreachable();
@@ -171,10 +171,9 @@ namespace Brawler
 		//
 		// Of course, this assumes that pageInfo is not referring to the same GlobalTexture page
 		// as mSrcPageInfo. If that is the case, then we can just revert back to the neutral state,
-		// since it results in effectively no changes being applied to the GlobalTexture.
-		if (mSrcPageInfo.ArePagesEquivalent(srcPageInfo)) [[unlikely]]
-			return std::optional<VirtualTexturePageNeutralState>{ std::in_place };
-
+		// since it results in effectively no changes being applied to the GlobalTexture. Since we
+		// cannot change the return type of this function, this check is done in 
+		// VirtualTexturePageTransferState::OnContextFinalization().
 		return std::optional<VirtualTexturePageTransferState>{ std::in_place, std::move(pageInfo), std::move(mSrcPageInfo) };
 	}
 
@@ -270,7 +269,14 @@ namespace Brawler
 
 	auto VirtualTexturePageTransferState::OnContextFinalization()
 	{
-		return std::optional<VirtualTexturePageTransferState>{};
+		// If both mDestPageInfo and mSrcPageInfo refer to the same page, then we revert back to the
+		// neutral state for this virtual texture page, since essentially no changes are being made to
+		// any of the GlobalTextures. This case is discussed further in 
+		// VirtualTexturePagePendingRemovalState::OnPageAddedToGlobalTexture().
+		if (mDestPageInfo.ArePagesEquivalent(mSrcPageInfo))
+			return std::optional<VirtualTexturePageNeutralState>{ std::in_place };
+		
+		return std::optional<VirtualTexturePageNeutralState>{};
 	}
 
 	auto VirtualTexturePageTransferState::GetOperationDetails(const VirtualTextureLogicalPage& logicalPage)

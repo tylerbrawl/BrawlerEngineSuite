@@ -9,7 +9,7 @@ import Brawler.VirtualTexture;
 import Brawler.VirtualTextureHandle;
 import Brawler.FilePathHash;
 import Brawler.ThreadSafeVector;
-import Brawler.Function;
+import Brawler.Functional;
 
 export namespace Brawler
 {

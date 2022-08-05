@@ -34,36 +34,4 @@ namespace Brawler
 		mStorageTrackerMap.at(&virtualTexture).UpdateForVirtualTextureDeletion();
 		mStorageTrackerMap.erase(&virtualTexture);
 	}
-
-	OptionalRef<GlobalTextureReservedPage> ActiveGlobalTexturePageDatabase::GetGlobalTextureStoragePage(const VirtualTextureFeedback feedback)
-	{
-		VirtualTexture& virtualTexture{ VirtualTextureDatabase::GetInstance().GetVirtualTexture(feedback.VirtualTextureID) };
-		
-		if (!mStorageTrackerMap.contains(&virtualTexture)) [[unlikely]]
-			return Brawler::OptionalRef<GlobalTextureReservedPage>{};
-
-		const VirtualTextureLogicalPage referencedLogicalPage{
-			.VirtualTexturePtr = &virtualTexture,
-			.LogicalMipLevel = feedback.LogicalMipLevel,
-			.LogicalPageXCoordinate = feedback.LogicalPageXCoordinate,
-			.LogicalPageYCoordinate = feedback.LogicalPageYCoordinate
-		};
-		return mStorageTrackerMap.at(&virtualTexture).GetGlobalTextureStoragePage(referencedLogicalPage);
-	}
-
-	OptionalRef<const GlobalTextureReservedPage> ActiveGlobalTexturePageDatabase::GetGlobalTextureStoragePage(const VirtualTextureFeedback feedback) const
-	{
-		VirtualTexture& virtualTexture{ VirtualTextureDatabase::GetInstance().GetVirtualTexture(feedback.VirtualTextureID) };
-
-		if (!mStorageTrackerMap.contains(&virtualTexture)) [[unlikely]]
-			return Brawler::OptionalRef<const GlobalTextureReservedPage>{};
-
-		const VirtualTextureLogicalPage referencedLogicalPage{
-			.VirtualTexturePtr = &virtualTexture,
-			.LogicalMipLevel = feedback.LogicalMipLevel,
-			.LogicalPageXCoordinate = feedback.LogicalPageXCoordinate,
-			.LogicalPageYCoordinate = feedback.LogicalPageYCoordinate
-		};
-		return mStorageTrackerMap.at(&virtualTexture).GetGlobalTextureStoragePage(referencedLogicalPage);
-	}
 }

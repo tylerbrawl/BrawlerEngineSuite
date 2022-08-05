@@ -62,7 +62,9 @@ export namespace Brawler
 
 		constexpr std::uint64_t GetHash() const;
 		constexpr operator std::uint64_t() const;
-		constexpr std::string GetHashString() const;
+
+		constexpr std::string GetHashStringLittleEndian() const;
+		constexpr std::string GetHashStringBigEndian() const;
 
 	private:
 		std::uint64_t mHash;
@@ -91,7 +93,22 @@ namespace Brawler
 		return mHash;
 	}
 
-	constexpr std::string FilePathHash::GetHashString() const
+	constexpr std::string FilePathHash::GetHashStringLittleEndian() const
+	{
+		// We know this is just 8, but still...
+		constexpr std::size_t BYTE_COUNT = sizeof(mHash) / sizeof(std::uint8_t);
+		std::string hashStr{};
+
+		for (std::size_t i = 0; i < BYTE_COUNT; ++i)
+		{
+			const std::uint8_t currByte = static_cast<std::uint8_t>((mHash >> (i * 8)) & 0xFF);
+			hashStr += GetByteHexString(currByte);
+		}
+
+		return hashStr;
+	}
+
+	constexpr std::string FilePathHash::GetHashStringBigEndian() const
 	{
 		// We know this is just 8, but still...
 		constexpr std::size_t BYTE_COUNT = sizeof(mHash) / sizeof(std::uint8_t);

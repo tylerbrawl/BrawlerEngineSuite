@@ -157,6 +157,9 @@
     <Filter Include="Module Files\Streaming Systems\Texture Streaming\Global Texture Updates">
       <UniqueIdentifier>{6030a4d4-072c-4393-99f1-e9071600a2bd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Streaming Systems\Texture Streaming\Global Texture Updates">
+      <UniqueIdentifier>{feaa2828-faaf-45e0-be22-f7ecbf8ba8bb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -566,6 +569,15 @@
     </ClCompile>
     <ClCompile Include="src\VirtualTexturePageStateTraits.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTextureUpdateContext.cpp">
+      <Filter>Source Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ActiveGlobalTexturePageStats.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTextureIndexer.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
