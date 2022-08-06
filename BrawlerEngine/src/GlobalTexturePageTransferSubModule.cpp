@@ -18,6 +18,7 @@ import Util.Math;
 import Brawler.D3D12.BufferResource;
 import Brawler.GlobalTexturePageIdentifier;
 import Brawler.D3D12.Texture2D;
+import Brawler.JobSystem;
 
 namespace
 {
@@ -73,7 +74,7 @@ namespace Brawler
 		return !mTransferRequestPtrArr.empty();
 	}
 
-	std::vector<GlobalTexturePageTransferSubModule::PageTransferRenderPass_T> GlobalTexturePageTransferSubModule::GetPageTransferRenderPasses(D3D12::FrameGraphBuilder& builder)
+	GlobalTexturePageTransferSubModule::GlobalTextureTransferPassCollection GlobalTexturePageTransferSubModule::GetPageTransferRenderPasses(D3D12::FrameGraphBuilder& builder)
 	{
 		std::vector<std::unique_ptr<GlobalTexturePageTransferRequest>> currRequestArr{};
 
@@ -82,23 +83,60 @@ namespace Brawler
 			currRequestArr = std::move(mTransferRequestPtrArr);
 		}
 
+		// There is overhead in spawning CPU jobs, so don't bother if we don't actually have
+		// any work to do.
 		if (currRequestArr.empty())
 			return std::vector<std::unique_ptr<GlobalTexturePageTransferRequest>>{};
 
-		// In order to copy page data between GlobalTextures, we could potentially make use of
-		// ID3D12GraphicsCommandList::CopyTextureRegion() to copy between GlobalTextures, rather
-		// than use a working buffer. However, there are some issues with this approach:
+		// We realize that GlobalTexture page transfers consist of two separate components:
 		//
-		//   - Suppose we are transferring from one location within a GlobalTexture to another
-		//     location within the same GlobalTexture. We wouldn't be able to do the copy like
-		//     that because we would not be able to put the GlobalTexture in both the
-		//     D3D12_RESOURCE_STATE_COPY_SOURCE and the D3D12_RESOURCE_STATE_COPY_DEST states,
-		//     so we would have to use a buffer. (Admittedly, this case would be quite pointless
-		//     for decreasing memory consumption, since GlobalTextures do not suffer from internal
-		//     fragmentation. However, moving texels within a GlobalTexture closer to each other
-		//     could potentially improve cache hit rates during texture sampling.)
+		//   - GlobalTexture Page Data Updates: The page data within the GlobalTextures
+		//     is re-arranged.
 		//
-		//   - 
+		//   - Indirection Texture Updates: The indirection textures of the relevant virtual
+		//     textures whose pages are being moved must be updated.
+		//
+		// These tasks are completely independent from each other, so we can run them
+		// concurrently on two separate queues on the GPU timeline. We can also create their
+		// respective render passes concurrently, which further boosts parallelism. To do
+		// this, we create a std::span<const std::unique_ptr<GlobalTexturePageTransferRequest>>
+		// and copy this into the individual jobs. (We could pass the std::span by reference, but
+		// there's no real point, since these are cheap to copy.)
+
+		const std::span<const std::unique_ptr<GlobalTexturePageTransferRequest>> currRequestSpan{ currRequestArr };
+		Brawler::JobGroup globalTexturePageTransferGroup{};
+		globalTexturePageTransferGroup.Reserve(2);
+
+		std::vector<GlobalTextureCopyRenderPass_T> globalTextureCopyArr{};
+		D3D12::FrameGraphBuilder globalTextureCopyBuilder{};
+		globalTexturePageTransferGroup.AddJob([&globalTextureCopyArr, &globalTextureCopyBuilder, currRequestSpan] ()
+		{
+			globalTextureCopyArr = CreateGlobalTextureCopyRenderPasses(globalTextureCopyBuilder, currRequestSpan);
+		});
+
+		std::vector<IndirectionTextureUpdateRenderPass_T> indirectionTextureUpdateArr{};
+		D3D12::FrameGraphBuilder indirectionTextureUpdateBuilder{};
+		globalTexturePageTransferGroup.AddJob([&indirectionTextureUpdateArr, &indirectionTextureUpdateBuilder, currRequestSpan] ()
+		{
+			indirectionTextureUpdateArr = CreateIndirectionTextureUpdateRenderPasses(indirectionTextureUpdateBuilder, currRequestSpan);
+		});
+
+		globalTexturePageTransferGroup.ExecuteJobs();
+
+		builder.MergeFrameGraphBuilder(std::move(globalTextureCopyBuilder));
+		builder.MergeFrameGraphBuilder(std::move(indirectionTextureUpdateBuilder));
+
+		return GlobalTextureTransferPassCollection{
+			.GlobalTextureCopyArr{ std::move(globalTextureCopyArr) },
+			.IndirectionTextureUpdateArr{ std::move(indirectionTextureUpdateArr) }
+		};
+	}
+
+	std::vector<GlobalTexturePageTransferSubModule::GlobalTextureCopyRenderPass_T> GlobalTexturePageTransferSubModule::CreateGlobalTextureCopyRenderPasses(D3D12::FrameGraphBuilder& builder, const std::span<const std::unique_ptr<GlobalTexturePageTransferRequest>> transferRequestSpan)
+	{
+		assert(!transferRequestSpan.empty());
+
+
 	}
 
 	std::vector<GlobalTexturePageTransferSubModule::IndirectionTextureUpdateRenderPass_T> GlobalTexturePageTransferSubModule::CreateIndirectionTextureUpdateRenderPasses(D3D12::FrameGraphBuilder& builder, const std::span<const std::unique_ptr<GlobalTexturePageTransferRequest>> transferRequestSpan)
@@ -175,14 +213,14 @@ namespace Brawler
 
 			if (isCombinedPage)
 			{
-				const std::span<std::uint32_t> singleTexelSpan{ valueCopyArr.data(), 1 };
+				const std::span<const std::uint32_t> singleTexelSpan{ valueCopyArr.data(), 1 };
 				passInfo.SrcDataBufferSubAllocation.WriteTextureData(0, singleTexelSpan);
 			}
 			else
 			{
 				assert(passInfo.SrcDataBufferSubAllocation.GetRowCount() == 2);
 
-				const std::span<std::uint32_t> rowDataSpan{ valueCopyArr.data(), 2 };
+				const std::span<const std::uint32_t> rowDataSpan{ valueCopyArr.data(), 2 };
 				passInfo.SrcDataBufferSubAllocation.WriteTextureData(0, rowDataSpan);
 				passInfo.SrcDataBufferSubAllocation.WriteTextureData(1, rowDataSpan);
 			}
