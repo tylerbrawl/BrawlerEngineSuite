@@ -7,30 +7,35 @@ module;
 export module Brawler.VirtualTextureManagementSubModule:GlobalTexturePageTransferSubModule;
 import Brawler.GlobalTexturePageTransferRequest;
 import Brawler.D3D12.FrameGraphBuilding;
-import Brawler.D3D12.TextureCopyBufferSnapshot;
 import Brawler.D3D12.TextureCopyRegion;
+import Brawler.D3D12.TextureCopyBufferSubAllocation;
 
 export namespace Brawler
 {
 	class GlobalTexturePageTransferSubModule
 	{
 	private:
-		enum class PageCopyType
+		struct GlobalTextureCopyPassInfo
 		{
-			COPY_TO_BUFFER,
-			COPY_TO_GLOBAL_TEXTURE
+			D3D12::TextureCopyRegion DestCopyRegion;
+			D3D12::TextureCopyRegion SrcCopyRegion;
 		};
 
-		struct PageTransferPassInfo
+		struct IndirectionTextureUpdatePassInfo
 		{
-			D3D12::TextureCopyRegion TextureRegion;
-			D3D12::TextureCopyBufferSnapshot BufferRegion;
-
-			PageCopyType PassType;
+			D3D12::TextureCopyRegion DestCopyRegion;
+			D3D12::TextureCopyBufferSubAllocation SrcDataBufferSubAllocation;
 		};
 
 	public:
-		using PageTransferRenderPass_T = D3D12::RenderPass<D3D12::GPUCommandQueueType::DIRECT, PageTransferPassInfo>;
+		using GlobalTextureCopyRenderPass_T = D3D12::RenderPass<D3D12::GPUCommandQueueType::COPY, GlobalTextureCopyPassInfo>;
+		using IndirectionTextureUpdateRenderPass_T = D3D12::RenderPass<D3D12::GPUCommandQueueType::DIRECT, IndirectionTextureUpdatePassInfo>;
+
+		struct GlobalTextureTransferPassCollection
+		{
+			std::vector<GlobalTextureCopyRenderPass_T> GlobalTextureCopyArr;
+			std::vector<IndirectionTextureUpdateRenderPass_T> IndirectionTextureUpdateArr;
+		};
 
 	public:
 		GlobalTexturePageTransferSubModule() = default;
@@ -44,7 +49,11 @@ export namespace Brawler
 		void AddPageTransferRequests(const std::span<std::unique_ptr<GlobalTexturePageTransferRequest>> transferRequestSpan);
 		bool HasPageTransferRequests() const;
 
-		std::vector<PageTransferRenderPass_T> GetPageTransferRenderPasses(D3D12::FrameGraphBuilder& builder);
+		GlobalTextureTransferPassCollection GetPageTransferRenderPasses(D3D12::FrameGraphBuilder& builder);
+
+	private:
+		static std::vector<GlobalTextureCopyRenderPass_T> CreateGlobalTextureCopyRenderPasses(D3D12::FrameGraphBuilder& builder, const std::span<const std::unique_ptr<GlobalTexturePageTransferRequest>> transferRequestSpan);
+		static std::vector<IndirectionTextureUpdateRenderPass_T> CreateIndirectionTextureUpdateRenderPasses(D3D12::FrameGraphBuilder& builder, const std::span<const std::unique_ptr<GlobalTexturePageTransferRequest>> transferRequestSpan);
 
 	private:
 		std::vector<std::unique_ptr<GlobalTexturePageTransferRequest>> mTransferRequestPtrArr;

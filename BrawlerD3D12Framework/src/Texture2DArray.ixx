@@ -16,7 +16,6 @@ export namespace Brawler
 	namespace D3D12
 	{
 		class Texture2DArray;
-		class Texture2DArraySlice;
 	}
 }
 

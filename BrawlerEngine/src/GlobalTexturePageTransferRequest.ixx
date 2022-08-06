@@ -2,6 +2,7 @@ module;
 
 export module Brawler.GlobalTexturePageTransferRequest;
 import Brawler.GlobalTexturePageInfo;
+import Brawler.VirtualTextureLogicalPage;
 
 export namespace Brawler
 {
@@ -9,7 +10,7 @@ export namespace Brawler
 	{
 	public:
 		GlobalTexturePageTransferRequest() = default;
-		GlobalTexturePageTransferRequest(GlobalTexturePageInfo&& destPageInfo, GlobalTexturePageInfo&& srcPageInfo);
+		GlobalTexturePageTransferRequest(const VirtualTextureLogicalPage& logicalPage, GlobalTexturePageInfo&& destPageInfo, GlobalTexturePageInfo&& srcPageInfo);
 
 		GlobalTexturePageTransferRequest(const GlobalTexturePageTransferRequest& rhs) = delete;
 		GlobalTexturePageTransferRequest& operator=(const GlobalTexturePageTransferRequest& rhs) = delete;
@@ -17,7 +18,13 @@ export namespace Brawler
 		GlobalTexturePageTransferRequest(GlobalTexturePageTransferRequest&& rhs) noexcept = default;
 		GlobalTexturePageTransferRequest& operator=(GlobalTexturePageTransferRequest&& rhs) noexcept = default;
 
+		const VirtualTextureLogicalPage& GetLogicalPage() const;
+
+		const GlobalTexturePageInfo& GetDestinationGlobalTexturePageInfo() const;
+		const GlobalTexturePageInfo& GetSourceGlobalTexturePageInfo() const;
+
 	private:
+		VirtualTextureLogicalPage mLogicalPage;
 		GlobalTexturePageInfo mDestPageInfo;
 		GlobalTexturePageInfo mSrcPageInfo;
 	};
