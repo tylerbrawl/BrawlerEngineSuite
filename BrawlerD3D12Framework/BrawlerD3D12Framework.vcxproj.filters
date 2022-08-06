@@ -549,9 +549,6 @@
     <ClCompile Include="src\GPUResourceUsageAnalyzer.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
     </ClCompile>
-    <ClCompile Include="src\ResourceStateZone.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
-    </ClCompile>
     <ClCompile Include="src\GPUResourceUsageAnalyzer.cpp">
       <Filter>Source Files\GPU Work Submission\Frame Graph\GPU Resource State Management</Filter>
     </ClCompile>

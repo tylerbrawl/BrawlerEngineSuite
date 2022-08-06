@@ -35,12 +35,12 @@ namespace Brawler
 			mInitMethod(builder.GetPreferredSpecialInitializationMethod())
 		{}
 
-		std::optional<D3D12_CLEAR_VALUE> Texture2DArray::GetOptimizedClearValue() const override
+		std::optional<D3D12_CLEAR_VALUE> Texture2DArray::GetOptimizedClearValue() const
 		{
 			return mOptimizedClearValue;
 		}
 
-		GPUResourceSpecialInitializationMethod Texture2DArray::GetPreferredSpecialInitializationMethod() const override
+		GPUResourceSpecialInitializationMethod Texture2DArray::GetPreferredSpecialInitializationMethod() const
 		{
 			return mInitMethod;
 		}

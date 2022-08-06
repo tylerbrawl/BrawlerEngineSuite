@@ -4,7 +4,6 @@ module;
 #include "DxDef.h"
 
 module Brawler.D3D12.Texture2DArray;
-import Util.General;
 
 namespace Brawler
 {

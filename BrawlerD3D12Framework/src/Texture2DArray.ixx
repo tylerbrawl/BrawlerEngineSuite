@@ -295,7 +295,7 @@ namespace Brawler
 		BindlessSRVAllocation Texture2DArraySliceRange::CreateBindlessSRV(const std::uint32_t mostDetailedMipOffset)
 		{
 			const Texture2DArrayShaderResourceView<Format> arraySliceRangeSRV{ CreateShaderResourceView(mostDetailedMipOffset) };
-			I_GPUResource& tex2DArrResource{ static_cast<I_GPUResource&>(GetTexture2DArray()) };
+			I_GPUResource& tex2DArrayResource{ static_cast<I_GPUResource&>(GetTexture2DArray()) };
 
 			return tex2DArrayResource.CreateBindlessSRV(arraySliceRangeSRV.CreateSRVDescription());
 		}
