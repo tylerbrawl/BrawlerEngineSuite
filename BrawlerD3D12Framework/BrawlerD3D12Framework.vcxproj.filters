@@ -1233,6 +1233,27 @@
     <ClCompile Include="src\GeneralHash.ixx">
       <Filter>Module Files\Convenience Types</Filter>
     </ClCompile>
+    <ClCompile Include="src\TextureBuilderBase.ixx">
+      <Filter>Module Files\GPU Resources\Texture Resource Types\General Texture Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture2DArrayBuilders.ixx">
+      <Filter>Module Files\GPU Resources\Texture Resource Types\2D Texture Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture2DArray.ixx">
+      <Filter>Module Files\GPU Resources\Texture Resource Types\2D Texture Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture2DArray.cpp">
+      <Filter>Source Files\GPU Resources\Texture Resource Types\2D Texture Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture2DArraySubResource.cpp">
+      <Filter>Source Files\GPU Resources\Texture Resource Types\2D Texture Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture2DArraySlice.cpp">
+      <Filter>Source Files\GPU Resources\Texture Resource Types\2D Texture Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture2DArraySliceRange.cpp">
+      <Filter>Source Files\GPU Resources\Texture Resource Types\2D Texture Resource Types</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

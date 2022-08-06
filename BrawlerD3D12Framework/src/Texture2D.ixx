@@ -117,7 +117,7 @@ export namespace Brawler
 			Texture2D& operator=(Texture2D&& rhs) noexcept = default;
 
 			template <DXGI_FORMAT Format>
-			Texture2DShaderResourceView<Format> CreateShaderResourceView() const;
+			Texture2DShaderResourceView<Format> CreateShaderResourceView(const std::uint32_t mostDetailedMipOffset = 0) const;
 
 			template <DXGI_FORMAT Format>
 			Texture2DUnorderedAccessView<Format> CreateUnorderedAccessView(const std::uint32_t mipSlice = 0) const;
@@ -142,7 +142,7 @@ export namespace Brawler
 			Texture2DSubResource GetSubResource(const std::uint32_t mipSlice = 0);
 
 			template <DXGI_FORMAT Format>
-			BindlessSRVAllocation CreateBindlessSRV();
+			BindlessSRVAllocation CreateBindlessSRV(const std::uint32_t mostDetailedMipOffset = 0);
 
 		private:
 			std::optional<D3D12_CLEAR_VALUE> mOptimizedClearValue;
@@ -158,12 +158,12 @@ namespace Brawler
 	namespace D3D12
 	{
 		template <DXGI_FORMAT Format>
-		Texture2DShaderResourceView<Format> Texture2D::CreateShaderResourceView() const
+		Texture2DShaderResourceView<Format> Texture2D::CreateShaderResourceView(const std::uint32_t mostDetailedMipOffset) const
 		{
 			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
 
 			return Texture2DShaderResourceView<Format>{ *this, D3D12_TEX2D_SRV{
-				.MostDetailedMip = 0,
+				.MostDetailedMip = mostDetailedMipOffset,
 				.MipLevels = static_cast<std::uint32_t>(-1),
 				.PlaneSlice = 0,
 				.ResourceMinLODClamp = 0.0f
@@ -182,9 +182,9 @@ namespace Brawler
 		}
 
 		template <DXGI_FORMAT Format>
-		BindlessSRVAllocation Texture2D::CreateBindlessSRV()
+		BindlessSRVAllocation Texture2D::CreateBindlessSRV(const std::uint32_t mostDetailedMipOffset)
 		{
-			return I_GPUResource::CreateBindlessSRV(CreateShaderResourceView<Format>().CreateSRVDescription());
+			return I_GPUResource::CreateBindlessSRV(CreateShaderResourceView<Format>(mostDetailedMipOffset).CreateSRVDescription());
 		}
 	}
 }

@@ -428,7 +428,14 @@
     <ClCompile Include="src\StructuredBufferViewGenerator.ixx" />
     <ClCompile Include="src\Texture2D.cpp" />
     <ClCompile Include="src\Texture2D.ixx" />
+    <ClCompile Include="src\Texture2DArray.cpp" />
+    <ClCompile Include="src\Texture2DArray.ixx" />
+    <ClCompile Include="src\Texture2DArrayBuilders.ixx" />
+    <ClCompile Include="src\Texture2DArraySlice.cpp" />
+    <ClCompile Include="src\Texture2DArraySliceRange.cpp" />
+    <ClCompile Include="src\Texture2DArraySubResource.cpp" />
     <ClCompile Include="src\Texture2DBuilders.ixx" />
+    <ClCompile Include="src\TextureBuilderBase.ixx" />
     <ClCompile Include="src\TextureCopyBufferSnapshot.cpp" />
     <ClCompile Include="src\TextureCopyBufferSubAllocation.cpp" />
     <ClCompile Include="src\TextureCopyBufferSubAllocation.ixx" />
