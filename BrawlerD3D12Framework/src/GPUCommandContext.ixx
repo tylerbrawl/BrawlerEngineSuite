@@ -194,6 +194,11 @@ export namespace Brawler
 			void CopyBufferToBuffer(const I_BufferSnapshot& destSnapshot, const I_BufferSnapshot& srcSnapshot) const;
 			void CopyBufferToBuffer(const BufferCopyRegion& destRegion, const BufferCopyRegion& srcRegion) const;
 
+			void CopyTextureToTexture(const TextureSubResource& destTexture, const TextureSubResource& srcTexture) const;
+			void CopyTextureToTexture(const TextureSubResource& destTexture, const TextureCopyRegion& srcRegion) const;
+			void CopyTextureToTexture(const TextureCopyRegion& destRegion, const TextureSubResource& srcTexture) const;
+			void CopyTextureToTexture(const TextureCopyRegion& destRegion, const TextureCopyRegion& srcRegion) const;
+
 			/// <summary>
 			/// Issues the D3D12 resource barrier specified by barrier immediately on the GPU timeline.
 			/// 
@@ -473,6 +478,105 @@ namespace Brawler
 				&(srcRegion.GetD3D12Resource()),
 				srcRegion.GetOffsetFromBufferStart(),
 				srcRegion.GetCopyRegionSize()
+			);
+		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::CopyTextureToTexture(const TextureSubResource& destTexture, const TextureSubResource& srcTexture) const
+		{
+			assert(IsResourceAccessValid(destTexture.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
+			assert(IsResourceAccessValid(srcTexture.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
+
+			assert(((&(destTexture.GetGPUResource()) != &(srcTexture.GetGPUResource())) || (destTexture.GetSubResourceIndex() != srcTexture.GetSubResourceIndex())) && "ERROR: An attempt was made to call GPUCommandContext::CopyTextureToTexture() with the exact same sub-resource being specified for both the source and the destination!");
+			
+			// According to the MSDN, it is best to use ID3D12GraphicsCommandList::CopyResource() to copy an
+			// entire resource, rather than use ID3D12GraphicsCommandList::CopyTextureRegion().
+
+			if (destTexture.GetGPUResource().GetSubResourceCount() == 1 && srcTexture.GetGPUResource().GetSubResourceCount() == 1) [[unlikely]]
+				mCmdList->CopyResource(&(destTexture.GetD3D12Resource()), &(srcTexture.GetD3D12Resource()));
+			else [[likely]]
+			{
+				const CD3DX12_TEXTURE_COPY_LOCATION destinationCopyLocation{ &(destTexture.GetD3D12Resource()), destTexture.GetSubResourceIndex() };
+				const CD3DX12_TEXTURE_COPY_LOCATION srcCopyLocation{ &(srcTexture.GetD3D12Resource()), srcTexture.GetSubResourceIndex() };
+
+				mCmdList->CopyTextureRegion(
+					&destinationCopyLocation,
+					0,
+					0,
+					0,
+					&srcCopyLocation,
+					nullptr
+				);
+			}
+		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::CopyTextureToTexture(const TextureSubResource& destTexture, const TextureCopyRegion& srcRegion) const
+		{
+			assert(IsResourceAccessValid(destTexture.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
+			assert(IsResourceAccessValid(srcRegion.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
+
+			assert(((&(destTexture.GetGPUResource()) != &(srcRegion.GetGPUResource())) || (destTexture.GetSubResourceIndex() != srcRegion.GetSubResourceIndex())) && "ERROR: An attempt was made to call GPUCommandContext::CopyTextureToTexture() with the exact same sub-resource being specified for both the source and the destination!");
+
+			const CD3DX12_TEXTURE_COPY_LOCATION destinationCopyLocation{ &(destTexture.GetD3D12Resource()), destTexture.GetSubResourceIndex() };
+
+			const CD3DX12_TEXTURE_COPY_LOCATION srcCopyLocation{ srcRegion.GetTextureCopyLocation() };
+			const CD3DX12_BOX& srcCopyRegionBox{ srcRegion.GetCopyRegionBox() };
+
+			mCmdList->CopyTextureRegion(
+				&destinationCopyLocation,
+				0,
+				0,
+				0,
+				&srcCopyLocation,
+				&srcCopyRegionBox
+			);
+		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::CopyTextureToTexture(const TextureCopyRegion& destRegion, const TextureSubResource& srcTexture) const
+		{
+			assert(IsResourceAccessValid(destRegion.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
+			assert(IsResourceAccessValid(srcTexture.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
+
+			assert(((&(destRegion.GetGPUResource()) != &(srcTexture.GetGPUResource())) || (destRegion.GetSubResourceIndex() != srcTexture.GetSubResourceIndex())) && "ERROR: An attempt was made to call GPUCommandContext::CopyTextureToTexture() with the exact same sub-resource being specified for both the source and the destination!");
+
+			const CD3DX12_TEXTURE_COPY_LOCATION destinationCopyLocation{ destRegion.GetTextureCopyLocation() };
+			const CD3DX12_BOX& destinationCopyRegionBox{ destRegion.GetCopyRegionBox() };
+
+			const CD3DX12_TEXTURE_COPY_LOCATION srcCopyLocation{ &(srcTexture.GetD3D12Resource()), srcTexture.GetSubResourceIndex() };
+
+			mCmdList->CopyTextureRegion(
+				&destinationCopyLocation,
+				destinationCopyRegionBox.left,
+				destinationCopyRegionBox.top,
+				destinationCopyRegionBox.front,
+				&srcCopyLocation,
+				nullptr
+			);
+		}
+
+		template <GPUCommandQueueType CmdListType>
+		void GPUCommandContext<CmdListType>::CopyTextureToTexture(const TextureCopyRegion& destRegion, const TextureCopyRegion& srcRegion) const
+		{
+			assert(IsResourceAccessValid(destRegion.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
+			assert(IsResourceAccessValid(srcRegion.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
+
+			assert(((&(destRegion.GetGPUResource()) != &(srcRegion.GetGPUResource())) || (destRegion.GetSubResourceIndex() != srcRegion.GetSubResourceIndex())) && "ERROR: An attempt was made to call GPUCommandContext::CopyTextureToTexture() with the exact same sub-resource being specified for both the source and the destination!");
+
+			const CD3DX12_TEXTURE_COPY_LOCATION destinationCopyLocation{ destRegion.GetTextureCopyLocation() };
+			const CD3DX12_BOX& destinationCopyRegionBox{ destRegion.GetCopyRegionBox() };
+
+			const CD3DX12_TEXTURE_COPY_LOCATION srcCopyLocation{ srcRegion.GetTextureCopyLocation() };
+			const CD3DX12_BOX& srcCopyRegionBox{ srcRegion.GetCopyRegionBox() };
+
+			mCmdList->CopyTextureRegion(
+				&destinationCopyLocation,
+				destinationCopyRegionBox.left,
+				destinationCopyRegionBox.top,
+				destinationCopyRegionBox.front,
+				&srcCopyLocation,
+				&srcCopyRegionBox
 			);
 		}
 
