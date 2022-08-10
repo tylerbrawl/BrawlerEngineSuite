@@ -4,7 +4,7 @@ module;
 #include <span>
 #include <memory>
 
-export module Brawler.VirtualTextureManagementSubModule:GlobalTexturePageTransferSubModule;
+export module Brawler.GlobalTexturePageTransferSubModule;
 import Brawler.GlobalTexturePageTransferRequest;
 import Brawler.D3D12.FrameGraphBuilding;
 import Brawler.D3D12.TextureCopyRegion;

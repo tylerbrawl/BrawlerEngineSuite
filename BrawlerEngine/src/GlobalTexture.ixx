@@ -15,7 +15,7 @@ import Brawler.GlobalTexturePageSlot;
 import Brawler.GlobalTextureUpdateContext;
 import Brawler.GlobalTexturePageInfo;
 import Brawler.GlobalTextureFormatInfo;
-import Brawler.ActiveGlobalTexturePageInfo;
+import Brawler.ActiveGlobalTexturePageStats;
 import Brawler.D3D12.Texture2D;
 import Brawler.D3D12.BindlessSRVAllocation;
 import Brawler.D3D12.Texture2DBuilders;

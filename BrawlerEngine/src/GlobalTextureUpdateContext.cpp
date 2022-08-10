@@ -54,10 +54,10 @@ namespace Brawler
 
 	void GlobalTextureUpdateContext::FinalizeVirtualTexturePageStates()
 	{
-		for (const auto& [logicalPage, stateAdapter] : mPageStateMap)
+		for (auto& [logicalPage, stateAdapter] : mPageStateMap)
 		{
 			std::optional<PolymorphicAdapter<I_VirtualTexturePageState>> optionalFinalStateAdapter{};
-			stateAdapter.AccessData([&optionalFinalStateAdapter]<typename StateType>(StateType & state)
+			stateAdapter.AccessData([&optionalFinalStateAdapter]<typename StateType>(StateType& state)
 			{
 				auto optionalFinalState{ state.OnContextFinalization() };
 
@@ -72,7 +72,7 @@ namespace Brawler
 
 	void GlobalTextureUpdateContext::CreatePageRequests()
 	{
-		for (const auto& [logicalPage, stateAdapter] : mPageStateMap)
+		for (auto& [logicalPage, stateAdapter] : mPageStateMap)
 		{
 			stateAdapter.AccessData([this, &logicalPage]<typename StateType>(StateType & state)
 			{

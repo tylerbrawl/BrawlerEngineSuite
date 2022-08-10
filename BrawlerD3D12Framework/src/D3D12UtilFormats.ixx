@@ -546,6 +546,17 @@ export namespace Util
 			/// alignment of texture row data.
 			/// </summary>
 			std::uint64_t TotalBytes;
+
+			constexpr CopyableFootprintsResults() :
+				FootprintsArr(),
+				TotalBytes(0)
+			{}
+
+			constexpr CopyableFootprintsResults(const CopyableFootprintsResults& rhs) = default;
+			constexpr CopyableFootprintsResults& operator=(const CopyableFootprintsResults& rhs) = default;
+
+			constexpr CopyableFootprintsResults(CopyableFootprintsResults&& rhs) noexcept = default;
+			constexpr CopyableFootprintsResults& operator=(CopyableFootprintsResults&& rhs) noexcept = default;
 		};
 
 		/// <summary>

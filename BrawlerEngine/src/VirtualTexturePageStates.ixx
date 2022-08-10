@@ -303,6 +303,6 @@ namespace Brawler
 		assert(logicalPage.VirtualTexturePtr != nullptr);
 		logicalPage.VirtualTexturePtr->GetActivePageTracker().UpdateTrackedPage(CreateTrackedPage(logicalPage), mDestPageInfo.GetPageIdentifier());
 		
-		return std::make_unique<GlobalTexturePageTransferRequest>(std::move(mDestPageInfo), std::move(mSrcPageInfo));
+		return std::make_unique<GlobalTexturePageTransferRequest>(logicalPage, std::move(mDestPageInfo), std::move(mSrcPageInfo));
 	}
 }

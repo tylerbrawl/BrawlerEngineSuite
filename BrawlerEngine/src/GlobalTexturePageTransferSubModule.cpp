@@ -9,7 +9,7 @@ module;
 #include <algorithm>
 #include <DxDef.h>
 
-module Brawler.VirtualTextureManagementSubModule;
+module Brawler.GlobalTexturePageTransferSubModule;
 import Util.D3D12;
 import Util.Math;
 import Brawler.VirtualTextureLogicalPage;
@@ -121,14 +121,14 @@ namespace Brawler
 		globalTexturePageTransferGroup.Reserve(2);
 
 		std::vector<GlobalTextureCopyRenderPass_T> globalTextureCopyArr{};
-		D3D12::FrameGraphBuilder globalTextureCopyBuilder{};
+		D3D12::FrameGraphBuilder globalTextureCopyBuilder{ builder.GetFrameGraph() };
 		globalTexturePageTransferGroup.AddJob([&globalTextureCopyArr, &globalTextureCopyBuilder, currRequestSpan] ()
 		{
 			globalTextureCopyArr = CreateGlobalTextureCopyRenderPasses(globalTextureCopyBuilder, currRequestSpan);
 		});
 
 		std::vector<IndirectionTextureUpdateRenderPass_T> indirectionTextureUpdateArr{};
-		D3D12::FrameGraphBuilder indirectionTextureUpdateBuilder{};
+		D3D12::FrameGraphBuilder indirectionTextureUpdateBuilder{ builder.GetFrameGraph() };
 		globalTexturePageTransferGroup.AddJob([&indirectionTextureUpdateArr, &indirectionTextureUpdateBuilder, currRequestSpan] ()
 		{
 			indirectionTextureUpdateArr = CreateIndirectionTextureUpdateRenderPasses(indirectionTextureUpdateBuilder, currRequestSpan);
@@ -260,8 +260,8 @@ namespace Brawler
 			const CD3DX12_BOX temporaryCopyTextureRegionBox{
 				0,
 				0,
-				static_cast<std::size_t>(paddedPageDimensions),
-				static_cast<std::size_t>(paddedPageDimensions)
+				static_cast<std::int32_t>(paddedPageDimensions),
+				static_cast<std::int32_t>(paddedPageDimensions)
 			};
 
 			D3D12::Texture2DSubResource globalTextureSubResource{ transferRequest.GetSourceGlobalTexturePageInfo().GetGlobalTexture2D().GetSubResource(0) };
@@ -337,18 +337,17 @@ namespace Brawler
 		for (const auto& transferRequestPtr : transferRequestSpan)
 		{
 			Util::Math::AlignToPowerOfTwo(requiredUploadBufferSize, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
-
-			const D3D12::TextureCopyRegion& destinationCopyRegion{ transferRequestPtr->GetDestinationGlobalTexturePageInfo().GetPageCopyRegion() };
 			
 			// Determine if we are dealing with a large page or a combined page. Large pages need to take
 			// four texels in the indirection texture, while the combined page only needs one.
 			const VirtualTextureLogicalPage& logicalPage{ transferRequestPtr->GetLogicalPage() };
+			const D3D12::TextureCopyRegion destinationCopyRegion{ logicalPage.GetIndirectionTextureCopyRegion() };
 
 			assert(logicalPage.VirtualTexturePtr != nullptr);
 			const bool isCombinedPage = (logicalPage.LogicalMipLevel >= logicalPage.VirtualTexturePtr->GetVirtualTextureMetadata().GetFirstMipLevelInCombinedPage());
 
 			IndirectionTextureUpdatePassInfo currPassInfo{
-				.DestCopyRegion{ destinationCopyRegion }
+				.DestCopyRegion{ std::move(destinationCopyRegion) }
 			};
 
 			if (isCombinedPage)

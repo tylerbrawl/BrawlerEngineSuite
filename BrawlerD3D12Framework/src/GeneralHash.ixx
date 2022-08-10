@@ -90,7 +90,7 @@ namespace Brawler
 
 		for (const auto byte : keyByteSpan)
 		{
-			hash ^= byte;
+			hash ^= static_cast<std::uint32_t>(byte);
 			hash *= FNV_PRIME;
 		}
 

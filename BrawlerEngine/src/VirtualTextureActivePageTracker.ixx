@@ -34,25 +34,15 @@ export namespace Brawler
 		std::optional<GlobalTexturePageIdentifier> GetStoragePageIdentifier(const TrackedPage trackedPage) const;
 
 	private:
-		std::unordered_map<TrackedPage, GlobalTexturePageIdentifier> mPageStorageMap;
+		std::unordered_map<TrackedPage, GlobalTexturePageIdentifier, GeneralHash<TrackedPage>> mPageStorageMap;
 	};
 }
 
-// --------------------------------------------------------------------------------------------------------------------------------------------
-
-export namespace std
+export namespace Brawler
 {
-	template <>
-	struct hash<Brawler::VirtualTextureActivePageTracker::TrackedPage>
+	bool operator==(const VirtualTextureActivePageTracker::TrackedPage& lhs, const VirtualTextureActivePageTracker::TrackedPage& rhs)
 	{
-	private:
-		using KeyType = Brawler::VirtualTextureActivePageTracker::TrackedPage;
-
-	public:
-		std::size_t operator()(const KeyType& key) const noexcept
-		{
-			const Brawler::GeneralHash<KeyType> hasher{};
-			return hasher(key);
-		}
-	};
+		return (lhs.LogicalMipLevel == rhs.LogicalMipLevel && lhs.LogicalPageXCoordinate == rhs.LogicalPageXCoordinate &&
+			lhs.LogicalPageYCoordinate == rhs.LogicalPageYCoordinate);
+	}
 }
