@@ -1,38 +1,36 @@
 module;
 #include <cstdint>
+#include <array>
 #include <vector>
 
-export module Brawler.VirtualTextureManagementSubModule:IndirectionTextureUpdater;
-import Brawler.D3D12.Texture2D;
-import Brawler.D3D12.TextureCopyBufferSubAllocation;
+export module Brawler.IndirectionTextureUpdater;
+import Brawler.VirtualTextureLogicalPage;
+import Brawler.GlobalTexturePageInfo;
+import Brawler.FrameGraphBuilding;
 import Brawler.D3D12.TextureCopyRegion;
-import Brawler.GlobalTexturePageSwapOperation;
-import Brawler.D3D12.FrameGraphBuilding;
-import Brawler.D3D12.DirectContext;
+import Brawler.D3D12.TextureCopyBufferSubAllocation;
+import Brawler.D3D12.Texture2D;
 
 export namespace Brawler
 {
 	class IndirectionTextureUpdater
 	{
 	private:
-		struct UpdateInfo
-		{
-			// We need to store the D3D12::Texture2DSubResource separately because
-			// D3D12::TextureCopyRegion can only return a const I_GPUResource&.
-			D3D12::Texture2DSubResource DestinationSubResource;
-			
-			D3D12::TextureCopyRegion DestinationCopyRegion;
-			D3D12::TextureCopyBufferSubAllocation SourceCopySubAllocation;
-			std::uint32_t IndirectionTextureTexelValue;
-		};
-
 		struct IndirectionTextureUpdatePassInfo
 		{
-			std::vector<UpdateInfo> UpdateInfoArr;
+			D3D12::TextureCopyRegion DestCopyRegion;
+			D3D12::TextureCopyBufferSubAllocation SrcSubAllocation;
+		};
+
+		struct UpdateInfoStorage
+		{
+			IndirectionTextureUpdatePassInfo PassInfo;
+			D3D12::Texture2DSubResource IndirectionTextureSubResource;
+			std::array<std::uint32_t, 2> IndirectionTexelValueArr;
 		};
 
 	public:
-		using IndirectionTextureUpdatePass_T = D3D12::RenderPass<D3D12::GPUCommandQueueType::DIRECT, IndirectionTextureUpdatePassInfo>;
+		using IndirectionTextureUpdateRenderPass_T = D3D12::RenderPass<D3D12::GPUCommandQueueType::DIRECT, IndirectionTextureUpdatePassInfo>;
 
 	public:
 		IndirectionTextureUpdater() = default;
@@ -43,17 +41,16 @@ export namespace Brawler
 		IndirectionTextureUpdater(IndirectionTextureUpdater&& rhs) noexcept = default;
 		IndirectionTextureUpdater& operator=(IndirectionTextureUpdater&& rhs) noexcept = default;
 
-		void AddUpdatesForPageSwapOperation(const GlobalTexturePageSwapOperation& pageSwapOperation);
-		IndirectionTextureUpdatePass_T CreateIndirectionTextureUpdatesRenderPass(D3D12::FrameGraphBuilder& builder);
+		void UpdateIndirectionTextureEntry(const VirtualTextureLogicalPage& logicalPage, const GlobalTexturePageInfo& destinationPageInfo);
+		void ClearIndirectionTextureEntry(const VirtualTextureLogicalPage& logicalPage);
+
+		std::vector<IndirectionTextureUpdateRenderPass_T> FinalizeIndirectionTextureUpdates(D3D12::FrameGraphBuilder& builder);
 
 	private:
-		void AddReplacementPageUpdateInfo(const GlobalTexturePageSwapOperation& pageSwapOperation);
-		void AddOldPageUpdateInfo(const GlobalTexturePageSwapOperation& pageSwapOperation);
-
-		void AllocateDataUploadBuffer(D3D12::FrameGraphBuilder& builder);
+		void AddUpdateInfo(const VirtualTextureLogicalPage& logicalPage, const std::uint32_t newIndirectionTexelValue);
 
 	private:
-		std::vector<UpdateInfo> mUpdateInfoArr;
-		std::size_t mRequiredUploadBufferSize;
+		std::vector<UpdateInfoStorage> mUpdateInfoStorageArr;
+		std::size_t mCurrRequiredBufferSize;
 	};
 }

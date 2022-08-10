@@ -254,6 +254,8 @@
     <ClCompile Include="src\GlobalTexturePageInfo.cpp" />
     <ClCompile Include="src\GlobalTexturePageInfo.ixx" />
     <ClCompile Include="src\GlobalTexturePageRemovalRequest.ixx" />
+    <ClCompile Include="src\GlobalTexturePageRemovalSubModule.cpp" />
+    <ClCompile Include="src\GlobalTexturePageRemovalSubModule.ixx" />
     <ClCompile Include="src\GlobalTexturePageReservationResults.ixx" />
     <ClCompile Include="src\GlobalTexturePageSlot.cpp" />
     <ClCompile Include="src\GlobalTexturePageSlot.ixx" />

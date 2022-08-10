@@ -17,6 +17,8 @@ export namespace Brawler
 		GlobalTexturePageRemovalRequest(GlobalTexturePageRemovalRequest&& rhs) noexcept = default;
 		GlobalTexturePageRemovalRequest& operator=(GlobalTexturePageRemovalRequest&& rhs) noexcept = default;
 
+		const VirtualTextureLogicalPage& GetLogicalPage() const;
+
 	private:
 		VirtualTextureLogicalPage mLogicalPage;
 	};

@@ -9,6 +9,7 @@ import Brawler.GlobalTexturePageTransferRequest;
 import Brawler.D3D12.FrameGraphBuilding;
 import Brawler.D3D12.TextureCopyRegion;
 import Brawler.D3D12.TextureCopyBufferSubAllocation;
+import Brawler.IndirectionTextureUpdater;
 
 export namespace Brawler
 {
@@ -21,15 +22,9 @@ export namespace Brawler
 			D3D12::TextureCopyRegion SrcCopyRegion;
 		};
 
-		struct IndirectionTextureUpdatePassInfo
-		{
-			D3D12::TextureCopyRegion DestCopyRegion;
-			D3D12::TextureCopyBufferSubAllocation SrcDataBufferSubAllocation;
-		};
-
 	public:
 		using GlobalTextureCopyRenderPass_T = D3D12::RenderPass<D3D12::GPUCommandQueueType::COPY, GlobalTextureCopyPassInfo>;
-		using IndirectionTextureUpdateRenderPass_T = D3D12::RenderPass<D3D12::GPUCommandQueueType::DIRECT, IndirectionTextureUpdatePassInfo>;
+		using IndirectionTextureUpdateRenderPass_T = IndirectionTextureUpdater::IndirectionTextureUpdateRenderPass_T;
 
 		struct GlobalTextureTransferPassCollection
 		{

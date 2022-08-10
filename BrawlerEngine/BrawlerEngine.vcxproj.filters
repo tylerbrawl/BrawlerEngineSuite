@@ -489,12 +489,6 @@
     <ClCompile Include="src\VirtualTextureManagementSubModule.cpp">
       <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
     </ClCompile>
-    <ClCompile Include="src\IndirectionTextureUpdater.ixx">
-      <Filter>Module Files\Render Modules\GPU Scene Update</Filter>
-    </ClCompile>
-    <ClCompile Include="src\IndirectionTextureUpdater.cpp">
-      <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
-    </ClCompile>
     <ClCompile Include="src\GPUSceneBuffer.ixx">
       <Filter>Module Files\GPU Scene Representation</Filter>
     </ClCompile>
@@ -598,6 +592,18 @@
       <Filter>Module Files\Render Modules\GPU Scene Update</Filter>
     </ClCompile>
     <ClCompile Include="src\GlobalTexturePageTransferSubModule.cpp">
+      <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTexturePageRemovalSubModule.ixx">
+      <Filter>Module Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTexturePageRemovalSubModule.cpp">
+      <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IndirectionTextureUpdater.ixx">
+      <Filter>Module Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IndirectionTextureUpdater.cpp">
       <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
     </ClCompile>
   </ItemGroup>
