@@ -2,6 +2,7 @@ module;
 #include <vector>
 #include <memory>
 #include <optional>
+#include <span>
 #include <DxDef.h>
 
 export module Brawler.GlobalTexturePageUploadSet;
@@ -28,6 +29,8 @@ export namespace Brawler
 
 		bool HasActiveUploadRequests() const;
 		bool ReadyForGlobalTextureUploads() const;
+
+		std::span<const std::unique_ptr<GlobalTexturePageUploadRequest>> GetUploadRequestSpan() const;
 
 	private:
 		std::unique_ptr<D3D12::BufferResource> mUploadBufferPtr;

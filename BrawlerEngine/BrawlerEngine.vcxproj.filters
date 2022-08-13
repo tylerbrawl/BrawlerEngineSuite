@@ -615,6 +615,9 @@
     <ClCompile Include="src\GlobalTexturePageUploadSubModule.ixx">
       <Filter>Module Files\Render Modules\GPU Scene Update</Filter>
     </ClCompile>
+    <ClCompile Include="src\GlobalTexturePageUploadSubModule.cpp">
+      <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

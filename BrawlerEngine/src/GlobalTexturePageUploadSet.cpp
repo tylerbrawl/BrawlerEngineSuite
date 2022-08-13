@@ -3,6 +3,7 @@ module;
 #include <memory>
 #include <optional>
 #include <filesystem>
+#include <span>
 #include <cassert>
 #include <DxDef.h>
 
@@ -107,5 +108,10 @@ namespace Brawler
 
 		assert(mUploadBufferPtr != nullptr && "ERROR: An attempt was made to call GlobalTexturePageUploadSet::ReadyForGlobalTextureUploads() before GlobalTexturePageUploadSet::PrepareRequestedPageData() was called!");
 		return mHPageDataUploadEvent.IsAssetRequestComplete();
+	}
+
+	std::span<const std::unique_ptr<GlobalTexturePageUploadRequest>> GlobalTexturePageUploadSet::GetUploadRequestSpan() const
+	{
+		return std::span<const std::unique_ptr<GlobalTexturePageUploadRequest>>{ mRequestPtrArr };
 	}
 }

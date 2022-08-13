@@ -267,6 +267,7 @@
     <ClCompile Include="src\GlobalTexturePageUploadRequest.ixx" />
     <ClCompile Include="src\GlobalTexturePageUploadSet.cpp" />
     <ClCompile Include="src\GlobalTexturePageUploadSet.ixx" />
+    <ClCompile Include="src\GlobalTexturePageUploadSubModule.cpp" />
     <ClCompile Include="src\GlobalTexturePageUploadSubModule.ixx" />
     <ClCompile Include="src\GlobalTextureReservedPage.cpp" />
     <ClCompile Include="src\GlobalTextureReservedPage.ixx" />
