@@ -2,12 +2,14 @@ module;
 #include <vector>
 #include <mutex>
 #include <span>
+#include <memory>
 
 export module Brawler.GlobalTexturePageUploadSubModule;
 import Brawler.GlobalTexturePageUploadSet;
 import Brawler.IndirectionTextureUpdater;
 import Brawler.D3D12.TextureCopyRegion;
 import Brawler.D3D12.TextureCopyBufferSnapshot;
+import Brawler.D3D12.BufferResource;
 import Brawler.D3D12.FrameGraphBuilding;
 
 export namespace Brawler
@@ -15,9 +17,9 @@ export namespace Brawler
 	class GlobalTexturePageUploadSubModule
 	{
 	private:
-		struct PendingUploadSetDeletion
+		struct PendingUploadBufferDeletion
 		{
-			GlobalTexturePageUploadSet UploadSet;
+			std::unique_ptr<D3D12::BufferResource> UploadBufferPtr;
 			std::uint64_t SafeDeletionFrameNumber;
 		};
 
@@ -52,7 +54,7 @@ export namespace Brawler
 		GlobalTextureUploadPassCollection GetPageUploadRenderPasses(D3D12::FrameGraphBuilder& builder);
 
 	private:
-		void CheckForUploadSetDeletions();
+		void CheckForUploadBufferDeletions();
 
 		static std::vector<GlobalTextureCopyRenderPass_T> CreateGlobalTextureCopyRenderPasses(const std::span<const GlobalTexturePageUploadSet> uploadSetSpan);
 		static std::vector<IndirectionTextureUpdateRenderPass_T> CreateIndirectionTextureUpdateRenderPasses(D3D12::FrameGraphBuilder& builder, const std::span<const GlobalTexturePageUploadSet> uploadSetSpan);
@@ -60,6 +62,6 @@ export namespace Brawler
 	private:
 		std::vector<GlobalTexturePageUploadSet> mUploadSetArr;
 		mutable std::mutex mCritSection;
-		std::vector<PendingUploadSetDeletion> mPendingDeletionArr;
+		std::vector<PendingUploadBufferDeletion> mPendingDeletionArr;
 	};
 }

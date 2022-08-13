@@ -15,6 +15,7 @@ namespace Brawler
 {
 	class VirtualTextureDatabase;
 	class VirtualTextureManagementSubModule;
+	class VirtualTextureStreamingNotifier;
 }
 
 export namespace Brawler
@@ -24,6 +25,7 @@ export namespace Brawler
 	private:
 		friend class VirtualTextureDatabase;
 		friend class VirtualTextureManagementSubModule;
+		friend class VirtualTextureStreamingNotifier;
 
 	public:
 		explicit VirtualTexture(const FilePathHash bvtxFileHash);
@@ -60,7 +62,7 @@ export namespace Brawler
 		void SetFirstUseableFrameNumber(const std::uint64_t frameNumber);
 
 		void IncrementStreamingRequestCount();
-		void DecrementStreamingRequestCount();
+		void DecrementStreamingRequestCount(const std::uint64_t safeDeletionFrameNumber);
 
 		bool SafeToDelete() const;
 
@@ -73,5 +75,6 @@ export namespace Brawler
 		VirtualTextureActivePageTracker mActivePageTracker;
 		std::atomic<std::uint64_t> mStreamingRequestsInFlight;
 		std::atomic<std::uint64_t> mFirstAvailableFrameNumber;
+		std::atomic<std::uint64_t> mSafeDeletionFrameNumber;
 	};
 }

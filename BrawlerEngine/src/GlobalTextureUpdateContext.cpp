@@ -3,6 +3,7 @@ module;
 #include <optional>
 #include <vector>
 #include <memory>
+#include <cassert>
 
 module Brawler.GlobalTextureUpdateContext;
 import Brawler.VirtualTexturePageStates;
@@ -52,6 +53,22 @@ namespace Brawler
 		CreatePageRequests();
 	}
 
+	bool GlobalTextureUpdateContext::HasPendingGlobalTextureChanges() const
+	{
+		return (mPageUploadSet.has_value() || !mTransferRequestPtrArr.empty() || !mRemovalRequestPtrArr.empty());
+	}
+
+	bool GlobalTextureUpdateContext::ReadyForGPUSubmission() const
+	{
+		if (!HasPendingGlobalTextureChanges())
+			return true;
+
+		// We only need to wait for page data used in upload requests to be uploaded into the
+		// upload buffer. If no upload requests exists, then we can immediately proceed with GPU
+		// submission.
+		return (!mPageUploadSet.has_value() || mPageUploadSet->ReadyForGlobalTextureUploads());
+	}
+
 	void GlobalTextureUpdateContext::FinalizeVirtualTexturePageStates()
 	{
 		for (auto& [logicalPage, stateAdapter] : mPageStateMap)
@@ -80,7 +97,12 @@ namespace Brawler
 				using ResultType = std::decay_t<decltype(operationDetailsResult)>;
 
 				if constexpr (std::is_same_v<ResultType, std::unique_ptr<GlobalTexturePageUploadRequest>>)
-					mUploadRequestPtrArr.push_back(std::move(operationDetailsResult));
+				{
+					if (!mPageUploadSet.has_value())
+						mPageUploadSet = GlobalTexturePageUploadSet{};
+
+					mPageUploadSet->AddPageUploadRequest(std::move(operationDetailsResult));
+				}
 
 				else if constexpr (std::is_same_v<ResultType, std::unique_ptr<GlobalTexturePageTransferRequest>>)
 					mTransferRequestPtrArr.push_back(std::move(operationDetailsResult));
@@ -88,6 +110,12 @@ namespace Brawler
 				else if constexpr (std::is_same_v<ResultType, std::unique_ptr<GlobalTexturePageRemovalRequest>>)
 					mRemovalRequestPtrArr.push_back(std::move(operationDetailsResult));
 			});
+		}
+
+		if (mPageUploadSet.has_value())
+		{
+			assert(mPageUploadSet->HasActiveUploadRequests());
+			mPageUploadSet->PrepareRequestedPageData();
 		}
 	}
 }

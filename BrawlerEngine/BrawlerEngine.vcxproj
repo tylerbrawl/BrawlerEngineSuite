@@ -377,6 +377,8 @@
     <ClCompile Include="src\VirtualTexturePageStateTraits.ixx" />
     <ClCompile Include="src\VirtualTexturePageStorageTracker.cpp" />
     <ClCompile Include="src\VirtualTexturePageStorageTracker.ixx" />
+    <ClCompile Include="src\VirtualTextureStreamingNotifier.cpp" />
+    <ClCompile Include="src\VirtualTextureStreamingNotifier.ixx" />
     <ClCompile Include="src\WindowDisplayMode.ixx" />
     <ClCompile Include="src\WindowedModeWindowState.cpp" />
     <ClCompile Include="src\WindowedModeWindowState.ixx" />

@@ -86,7 +86,8 @@ namespace Brawler
 		mMetadata(),
 		mActivePageTracker(),
 		mStreamingRequestsInFlight(0),
-		mFirstAvailableFrameNumber(NOT_READY_FRAME_NUMBER)
+		mFirstAvailableFrameNumber(NOT_READY_FRAME_NUMBER),
+		mSafeDeletionFrameNumber(0)
 	{
 		mMetadata.InitializeFromVirtualTextureFile(mBVTXFileHash);
 		InitializeIndirectionTexture();
@@ -134,7 +135,9 @@ namespace Brawler
 		if (firstAvailableFrameNumber == NOT_READY_FRAME_NUMBER) [[unlikely]]
 			return false;
 
-		return (Util::Engine::GetTrueFrameNumber() >= firstAvailableFrameNumber);
+		// We use Util::Engine::GetCurrentFrameNumber() because we are describing whether or not
+		// the virtual texture data is available for use on the GPU timeline.
+		return (Util::Engine::GetCurrentFrameNumber() >= firstAvailableFrameNumber);
 	}
 	
 	void VirtualTexture::InitializeIndirectionTexture()
@@ -212,15 +215,20 @@ namespace Brawler
 		mStreamingRequestsInFlight.fetch_add(1, std::memory_order::relaxed);
 	}
 
-	void VirtualTexture::DecrementStreamingRequestCount()
+	void VirtualTexture::DecrementStreamingRequestCount(const std::uint64_t safeDeletionFrameNumber)
 	{
-		mStreamingRequestsInFlight.fetch_sub(1, std::memory_order::relaxed);
+		mSafeDeletionFrameNumber.store(safeDeletionFrameNumber, std::memory_order::relaxed);
+		mStreamingRequestsInFlight.fetch_sub(1, std::memory_order::release);
 	}
 
 	bool VirtualTexture::SafeToDelete() const
 	{
 		// Do not delete this VirtualTexture instance unless there are no pending streaming requests.
+		const numStreamingRequestsInFlight = mStreamingRequestsInFlight.load(std::memory_order::acquire);
 
-		return (mStreamingRequestsInFlight.load(std::memory_order::relaxed) == 0);
+		if (numStreamingRequestsInFlight > 0)
+			return false;
+
+		return (Util::Engine::GetTrueFrameNumber() >= mSafeDeletionFrameNumber.load(std::memory_order::relaxed));
 	}
 }

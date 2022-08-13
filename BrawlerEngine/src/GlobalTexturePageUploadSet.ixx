@@ -31,6 +31,7 @@ export namespace Brawler
 		bool ReadyForGlobalTextureUploads() const;
 
 		std::span<const std::unique_ptr<GlobalTexturePageUploadRequest>> GetUploadRequestSpan() const;
+		std::unique_ptr<D3D12::BufferResource> ExtractUploadBufferResource();
 
 	private:
 		std::unique_ptr<D3D12::BufferResource> mUploadBufferPtr;

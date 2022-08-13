@@ -114,4 +114,9 @@ namespace Brawler
 	{
 		return std::span<const std::unique_ptr<GlobalTexturePageUploadRequest>>{ mRequestPtrArr };
 	}
+
+	std::unique_ptr<D3D12::BufferResource> GlobalTexturePageUploadSet::ExtractUploadBufferResource()
+	{
+		return std::move(mUploadBufferPtr);
+	}
 }

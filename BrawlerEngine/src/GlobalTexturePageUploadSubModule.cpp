@@ -31,7 +31,7 @@ namespace Brawler
 
 	GlobalTexturePageUploadSubModule::GlobalTextureUploadPassCollection GlobalTexturePageUploadSubModule::GetPageUploadRenderPasses(D3D12::FrameGraphBuilder& builder)
 	{
-		CheckForUploadSetDeletions();
+		CheckForUploadBufferDeletions();
 		
 		std::vector<GlobalTexturePageUploadSet> extractedUploadSetArr{};
 
@@ -62,19 +62,19 @@ namespace Brawler
 
 		pageUploadGroup.ExecuteJobs();
 
-		// The GlobalTexturePageUploadSet instances own the upload buffer resource which contains the page
+		// The GlobalTexturePageUploadSet instances own the upload BufferResource which contains the page
 		// data which must be copied to the GlobalTextures; if we destroy the GlobalTexturePageUploadSet
 		// instances, then we will also destroy these buffers. We do not want to do that until we know that
 		// the GPU has finished accessing the relevant information.
 		//
-		// To account for this, we move the instances into an array of PendingUploadSetDeletion instances
-		// for later deletion. We do not need any synchronization on this array because the Brawler Engine
-		// only does FrameGraph building one frame at a time; thus, this function will never be called
-		// concurrently by multiple threads.
+		// To account for this, we move the BufferResource instances representing the upload buffers into an 
+		// array of PendingUploadBufferDeletion instances for later deletion. We do not need any synchronization 
+		// on this array because the Brawler Engine only does FrameGraph building one frame at a time; thus, this 
+		// function will never be called concurrently by multiple threads.
 		const std::uint64_t safeDeletionFrameNumber = (Util::Engine::GetCurrentFrameNumber() + Util::Engine::MAX_FRAMES_IN_FLIGHT);
 
-		for (auto&& extractedUploadSet : extractedUploadSetArr)
-			mPendingDeletionArr.emplace_back(std::move(extractedUploadSet), safeDeletionFrameNumber);
+		for (auto& extractedUploadSet : extractedUploadSetArr)
+			mPendingDeletionArr.emplace_back(std::move(extractedUploadSet.ExtractUploadBufferResource()), safeDeletionFrameNumber);
 
 		return GlobalTextureUploadPassCollection{
 			.GlobalTextureCopyPassArr{ std::move(globalTextureCopyPassArr) },
@@ -82,9 +82,9 @@ namespace Brawler
 		};
 	}
 
-	void GlobalTexturePageUploadSubModule::CheckForUploadSetDeletions()
+	void GlobalTexturePageUploadSubModule::CheckForUploadBufferDeletions()
 	{
-		std::erase_if(mPendingDeletionArr, [] (const PendingUploadSetDeletion& pendingDeletion) { return (Util::Engine::GetCurrentFrameNumber() >= pendingDeletion.SafeDeletionFrameNumber); });
+		std::erase_if(mPendingDeletionArr, [] (const PendingUploadBufferDeletion& pendingDeletion) { return (Util::Engine::GetCurrentFrameNumber() >= pendingDeletion.SafeDeletionFrameNumber); });
 	}
 
 	std::vector<GlobalTexturePageUploadSubModule::GlobalTextureCopyRenderPass_T> GlobalTexturePageUploadSubModule::CreateGlobalTextureCopyRenderPasses(const std::span<const GlobalTexturePageUploadSet> uploadSetSpan)

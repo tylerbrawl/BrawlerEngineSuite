@@ -1,12 +1,13 @@
 module;
 
 export module Brawler.GlobalTexturePageTransferRequest;
+import Brawler.VirtualTextureStreamingNotifier;
 import Brawler.GlobalTexturePageInfo;
 import Brawler.VirtualTextureLogicalPage;
 
 export namespace Brawler
 {
-	class GlobalTexturePageTransferRequest
+	class GlobalTexturePageTransferRequest final : public VirtualTextureStreamingNotifier
 	{
 	public:
 		GlobalTexturePageTransferRequest() = default;
@@ -18,13 +19,10 @@ export namespace Brawler
 		GlobalTexturePageTransferRequest(GlobalTexturePageTransferRequest&& rhs) noexcept = default;
 		GlobalTexturePageTransferRequest& operator=(GlobalTexturePageTransferRequest&& rhs) noexcept = default;
 
-		const VirtualTextureLogicalPage& GetLogicalPage() const;
-
 		const GlobalTexturePageInfo& GetDestinationGlobalTexturePageInfo() const;
 		const GlobalTexturePageInfo& GetSourceGlobalTexturePageInfo() const;
 
 	private:
-		VirtualTextureLogicalPage mLogicalPage;
 		GlobalTexturePageInfo mDestPageInfo;
 		GlobalTexturePageInfo mSrcPageInfo;
 	};

@@ -2,10 +2,11 @@ module;
 
 export module Brawler.GlobalTexturePageRemovalRequest;
 import Brawler.VirtualTextureLogicalPage;
+import Brawler.VirtualTextureStreamingNotifier;
 
 export namespace Brawler
 {
-	class GlobalTexturePageRemovalRequest
+	class GlobalTexturePageRemovalRequest final : public VirtualTextureStreamingNotifier
 	{
 	public:
 		GlobalTexturePageRemovalRequest() = default;
@@ -16,10 +17,5 @@ export namespace Brawler
 
 		GlobalTexturePageRemovalRequest(GlobalTexturePageRemovalRequest&& rhs) noexcept = default;
 		GlobalTexturePageRemovalRequest& operator=(GlobalTexturePageRemovalRequest&& rhs) noexcept = default;
-
-		const VirtualTextureLogicalPage& GetLogicalPage() const;
-
-	private:
-		VirtualTextureLogicalPage mLogicalPage;
 	};
 }
