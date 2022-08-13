@@ -1183,6 +1183,7 @@
     <ClCompile Include="src\AssetRequestEventNotifier.ixx" />
     <ClCompile Include="src\BPKArchiveReader.cpp" />
     <ClCompile Include="src\BPKArchiveReader.ixx" />
+    <ClCompile Include="src\CustomFileAssetIORequest.ixx" />
     <ClCompile Include="src\DirectStorageAssetIORequestBuilder.cpp" />
     <ClCompile Include="src\DirectStorageAssetIORequestBuilder.ixx" />
     <ClCompile Include="src\DirectStorageAssetIORequestHandler.cpp" />

@@ -250,6 +250,7 @@
   <ItemGroup>
     <ClCompile Include="src\AliasedGPUMemoryManager.cpp" />
     <ClCompile Include="src\AliasedGPUMemoryManager.ixx" />
+    <ClCompile Include="src\AlignedByteAddressBufferSubAllocation.ixx" />
     <ClCompile Include="src\AsyncGPUResourceBuilder.ixx" />
     <ClCompile Include="src\AtomicSharedPtr.ixx" />
     <ClCompile Include="src\BarrierMergerStateContainer.ixx" />

@@ -54,7 +54,11 @@ export namespace Brawler
 		{
 		public:
 			ByteAddressBufferSubAllocation() requires (NumBytes != DYNAMIC_EXTENT) = default;
-			explicit ByteAddressBufferSubAllocation(const std::size_t numBytes) requires (NumBytes == DYNAMIC_EXTENT);
+
+			explicit ByteAddressBufferSubAllocation(const std::size_t numBytes) requires (NumBytes == DYNAMIC_EXTENT) :
+				I_BufferSubAllocation(),
+				ByteCountContainer<NumBytes>(numBytes)
+			{}
 
 			ByteAddressBufferSubAllocation(const ByteAddressBufferSubAllocation& rhs) = delete;
 			ByteAddressBufferSubAllocation& operator=(const ByteAddressBufferSubAllocation& rhs) = delete;
@@ -102,12 +106,6 @@ namespace Brawler
 {
 	namespace D3D12
 	{
-		template <std::size_t NumBytes>
-		ByteAddressBufferSubAllocation<NumBytes>::ByteAddressBufferSubAllocation(const std::size_t numBytes) requires (NumBytes == DYNAMIC_EXTENT) :
-			I_BufferSubAllocation(),
-			ByteCountContainer<NumBytes>(numBytes)
-		{}
-
 		template <std::size_t NumBytes>
 		std::size_t ByteAddressBufferSubAllocation<NumBytes>::GetSubAllocationSize() const
 		{

@@ -1251,6 +1251,9 @@
     <ClCompile Include="src\Texture2DArraySliceRange.cpp">
       <Filter>Source Files\GPU Resources\Texture Resource Types\2D Texture Resource Types</Filter>
     </ClCompile>
+    <ClCompile Include="src\AlignedByteAddressBufferSubAllocation.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types\Buffer Sub-Allocation Types</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

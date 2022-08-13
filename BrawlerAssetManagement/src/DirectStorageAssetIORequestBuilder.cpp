@@ -11,6 +11,9 @@ import Brawler.AssetManagement.BPKArchiveReader;
 import Brawler.D3D12.BufferResource;
 import Util.DirectStorage;
 import Util.General;
+import Util.Engine;
+import Brawler.D3D12.GPUResourceLifetimeType;
+import Brawler.D3D12.PersistentGPUResourceManager;
 
 namespace Brawler
 {
@@ -24,6 +27,24 @@ namespace Brawler
 
 				assert(tocEntry.UncompressedSizeInBytes <= Util::DirectStorage::STAGING_BUFFER_SIZE_IN_BYTES && "ERROR: The uncompressed size of a BPK asset was too large to fit into a DirectStorage staging buffer! Either increase the value of Util::DirectStorage::STAGING_BUFFER_SIZE_IN_BYTES or decompose the asset into smaller parts.");
 			}
+		}
+
+		void VerifyCustomFileAssetIORequestCompatibility(const CustomFileAssetIORequest& customFileRequest)
+		{
+			assert(customFileRequest.UncompressedDataSizeInBytes <= Util::DirectStorage::STAGING_BUFFER_SIZE_IN_BYTES && "ERROR: The uncompressed size of a custom file asset I/O request was too large to fit into a DirectStorage staging buffer! Either increase the value of Util::DirectStorage::STAGING_BUFFER_SIZE_IN_BYTES or decompose the asset into smaller parts.");
+		}
+
+		void VerifyD3D12ResourceCreation(Brawler::D3D12::I_GPUResource& resource)
+		{
+			// DirectStorage will copy the data into the buffer on the GPU automatically. Thus, since the
+			// Brawler Engine will typically delay the creation of ID3D12Resource instances until the first
+			// use of an I_GPUResource in a FrameGraph, we need to make sure that the buffer is actually created
+			// in GPU memory here.
+			
+			assert(resource.GetGPUResourceLifetimeType() == D3D12::GPUResourceLifetimeType::PERSISTENT && "ERROR: An attempt was made to upload data into a transient BufferResource using DirectStorage!");
+
+			if (!resource.IsD3D12ResourceCreated())
+				Util::General::CheckHRESULT(Util::Engine::GetPersistentGPUResourceManager().AllocatePersistentGPUResource(resource));
 		}
 	}
 }
@@ -43,6 +64,7 @@ namespace Brawler
 		void DirectStorageAssetIORequestBuilder::AddAssetIORequest(const Brawler::FilePathHash pathHash, Brawler::D3D12::I_BufferSubAllocation& bufferSubAllocation)
 		{
 			VerifyBPKAssetCompatibility(pathHash);
+			VerifyD3D12ResourceCreation(bufferSubAllocation.GetBufferResource());
 			
 			const BPKArchiveReader::TOCEntry& tocEntry{ BPKArchiveReader::GetInstance().GetTableOfContentsEntry(pathHash) };
 			const bool isDataCompressed = tocEntry.IsDataCompressed();
@@ -68,7 +90,7 @@ namespace Brawler
 			};
 
 			GetCurrentRequestContainer().push_back(DSTORAGE_REQUEST{
-				.Options{std::move(requestOptions)},
+				.Options{ std::move(requestOptions) },
 				.Source{ std::move(requestSrc) },
 				.Destination{ std::move(requestDest) },
 				.UncompressedSize = static_cast<std::uint32_t>(tocEntry.UncompressedSizeInBytes),
@@ -79,6 +101,9 @@ namespace Brawler
 
 		void DirectStorageAssetIORequestBuilder::AddAssetIORequest(const CustomFileAssetIORequest& customFileRequest, Brawler::D3D12::I_BufferSubAllocation& bufferSubAllocation)
 		{
+			VerifyCustomFileAssetIORequestCompatibility(customFileRequest);
+			VerifyD3D12ResourceCreation(bufferSubAllocation.GetBufferResource());
+			
 			IDStorageFile& dStorageFile{ GetDStorageFileForCustomPath(customFileRequest.FilePath) };
 
 			assert(bufferSubAllocation.GetSubAllocationSize() >= customFileRequest.UncompressedDataSizeInBytes && "ERROR: An attempt was made to write asset data directly into an I_BufferSubAllocation, but the sub-allocation was not large enough!");
@@ -110,9 +135,9 @@ namespace Brawler
 			};
 
 			GetCurrentRequestContainer().push_back(DSTORAGE_REQUEST{
-				.Options{std::move(requestOptions)},
-				.Source{std::move(requestSrc)},
-				.Destination{std::move(requestDest)},
+				.Options{ std::move(requestOptions) },
+				.Source{ std::move(requestSrc) },
+				.Destination{ std::move(requestDest) },
 				.UncompressedSize = static_cast<std::uint32_t>(customFileRequest.UncompressedDataSizeInBytes),
 				.CancellationTag{},
 				.Name{ nullptr }
