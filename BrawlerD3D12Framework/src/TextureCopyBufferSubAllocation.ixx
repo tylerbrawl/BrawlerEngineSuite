@@ -64,6 +64,7 @@ export namespace Brawler
 			explicit TextureCopyBufferSubAllocation(const TextureSubResource& textureSubResource);
 			explicit TextureCopyBufferSubAllocation(const TextureCopyRegion& textureCopyRegion);
 			explicit TextureCopyBufferSubAllocation(const Util::D3D12::CopyableFootprint& footprint);
+			explicit TextureCopyBufferSubAllocation(const D3D12_SUBRESOURCE_FOOTPRINT& footprint);
 
 			TextureCopyBufferSubAllocation(const TextureCopyBufferSubAllocation& rhs) = delete;
 			TextureCopyBufferSubAllocation& operator=(const TextureCopyBufferSubAllocation& rhs) = delete;

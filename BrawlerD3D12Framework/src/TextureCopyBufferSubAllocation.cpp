@@ -4,6 +4,7 @@ module;
 module Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.D3D12.TextureSubResource;
 import Util.Engine;
+import Util.D3D12;
 
 namespace Brawler
 {
@@ -41,6 +42,21 @@ namespace Brawler
 			mTextureInfo.UnpaddedRowSizeInBytes = footprint.RowSizeInBytes;
 
 			mTextureInfo.TotalBytesRequired = ((footprint.Layout.Footprint.RowPitch * (footprint.NumRows - 1)) + mTextureInfo.UnpaddedRowSizeInBytes);
+		}
+
+		TextureCopyBufferSubAllocation::TextureCopyBufferSubAllocation(const D3D12_SUBRESOURCE_FOOTPRINT& footprint) :
+			mTextureInfo()
+		{
+			mTextureInfo.Footprint = D3D12_PLACED_SUBRESOURCE_FOOTPRINT{
+				.Offset = 0,
+				.Footprint{ footprint }
+			};
+			mTextureInfo.RowCount = footprint.Height;
+			
+			const std::size_t numBitsPerRow = (Util::D3D12::GetBitsPerPixelForFormat(footprint.Format) * footprint.Width);
+			mTextureInfo.UnpaddedRowSizeInBytes = ((numBitsPerRow / 8) + std::min<std::size_t>(numBitsPerRow % 8, 1));
+
+			mTextureInfo.TotalBytesRequired = ((footprint.RowPitch * (footprint.Height - 1)) + mTextureInfo.UnpaddedRowSizeInBytes);
 		}
 
 		std::size_t TextureCopyBufferSubAllocation::GetSubAllocationSize() const

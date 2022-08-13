@@ -34,6 +34,7 @@ export namespace Brawler
 		std::uint32_t GetFirstMipLevelInCombinedPage() const;
 
 		DXGI_FORMAT GetTextureFormat() const;
+		const D3D12_SUBRESOURCE_FOOTPRINT& GetPageDataFootprint() const;
 		std::uint32_t GetLogicalMipLevel0Dimensions() const;
 		std::uint32_t GetLogicalMipLevelCount() const;
 
@@ -44,7 +45,7 @@ export namespace Brawler
 
 	private:
 		std::uint64_t mCopyableFootprintsPageSizeInBytes;
-		DXGI_FORMAT mTextureFormat;
+		D3D12_SUBRESOURCE_FOOTPRINT mPageDataFootprint;
 		std::uint32_t mLogicalTextureMip0Dimensions;
 		std::uint32_t mLogicalMipLevelCount;
 		std::vector<VirtualTexturePageMetadata> mPageMetadataArr;

@@ -1,22 +1,24 @@
 module;
 #include <cstddef>
 #include <cassert>
+#include <DxDef.h>
 
 module Brawler.GlobalTexturePageUploadRequest;
 import Brawler.VirtualTexture;
 import Brawler.VirtualTextureMetadata;
+import Util.D3D12;
 
 namespace Brawler
 {
 	GlobalTexturePageUploadRequest::GlobalTexturePageUploadRequest(const VirtualTextureLogicalPage& logicalPage, GlobalTexturePageInfo&& destPageInfo) :
 		mLogicalPage(logicalPage),
 		mPageInfo(std::move(destPageInfo)),
-		mTextureDataSubAllocation()
+		mPageDataCopySubAllocation()
 	{
 		assert(logicalPage.VirtualTexturePtr != nullptr);
-		const std::size_t pageDataCopyableFootprintSize = logicalPage.VirtualTexturePtr->GetVirtualTextureMetadata().GetCopyableFootprintsPageSize();
+		const D3D12_SUBRESOURCE_FOOTPRINT& pageDataFootprint{ logicalPage.VirtualTexturePtr->GetVirtualTextureMetadata().GetPageDataFootprint() };
 
-		mTextureDataSubAllocation = PageDataSubAllocation{ pageDataCopyableFootprintSize };
+		mPageDataCopySubAllocation = D3D12::TextureCopyBufferSubAllocation{ pageDataFootprint };
 	}
 
 	const VirtualTextureLogicalPage& GlobalTexturePageUploadRequest::GetLogicalPage() const
@@ -29,8 +31,8 @@ namespace Brawler
 		return mPageInfo;
 	}
 
-	GlobalTexturePageUploadRequest::PageDataSubAllocation& GlobalTexturePageUploadRequest::GetPageDataBufferSubAllocation() const
+	D3D12::TextureCopyBufferSubAllocation& GlobalTexturePageUploadRequest::GetPageDataBufferSubAllocation() const
 	{
-		return mTextureDataSubAllocation;
+		return mPageDataCopySubAllocation;
 	}
 }

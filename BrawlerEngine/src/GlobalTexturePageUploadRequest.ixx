@@ -1,18 +1,14 @@
 module;
-#include <DxDef.h>
 
 export module Brawler.GlobalTexturePageUploadRequest;
 import Brawler.VirtualTextureLogicalPage;
 import Brawler.GlobalTexturePageInfo;
-import Brawler.D3D12.DynamicAlignedByteAddressBufferSubAllocation;
+import Brawler.D3D12.TextureCopyBufferSubAllocation;
 
 export namespace Brawler
 {
 	class GlobalTexturePageUploadRequest
 	{
-	public:
-		using PageDataSubAllocation = D3D12::DynamicAlignedByteAddressBufferSubAllocation<D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT>;
-
 	public:
 		GlobalTexturePageUploadRequest() = default;
 		GlobalTexturePageUploadRequest(const VirtualTextureLogicalPage& logicalPage, GlobalTexturePageInfo&& destPageInfo);
@@ -26,11 +22,11 @@ export namespace Brawler
 		const VirtualTextureLogicalPage& GetLogicalPage() const;
 		const GlobalTexturePageInfo& GetDestinationGlobalTexturePageInfo() const;
 
-		PageDataSubAllocation& GetPageDataBufferSubAllocation() const;
+		D3D12::TextureCopyBufferSubAllocation& GetPageDataBufferSubAllocation() const;
 
 	private:
 		VirtualTextureLogicalPage mLogicalPage;
 		GlobalTexturePageInfo mPageInfo;
-		PageDataSubAllocation mTextureDataSubAllocation;
+		D3D12::TextureCopyBufferSubAllocation mPageDataCopySubAllocation;
 	};
 }

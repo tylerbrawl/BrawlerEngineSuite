@@ -33,10 +33,19 @@ namespace
 		std::uint32_t PageCount;
 	};
 
-	constexpr Brawler::FileMagicHandler VIRTUAL_TEXTURE_DESCRIPTION_HEADER_MAGIC_HANDLER{ "BVTX" };
-	constexpr std::uint32_t CURRENT_VIRTUAL_TEXTURE_DESCRIPTION_VERSION = 1;
+	struct VersionedVirtualTextureDescriptionHeaderV2
+	{
+		std::uint64_t CopyableFootprintsPageSizeInBytes;
+		D3D12_SUBRESOURCE_FOOTPRINT PageDataFootprint;
+		std::uint32_t LogicalTextureMip0Dimensions;
+		std::uint32_t LogicalMipLevelCount;
+		std::uint32_t PageCount;
+	};
 
-	using CurrentVersionedVirtualTextureDescriptionHeader = VersionedVirtualTextureDescriptionHeaderV1;
+	constexpr Brawler::FileMagicHandler VIRTUAL_TEXTURE_DESCRIPTION_HEADER_MAGIC_HANDLER{ "BVTX" };
+	constexpr std::uint32_t CURRENT_VIRTUAL_TEXTURE_DESCRIPTION_VERSION = 2;
+
+	using CurrentVersionedVirtualTextureDescriptionHeader = VersionedVirtualTextureDescriptionHeaderV2;
 
 	struct MergedVirtualTextureDescriptionHeader
 	{
@@ -99,7 +108,7 @@ namespace Brawler
 		}
 
 		mCopyableFootprintsPageSizeInBytes = versionedHeader.CopyableFootprintsPageSizeInBytes;
-		mTextureFormat = versionedHeader.TextureFormat;
+		mPageDataFootprint = versionedHeader.PageDataFootprint;
 		mLogicalTextureMip0Dimensions = versionedHeader.LogicalTextureMip0Dimensions;
 		mLogicalMipLevelCount = versionedHeader.LogicalMipLevelCount;
 		mPageMetadataArr.resize(versionedHeader.PageCount);
@@ -171,7 +180,12 @@ namespace Brawler
 
 	DXGI_FORMAT VirtualTextureMetadata::GetTextureFormat() const
 	{
-		return mTextureFormat;
+		return mPageDataFootprint.Format;
+	}
+
+	const D3D12_SUBRESOURCE_FOOTPRINT& VirtualTextureMetadata::GetPageDataFootprint() const
+	{
+		return mPageDataFootprint;
 	}
 
 	std::uint32_t VirtualTextureMetadata::GetLogicalMipLevel0Dimensions() const

@@ -127,6 +127,7 @@ namespace Brawler
 		pageDataWriteGroup.ExecuteJobsAsync();
 
 		constexpr Brawler::D3D12_RESOURCE_DESC VIRTUAL_TEXTURE_PAGE_RESOURCE_DESCRIPTION{ CreateVirtualTexturePageResourceDescription<TextureFormat, FilterMode>() };
+		D3D12_PLACED_SUBRESOURCE_FOOTPRINT placedPageDataFootprint{};
 		std::uint64_t copyablePageSizeInBytes = 0;
 		
 		Util::Engine::GetD3D12Device().GetCopyableFootprints1(
@@ -134,7 +135,7 @@ namespace Brawler
 			0,
 			1,
 			0,
-			nullptr,
+			&placedPageDataFootprint,
 			nullptr,
 			nullptr,
 			&copyablePageSizeInBytes
@@ -162,7 +163,7 @@ namespace Brawler
 				.CommonHeader{COMMON_HEADER},
 				.VersionedHeader{
 					.CopyableFootprintsPageSizeInBytes = copyablePageSizeInBytes,
-					.TextureFormat = TextureFormat,
+					.PageDataFootprint{ std::move(placedPageDataFootprint.Footprint) },
 					.LogicalTextureMip0Dimensions = static_cast<std::uint32_t>(srcTextureDimensions),
 					.LogicalMipLevelCount = static_cast<std::uint32_t>(logicalMipLevelCount),
 					.PageCount = static_cast<std::uint32_t>(mPageStoreArr.size())

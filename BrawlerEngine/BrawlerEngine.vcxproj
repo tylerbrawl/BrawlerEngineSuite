@@ -267,6 +267,7 @@
     <ClCompile Include="src\GlobalTexturePageUploadRequest.ixx" />
     <ClCompile Include="src\GlobalTexturePageUploadSet.cpp" />
     <ClCompile Include="src\GlobalTexturePageUploadSet.ixx" />
+    <ClCompile Include="src\GlobalTexturePageUploadSubModule.ixx" />
     <ClCompile Include="src\GlobalTextureReservedPage.cpp" />
     <ClCompile Include="src\GlobalTextureReservedPage.ixx" />
     <ClCompile Include="src\GlobalTextureUpdateContext.cpp" />
@@ -357,7 +358,6 @@
     <ClCompile Include="src\ViewComponent.ixx" />
     <ClCompile Include="src\VirtualTexture.cpp" />
     <ClCompile Include="src\VirtualTexture.ixx" />
-    <ClCompile Include="src\StreamingVirtualTexturePage.ixx" />
     <ClCompile Include="src\VirtualTextureActivePageTracker.cpp" />
     <ClCompile Include="src\VirtualTextureActivePageTracker.ixx" />
     <ClCompile Include="src\VirtualTextureConstants.ixx" />

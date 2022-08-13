@@ -423,9 +423,6 @@
     <ClCompile Include="src\GlobalTextureUploadBuffer.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming\Global Texture Data Uploads</Filter>
     </ClCompile>
-    <ClCompile Include="src\StreamingVirtualTexturePage.ixx">
-      <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
-    </ClCompile>
     <ClCompile Include="src\VirtualTextureDatabase.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
     </ClCompile>
@@ -614,6 +611,9 @@
     </ClCompile>
     <ClCompile Include="src\GlobalTexturePageUploadRequest.cpp">
       <Filter>Source Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTexturePageUploadSubModule.ixx">
+      <Filter>Module Files\Render Modules\GPU Scene Update</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
