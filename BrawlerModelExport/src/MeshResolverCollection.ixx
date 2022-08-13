@@ -15,6 +15,12 @@ import Brawler.MeshTypeID;
 import Brawler.JobSystem;
 import Brawler.ByteStream;
 
+namespace Brawler
+{
+	template <typename T>
+	concept IsMeshResolver = std::derived_from<T, MeshResolverBase<T>>;
+}
+
 export namespace Brawler
 {
 	class I_MeshResolverCollection
@@ -43,12 +49,6 @@ export namespace Brawler
 }
 
 // -------------------------------------------------------------------------------------------------------------
-
-namespace Brawler
-{
-	template <typename T>
-	concept IsMeshResolver = std::derived_from<T, MeshResolverBase<T>>;
-}
 
 export namespace Brawler
 {

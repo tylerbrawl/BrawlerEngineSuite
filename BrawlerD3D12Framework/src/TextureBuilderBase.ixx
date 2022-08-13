@@ -1,5 +1,6 @@
 module;
 #include <optional>
+#include <cassert>
 #include "DxDef.h"
 
 export module Brawler.D3D12.TextureBuilderBase;

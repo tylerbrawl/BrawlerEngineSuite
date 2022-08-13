@@ -56,7 +56,7 @@ export namespace Brawler
 	namespace D3D12
 	{
 		template <D3D12_UAV_DIMENSION ViewDimension>
-		__forceinline static constexpr void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const typename UAVDimensionInfo<ViewDimension>::UAVDescType& viewDesc)
+		__forceinline constexpr void InitializeUAVDescription(D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc, const typename UAVDimensionInfo<ViewDimension>::UAVDescType& viewDesc)
 		{
 			// Originally, I had a separate InitializeUAVDescription() function within each explicit template specialization
 			// of UAVDimensionInfo which would initialize the correct field of uavDesc. However, as of writing this, a regression

@@ -16,8 +16,8 @@ namespace Brawler
 {
 	namespace D3D12
 	{
-		static constexpr std::size_t SLI = 5; 
-		static constexpr std::size_t SECOND_LEVEL_SUBDIVISIONS = (1 << SLI);
+		constexpr std::size_t SLI = 5; 
+		constexpr std::size_t SECOND_LEVEL_SUBDIVISIONS = (1 << SLI);
 
 		struct PoolSearchInfo
 		{

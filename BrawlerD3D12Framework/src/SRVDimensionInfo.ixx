@@ -86,7 +86,7 @@ export namespace Brawler
 	namespace D3D12
 	{
 		template <D3D12_SRV_DIMENSION ViewDimension>
-		__forceinline static constexpr void InitializeSRVDescription(D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, const typename SRVDimensionInfo<ViewDimension>::SRVDescType& viewDesc)
+		__forceinline constexpr void InitializeSRVDescription(D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, const typename SRVDimensionInfo<ViewDimension>::SRVDescType& viewDesc)
 		{
 			// Originally, I had a separate InitializeSRVDescription() function within each explicit template specialization
 			// of SRVDimensionInfo which would initialize the correct field of srvDesc. However, as of writing this, a regression

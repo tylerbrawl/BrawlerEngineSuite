@@ -5,6 +5,7 @@ module;
 
 export module Brawler.D3D12.StructuredBufferSubAllocation:StructuredBufferViewGenerator;
 import :StructuredBufferElementRange;
+import Util.HLSL;
 import Brawler.D3D12.BufferCopyRegion;
 import Brawler.D3D12.GPUResourceViews;
 import Brawler.D3D12.RootDescriptors;
@@ -17,6 +18,22 @@ namespace Brawler
 	{
 		template <typename T>
 		concept D3D12ConstantBufferDataPlacementAligned = (sizeof(T) % D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT == 0);
+		
+		// Strictly speaking, we don't actually need to ensure alignment for StructuredBuffers
+		// matches that of ConstantBuffers in HLSL. However, we do that here for two reasons:
+		//
+		//   1. NVIDIA suggests aligning StructuredBuffer data to a 16-byte stride for performance.
+		//
+		//   2. It becomes easier to use StructuredBuffer data formats for ConstantBuffer data and
+		//      vice versa.
+		//
+		// However, StructuredBuffers are, by definition, tightly packed, so we need to make sure
+		// of that.
+		//
+		// (NOTE: This concept was originally defined in StructuredBufferSubAllocation.ixx, but a regression
+		// in the MSVC resulted in ICEs while the concept was defined in that module interface unit.)
+		template <typename T>
+		concept HLSLStructuredBufferCompatible = Util::HLSL::IsHLSLConstantBufferAligned<T>();
 	}
 }
 

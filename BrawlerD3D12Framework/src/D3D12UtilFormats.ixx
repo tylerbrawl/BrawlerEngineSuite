@@ -1,5 +1,6 @@
 module;
 #include <source_location>
+#include <cassert>
 #include "DxDef.h"
 
 export module Util.D3D12:Formats;
@@ -598,10 +599,12 @@ export namespace Util
 			// The assert() macro is causing the MSVC to spit out false errors (again).
 			constexpr auto SAFE_ASSERT = [] (const bool expression, const std::source_location srcLocation = std::source_location::current())
 			{
+#ifdef _DEBUG
 				(void)(
 					(!!(expression)) ||
 					(_wassert(L"ERROR: An assertion failed!", L"D3D12UtilFormats.ixx", srcLocation.line()), 0)
 					);
+#endif // _DEBUG
 			};
 			
 			SAFE_ASSERT(params.FirstSubResource < params.NumSubResources);

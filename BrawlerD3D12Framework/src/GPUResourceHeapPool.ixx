@@ -49,7 +49,7 @@ namespace Brawler
 {
 	namespace D3D12
 	{
-		static constexpr std::size_t MINIMUM_HEAP_SIZE = Util::Math::MegabytesToBytes(256);
+		constexpr std::size_t MINIMUM_HEAP_SIZE = Util::Math::MegabytesToBytes(256);
 	}
 }
 

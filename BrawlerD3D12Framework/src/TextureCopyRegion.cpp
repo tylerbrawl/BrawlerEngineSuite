@@ -1,4 +1,5 @@
 module;
+#include <cassert>
 #include "DxDef.h"
 
 module Brawler.D3D12.TextureCopyRegion;

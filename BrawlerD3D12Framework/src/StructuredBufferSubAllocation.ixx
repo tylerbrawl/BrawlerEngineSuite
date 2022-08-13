@@ -47,20 +47,6 @@ namespace Brawler
 			std::size_t currTotalFieldSize = 0;
 			return IsStructureTightlyPackedIMPL<T, 0>(currTotalFieldSize);
 		}
-		
-		// Strictly speaking, we don't actually need to ensure alignment for StructuredBuffers
-		// matches that of ConstantBuffers in HLSL. However, we do that here for two reasons:
-		//
-		//   1. NVIDIA suggests aligning StructuredBuffer data to a 16-byte stride for performance.
-		//
-		//   2. It becomes easier to use StructuredBuffer data formats for ConstantBuffer data and
-		//      vice versa.
-		//
-		// However, StructuredBuffers are, by definition, tightly packed, so we need to make sure
-		// of that.
-
-		template <typename T>
-		concept HLSLStructuredBufferCompatible = Util::HLSL::IsHLSLConstantBufferAligned<T>();
 
 		static constexpr std::size_t DYNAMIC_BUFFER_SIZE = std::numeric_limits<std::size_t>::max();
 
@@ -165,7 +151,13 @@ export namespace Brawler
 
 		public:
 			StructuredBufferSubAllocation() requires (NumElements != DYNAMIC_BUFFER_SIZE) = default;
-			explicit StructuredBufferSubAllocation(const std::size_t numElements = 1) requires (NumElements == DYNAMIC_BUFFER_SIZE);
+
+			explicit StructuredBufferSubAllocation(const std::size_t numElements = 1) requires (NumElements == DYNAMIC_BUFFER_SIZE) :
+				I_BufferSubAllocation(),
+				StructuredBufferViewGenerator<StructuredBufferSubAllocation<T, NumElements>, T>(),
+				SizeContainer<T, NumElements>(numElements),
+				mUAVCounterContainer()
+			{}
 
 			std::size_t GetSubAllocationSize() const override;
 			std::size_t GetRequiredDataPlacementAlignment() const override;
@@ -278,15 +270,6 @@ namespace Brawler
 {
 	namespace D3D12
 	{
-		template <typename T, std::size_t NumElements>
-			requires HLSLStructuredBufferCompatible<T>
-		StructuredBufferSubAllocation<T, NumElements>::StructuredBufferSubAllocation(const std::size_t numElements) requires (NumElements == DYNAMIC_BUFFER_SIZE) :
-			I_BufferSubAllocation(),
-			StructuredBufferViewGenerator<StructuredBufferSubAllocation<T, NumElements>, T>(),
-			SizeContainer<T, NumElements>(numElements),
-			mUAVCounterContainer()
-		{}
-
 		template <typename T, std::size_t NumElements>
 			requires HLSLStructuredBufferCompatible<T>
 		std::size_t StructuredBufferSubAllocation<T, NumElements>::GetSubAllocationSize() const

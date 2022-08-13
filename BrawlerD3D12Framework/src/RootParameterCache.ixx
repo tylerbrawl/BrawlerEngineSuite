@@ -29,7 +29,7 @@ namespace Brawler
 
 			// Descriptor Tables
 			D3D12_GPU_DESCRIPTOR_HANDLE
-		> ;
+		>;
 
 		template <typename T>
 		struct VariantElement
@@ -52,6 +52,12 @@ namespace Brawler
 		struct CachedRootParameterInfo
 		{
 			static_assert(sizeof(RootParamType) != sizeof(RootParamType));
+		};
+
+		template <typename T>
+		concept IsCacheableRootParameter = requires ()
+		{
+			CachedRootParameterInfo<T>::VARIANT_INDEX;
 		};
 
 		template <std::size_t VariantIndex>
@@ -94,12 +100,6 @@ namespace Brawler
 			{
 				return descriptorTable.GetDescriptorHandleInfo().HGPUDescriptor;
 			}
-		};
-
-		template <typename T>
-		concept IsCacheableRootParameter = requires ()
-		{
-			CachedRootParameterInfo<T>::VARIANT_INDEX;
 		};
 
 		template <typename RootParamType>
