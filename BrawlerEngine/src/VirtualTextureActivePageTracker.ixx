@@ -1,6 +1,7 @@
 module;
 #include <unordered_map>
 #include <optional>
+#include <vector>
 #include <span>
 
 export module Brawler.VirtualTextureActivePageTracker;
@@ -31,6 +32,7 @@ export namespace Brawler
 		void UpdateTrackedPage(const TrackedPage trackedPage, const GlobalTexturePageIdentifier storagePageIdentifier);
 		void RemoveTrackedPage(const TrackedPage trackedPage);
 
+		std::vector<GlobalTexturePageIdentifier> GetOccupiedGlobalTexturePages() const;
 		std::optional<GlobalTexturePageIdentifier> GetStoragePageIdentifier(const TrackedPage trackedPage) const;
 
 	private:

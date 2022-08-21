@@ -30,6 +30,8 @@ export namespace Brawler
 	public:
 		explicit VirtualTexture(const FilePathHash bvtxFileHash);
 
+		~VirtualTexture();
+
 		VirtualTexture(const VirtualTexture& rhs) = delete;
 		VirtualTexture& operator=(const VirtualTexture& rhs) = delete;
 

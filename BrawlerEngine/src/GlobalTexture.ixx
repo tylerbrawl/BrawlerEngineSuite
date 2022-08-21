@@ -27,6 +27,7 @@ import Brawler.GPUSceneTypes;
 import Brawler.GPUSceneManager;
 import Brawler.GPUSceneBufferID;
 import Brawler.GPUSceneBufferUpdater;
+import Brawler.GlobalTexturePageIdentifier;
 
 export namespace Brawler
 {
@@ -140,6 +141,8 @@ export namespace Brawler
 		/// Note that if an HRESULT is returned, then the state of the GlobalTexture instance is *NOT* modified.
 		/// </returns>
 		std::expected<VirtualTextureLogicalPage, HRESULT> Defragment(GlobalTextureUpdateContext& context);
+
+		void ClearGlobalTexturePage(const GlobalTexturePageIdentifier pageIdentifier);
 
 		ActiveGlobalTexturePageStats GetActivePageStats() const;
 
@@ -257,6 +260,27 @@ namespace Brawler
 			mBaseIndexer.UpdateForCombinedPageRemoval(*bestIndexForRemoval);
 
 		return std::expected{ std::move(removedPage) };
+	}
+
+	template <DXGI_FORMAT Format>
+	void GlobalTexture<Format>::ClearGlobalTexturePage(const GlobalTexturePageIdentifier pageIdentifier)
+	{
+		assert(pageIdentifier.GlobalTextureID == GetGlobalTextureDescriptionBufferIndex());
+
+		const std::size_t flattenedIndex = ((static_cast<std::size_t>(pageIdentifier.GlobalTexturePageYCoordinate) * NUM_PAGES_PER_GLOBAL_TEXTURE_ROW) + static_cast<std::size_t>(pageIdentifier.GlobalTexturePageXCoordinate));
+
+		GlobalTexturePageSlot& relevantSlot{ mPageSlotArr[flattenedIndex] };
+		assert(relevantSlot.HasVirtualTexturePage());
+
+		mBaseIndexer.UpdateForRegularPageRemoval(flattenedIndex);
+
+		const VirtualTextureLogicalPage removedPage{ relevantSlot.RemoveVirtualTexturePage() };
+
+		assert(removedPage.VirtualTexturePtr != nullptr);
+		const bool isRemovedPageCombinedPage = (removedPage.LogicalMipLevel >= removedPage.VirtualTexturePtr->GetVirtualTextureMetadata().GetFirstMipLevelInCombinedPage());
+
+		if (isRemovedPageCombinedPage)
+			mBaseIndexer.UpdateForCombinedPageRemoval(flattenedIndex);
 	}
 
 	template <DXGI_FORMAT Format>

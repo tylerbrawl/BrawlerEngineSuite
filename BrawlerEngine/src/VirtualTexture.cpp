@@ -94,6 +94,13 @@ namespace Brawler
 		InitializeGPUSceneVirtualTextureDescription();
 	}
 
+	VirtualTexture::~VirtualTexture()
+	{
+		assert(SafeToDelete());
+
+
+	}
+
 	std::uint32_t VirtualTexture::GetVirtualTextureID() const
 	{
 		// The ID of a VirtualTexture instance is inferred based on its location within the global

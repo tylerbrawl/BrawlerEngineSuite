@@ -18,5 +18,7 @@ export namespace Brawler
 
 		GlobalTextureCollection(GlobalTextureCollection&& rhs) noexcept = default;
 		GlobalTextureCollection& operator=(GlobalTextureCollection&& rhs) noexcept = default;
+
+
 	};
 }
