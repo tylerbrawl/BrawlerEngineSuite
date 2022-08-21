@@ -51,6 +51,10 @@ export namespace Brawler
 		/// </returns>
 		bool ReadyForGPUSubmission() const;
 
+		std::optional<GlobalTexturePageUploadSet> ExtractPageUploadSet();
+		std::vector<std::unique_ptr<GlobalTexturePageRemovalRequest>> ExtractPageRemovalRequests();
+		std::vector<std::unique_ptr<GlobalTexturePageTransferRequest>> ExtractPageTransferRequests();
+
 	private:
 		void FinalizeVirtualTexturePageStates();
 		void CreatePageRequests();

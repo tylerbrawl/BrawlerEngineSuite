@@ -1,6 +1,5 @@
 module;
 #include <vector>
-#include <mutex>
 #include <span>
 #include <memory>
 #include <cassert>
@@ -19,45 +18,36 @@ namespace Brawler
 		assert(uploadSet.HasActiveUploadRequests() && "ERROR: An attempt was made to provide a GlobalTexturePageUploadSubModule with a GlobalTexturePageUploadSet which did not have any actual requests!");
 		assert(uploadSet.ReadyForGlobalTextureUploads() && "ERROR: An attempt was made to provide a GlobalTexturePageUploadSubModule with a GlobalTexturePageUploadSet whose request data has not finished streaming!");
 
-		const std::scoped_lock<std::mutex> lock{ mCritSection };
 		mUploadSetArr.push_back(std::move(uploadSet));
 	}
 
 	bool GlobalTexturePageUploadSubModule::HasPageUploadRequests() const
 	{
-		const std::scoped_lock<std::mutex> lock{ mCritSection };
 		return !mUploadSetArr.empty();
 	}
 
 	GlobalTexturePageUploadSubModule::GlobalTextureUploadPassCollection GlobalTexturePageUploadSubModule::GetPageUploadRenderPasses(D3D12::FrameGraphBuilder& builder)
 	{
 		CheckForUploadBufferDeletions();
-		
-		std::vector<GlobalTexturePageUploadSet> extractedUploadSetArr{};
 
-		{
-			const std::scoped_lock<std::mutex> lock{ mCritSection };
-			extractedUploadSetArr = std::move(mUploadSetArr);
-		}
-
-		if (extractedUploadSetArr.empty())
+		if (mUploadSetArr.empty())
 			return GlobalTextureUploadPassCollection{};
 
-		const std::span<const GlobalTexturePageUploadSet> extractedUploadSetSpan{ extractedUploadSetArr };
+		const std::span<const GlobalTexturePageUploadSet> uploadSetSpan{ mUploadSetArr };
 
 		Brawler::JobGroup pageUploadGroup{};
 		pageUploadGroup.Reserve(2);
 
 		std::vector<GlobalTextureCopyRenderPass_T> globalTextureCopyPassArr{};
-		pageUploadGroup.AddJob([&globalTextureCopyPassArr, extractedUploadSetSpan] ()
+		pageUploadGroup.AddJob([&globalTextureCopyPassArr, uploadSetSpan] ()
 		{
-			globalTextureCopyPassArr = CreateGlobalTextureCopyRenderPasses(extractedUploadSetSpan);
+			globalTextureCopyPassArr = CreateGlobalTextureCopyRenderPasses(uploadSetSpan);
 		});
 
 		std::vector<IndirectionTextureUpdateRenderPass_T> indirectionTextureUpdatePassArr{};
-		pageUploadGroup.AddJob([&indirectionTextureUpdatePassArr, &builder, extractedUploadSetSpan] ()
+		pageUploadGroup.AddJob([&indirectionTextureUpdatePassArr, &builder, uploadSetSpan] ()
 		{
-			indirectionTextureUpdatePassArr = CreateIndirectionTextureUpdateRenderPasses(builder, extractedUploadSetSpan);
+			indirectionTextureUpdatePassArr = CreateIndirectionTextureUpdateRenderPasses(builder, uploadSetSpan);
 		});
 
 		pageUploadGroup.ExecuteJobs();
@@ -73,8 +63,10 @@ namespace Brawler
 		// function will never be called concurrently by multiple threads.
 		const std::uint64_t safeDeletionFrameNumber = (Util::Engine::GetCurrentFrameNumber() + Util::Engine::MAX_FRAMES_IN_FLIGHT);
 
-		for (auto& extractedUploadSet : extractedUploadSetArr)
-			mPendingDeletionArr.emplace_back(std::move(extractedUploadSet.ExtractUploadBufferResource()), safeDeletionFrameNumber);
+		for (auto& uploadSet : mUploadSetArr)
+			mPendingDeletionArr.emplace_back(std::move(uploadSet.ExtractUploadBufferResource()), safeDeletionFrameNumber);
+
+		mUploadSetArr.clear();
 
 		return GlobalTextureUploadPassCollection{
 			.GlobalTextureCopyPassArr{ std::move(globalTextureCopyPassArr) },

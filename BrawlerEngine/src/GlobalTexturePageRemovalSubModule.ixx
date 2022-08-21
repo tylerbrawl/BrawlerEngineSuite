@@ -32,6 +32,5 @@ export namespace Brawler
 
 	private:
 		std::vector<std::unique_ptr<GlobalTexturePageRemovalRequest>> mRequestPtrArr;
-		mutable std::mutex mCritSection;
 	};
 }

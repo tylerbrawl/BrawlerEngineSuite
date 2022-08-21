@@ -624,6 +624,12 @@
     <ClCompile Include="src\VirtualTextureStreamingNotifier.cpp">
       <Filter>Source Files\Streaming Systems\Texture Streaming</Filter>
     </ClCompile>
+    <ClCompile Include="src\VirtualTextureManagementPassCollection.ixx">
+      <Filter>Module Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTextureManagementPassCollection.cpp">
+      <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

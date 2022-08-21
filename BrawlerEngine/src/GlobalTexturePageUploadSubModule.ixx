@@ -1,6 +1,5 @@
 module;
 #include <vector>
-#include <mutex>
 #include <span>
 #include <memory>
 
@@ -61,7 +60,6 @@ export namespace Brawler
 
 	private:
 		std::vector<GlobalTexturePageUploadSet> mUploadSetArr;
-		mutable std::mutex mCritSection;
 		std::vector<PendingUploadBufferDeletion> mPendingDeletionArr;
 	};
 }

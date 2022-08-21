@@ -9,10 +9,11 @@ module;
 module Brawler.GPUSceneUpdateRenderModule;
 import Brawler.JobSystem;
 import Brawler.D3D12.FrameGraphBuilding;
+import Brawler.VirtualTextureManagementPassCollection;
 
 namespace Brawler
 {
-	void GPUSceneUpdateRenderModule::CommitGlobalTextureChanges(std::unique_ptr<GlobalTextureUploadBuffer>&& preparedBufferPtr)
+	void GPUSceneUpdateRenderModule::CommitGlobalTextureChanges(std::unique_ptr<GlobalTextureUploadContext>&& preparedBufferPtr)
 	{
 		mVTManagementSubModule.CommitGlobalTextureChanges(std::move(preparedBufferPtr));
 	}
@@ -41,7 +42,7 @@ namespace Brawler
 		// instances contain valid values based on the boolean variables above.
 		GPUSceneBufferUpdateSubModule::GPUSceneBufferUpdatePassTuple gpuSceneBufferUpdatesTuple{};
 		VirtualTextureManagementSubModule::IndirectionTextureUpdatePass_T indirectionTextureUpdatePass{};
-		VirtualTextureManagementSubModule::GlobalTextureUpdatePass_T globalTextureUpdatePass{};
+		VirtualTextureManagementPassCollection globalTextureUpdatePassCollection{};
 
 		D3D12::FrameGraph& currFrameGraph{ builder.GetFrameGraph() };
 		std::array<D3D12::FrameGraphBuilder, 2> extraBuildersArr{
@@ -64,15 +65,10 @@ namespace Brawler
 
 		if (shouldPerformVirtualTextureUpdates)
 		{
-			D3D12::FrameGraphBuilder& indirectionTexturePassBuilder{ extraBuildersArr[1] };
-			gpuSceneUpdatePassCreationGroup.AddJob([this, &indirectionTextureUpdatePass, &indirectionTexturePassBuilder] ()
+			D3D12::FrameGraphBuilder& globalTextureUpdatePassBuilder{ extraBuildersArr[1] };
+			gpuSceneUpdatePassCreationGroup.AddJob([this, &globalTextureUpdatePassCollection, &globalTextureUpdatePassBuilder] ()
 			{
-				indirectionTextureUpdatePass = mVTManagementSubModule.CreateIndirectionTextureUpdatesRenderPass(indirectionTexturePassBuilder);
-			});
-
-			gpuSceneUpdatePassCreationGroup.AddJob([this, &globalTextureUpdatePass] ()
-			{
-				globalTextureUpdatePass = mVTManagementSubModule.CreateGlobalTextureUpdatesRenderPass();
+				globalTextureUpdatePassCollection = mVTManagementSubModule.CreateGlobalTextureChangeRenderPasses(globalTextureUpdatePassBuilder);
 			});
 		}
 
@@ -102,12 +98,8 @@ namespace Brawler
 
 		if (shouldPerformVirtualTextureUpdates)
 		{
-			gpuSceneUpdatePassBundle.AddRenderPass(std::move(indirectionTextureUpdatePass));
-			gpuSceneUpdatePassBundle.AddRenderPass(std::move(globalTextureUpdatePass));
-
+			globalTextureUpdatePassCollection.MoveRenderPassesIntoBundle(gpuSceneUpdatePassBundle);
 			builder.MergeFrameGraphBuilder(std::move(extraBuildersArr[1]));
-
-			mVTManagementSubModule.FinishGlobalTextureUpdates();
 		}
 
 		builder.AddRenderPassBundle(std::move(gpuSceneUpdatePassBundle));

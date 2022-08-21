@@ -69,6 +69,21 @@ namespace Brawler
 		return (!mPageUploadSet.has_value() || mPageUploadSet->ReadyForGlobalTextureUploads());
 	}
 
+	std::optional<GlobalTexturePageUploadSet> GlobalTextureUpdateContext::ExtractPageUploadSet()
+	{
+		return std::move(mPageUploadSet);
+	}
+
+	std::vector<std::unique_ptr<GlobalTexturePageRemovalRequest>> GlobalTextureUpdateContext::ExtractPageRemovalRequests()
+	{
+		return std::move(mRemovalRequestPtrArr);
+	}
+
+	std::vector<std::unique_ptr<GlobalTexturePageTransferRequest>> GlobalTextureUpdateContext::ExtractPageTransferRequests()
+	{
+		return std::move(mTransferRequestPtrArr);
+	}
+
 	void GlobalTextureUpdateContext::FinalizeVirtualTexturePageStates()
 	{
 		for (auto& [logicalPage, stateAdapter] : mPageStateMap)

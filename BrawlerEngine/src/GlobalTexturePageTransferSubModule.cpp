@@ -1,5 +1,4 @@
 module;
-#include <mutex>
 #include <vector>
 #include <span>
 #include <memory>
@@ -39,30 +38,20 @@ namespace Brawler
 {
 	void GlobalTexturePageTransferSubModule::AddPageTransferRequests(const std::span<std::unique_ptr<GlobalTexturePageTransferRequest>> transferRequestSpan)
 	{
-		const std::scoped_lock<std::mutex> lock{ mCritSection };
-
 		for (auto&& transferRequestPtr : transferRequestSpan)
 			mTransferRequestPtrArr.push_back(std::move(transferRequestPtr));
 	}
 
 	bool GlobalTexturePageTransferSubModule::HasPageTransferRequests() const
 	{
-		const std::scoped_lock<std::mutex> lock{ mCritSection };
 		return !mTransferRequestPtrArr.empty();
 	}
 
 	GlobalTexturePageTransferSubModule::GlobalTextureTransferPassCollection GlobalTexturePageTransferSubModule::GetPageTransferRenderPasses(D3D12::FrameGraphBuilder& builder)
 	{
-		std::vector<std::unique_ptr<GlobalTexturePageTransferRequest>> currRequestArr{};
-
-		{
-			const std::scoped_lock<std::mutex> lock{ mCritSection };
-			currRequestArr = std::move(mTransferRequestPtrArr);
-		}
-
 		// There is overhead in spawning CPU jobs, so don't bother if we don't actually have
 		// any work to do.
-		if (currRequestArr.empty())
+		if (mTransferRequestArr.empty())
 			return GlobalTextureTransferPassCollection{};
 
 		// We realize that GlobalTexture page transfers consist of two separate components:
@@ -80,7 +69,7 @@ namespace Brawler
 		// and copy this into the individual jobs. (We could pass the std::span by reference, but
 		// there's no real point, since these are cheap to copy.)
 
-		const std::span<const std::unique_ptr<GlobalTexturePageTransferRequest>> currRequestSpan{ currRequestArr };
+		const std::span<const std::unique_ptr<GlobalTexturePageTransferRequest>> currRequestSpan{ mTransferRequestArr };
 		Brawler::JobGroup globalTexturePageTransferGroup{};
 		globalTexturePageTransferGroup.Reserve(2);
 
@@ -102,6 +91,8 @@ namespace Brawler
 
 		builder.MergeFrameGraphBuilder(std::move(globalTextureCopyBuilder));
 		builder.MergeFrameGraphBuilder(std::move(indirectionTextureUpdateBuilder));
+
+		mTransferRequestArr.clear();
 
 		return GlobalTextureTransferPassCollection{
 			.GlobalTextureCopyArr{ std::move(globalTextureCopyArr) },

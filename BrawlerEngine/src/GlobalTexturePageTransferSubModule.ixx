@@ -1,5 +1,4 @@
 module;
-#include <mutex>
 #include <vector>
 #include <span>
 #include <memory>
@@ -52,6 +51,5 @@ export namespace Brawler
 
 	private:
 		std::vector<std::unique_ptr<GlobalTexturePageTransferRequest>> mTransferRequestPtrArr;
-		mutable std::mutex mCritSection;
 	};
 }
