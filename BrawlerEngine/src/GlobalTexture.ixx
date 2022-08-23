@@ -38,6 +38,7 @@ export namespace Brawler
 		static constexpr D3D12::Texture2DBuilder TEXTURE_2D_BUILDER{ Brawler::CreateGlobalTextureBuilder<Format>() };
 		static constexpr std::size_t NUM_PAGES_PER_GLOBAL_TEXTURE_ROW = (TEXTURE_2D_BUILDER.GetResourceDescription().Width / GlobalTextureFormatInfo<Format>::PADDED_PAGE_DIMENSIONS);
 
+	public:
 		static constexpr std::size_t NUM_PAGES_IN_GLOBAL_TEXTURE = (NUM_PAGES_PER_GLOBAL_TEXTURE_ROW * NUM_PAGES_PER_GLOBAL_TEXTURE_ROW);
 
 	public:
@@ -145,10 +146,10 @@ export namespace Brawler
 		void ClearGlobalTexturePage(const GlobalTexturePageIdentifier pageIdentifier);
 
 		ActiveGlobalTexturePageStats GetActivePageStats() const;
+		std::uint8_t GetGlobalTextureID() const;
 
 	private:
 		Math::UInt2 GetUnflattenedCoordinates(const std::uint32_t flattenedCoordinates) const;
-		std::uint8_t GetGlobalTextureDescriptionBufferIndex() const;
 
 		GlobalTexturePageInfo CreatePageInfo(const std::size_t flattenedCoordinates) const;
 
@@ -290,18 +291,21 @@ namespace Brawler
 	}
 
 	template <DXGI_FORMAT Format>
+	std::uint8_t GlobalTexture<Format>::GetGlobalTextureID() const
+	{
+		// The ID for a GlobalTexture is the same as its index within the GlobalTexture description
+		// GPUSceneBuffer.
+
+		return static_cast<std::uint8_t>(mGlobalTextureDescriptionBufferSubAllocation.GetOffsetFromBufferStart() / sizeof(GlobalTextureDescription));
+	}
+
+	template <DXGI_FORMAT Format>
 	Math::UInt2 GlobalTexture<Format>::GetUnflattenedCoordinates(const std::uint32_t flattenedCoordinates) const
 	{
 		return Math::UInt2{
 			(flattenedCoordinates % NUM_PAGES_PER_GLOBAL_TEXTURE_ROW),
 			(flattenedCoordinates / NUM_PAGES_PER_GLOBAL_TEXTURE_ROW)
 		};
-	}
-
-	template <DXGI_FORMAT Format>
-	std::uint8_t GlobalTexture<Format>::GetGlobalTextureDescriptionBufferIndex() const
-	{
-		return static_cast<std::uint8_t>(mGlobalTextureDescriptionBufferSubAllocation.GetOffsetFromBufferStart() / sizeof(GlobalTextureDescription));
 	}
 
 	template <DXGI_FORMAT Format>
@@ -317,7 +321,7 @@ namespace Brawler
 		const GlobalTexturePageInfo::InitInfo<Format> initInfo{
 			.GlobalTexture2D{ *mTexture2DPtr },
 			.PageCoordinates{ unflattenedPageCoordinates },
-			.GlobalTextureID = GetGlobalTextureDescriptionBufferIndex()
+			.GlobalTextureID = GetGlobalTextureID()
 		};
 
 		return GlobalTexturePageInfo{ initInfo };

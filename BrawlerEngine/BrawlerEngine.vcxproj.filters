@@ -630,6 +630,12 @@
     <ClCompile Include="src\VirtualTextureManagementPassCollection.cpp">
       <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
     </ClCompile>
+    <ClCompile Include="src\GlobalTextureDatabase.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTextureDatabase.cpp">
+      <Filter>Source Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

@@ -248,6 +248,8 @@
     <ClCompile Include="src\AppWindow.ixx" />
     <ClCompile Include="src\GlobalTexture.ixx" />
     <ClCompile Include="src\GlobalTextureCollection.ixx" />
+    <ClCompile Include="src\GlobalTextureDatabase.cpp" />
+    <ClCompile Include="src\GlobalTextureDatabase.ixx" />
     <ClCompile Include="src\GlobalTextureFormatInfo.ixx" />
     <ClCompile Include="src\GlobalTextureIndexer.ixx" />
     <ClCompile Include="src\GlobalTexturePageIdentifier.ixx" />
