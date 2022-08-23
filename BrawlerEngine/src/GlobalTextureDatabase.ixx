@@ -1,10 +1,12 @@
 module;
 #include <cassert>
+#include <span>
 #include <DxDef.h>
 
 export module Brawler.GlobalTextureDatabase;
 import Brawler.GlobalTextureCollection;
 import Brawler.VirtualTextureLogicalPage;
+import Brawler.GlobalTexturePageIdentifier;
 
 export namespace Brawler
 {
@@ -25,6 +27,7 @@ export namespace Brawler
 		static GlobalTextureDatabase& GetInstance();
 
 		void AddVirtualTexturePage(GlobalTextureUpdateContext& context, const VirtualTextureLogicalPage& logicalPage);
+		void ClearGlobalTexturePages(const std::span<const GlobalTexturePageIdentifier> pageIdentifierSpan);
 
 	private:
 		template <typename Callback>

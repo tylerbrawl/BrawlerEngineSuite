@@ -1,5 +1,7 @@
 module;
 #include <cassert>
+#include <span>
+#include <unordered_map>
 #include <DxDef.h>
 
 module Brawler.GlobalTextureDatabase;
@@ -42,5 +44,16 @@ namespace Brawler
 			[[maybe_unused]] const std::expected<void, HRESULT> addPageDataResult = collection.AddVirtualTexturePage(context, logicalPage);
 			assert(addPageDataResult.has_value());
 		});
+	}
+
+	void GlobalTextureDatabase::ClearGlobalTexturePages(const std::span<const GlobalTexturePageIdentifier> pageIdentifierSpan)
+	{
+		// First, group each GlobalTexturePageIdentifier based on their GlobalTexture ID.
+		std::unordered_map<std::uint8_t, std::vector<GlobalTexturePageIdentifier>> pageIdentifierMap{};
+
+		for (const auto pageIdentifier : pageIdentifierSpan)
+			pageIdentifierMap[pageIdentifier.GlobalTextureID].push_back(pageIdentifier);
+
+		// TODO: Finish this!
 	}
 }
