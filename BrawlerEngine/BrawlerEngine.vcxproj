@@ -253,11 +253,13 @@
     <ClCompile Include="src\GlobalTexturePageIdentifier.ixx" />
     <ClCompile Include="src\GlobalTexturePageInfo.cpp" />
     <ClCompile Include="src\GlobalTexturePageInfo.ixx" />
+    <ClCompile Include="src\GlobalTexturePageRemovalRequest.cpp" />
     <ClCompile Include="src\GlobalTexturePageRemovalRequest.ixx" />
     <ClCompile Include="src\GlobalTexturePageRemovalSubModule.cpp" />
     <ClCompile Include="src\GlobalTexturePageRemovalSubModule.ixx" />
     <ClCompile Include="src\GlobalTexturePageSlot.cpp" />
     <ClCompile Include="src\GlobalTexturePageSlot.ixx" />
+    <ClCompile Include="src\GlobalTexturePageTransferRequest.cpp" />
     <ClCompile Include="src\GlobalTexturePageTransferRequest.ixx" />
     <ClCompile Include="src\GlobalTexturePageTransferSubModule.cpp" />
     <ClCompile Include="src\GlobalTexturePageTransferSubModule.ixx" />

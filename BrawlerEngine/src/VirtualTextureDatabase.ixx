@@ -39,6 +39,8 @@ export namespace Brawler
 		VirtualTextureHandle CreateVirtualTexture(const FilePathHash bvtxFileHash);
 		void DeleteVirtualTexture(VirtualTextureHandle& hVirtualTexture);
 
+		void TryCleanDeletedVirtualTextures();
+
 		template <Brawler::Function<void, VirtualTexture&> Callback>
 		bool AccessVirtualTexture(const std::uint32_t virtualTextureID, const Callback& callback);
 
@@ -83,9 +85,8 @@ namespace Brawler
 	template <Brawler::Function<void, VirtualTexture&> Callback>
 	bool VirtualTextureDatabase::AccessVirtualTexture(const std::uint32_t virtualTextureID, const Callback& callback)
 	{
-		std::scoped_lock<std::mutex> lock{ mVirtualTexturePtrArr[virtualTextureID].CritSection };
-
 		{
+			const std::scoped_lock<std::mutex> lock{ mVirtualTexturePtrArr[virtualTextureID].CritSection };
 			const std::unique_ptr<VirtualTexture>& virtualTexturePtr{ mVirtualTexturePtrArr[virtualTextureID].VirtualTexturePtr };
 
 			if (virtualTexturePtr == nullptr) [[unlikely]]
@@ -100,9 +101,8 @@ namespace Brawler
 	template <Brawler::Function<void, const VirtualTexture&> Callback>
 	bool VirtualTextureDatabase::AccessVirtualTexture(const std::uint32_t virtualTextureID, const Callback& callback) const
 	{
-		std::scoped_lock<std::mutex> lock{ mVirtualTexturePtrArr[virtualTextureID].CritSection };
-
 		{
+			const std::scoped_lock<std::mutex> lock{ mVirtualTexturePtrArr[virtualTextureID].CritSection };
 			const std::unique_ptr<VirtualTexture>& virtualTexturePtr{ mVirtualTexturePtrArr[virtualTextureID].VirtualTexturePtr };
 
 			if (virtualTexturePtr == nullptr) [[unlikely]]

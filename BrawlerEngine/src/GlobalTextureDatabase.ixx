@@ -30,6 +30,8 @@ export namespace Brawler
 		void AddVirtualTexturePage(GlobalTextureUpdateContext& context, const VirtualTextureLogicalPage& logicalPage);
 		void ClearGlobalTexturePages(const std::span<const GlobalTexturePageIdentifier> pageIdentifierSpan);
 
+		void NotifyGlobalTextureForUseInCurrentFrame(const GlobalTexturePageIdentifier pageIdentifier);
+
 	private:
 		template <typename Callback>
 		void ExecuteCallbackForFormat(const DXGI_FORMAT format, const Callback& callback);

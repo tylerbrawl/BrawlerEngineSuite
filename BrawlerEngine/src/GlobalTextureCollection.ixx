@@ -169,6 +169,8 @@ namespace Brawler
 			// pages.
 			assert(false);
 			std::unreachable();
+
+			return false;
 		}
 
 		for (const auto candidateTexturePtr : candidateTexturePtrArr)

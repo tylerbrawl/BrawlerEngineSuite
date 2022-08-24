@@ -33,7 +33,7 @@ export namespace Brawler
 		void RemoveTrackedPage(const TrackedPage trackedPage);
 
 		std::vector<GlobalTexturePageIdentifier> GetOccupiedGlobalTexturePages() const;
-		std::optional<GlobalTexturePageIdentifier> GetStoragePageIdentifier(const TrackedPage trackedPage) const;
+		std::optional<GlobalTexturePageIdentifier> GetStoragePageIdentifier(const TrackedPage& trackedPage) const;
 
 	private:
 		std::unordered_map<TrackedPage, GlobalTexturePageIdentifier, GeneralHash<TrackedPage>> mPageStorageMap;

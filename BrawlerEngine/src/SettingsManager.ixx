@@ -1,5 +1,5 @@
 module;
-#include <variant>
+#include <tuple>
 #include <array>
 #include <cassert>
 #include <mutex>
@@ -20,18 +20,6 @@ namespace Brawler
 		else
 			return std::tuple<typename IMPL::SettingDefinition<CurrID>::Type>{};
 	}
-
-	template <typename T>
-	struct SettingVariantSolver
-	{
-		static_assert(sizeof(T) != sizeof(T));
-	};
-
-	template <typename... SettingTypes>
-	struct SettingVariantSolver<std::tuple<SettingTypes...>>
-	{
-		using VariantType = std::variant<std::decay_t<SettingTypes>...>;
-	};
 }
 
 export namespace Brawler
@@ -39,7 +27,7 @@ export namespace Brawler
 	class SettingsManager final
 	{
 	public:
-		using SettingVariant = typename SettingVariantSolver<decltype(GetSettingTuple<static_cast<SettingID>(0)>())>::VariantType;
+		using SettingTuple = decltype(GetSettingTuple<static_cast<SettingID>(0)>());
 
 		template <Brawler::SettingID ID>
 		using SettingType = typename Brawler::IMPL::SettingDefinition<ID>::Type;
@@ -90,7 +78,7 @@ export namespace Brawler
 		void RestoreDefaultSettings();
 
 	private:
-		std::array<SettingVariant, std::to_underlying(SettingID::COUNT_OR_ERROR)> mSettingMap;
+		SettingTuple mSettingTuple;
 		mutable std::mutex mCritSection;
 	};
 }
@@ -104,7 +92,7 @@ namespace Brawler
 	{
 		std::scoped_lock<std::mutex> lock{ mCritSection };
 
-		mSettingMap[std::to_underlying(ID)].emplace<std::to_underlying(ID)>(value);
+		std::get<std::to_underlying(ID)>(mSettingTuple) = value;
 	}
 	
 	template <SettingID ID>
@@ -112,7 +100,7 @@ namespace Brawler
 	{
 		std::scoped_lock<std::mutex> lock{ mCritSection };
 
-		return std::get<std::to_underlying(ID)>(mSettingMap[std::to_underlying(ID)]);
+		return std::get<std::to_underlying(ID)>(mSettingTuple);
 	}
 
 	template <SettingID ID>
@@ -121,7 +109,8 @@ namespace Brawler
 		// We don't need to acquire the lock for this, because we are not accessing any data from
 		// the SettingsManager instance.
 		
-		return Brawler::IMPL::SettingDefinition<ID>::DEFAULT_VALUE;
+		constexpr SettingType<ID> DEFAULT_VALUE{ IMPL::SettingDefinition<ID>::DEFAULT_VALUE };
+		return DEFAULT_VALUE;
 	}
 
 	template <SettingID ID>

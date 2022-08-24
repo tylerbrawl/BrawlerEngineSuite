@@ -29,7 +29,7 @@ namespace Brawler
 		return occupiedIdentifierArr;
 	}
 
-	std::optional<GlobalTexturePageIdentifier> VirtualTextureActivePageTracker::GetStoragePageIdentifier(const TrackedPage trackedPage) const
+	std::optional<GlobalTexturePageIdentifier> VirtualTextureActivePageTracker::GetStoragePageIdentifier(const TrackedPage& trackedPage) const
 	{
 		if (!mPageStorageMap.contains(trackedPage)) [[unlikely]]
 			return std::optional<GlobalTexturePageIdentifier>{};

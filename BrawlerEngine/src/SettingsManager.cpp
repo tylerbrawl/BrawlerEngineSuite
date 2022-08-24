@@ -1,7 +1,7 @@
 module;
 #include <type_traits>
 #include <array>
-#include <variant>
+#include <tuple>
 #include <atomic>
 #include <cassert>
 #include <string>
@@ -33,7 +33,7 @@ namespace
 namespace Brawler
 {
 	SettingsManager::SettingsManager() :
-		mSettingMap(),
+		mSettingTuple(),
 		mCritSection()
 	{
 		Initialize();
@@ -74,7 +74,7 @@ namespace Brawler
 				iniManager.AddConfigOption<CurrentSettingDefinition::Type>(
 					std::string{ Brawler::GetSettingHeaderString<CurrentSettingDefinition::HEADER>().C_Str()},
 					std::string{ Brawler::GetSettingIDString<CurrID>().C_Str() },
-					std::get<std::to_underlying(CurrID)>(mSettingMap[std::to_underlying(CurrID)])
+					std::get<std::to_underlying(CurrID)>(mSettingTuple)
 				);
 
 				constexpr Brawler::SettingID NEXT_ID = static_cast<Brawler::SettingID>(std::to_underlying(CurrID) + 1);
@@ -120,7 +120,7 @@ namespace Brawler
 				) };
 
 				if (settingValue.has_value()) [[likely]]
-					mSettingMap[std::to_underlying(CurrID)].emplace<std::to_underlying(CurrID)>(std::move(*settingValue));
+					std::get<std::to_underlying(CurrID)>(mSettingTuple) = std::move(*settingValue);
 
 				constexpr Brawler::SettingID NEXT_ID = static_cast<Brawler::SettingID>(std::to_underlying(CurrID) + 1);
 				self.operator()<NEXT_ID>();
@@ -163,8 +163,9 @@ namespace Brawler
 			if constexpr (CurrID != Brawler::SettingID::COUNT_OR_ERROR)
 			{
 				using CurrentSettingDefinition = Brawler::IMPL::SettingDefinition<CurrID>;
+				constexpr CurrentSettingDefinition::Type DEFAULT_VALUE{ GetDefaultValueForOption<CurrID>() };
 				
-				mSettingMap[std::to_underlying(CurrID)].emplace<std::to_underlying(CurrID)>(CurrentSettingDefinition::DEFAULT_VALUE);
+				std::get<std::to_underlying(CurrID)>(mSettingTuple) = DEFAULT_VALUE;
 
 				constexpr Brawler::SettingID NEXT_ID = static_cast<Brawler::SettingID>(std::to_underlying(CurrID) + 1);
 				self.operator()<NEXT_ID>();

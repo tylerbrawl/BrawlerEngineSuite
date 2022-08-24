@@ -612,6 +612,12 @@
     <ClCompile Include="src\VirtualTextureStreamer.cpp">
       <Filter>Source Files\Streaming Systems\Texture Streaming</Filter>
     </ClCompile>
+    <ClCompile Include="src\GlobalTexturePageTransferRequest.cpp">
+      <Filter>Source Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlobalTexturePageRemovalRequest.cpp">
+      <Filter>Source Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

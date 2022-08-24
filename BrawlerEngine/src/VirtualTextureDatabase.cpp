@@ -56,4 +56,9 @@ namespace Brawler
 		mPendingDeletionArr.PushBack(std::move(extractedTexturePtr));
 		hVirtualTexture.mVirtualTexturePtr = nullptr;
 	}
+
+	void VirtualTextureDatabase::TryCleanDeletedVirtualTextures()
+	{
+		mPendingDeletionArr.EraseIf([] (const std::unique_ptr<VirtualTexture>& virtualTexturePtr) { return virtualTexturePtr->SafeToDelete(); });
+	}
 }
