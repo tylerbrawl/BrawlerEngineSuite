@@ -1203,6 +1203,7 @@
     <ClCompile Include="src\PendingDirectStorageRequest.cpp" />
     <ClCompile Include="src\PendingDirectStorageRequest.ixx" />
     <ClCompile Include="src\SerializedStruct.ixx" />
+    <ClCompile Include="src\SerializedStructConcepts.ixx" />
     <ClCompile Include="src\Win32AssetIORequest.cpp" />
     <ClCompile Include="src\Win32AssetIORequestBuilder.cpp" />
     <ClCompile Include="src\Win32AssetIORequestBuilder.ixx" />

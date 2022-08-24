@@ -4,7 +4,7 @@ module;
 export module Brawler.GPUSceneUpdateRenderModule;
 import Brawler.D3D12.I_RenderModule;
 import Brawler.GPUSceneBufferUpdateSubModule;
-import Brawler.GlobalTextureUploadContext;
+import Brawler.GlobalTextureUpdateContext;
 import Brawler.VirtualTextureManagementSubModule;
 import Brawler.GPUSceneBufferID;
 import Brawler.GPUSceneBufferUpdateOperation;
@@ -25,7 +25,7 @@ export namespace Brawler
 		template <GPUSceneBufferID BufferID>
 		void ScheduleGPUSceneBufferUpdateForNextFrame(GPUSceneBufferUpdateOperation<BufferID>&& updateOperation);
 
-		void CommitGlobalTextureChanges(std::unique_ptr<GlobalTextureUploadContext>&& uploadContextPtr);
+		void CommitGlobalTextureChanges(std::unique_ptr<GlobalTextureUpdateContext>&& uploadContextPtr);
 
 		bool IsRenderModuleEnabled() const override;
 

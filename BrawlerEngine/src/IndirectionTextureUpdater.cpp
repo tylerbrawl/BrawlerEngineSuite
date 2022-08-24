@@ -5,6 +5,7 @@ module;
 #include <span>
 #include <ranges>
 #include <cassert>
+#include <algorithm>
 #include <DxDef.h>
 
 module Brawler.IndirectionTextureUpdater;
@@ -148,8 +149,8 @@ namespace Brawler
 
 		mCurrRequiredBufferSize += currUpdatePassInfo.SrcSubAllocation.GetSubAllocationSize();
 		mUpdateInfoStorageArr.push_back(UpdateInfoStorage{
-			.PassInfo{ std::move(currUpdatePasInfo) },
-			.IndirectionTextureSubResource{ clampedMipLevel },
+			.PassInfo{ std::move(currUpdatePassInfo) },
+			.IndirectionTextureSubResource{ logicalPage.VirtualTexturePtr->GetIndirectionTexture().GetSubResource(clampedMipLevel) },
 			.IndirectionTexelValueArr{ newIndirectionTexelValue, newIndirectionTexelValue }
 		});
 	}

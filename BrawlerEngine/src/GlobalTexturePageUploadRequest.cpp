@@ -41,7 +41,12 @@ namespace Brawler
 		return mPageInfo;
 	}
 
-	D3D12::TextureCopyBufferSubAllocation& GlobalTexturePageUploadRequest::GetPageDataBufferSubAllocation() const
+	D3D12::TextureCopyBufferSubAllocation& GlobalTexturePageUploadRequest::GetPageDataBufferSubAllocation()
+	{
+		return mPageDataCopySubAllocation;
+	}
+
+	const D3D12::TextureCopyBufferSubAllocation& GlobalTexturePageUploadRequest::GetPageDataBufferSubAllocation() const
 	{
 		return mPageDataCopySubAllocation;
 	}

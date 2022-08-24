@@ -420,9 +420,6 @@
     <ClCompile Include="src\VirtualTexture.cpp">
       <Filter>Source Files\Streaming Systems\Texture Streaming</Filter>
     </ClCompile>
-    <ClCompile Include="src\GlobalTextureUploadBuffer.ixx">
-      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Texture Data Uploads</Filter>
-    </ClCompile>
     <ClCompile Include="src\VirtualTextureDatabase.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
     </ClCompile>
@@ -436,9 +433,6 @@
       <Filter>Source Files\Streaming Systems\Texture Streaming</Filter>
     </ClCompile>
     <ClCompile Include="src\GlobalTextureCollection.ixx">
-      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GlobalTexturePageSwapOperation.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
     </ClCompile>
     <ClCompile Include="src\GlobalTextureReservedPage.ixx">
@@ -461,9 +455,6 @@
     </ClCompile>
     <ClCompile Include="src\GlobalTextureFormatInfo.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GlobalTextureUploadBuffer.cpp">
-      <Filter>Source Files\Streaming Systems\Texture Streaming\Global Texture Data Uploads</Filter>
     </ClCompile>
     <ClCompile Include="src\VirtualTextureConstants.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
@@ -507,29 +498,8 @@
     <ClCompile Include="src\GPUSceneBufferUpdateMonitor.ixx">
       <Filter>Module Files\Render Modules\GPU Scene Update</Filter>
     </ClCompile>
-    <ClCompile Include="src\GlobalTextureUpdater.ixx">
-      <Filter>Module Files\Render Modules\GPU Scene Update</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GlobalTextureUpdater.cpp">
-      <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ActiveGlobalTexturePageDatabase.ixx">
-      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VirtualTexturePageStorageTracker.ixx">
-      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VirtualTexturePageStorageTracker.cpp">
-      <Filter>Source Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
-    </ClCompile>
     <ClCompile Include="src\VirtualTextureFeedback.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ActiveGlobalTexturePageDatabase.cpp">
-      <Filter>Source Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GlobalTexturePageReservationResults.ixx">
-      <Filter>Module Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
     </ClCompile>
     <ClCompile Include="src\GlobalTextureUpdateContext.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
@@ -635,6 +605,12 @@
     </ClCompile>
     <ClCompile Include="src\GlobalTextureDatabase.cpp">
       <Filter>Source Files\Streaming Systems\Texture Streaming\Global Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTextureStreamer.ixx">
+      <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualTextureStreamer.cpp">
+      <Filter>Source Files\Streaming Systems\Texture Streaming</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

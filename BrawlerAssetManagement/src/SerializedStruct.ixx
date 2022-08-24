@@ -5,80 +5,40 @@ module;
 #include <array>
 
 export module Brawler.SerializedStruct;
+import :SerializedStructConcepts;
 import Util.Reflection;
 
 namespace Brawler
 {
-	template <typename T, std::size_t CurrFieldIndex>
-		requires Util::Reflection::IsReflectable<T>
-	consteval bool IsSerializableIMPL();
-
-	template <typename T>
-	struct ArraySolver
-	{
-		static constexpr bool IS_ARRAY = false;
-	};
-
-	template <typename DataType, std::size_t Size>
-	struct ArraySolver<std::array<DataType, Size>>
-	{
-		static constexpr bool IS_ARRAY = true;
-
-		using ElementType = DataType;
-	};
-
-	template <typename FieldType>
-	consteval bool IsFieldSerializable()
-	{
-		// Don't allow pointers or references; these cannot be serialized meaningfully.
-		if constexpr (std::is_pointer_v<FieldType> || std::is_reference_v<FieldType>)
-			return false;
-
-		// Do, however, allow arithmetic primitives and enumeration types.
-		if constexpr (std::is_arithmetic_v<FieldType> || std::is_enum_v<FieldType>)
-			return true;
-
-		// Add explicit support for std::array, but only if the type it refers
-		// to is serializable.
-		constexpr bool IS_ARRAY = ArraySolver<FieldType>::IS_ARRAY;
-
-		if constexpr (IS_ARRAY)
-			return IsFieldSerializable<typename ArraySolver<FieldType>::ElementType>();
-
-		// If we cannot verify that the type is serializable via reflection, then
-		// do not allow its serialization.
-		if constexpr (Util::Reflection::IsReflectable<FieldType>)
-		{
-			constexpr std::size_t FIELD_COUNT = Util::Reflection::GetFieldCount<FieldType>();
-
-			if constexpr (FIELD_COUNT > 1)
-				return IsSerializableIMPL<FieldType, 0>();
-			else
-				return true;
-		}
-		else
-			return false;
-	}
-
-	template <typename T, std::size_t CurrFieldIndex>
-		requires Util::Reflection::IsReflectable<T>
-	consteval bool IsSerializableIMPL()
-	{
-		if constexpr (CurrFieldIndex == Util::Reflection::GetFieldCount<T>())
-			return true;
-		else
-		{
-			using CurrField = Util::Reflection::FieldType<T, CurrFieldIndex>;
-
-			if (!IsFieldSerializable<CurrField>())
-				return false;
-
-			return IsSerializableIMPL<T, (CurrFieldIndex + 1)>();
-		}
-	}
-
 	template <typename T>
 	concept IsSerializable = Util::Reflection::IsReflectable<T> && IsSerializableIMPL<T, 0>();
+
+	template <typename T, std::size_t FieldCount>
+	struct SerializedStructIMPL
+	{
+		static_assert(sizeof(T) != sizeof(T), "ERROR: It looks like you need to add more explicit template specializations for Brawler::SerializedStructIMPL. (See SerializedStruct.ixx.) Have fun!");
+	};
+}
+
+export namespace Brawler
+{
+	// NOTE: Originally, IsInherentlySerializable was defined directly below the SerializedStruct
+	// type alias definition. However, placing it there was causing the MSVC to crash with internal
+	// compiler errors (ICEs). So, we moved it up here.
+
+	/// <summary>
+	/// This concept describes whether the type T is "inherently serializable;" that is, that
+	/// T is not only reflectable (as in Util::Reflection::IsReflectable) but also has the same
+	/// memory layout and size of SerializedStruct&lt;T&gt;.
+	///
+	/// A type which is not inherently serializable may still very well be serializable. However,
+	/// the performance of serializing and deserializing the data will be greatly diminished in
+	/// order to account for alignment differences. If this performance penalty is unacceptable for
+	/// your target architecture, consider adding padding to types which should be serialized so
+	/// that they become inherently serializable.
+	/// </summary>
+	template <typename T>
+	concept IsInherentlySerializable = IsSerializable<T> && (sizeof(T) == sizeof(SerializedStructIMPL<T, Util::Reflection::GetFieldCount<T>()>));
 }
 
 namespace Brawler
@@ -87,12 +47,6 @@ namespace Brawler
 
 #pragma pack(push)
 #pragma pack(1)
-	template <typename T, std::size_t FieldCount>
-	struct SerializedStructIMPL
-	{
-		static_assert(sizeof(T) != sizeof(T), "ERROR: It looks like you need to add more explicit template specializations for Brawler::SerializedStructIMPL. (See SerializedStruct.ixx.) Have fun!");
-	};
-
 	template <typename T>
 		requires IsSerializable<T>
 	struct SerializedStructIMPL<T, 1>
@@ -245,20 +199,6 @@ export namespace Brawler
 	template <typename T>
 		requires IsSerializable<T>
 	using SerializedStruct = SerializedStructIMPL<T, FieldCountSolver<T>::FIELD_COUNT>;
-
-	/// <summary>
-	/// This concept describes whether the type T is "inherently serializable;" that is, that
-	/// T is not only reflectable (as in Util::Reflection::IsReflectable) but also has the same
-	/// memory layout and size of SerializedStruct&lt;T&gt;.
-	/// 
-	/// A type which is not inherently serializable may still very well be serializable. However,
-	/// the performance of serializing and deserializing the data will be greatly diminished in
-	/// order to account for alignment differences. If this performance penalty is unacceptable for
-	/// your target architecture, consider adding padding to types which should be serialized so
-	/// that they become inherently serializable.
-	/// </summary>
-	template <typename T>
-	concept IsInherentlySerializable = IsSerializable<T> && (sizeof(T) == sizeof(SerializedStruct<T>));
 }
 
 namespace Brawler

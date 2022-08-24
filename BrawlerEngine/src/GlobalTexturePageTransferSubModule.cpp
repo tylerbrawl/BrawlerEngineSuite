@@ -51,7 +51,7 @@ namespace Brawler
 	{
 		// There is overhead in spawning CPU jobs, so don't bother if we don't actually have
 		// any work to do.
-		if (mTransferRequestArr.empty())
+		if (mTransferRequestPtrArr.empty())
 			return GlobalTextureTransferPassCollection{};
 
 		// We realize that GlobalTexture page transfers consist of two separate components:
@@ -69,7 +69,7 @@ namespace Brawler
 		// and copy this into the individual jobs. (We could pass the std::span by reference, but
 		// there's no real point, since these are cheap to copy.)
 
-		const std::span<const std::unique_ptr<GlobalTexturePageTransferRequest>> currRequestSpan{ mTransferRequestArr };
+		const std::span<const std::unique_ptr<GlobalTexturePageTransferRequest>> currRequestSpan{ mTransferRequestPtrArr };
 		Brawler::JobGroup globalTexturePageTransferGroup{};
 		globalTexturePageTransferGroup.Reserve(2);
 
@@ -92,7 +92,7 @@ namespace Brawler
 		builder.MergeFrameGraphBuilder(std::move(globalTextureCopyBuilder));
 		builder.MergeFrameGraphBuilder(std::move(indirectionTextureUpdateBuilder));
 
-		mTransferRequestArr.clear();
+		mTransferRequestPtrArr.clear();
 
 		return GlobalTextureTransferPassCollection{
 			.GlobalTextureCopyArr{ std::move(globalTextureCopyArr) },

@@ -52,7 +52,7 @@ namespace Brawler
 
 		if (currNode.HasParentSceneNode()) [[likely]]
 		{
-			const TransformComponent* const parentNodeTransformPtr = currNode.GetParentSceneNode().GetComponent<TransformComponent>();
+			const TransformComponent* const parentNodeTransformPtr = currNode.GetParentSceneNode().GetComponent<const TransformComponent>();
 
 			if (parentNodeTransformPtr != nullptr) [[likely]]
 				mWorldMatrix = parentNodeTransformPtr->GetWorldMatrix();
@@ -205,7 +205,7 @@ namespace Brawler
 		if (!currNode.HasParentSceneNode()) [[unlikely]]
 			return;
 
-		const TransformComponent* const parentNodeTransformPtr = currNode.GetParentSceneNode().GetComponent<TransformComponent>();
+		const TransformComponent* const parentNodeTransformPtr = currNode.GetParentSceneNode().GetComponent<const TransformComponent>();
 
 		if (parentNodeTransformPtr != nullptr && parentNodeTransformPtr->HasWorldMatrixChangedThisUpdate()) [[unlikely]]
 			MarkWorldMatrixAsDirty();
@@ -245,7 +245,7 @@ namespace Brawler
 
 		if (currNode.HasParentSceneNode()) [[likely]]
 		{
-			const TransformComponent* const parentNodeTransformPtr = currNode.GetParentSceneNode().GetComponent<TransformComponent>();
+			const TransformComponent* const parentNodeTransformPtr = currNode.GetParentSceneNode().GetComponent<const TransformComponent>();
 			
 			if (parentNodeTransformPtr != nullptr) [[likely]]
 			{

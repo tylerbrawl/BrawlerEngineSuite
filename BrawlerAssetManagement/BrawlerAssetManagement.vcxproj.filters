@@ -177,6 +177,9 @@
     <ClCompile Include="src\CustomFileAssetIORequest.ixx">
       <Filter>Module Files\Asset Management\Asset I/O Requests</Filter>
     </ClCompile>
+    <ClCompile Include="src\SerializedStructConcepts.ixx">
+      <Filter>Module Files\File I/O</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

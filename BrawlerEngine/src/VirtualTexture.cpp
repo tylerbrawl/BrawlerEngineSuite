@@ -15,6 +15,7 @@ import Util.Math;
 import Util.Engine;
 import Brawler.GPUSceneBufferUpdater;
 import Brawler.GPUSceneBufferID;
+import Brawler.GlobalTextureDatabase;
 
 namespace
 {
@@ -98,7 +99,19 @@ namespace Brawler
 	{
 		assert(SafeToDelete());
 
+		// Upon the deletion of a VirtualTexture instance, we should inform the GlobalTexture instances
+		// on the CPU side that the slots taken by pages for this VirtualTexture instance are now freed.
+		// However, we do not need to make any changes on the GPU side:
+		//
+		//   - The GlobalTexture instances on the CPU side know that the slots are free. Until the data
+		//     gets replaced on the GPU, what is already there in GPU memory for that slot essentially
+		//     becomes garbage.
+		//
+		//   - The indirection texture for the VirtualTexture being deleted does not need to be updated
+		//     because it is never going to be used again.
 
+		const std::vector<GlobalTexturePageIdentifier> previousOccupiedPageIdentifierArr{ GetActivePageTracker().GetOccupiedGlobalTexturePages() };
+		GlobalTextureDatabase::GetInstance().ClearGlobalTexturePages(std::span<const GlobalTexturePageIdentifier>{ previousOccupiedPageIdentifierArr });
 	}
 
 	std::uint32_t VirtualTexture::GetVirtualTextureID() const
@@ -231,7 +244,7 @@ namespace Brawler
 	bool VirtualTexture::SafeToDelete() const
 	{
 		// Do not delete this VirtualTexture instance unless there are no pending streaming requests.
-		const numStreamingRequestsInFlight = mStreamingRequestsInFlight.load(std::memory_order::acquire);
+		const std::uint64_t numStreamingRequestsInFlight = mStreamingRequestsInFlight.load(std::memory_order::acquire);
 
 		if (numStreamingRequestsInFlight > 0)
 			return false;

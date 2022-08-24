@@ -65,7 +65,7 @@ namespace Brawler
 
 		globalTextureChangePassGroup.AddJob([this, &uploadPassCollection, &uploadPassBuilder] ()
 		{
-			uploadPassCollection = mPageUploadSubModule.GetPageTransferRenderPasses(uploadPassBuilder);
+			uploadPassCollection = mPageUploadSubModule.GetPageUploadRenderPasses(uploadPassBuilder);
 		});
 
 		std::vector<GlobalTexturePageRemovalSubModule::IndirectionTextureUpdateRenderPass_T> removalPassArr{};

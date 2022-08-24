@@ -7,6 +7,7 @@ export module Brawler.GlobalTextureDatabase;
 import Brawler.GlobalTextureCollection;
 import Brawler.VirtualTextureLogicalPage;
 import Brawler.GlobalTexturePageIdentifier;
+import Brawler.GlobalTextureUpdateContext;
 
 export namespace Brawler
 {
@@ -32,6 +33,9 @@ export namespace Brawler
 	private:
 		template <typename Callback>
 		void ExecuteCallbackForFormat(const DXGI_FORMAT format, const Callback& callback);
+
+		template <typename Callback>
+		void ExecuteCallbackForGlobalTextureID(const std::uint8_t desiredID, const Callback& callback);
 
 	private:
 		// Add a single GlobalTextureCollection instance for each expected DXGI_FORMAT
@@ -62,5 +66,14 @@ namespace Brawler
 			std::unreachable();
 		}
 		}
+	}
+
+	template <typename Callback>
+	void GlobalTextureDatabase::ExecuteCallbackForGlobalTextureID(const std::uint8_t desiredID, const Callback& callback)
+	{
+		if (mBC7UnormSRGBCollection.HasGlobalTextureID(desiredID))
+			callback(mBC7UnormSRGBCollection);
+
+		// Add additional entries as extra GlobalTextureCollection instances are added.
 	}
 }

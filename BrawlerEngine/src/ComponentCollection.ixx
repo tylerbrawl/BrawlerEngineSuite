@@ -16,44 +16,6 @@ export namespace Brawler
 	class SceneNode;
 }
 
-namespace IMPL
-{
-	template <typename T>
-	concept IsValidComponent = std::derived_from<T, Brawler::I_Component> && !std::is_pointer_v<T>;
-}
-
-/*
-Remarks:
-
-* We disallow creating or removing I_Component instances while a ComponentCollection is being updated.
-We really had two choices for handling this scenario:
-
-	- Disallow it from happening in the first place.
-
-	- Create a set of rules and conditions for what happens to I_Components which are added or removed
-	  during a ComponentCollection update.
-
-If we had chosen the latter option, we would have to answer questions like the following:
-
-	- When should an I_Component be useable if it is created during an update? Should it be immediately
-	  useable, or must we wait until after the update?
-	
-	- Does an I_Component which was added during an update still get updated during that update, or
-	  does its first update happen on the next ComponentCollection update?
-
-	- An I_Component which is to be removed during a ComponentCollection update was already updated
-	  before the remove request was made during that update. Is this acceptable behavior?
-
-Let's suppose that we do answer all of these questions and devise and implement an elegant and extensible
-solution (which, by the way, is a non-trivial task). Even if we do this, we still have to remember all
-of these rules and do lots of additional error checking, which will add a significant amount of complexity
-to both the API and its implementation.
-
-So, to avoid these issues, we disallow component addition and removal entirely during a
-ComponentCollection update. (Personal Note: I should let this be an example as to why additional flexibility
-is not always a good thing.)
-*/
-
 export namespace Brawler
 {
 	class ComponentCollection
@@ -107,9 +69,9 @@ export namespace Brawler
 		/// - A pointer to the component which is to be removed.
 		/// </param>
 		/// <returns></returns>
-		template <typename T, typename DecayedT = std::decay_t<T>>
-			requires IMPL::IsValidComponent<T>
-		void RemoveComponent(DecayedT* componentPtr);
+		template <typename T>
+			requires std::derived_from<std::decay_t<T>, I_Component>
+		void RemoveComponent(T* const componentPtr);
 
 		/// <summary>
 		/// Returns the number of I_Component instances of type T which are owned by this
@@ -126,21 +88,21 @@ export namespace Brawler
 			requires std::derived_from<T, Brawler::I_Component>
 		std::size_t GetComponentCount() const;
 
-		template <typename T, typename DecayedT = std::decay_t<T>>
-			requires IMPL::IsValidComponent<T>
-		DecayedT* GetComponent();
+		template <typename T>
+			requires std::derived_from<T, Brawler::I_Component>
+		T* GetComponent();
 
-		template <typename T, typename DecayedT = std::decay_t<T>>
-			requires IMPL::IsValidComponent<T>
-		const DecayedT* GetComponent() const;
+		template <typename T>
+			requires std::derived_from<T, Brawler::I_Component> && IS_CONST<T>
+		const T* GetComponent() const;
 
-		template <typename T, typename DecayedT = std::decay_t<T>>
-			requires IMPL::IsValidComponent<T>
-		std::vector<DecayedT*> GetComponents();
+		template <typename T>
+			requires std::derived_from<T, Brawler::I_Component>
+		std::vector<T*> GetComponents();
 
-		template <typename T, typename DecayedT = std::decay_t<T>>
-			requires IMPL::IsValidComponent<T>
-		std::vector<const DecayedT*> GetComponents() const;
+		template <typename T>
+			requires std::derived_from<T, Brawler::I_Component> && IS_CONST<T>
+		std::vector<const T*> GetComponents() const;
 
 	private:
 		/// <summary>
@@ -201,11 +163,11 @@ namespace Brawler
 			mComponentMap[COMPONENT_ID].push_back(std::move(compPtr));
 	}
 
-	template <typename T, typename DecayedT>
-		requires IMPL::IsValidComponent<T>
-	void ComponentCollection::RemoveComponent(DecayedT* componentPtr)
+	template <typename T>
+		requires std::derived_from<std::decay_t<T>, I_Component>
+	void ComponentCollection::RemoveComponent(T* const componentPtr)
 	{
-		constexpr ComponentID COMPONENT_ID{ Brawler::GetComponentID<DecayedT>() };
+		constexpr ComponentID COMPONENT_ID{ Brawler::GetComponentID<std::decay_t<T>>() };
 
 		if (mComponentMap.contains(COMPONENT_ID)) [[likely]]
 		{
@@ -216,9 +178,8 @@ namespace Brawler
 				// is currently having its components be updated, then the removal is postponed until after
 				// the update. Otherwise, we std::move() it into the array of components pending removal and 
 				// erase the std::unique_ptr instance which used to contain it.
-				
-				// If we find the pointer which we want to remove, then 
-				if (componentPtr == static_cast<DecayedT>(itr->get()))
+
+				if (static_cast<I_Component*>(componentPtr) == itr->get())
 				{
 					if (mIsUpdating)
 						mComponentsMarkedForRemovalDuringUpdateArr.emplace_back(COMPONENT_ID, itr->get());
@@ -241,7 +202,7 @@ namespace Brawler
 		requires std::derived_from<T, Brawler::I_Component>
 	std::size_t ComponentCollection::GetComponentCount() const
 	{
-		constexpr auto RELEVANT_ID_ARR{ Brawler::GetCompatibleComponentIDs<T>() };
+		constexpr auto RELEVANT_ID_ARR{ Brawler::GetCompatibleComponentIDs<std::decay_t<T>>() };
 		std::size_t count = 0;
 
 		for (const auto componentID : RELEVANT_ID_ARR)
@@ -253,56 +214,56 @@ namespace Brawler
 		return count;
 	}
 
-	template <typename T, typename DecayedT>
-		requires IMPL::IsValidComponent<T>
-	DecayedT* ComponentCollection::GetComponent()
+	template <typename T>
+		requires std::derived_from<T, Brawler::I_Component>
+	T* ComponentCollection::GetComponent()
 	{
 		// Do not allow GetComponent() to be called if more than one component of the same type is
 		// present.
-		assert(GetComponentCount<DecayedT>() <= 1 && 
+		assert(GetComponentCount<T>() <= 1 && 
 			"ERROR: An attempt was made to call ComponentCollection::GetComponent<T>(), but the owning SceneNode had more than 1 component of type T! (In this case, you should use ComponentCollection::GetComponents<T>()!)");
 
-		constexpr auto RELEVANT_ID_ARR{ Brawler::GetCompatibleComponentIDs<T>() };
+		constexpr auto RELEVANT_ID_ARR{ Brawler::GetCompatibleComponentIDs<std::decay_t<T>>() };
 
 		for (const auto compID : RELEVANT_ID_ARR)
 		{
 			if (mComponentMap.contains(compID) && !mComponentMap.at(compID).empty())
-				return static_cast<DecayedT*>((mComponentMap.at(compID))[0].get());
+				return static_cast<T*>((mComponentMap.at(compID))[0].get());
 		}
 
 		return nullptr;
 	}
 
-	template <typename T, typename DecayedT>
-		requires IMPL::IsValidComponent<T>
-	const DecayedT* ComponentCollection::GetComponent() const
+	template <typename T>
+		requires std::derived_from<T, Brawler::I_Component> && IS_CONST<T>
+	const T* ComponentCollection::GetComponent() const
 	{
 		// Do not allow GetComponent() to be called if more than one component of the same type is
 		// present.
-		assert(GetComponentCount<DecayedT>() <= 1 &&
+		assert(GetComponentCount<T>() <= 1 &&
 			"ERROR: An attempt was made to call ComponentCollection::GetComponent<T>(), but the owning SceneNode had more than 1 component of type T! (In this case, you should use ComponentCollection::GetComponents<T>()!)");
 
-		constexpr auto RELEVANT_ID_ARR{ Brawler::GetCompatibleComponentIDs<T>() };
+		constexpr auto RELEVANT_ID_ARR{ Brawler::GetCompatibleComponentIDs<std::decay_t<T>>() };
 
 		for (const auto compID : RELEVANT_ID_ARR)
 		{
 			if (mComponentMap.contains(compID) && !mComponentMap.at(compID).empty())
-				return static_cast<DecayedT*>((mComponentMap.at(compID))[0].get());
+				return static_cast<const T*>((mComponentMap.at(compID))[0].get());
 		}
 
 		return nullptr;
 	}
 
-	template <typename T, typename DecayedT>
-		requires IMPL::IsValidComponent<T>
-	std::vector<DecayedT*> ComponentCollection::GetComponents()
+	template <typename T>
+		requires std::derived_from<T, Brawler::I_Component>
+	std::vector<T*> ComponentCollection::GetComponents()
 	{
-		const std::size_t componentCount = GetComponentCount<DecayedT>();
+		const std::size_t componentCount = GetComponentCount<T>();
 		if (componentCount == 0)
-			return std::vector<DecayedT*>{};
+			return std::vector<T*>{};
 		
-		constexpr auto RELEVANT_ID_ARR{ Brawler::GetCompatibleComponentIDs<T>() };
-		std::vector<DecayedT*> compPtrArr{};
+		constexpr auto RELEVANT_ID_ARR{ Brawler::GetCompatibleComponentIDs<std::decay_t<T>>() };
+		std::vector<T*> compPtrArr{};
 		compPtrArr.reserve(componentCount);
 
 		for (const auto compID : RELEVANT_ID_ARR)
@@ -311,22 +272,22 @@ namespace Brawler
 				continue;
 
 			for (auto& compPtr : mComponentMap.at(compID))
-				compPtrArr.push_back(static_cast<DecayedT*>(compPtr.get()));
+				compPtrArr.push_back(static_cast<T*>(compPtr.get()));
 		}
 
 		return compPtrArr;
 	}
 
-	template <typename T, typename DecayedT>
-		requires IMPL::IsValidComponent<T>
-	std::vector<const DecayedT*> ComponentCollection::GetComponents() const
+	template <typename T>
+		requires std::derived_from<T, Brawler::I_Component>&& IS_CONST<T>
+	std::vector<const T*> ComponentCollection::GetComponents() const
 	{
-		const std::size_t componentCount = GetComponentCount<DecayedT>();
+		const std::size_t componentCount = GetComponentCount<T>();
 		if (componentCount == 0)
-			return std::vector<DecayedT*>{};
+			return std::vector<const T*>{};
 
-		constexpr auto RELEVANT_ID_ARR{ Brawler::GetCompatibleComponentIDs<T>() };
-		std::vector<DecayedT*> compPtrArr{};
+		constexpr auto RELEVANT_ID_ARR{ Brawler::GetCompatibleComponentIDs<std::decay_t<T>>() };
+		std::vector<const T*> compPtrArr{};
 		compPtrArr.reserve(componentCount);
 
 		for (const auto compID : RELEVANT_ID_ARR)
@@ -335,7 +296,7 @@ namespace Brawler
 				continue;
 
 			for (const auto& compPtr : mComponentMap.at(compID))
-				compPtrArr.push_back(static_cast<DecayedT*>(compPtr.get()));
+				compPtrArr.push_back(static_cast<const T*>(compPtr.get()));
 		}
 
 		return compPtrArr;

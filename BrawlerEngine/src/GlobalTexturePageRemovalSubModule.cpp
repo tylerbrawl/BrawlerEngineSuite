@@ -8,7 +8,7 @@ import Brawler.D3D12.FrameGraphBuilding;
 
 namespace Brawler
 {
-	void GlobalTexturePageRemovalSubModule::AddPageRemovalRequests(const std::span<const std::unique_ptr<GlobalTexturePageRemovalRequest>> removalRequestSpan)
+	void GlobalTexturePageRemovalSubModule::AddPageRemovalRequests(const std::span<std::unique_ptr<GlobalTexturePageRemovalRequest>> removalRequestSpan)
 	{
 		for (auto&& requestPtr : removalRequestSpan)
 			mRequestPtrArr.push_back(std::move(requestPtr));

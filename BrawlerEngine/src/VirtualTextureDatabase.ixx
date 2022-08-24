@@ -58,6 +58,20 @@ export namespace Brawler
 		/// </summary>
 		std::array<VirtualTextureStorage, MAX_VIRTUAL_TEXTURE_DESCRIPTIONS> mVirtualTexturePtrArr;
 
+		/// <summary>
+		/// We also use a multi-phase deletion system for VirtualTexture instances. This system
+		/// works as follows:
+		/// 
+		/// Phase 1: A VirtualTextureHandle instance is deleted, and its corresponding
+		/// std::unique_ptr&lt;VirtualTexture&gt; instance is moved into mPendingDeletionArr.
+		/// 
+		/// Phase 2: During a virtual texture update pass, each VirtualTexture instance found in
+		/// mPendingDeletionArr is checked to see if VirtualTexture::SafeToDelete() returns true.
+		/// If this is the case, then the VirtualTexture instance is actually deleted. Note that
+		/// the function returns true iff all data associated with the VirtualTexture instance
+		/// is guaranteed to not be in use by in-flight streaming requests or the GPU.
+		/// </summary>
+
 		ThreadSafeVector<std::unique_ptr<VirtualTexture>> mPendingDeletionArr;
 	};
 }

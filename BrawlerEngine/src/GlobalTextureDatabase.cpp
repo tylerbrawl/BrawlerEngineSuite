@@ -54,6 +54,14 @@ namespace Brawler
 		for (const auto pageIdentifier : pageIdentifierSpan)
 			pageIdentifierMap[pageIdentifier.GlobalTextureID].push_back(pageIdentifier);
 
-		// TODO: Finish this!
+		for (const auto& [globalTextureID, pageIdentifierArr] : pageIdentifierMap)
+		{
+			const std::span<const GlobalTexturePageIdentifier> currPageIdentifierSpan{ pageIdentifierArr };
+			
+			ExecuteCallbackForGlobalTextureID(globalTextureID, [currPageIdentifierSpan]<DXGI_FORMAT Format>(GlobalTextureCollection<Format>& collection)
+			{
+				collection.ClearGlobalTexturePages(currPageIdentifierSpan);
+			});
+		}
 	}
 }

@@ -1,8 +1,8 @@
 module;
-#include <cstdint>
 
 export module Brawler.VirtualTextureStreamingNotifier;
 import Brawler.VirtualTextureLogicalPage;
+import <cstdint>;
 
 export namespace Brawler
 {

@@ -146,6 +146,8 @@ export namespace Brawler
 		void ClearGlobalTexturePage(const GlobalTexturePageIdentifier pageIdentifier);
 
 		ActiveGlobalTexturePageStats GetActivePageStats() const;
+		std::uint64_t GetLeastRecentFrameNumber() const;
+
 		std::uint8_t GetGlobalTextureID() const;
 
 	private:
@@ -235,7 +237,10 @@ namespace Brawler
 		if (isInsertedPageCombinedPage)
 			mBaseIndexer.UpdateForCombinedPageAddition(*bestIndexForInsertion);
 
-		return std::expected{};
+		// Update the chosen slot for being "used" in the current frame.
+		mBaseIndexer.UpdateForUseInCurrentFrame(*bestIndexForInsertion);
+
+		return std::expected<void, HRESULT>{};
 	}
 
 	template <DXGI_FORMAT Format>
@@ -260,7 +265,7 @@ namespace Brawler
 		if (isRemovedPageCombinedPage)
 			mBaseIndexer.UpdateForCombinedPageRemoval(*bestIndexForRemoval);
 
-		return std::expected{ std::move(removedPage) };
+		return std::expected<VirtualTextureLogicalPage, HRESULT>{ std::move(removedPage) };
 	}
 
 	template <DXGI_FORMAT Format>
@@ -288,6 +293,12 @@ namespace Brawler
 	ActiveGlobalTexturePageStats GlobalTexture<Format>::GetActivePageStats() const
 	{
 		return mBaseIndexer.GetActivePageStats();
+	}
+
+	template <DXGI_FORMAT Format>
+	std::uint64_t GlobalTexture<Format>::GetLeastRecentFrameNumber() const
+	{
+		return mBaseIndexer.GetLeastRecentFrameNumber();
 	}
 
 	template <DXGI_FORMAT Format>

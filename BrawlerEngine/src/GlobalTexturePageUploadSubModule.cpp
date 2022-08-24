@@ -102,7 +102,7 @@ namespace Brawler
 					.SrcCopySnapshot{ uploadRequestPtr->GetPageDataBufferSubAllocation() }
 				});
 
-				currCopyPass.SetRenderPassCommands([] (const GlobalTextureCopyPassInfo& passInfo)
+				currCopyPass.SetRenderPassCommands([] (D3D12::CopyContext& context, const GlobalTextureCopyPassInfo& passInfo)
 				{
 					context.CopyBufferToTexture(passInfo.DestCopyRegion, passInfo.SrcCopySnapshot);
 				});

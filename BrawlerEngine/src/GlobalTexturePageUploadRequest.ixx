@@ -24,7 +24,8 @@ export namespace Brawler
 
 		const GlobalTexturePageInfo& GetDestinationGlobalTexturePageInfo() const;
 
-		D3D12::TextureCopyBufferSubAllocation& GetPageDataBufferSubAllocation() const;
+		D3D12::TextureCopyBufferSubAllocation& GetPageDataBufferSubAllocation();
+		const D3D12::TextureCopyBufferSubAllocation& GetPageDataBufferSubAllocation() const;
 
 	private:
 		VirtualTextureLogicalPage mLogicalPage;

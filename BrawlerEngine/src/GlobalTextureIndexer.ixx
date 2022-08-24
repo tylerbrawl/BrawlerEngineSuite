@@ -43,6 +43,7 @@ export namespace Brawler
 		std::optional<std::size_t> GetBestIndexForPageDefragmentation() const;
 
 		ActiveGlobalTexturePageStats GetActivePageStats() const;
+		std::uint64_t GetLeastRecentFrameNumber() const;
 
 		void UpdateForRegularPageAddition(const std::size_t pageIndex);
 		void UpdateForCombinedPageAddition(const std::size_t pageIndex);
@@ -64,6 +65,7 @@ export namespace Brawler
 
 		ActiveGlobalTexturePageStats mLHSPageStats;
 		ActiveGlobalTexturePageStats mRHSPageStats;
+		std::uint64_t mLeastRecentFrameNumber;
 		[[no_unique_address]] GlobalTextureIndexer<LHS_STARTING_INDEX, LHS_SIZE> mLHSIndexer;
 		[[no_unique_address]] GlobalTextureIndexer<RHS_STARTING_INDEX, RHS_SIZE> mRHSIndexer;
 	};
@@ -71,6 +73,10 @@ export namespace Brawler
 	template <std::size_t StartingIndex>
 	class GlobalTextureIndexer<StartingIndex, 1>
 	{
+	private:
+		template <std::size_t OtherIndex, std::size_t OtherNumPages>
+		friend class GlobalTextureIndexer;
+
 	public:
 		GlobalTextureIndexer() = default;
 
@@ -92,7 +98,12 @@ export namespace Brawler
 			return RETURNED_INDEX;
 		}
 
-		void UpdateForRegiularPageAddition(const std::size_t pageIndex) const
+		std::uint64_t GetLeastRecentFrameNumber() const
+		{
+			return mLastUsedFrameNumber;
+		}
+
+		void UpdateForRegularPageAddition(const std::size_t pageIndex) const
 		{}
 
 		void UpdateForCombinedPageAddition(const std::size_t pageIndex) const
@@ -105,8 +116,13 @@ export namespace Brawler
 		{}
 
 	private:
-		void UpdateForUseInCurrentFrameIMPL(const std::size_t pageIndex, const std::uint64_t currFrameNumber) const
-		{}
+		void UpdateForUseInCurrentFrameIMPL(const std::size_t pageIndex, const std::uint64_t currFrameNumber)
+		{
+			mLastUsedFrameNumber = currFrameNumber;
+		}
+
+	private:
+		std::uint64_t mLastUsedFrameNumber;
 	};
 }
 
@@ -137,7 +153,7 @@ namespace Brawler
 		// If both sides report that they have reached their capacity, then make sure that
 		// we have pages which can be replaced, and prefer to replace pages on the side which
 		// was used least recently.
-		const bool wasLHSUsedMoreRecently = (mLHSPageStats.MostRecentUsedFrameNumber > mRHSPageStats.MostRecentUsedFrameNumber);
+		const bool wasLHSUsedMoreRecently = (mLHSIndexer.GetLeastRecentFrameNumber() > mRHSIndexer.GetLeastRecentFrameNumber());
 
 		if (wasLHSUsedMoreRecently && (mRHSPageStats.NumPagesFilledForCombinedPages != RHS_SIZE))
 			return mRHSIndexer.GetBestIndexForPageReplacement();
@@ -179,7 +195,7 @@ namespace Brawler
 		// moving pages which were used most recently; that way, if we cannot move a
 		// page into a different GlobalTexture and we need to delete its containing
 		// GlobalTexture instance to free VRAM, we can assume that we made the right choice.
-		return (mLHSPageStats.MostRecentUsedFrameNumber > mRHSPageStats.MostRecentUsedFrameNumber ? mLHSIndexer.GetBestIndexForPageDefragmentation() : mRHSIndexer.GetBestIndexForPageDefragmentation());
+		return (mLHSIndexer.GetLeastRecentFrameNumber() > mRHSIndexer.GetLeastRecentFrameNumber() ? mLHSIndexer.GetBestIndexForPageDefragmentation() : mRHSIndexer.GetBestIndexForPageDefragmentation());
 	}
 
 	template <std::size_t StartingIndex, std::size_t NumPagesInRange>
@@ -187,9 +203,14 @@ namespace Brawler
 	{
 		return ActiveGlobalTexturePageStats{
 			.NumPagesFilled = (mLHSPageStats.NumPagesFilled + mRHSPageStats.NumPagesFilled),
-			.NumPagesFilledForCombinedPages = (mLHSPageStats.NumPagesFilledForCombinedPages + mRHSPageStats.NumPagesFilledForCombinedPages),
-			.MostRecentUsedFrameNumber = std::max<std::uint64_t>(mLHSPageStats.MostRecentUsedFrameNumber, mRHSPageStats.MostRecentUsedFrameNumber)
+			.NumPagesFilledForCombinedPages = (mLHSPageStats.NumPagesFilledForCombinedPages + mRHSPageStats.NumPagesFilledForCombinedPages)
 		};
+	}
+
+	template <std::size_t StartingIndex, std::size_t NumPagesInRange>
+	std::uint64_t GlobalTextureIndexer<StartingIndex, NumPagesInRange>::GetLeastRecentFrameNumber() const
+	{
+		return mLeastRecentFrameNumber;
 	}
 
 	template <std::size_t StartingIndex, std::size_t NumPagesInRange>
@@ -272,15 +293,11 @@ namespace Brawler
 		const SegmentChoice choice = ChooseSegment(pageIndex);
 
 		if (choice == SegmentChoice::LHS)
-		{
-			mLHSPageStats.MostRecentUsedFrameNumber = std::max<std::uint64_t>(currFrameNumber, mLHSPageStats.MostRecentUsedFrameNumber);
 			mLHSIndexer.UpdateForUseInCurrentFrameIMPL(pageIndex, currFrameNumber);
-		}
 		else
-		{
-			mRHSPageStats.MostRecentUsedFrameNumber = std::max<std::uint64_t>(currFrameNumber, mRHSPageStats.MostRecentUsedFrameNumber);
 			mRHSIndexer.UpdateForUseInCurrentFrameIMPL(pageIndex, currFrameNumber);
-		}
+
+		mLeastRecentFrameNumber = std::min(mLHSIndexer.GetLeastRecentFrameNumber(), mRHSIndexer.GetLeastRecentFrameNumber());
 	}
 
 	template <std::size_t StartingIndex, std::size_t NumPagesInRange>

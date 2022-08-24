@@ -62,14 +62,14 @@ namespace Brawler
 	{
 		static constexpr std::uint32_t PADDED_PAGE_DIMENSIONS = GlobalTextureFormatInfo<Format>::PADDED_PAGE_DIMENSIONS;
 
-		const Brawler::Math::UInt2 pageTexelCoordinatesBegin{ mPageCoordinates * PADDED_PAGE_DIMENSIONS };
-		const Brawler::Math::UInt2 pageTexelCoordinatesEnd{ pageTexelCoordinatesBegin + PADDED_PAGE_DIMENSIONS };
+		const Math::UInt2 pageTexelCoordinatesBegin{ mPageCoordinates * PADDED_PAGE_DIMENSIONS };
+		const Math::UInt2 pageTexelCoordinatesEnd{ pageTexelCoordinatesBegin + PADDED_PAGE_DIMENSIONS };
 
 		CD3DX12_BOX copyRegionBox{
-			pageTexelCoordinatesBegin.GetX(),
-			pageTexelCoordinatesBegin.GetY(),
-			pageTexelCoordinatesEnd.GetX(),
-			pageTexelCoordinatesEnd.GetY()
+			static_cast<LONG>(pageTexelCoordinatesBegin.GetX()),
+			static_cast<LONG>(pageTexelCoordinatesBegin.GetY()),
+			static_cast<LONG>(pageTexelCoordinatesEnd.GetX()),
+			static_cast<LONG>(pageTexelCoordinatesEnd.GetY())
 		};
 
 		mPageRegion = D3D12::TextureCopyRegion{ mGlobalTexture2DPtr->GetSubResource(0), std::move(copyRegionBox) };

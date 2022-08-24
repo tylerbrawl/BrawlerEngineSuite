@@ -233,8 +233,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\BrawlerModelExport\src\MeshTypeID.ixx" />
-    <ClCompile Include="src\ActiveGlobalTexturePageDatabase.cpp" />
-    <ClCompile Include="src\ActiveGlobalTexturePageDatabase.ixx" />
     <ClCompile Include="src\ActiveGlobalTexturePageStats.ixx" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Application.ixx" />
@@ -258,10 +256,8 @@
     <ClCompile Include="src\GlobalTexturePageRemovalRequest.ixx" />
     <ClCompile Include="src\GlobalTexturePageRemovalSubModule.cpp" />
     <ClCompile Include="src\GlobalTexturePageRemovalSubModule.ixx" />
-    <ClCompile Include="src\GlobalTexturePageReservationResults.ixx" />
     <ClCompile Include="src\GlobalTexturePageSlot.cpp" />
     <ClCompile Include="src\GlobalTexturePageSlot.ixx" />
-    <ClCompile Include="src\GlobalTexturePageSwapOperation.ixx" />
     <ClCompile Include="src\GlobalTexturePageTransferRequest.ixx" />
     <ClCompile Include="src\GlobalTexturePageTransferSubModule.cpp" />
     <ClCompile Include="src\GlobalTexturePageTransferSubModule.ixx" />
@@ -275,10 +271,6 @@
     <ClCompile Include="src\GlobalTextureReservedPage.ixx" />
     <ClCompile Include="src\GlobalTextureUpdateContext.cpp" />
     <ClCompile Include="src\GlobalTextureUpdateContext.ixx" />
-    <ClCompile Include="src\GlobalTextureUpdater.cpp" />
-    <ClCompile Include="src\GlobalTextureUpdater.ixx" />
-    <ClCompile Include="src\GlobalTextureUploadBuffer.cpp" />
-    <ClCompile Include="src\GlobalTextureUploadBuffer.ixx" />
     <ClCompile Include="src\GPUSceneBuffer.ixx" />
     <ClCompile Include="src\BorderlessWindowedModeWindowState.cpp" />
     <ClCompile Include="src\BorderlessWindowedModeWindowState.ixx" />
@@ -379,8 +371,8 @@
     <ClCompile Include="src\VirtualTexturePageStateID.ixx" />
     <ClCompile Include="src\VirtualTexturePageStates.ixx" />
     <ClCompile Include="src\VirtualTexturePageStateTraits.ixx" />
-    <ClCompile Include="src\VirtualTexturePageStorageTracker.cpp" />
-    <ClCompile Include="src\VirtualTexturePageStorageTracker.ixx" />
+    <ClCompile Include="src\VirtualTextureStreamer.cpp" />
+    <ClCompile Include="src\VirtualTextureStreamer.ixx" />
     <ClCompile Include="src\VirtualTextureStreamingNotifier.cpp" />
     <ClCompile Include="src\VirtualTextureStreamingNotifier.ixx" />
     <ClCompile Include="src\WindowDisplayMode.ixx" />

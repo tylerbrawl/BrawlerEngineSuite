@@ -35,12 +35,15 @@ export namespace Brawler
 			if (isCombinedPage)
 			{
 				// The combined page takes up one texel in the last mip level of the indirection texture.
-				static constexpr CD3DX12_BOX BOX_FOR_COMBINED_PAGE_INDIRECTION_TEXEL{
-					0,
-					0,
-					1,
-					1
-				};
+				static constexpr CD3DX12_BOX BOX_FOR_COMBINED_PAGE_INDIRECTION_TEXEL{ []()
+				{
+					// Only the default constructor for CD3DX12_BOX is constexpr.
+					CD3DX12_BOX combinedPageTexelBox{};
+					combinedPageTexelBox.right = 1;
+					combinedPageTexelBox.bottom = 1;
+
+					return combinedPageTexelBox;
+				}() };
 
 				return D3D12::TextureCopyRegion{ relevantSubResource, BOX_FOR_COMBINED_PAGE_INDIRECTION_TEXEL };
 			}
@@ -53,10 +56,10 @@ export namespace Brawler
 
 				const Math::UInt2 boxEndCoordinates{ boxOriginCoordinates + 2 };
 				CD3DX12_BOX largePageIndirectionTexelBox{
-					boxOriginCoordinates.GetX(),
-					boxOriginCoordinates.GetY(),
-					boxEndCoordinates.GetX(),
-					boxEndCoordinates.GetY()
+					static_cast<LONG>(boxOriginCoordinates.GetX()),
+					static_cast<LONG>(boxOriginCoordinates.GetY()),
+					static_cast<LONG>(boxEndCoordinates.GetX()),
+					static_cast<LONG>(boxEndCoordinates.GetY())
 				};
 
 				return D3D12::TextureCopyRegion{ relevantSubResource, std::move(largePageIndirectionTexelBox) };

@@ -9,6 +9,5 @@ export namespace Brawler
 	{
 		std::uint32_t NumPagesFilled;
 		std::uint32_t NumPagesFilledForCombinedPages;
-		std::uint64_t MostRecentUsedFrameNumber;
 	};
 }

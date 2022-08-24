@@ -7,7 +7,7 @@ export module Brawler.GlobalTexturePageUploadSubModule;
 import Brawler.GlobalTexturePageUploadSet;
 import Brawler.IndirectionTextureUpdater;
 import Brawler.D3D12.TextureCopyRegion;
-import Brawler.D3D12.TextureCopyBufferSnapshot;
+import Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.D3D12.BufferResource;
 import Brawler.D3D12.FrameGraphBuilding;
 

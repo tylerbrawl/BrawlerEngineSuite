@@ -1,8 +1,11 @@
 module;
 #include <vector>
 #include <memory>
+#include <span>
 #include <expected>
 #include <cassert>
+#include <ranges>
+#include <algorithm>
 #include <DxDef.h>
 
 export module Brawler.GlobalTextureCollection;
@@ -11,6 +14,8 @@ import Brawler.GlobalTextureUpdateContext;
 import Brawler.ActiveGlobalTexturePageStats;
 import Brawler.VirtualTextureLogicalPage;
 import Util.Engine;
+import Util.General;
+import Brawler.GlobalTexturePageIdentifier;
 
 export namespace Brawler
 {
@@ -41,6 +46,10 @@ export namespace Brawler
 		void TryDefragmentGlobalTexturesWeak(GlobalTextureUpdateContext& context);
 		void TryDefragmentGlobalTexturesStrong(GlobalTextureUpdateContext& context);
 
+		void ClearGlobalTexturePages(const std::span<const GlobalTexturePageIdentifier> pageIdentifierSpan);
+
+		bool HasGlobalTextureID(const std::uint8_t desiredID) const;
+
 	private:
 		template <bool AllowHighLODDeletion>
 		void TryDefragmentGlobalTextures(GlobalTextureUpdateContext& context);
@@ -66,7 +75,7 @@ namespace Brawler
 		{
 			return (pendingDeletion.SafeDeletionFrameNumber <= Util::Engine::GetTrueFrameNumber());
 		});
-		
+
 		std::erase_if(mGlobalTexturePtrArr, [this, &context] (std::unique_ptr<GlobalTexture<Format>>& globalTexturePtr)
 		{
 			if (TryDefragmentGlobalTexture<AllowHighLODDeletion>(context, *globalTexturePtr))
@@ -74,7 +83,7 @@ namespace Brawler
 				mPendingDeletionArr.push_back(PendingGlobalTextureDeletion{
 					.GlobalTexturePtr{std::move(globalTexturePtr)},
 					.SafeDeletionFrameNumber = (Util::Engine::GetTrueFrameNumber() + (Util::Engine::MAX_FRAMES_IN_FLIGHT + 1))
-				});
+					});
 
 				return true;
 			}
@@ -96,7 +105,7 @@ namespace Brawler
 			numFreeSlotsRequiredForDeletion = globalTexture.GetActivePageStats().NumPagesFilledForCombinedPages;
 		else
 			numFreeSlotsRequiredForDeletion = globalTexture.GetActivePageStats().NumPagesFilled;
-		
+
 		std::vector<GlobalTexture<Format>*> candidateTexturePtrArr{};
 		std::uint32_t numPagesAvailableInCandidateTextures = 0;
 
@@ -137,8 +146,8 @@ namespace Brawler
 				return true;
 			}
 
-			// The only recognized HRESULT error is E_PENDING, which implies that
-			// globalTexture no longer has any page data left to transfer.
+				// The only recognized HRESULT error is E_PENDING, which implies that
+				// globalTexture no longer has any page data left to transfer.
 			assert(extractedLogicalPage.error() == E_PENDING && "ERROR: GlobalTexture::Defragment() returned an unexpected error value!");
 			return false;
 		};
@@ -215,18 +224,33 @@ namespace Brawler
 				// We don't expect the function to fail if it has an open slot.
 				assert(addPageResult.has_value());
 
-				return std::expected{};
+				return std::expected<void, HRESULT>{};
 			}
 		}
-		
+
 		// If that failed, then try to replace the data in a GlobalTexture slot which is not being used
-		// for combined page data.
+		// for combined page data. Ideally, we would replace page data only when we know that we won't
+		// need its contents to be present on the GPU anymore. If we knew that, however, then the
+		// first loop above would have already assigned logicalPage to a GlobalTexture slot.
+		//
+		// The next best thing, then, would be to use a least-recently-used (LRU) replacement policy.
+		// So, we will sort the GlobalTexture instances based on their least recent frame number.
+		std::vector<GlobalTexture<Format>*> sortedGlobalTexturePtrArr{};
+
 		for (const auto& globalTexturePtr : mGlobalTexturePtrArr)
+			sortedGlobalTexturePtrArr.push_back(globalTexturePtr.get());
+
+		std::ranges::sort(sortedGlobalTexturePtrArr, [] (const GlobalTexture<Format>* const lhs, const GlobalTexture<Format>* const rhs)
 		{
-			const std::expected<void, HRESULT> addPageResult{ globalTexturePtr->AddVirtualTexturePage(context, logicalPage) };
+			return (lhs->GetLeastRecentFrameNumber() < rhs->GetLeastRecentFrameNumber());
+		});
+
+		for (const auto sortedGlobalTexturePtr : sortedGlobalTexturePtrArr)
+		{
+			const std::expected<void, HRESULT> addPageResult{ sortedGlobalTexturePtr->AddVirtualTexturePage(context, logicalPage) };
 
 			if (addPageResult.has_value()) [[likely]]
-				return std::expected{};
+				return std::expected<void, HRESULT>{};
 
 			// Only E_NOT_SUFFICIENT_BUFFER is expected as an error code. In that case, we just try
 			// the next GlobalTexture instance.
@@ -246,5 +270,51 @@ namespace Brawler
 	void GlobalTextureCollection<Format>::TryDefragmentGlobalTexturesStrong(GlobalTextureUpdateContext& context)
 	{
 		TryDefragmentGlobalTextures<true>(context);
+	}
+
+	template <DXGI_FORMAT Format>
+	void GlobalTextureCollection<Format>::ClearGlobalTexturePages(const std::span<const GlobalTexturePageIdentifier> pageIdentifierSpan)
+	{
+		// We assume that each std::span passed here contains only identifiers for pages
+		// belonging to a single GlobalTexture. This is fine because the function is only called
+		// internally by GlobalTextureDatabase.
+		if (pageIdentifierSpan.empty()) [[unlikely]]
+			return;
+
+		const std::uint8_t relevantGlobalTextureID = pageIdentifierSpan[0].GlobalTextureID;
+
+		if constexpr (Util::General::IsDebugModeEnabled())
+		{
+			assert(HasGlobalTextureID(relevantGlobalTextureID) && "ERROR: GlobalTextureCollection::ClearGlobalTexturePages() was called for a GlobalTexture ID which a collection instance did not own!");
+
+			for (const auto pageIdentifier : pageIdentifierSpan | std::views::drop(1))
+				assert(pageIdentifer.GlobalTextureID == relevantGlobalTextureID && "ERROR: GlobalTextureCollection::ClearGlobalTexturePages() assumes that all of the provided GlobalTexturePageIdentifier instances passed to it are for the same GlobalTexture! (This is done for performance.)");
+		}
+
+		for (const auto& globalTexturePtr : mGlobalTexturePtrArr)
+		{
+			if (globalTexturePtr->GetGlobalTextureID() == relevantGlobalTextureID)
+			{
+				for (const auto pageIdentifier : pageIdentifierSpan)
+					globalTexturePtr->ClearGlobalTexturePage(pageIdentifier);
+
+				return;
+			}
+		}
+	}
+
+	template <DXGI_FORMAT Format>
+	bool GlobalTextureCollection<Format>::HasGlobalTextureID(const std::uint8_t desiredID) const
+	{
+		// We really don't expect there to be a lot of GlobalTexture instances being created, so
+		// doing a linear search like this is probably going to be a lot faster than using a
+		// map.
+		for (const auto& globalTexturePtr : mGlobalTexturePtrArr)
+		{
+			if (globalTexturePtr->GetGlobalTextureID() == desiredID)
+				return true;
+		}
+
+		return false;
 	}
 }

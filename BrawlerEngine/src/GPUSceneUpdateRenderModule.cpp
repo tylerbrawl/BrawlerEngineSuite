@@ -13,7 +13,7 @@ import Brawler.VirtualTextureManagementPassCollection;
 
 namespace Brawler
 {
-	void GPUSceneUpdateRenderModule::CommitGlobalTextureChanges(std::unique_ptr<GlobalTextureUploadContext>&& preparedBufferPtr)
+	void GPUSceneUpdateRenderModule::CommitGlobalTextureChanges(std::unique_ptr<GlobalTextureUpdateContext>&& preparedBufferPtr)
 	{
 		mVTManagementSubModule.CommitGlobalTextureChanges(std::move(preparedBufferPtr));
 	}
@@ -35,13 +35,9 @@ namespace Brawler
 		// returns false.
 		assert(shouldPerformBufferUpdates || shouldPerformVirtualTextureUpdates);
 
-		if (shouldPerformVirtualTextureUpdates)
-			mVTManagementSubModule.PrepareForGlobalTextureUpdates();
-
 		// We don't need to use std::optional here; we can just verify whether or not the RenderPass
 		// instances contain valid values based on the boolean variables above.
 		GPUSceneBufferUpdateSubModule::GPUSceneBufferUpdatePassTuple gpuSceneBufferUpdatesTuple{};
-		VirtualTextureManagementSubModule::IndirectionTextureUpdatePass_T indirectionTextureUpdatePass{};
 		VirtualTextureManagementPassCollection globalTextureUpdatePassCollection{};
 
 		D3D12::FrameGraph& currFrameGraph{ builder.GetFrameGraph() };

@@ -6,7 +6,7 @@ module;
 export module Brawler.IndirectionTextureUpdater;
 import Brawler.VirtualTextureLogicalPage;
 import Brawler.GlobalTexturePageInfo;
-import Brawler.FrameGraphBuilding;
+import Brawler.D3D12.FrameGraphBuilding;
 import Brawler.D3D12.TextureCopyRegion;
 import Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.D3D12.Texture2D;

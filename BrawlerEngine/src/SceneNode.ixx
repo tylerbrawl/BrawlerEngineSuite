@@ -13,6 +13,12 @@ export namespace Brawler
 	class SceneGraph;
 }
 
+namespace Brawler
+{
+	template <typename T>
+	static constexpr bool IS_CONST = std::is_const_v<std::remove_reference_t<T>>;
+}
+
 export namespace Brawler
 {
 	class SceneNode
@@ -37,17 +43,19 @@ export namespace Brawler
 		template <typename T>
 		std::size_t GetComponentCount() const;
 
-		template <typename T, typename DecayedT = std::decay_t<T>>
-		DecayedT* GetComponent();
+		template <typename T>
+		T* GetComponent();
 
-		template <typename T, typename DecayedT = std::decay_t<T>>
-		const DecayedT* GetComponent() const;
+		template <typename T>
+			requires IS_CONST<T>
+		const T* GetComponent() const;
 
-		template <typename T, typename DecayedT = std::decay_t<T>>
-		std::vector<DecayedT*> GetComponents();
+		template <typename T>
+		std::vector<T*> GetComponents();
 
-		template <typename T, typename DecayedT = std::decay_t<T>>
-		std::vector<const DecayedT*> GetComponents() const;
+		template <typename T>
+			requires IS_CONST<T>
+		std::vector<const T*> GetComponents() const;
 
 		template <typename NodeType, typename... Args>
 			requires std::derived_from<NodeType, SceneNode>
@@ -107,26 +115,28 @@ namespace Brawler
 		return mComponentCollection.GetComponentCount<T>();
 	}
 
-	template <typename T, typename DecayedT>
-	DecayedT* SceneNode::GetComponent()
+	template <typename T>
+	T* SceneNode::GetComponent()
 	{
 		return mComponentCollection.GetComponent<T>();
 	}
 
-	template <typename T, typename DecayedT>
-	const DecayedT* SceneNode::GetComponent() const
+	template <typename T>
+		requires IS_CONST<T>
+	const T* SceneNode::GetComponent() const
 	{
 		return mComponentCollection.GetComponent<T>();
 	}
 
-	template <typename T, typename DecayedT>
-	std::vector<DecayedT*> SceneNode::GetComponents()
+	template <typename T>
+	std::vector<T*> SceneNode::GetComponents()
 	{
 		return mComponentCollection.GetComponents<T>();
 	}
 
-	template <typename T, typename DecayedT>
-	std::vector<const DecayedT*> SceneNode::GetComponents() const
+	template <typename T>
+		requires IS_CONST<T>
+	std::vector<const T*> SceneNode::GetComponents() const
 	{
 		return mComponentCollection.GetComponents<T>();
 	}
