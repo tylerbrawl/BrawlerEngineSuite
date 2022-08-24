@@ -70,6 +70,9 @@ namespace Brawler
 		template <>
 		struct VectorInfo<float, 4> : public VectorInfoInstantiation<DirectX::XMFLOAT4, DirectX::XMLoadFloat4, DirectX::XMStoreFloat4>
 		{};
+
+		template <std::size_t NumRows, std::size_t NumColumns>
+		concept CanMakeMatrix = (NumRows >= 3 && NumRows <= 4 && NumColumns >= 3 && NumColumns <= 4);
 	}
 }
 
@@ -112,6 +115,7 @@ namespace Brawler
 			constexpr Vector DivideScalar(const ElementType rhs) const;
 
 			template <std::size_t NumColumns>
+				requires CanMakeMatrix<NumElements, NumColumns>
 			constexpr Vector<float, NumColumns> TransformByMatrix(const Matrix<NumElements, NumColumns>& rhs) const;
 
 			constexpr ElementType Dot(const Vector& rhs) const;
@@ -152,57 +156,80 @@ namespace Brawler
 			constexpr Vector& operator*=(const ElementType rhs);
 			constexpr Vector& operator/=(const ElementType rhs);
 
-			constexpr Vector& operator*=(const Matrix<NumElements, NumElements>& rhs);
+			constexpr Vector& operator*=(const Matrix<NumElements, NumElements>& rhs) requires CanMakeMatrix<NumElements, NumElements>;
 
 			constexpr bool operator==(const Vector& rhs) const;
+
+			friend constexpr Vector operator+(const Vector& lhs, const Vector& rhs)
+			{
+				return lhs.AddVector(rhs);
+			}
+
+			friend constexpr Vector operator-(const Vector& lhs, const Vector& rhs)
+			{
+				return lhs.SubtractVector(rhs);
+			}
+
+			friend constexpr Vector operator*(const Vector& lhs, const Vector& rhs)
+			{
+				return lhs.PerComponentMultiplyVector(rhs);
+			}
+
+			friend constexpr Vector operator/(const Vector& lhs, const Vector& rhs)
+			{
+				return lhs.PerComponentDivideVector(rhs);
+			}
+
+			friend constexpr Vector operator+(const Vector& lhs, const ElementType rhs)
+			{
+				return lhs.AddScalar(rhs);
+			}
+
+			friend constexpr Vector operator+(const ElementType lhs, const Vector& rhs)
+			{
+				// a + b = b + a
+				return rhs.AddScalar(lhs);
+			}
+
+			friend constexpr Vector operator-(const Vector& lhs, const ElementType rhs)
+			{
+				return lhs.SubtractScalar(rhs);
+			}
+
+			friend constexpr Vector operator-(const ElementType lhs, const Vector& rhs)
+			{
+				// a - b = -b + a
+				return rhs.MultiplyScalar(static_cast<ElementType>(-1)).AddScalar(lhs);
+			}
+
+			friend constexpr Vector operator*(const Vector& lhs, const ElementType rhs)
+			{
+				return lhs.MultiplyScalar(rhs);
+			}
+
+			friend constexpr Vector operator*(const ElementType lhs, const Vector& rhs)
+			{
+				// a * b = b * a
+				return rhs.MultiplyScalar(lhs);
+			}
+
+			friend constexpr Vector operator/(const Vector& lhs, const ElementType rhs)
+			{
+				return lhs.DivideScalar(rhs);
+			}
+
+			// Exclude operator/(const ElementType lhs, const Vector& rhs) because it makes no sense (i.e., scalar / vector?).
+
+			template <std::size_t MatrixNumColumns>
+				requires CanMakeMatrix<NumElements, MatrixNumColumns>
+			friend constexpr Vector<ElementType, MatrixNumColumns> operator*(const Vector& lhs, const Matrix<NumElements, MatrixNumColumns>& rhs)
+			{
+				return lhs.TransformByMatrix(rhs);
+			}
 
 		private:
 			StorageType mStoredVector;
 		};
-	}
-}
-
-namespace Brawler
-{
-	namespace Math
-	{
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator+(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs);
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator-(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs);
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator*(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs);
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator/(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs);
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator+(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs);
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator+(const ElementType lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs);
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator-(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs);
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator-(const ElementType lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs);
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator*(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs);
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator*(const ElementType lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs);
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator/(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs);
-
-		// Exclude operator/(const ElementType lhs, const Vector& rhs) because it makes no sense (i.e., scalar / vector?).
-
-		template <typename ElementType, std::size_t NumElements, std::size_t MatrixNumColumns>
-		constexpr Brawler::Math::Vector<ElementType, MatrixNumColumns> operator*(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Matrix<NumElements, MatrixNumColumns>& rhs);
 	}
 }
 
@@ -469,6 +496,7 @@ namespace Brawler
 
 		template <typename ElementType, std::size_t NumElements>
 		template <std::size_t NumColumns>
+			requires CanMakeMatrix<NumElements, NumColumns>
 		constexpr Vector<float, NumColumns> Vector<ElementType, NumElements>::TransformByMatrix(const Matrix<NumElements, NumColumns>& rhs) const
 		{
 			if (std::is_constant_evaluated())
@@ -993,7 +1021,7 @@ namespace Brawler
 		}
 
 		template <typename ElementType, std::size_t NumElements>
-		constexpr Vector<ElementType, NumElements>& Vector<ElementType, NumElements>::operator*=(const Matrix<NumElements, NumElements>& rhs)
+		constexpr Vector<ElementType, NumElements>& Vector<ElementType, NumElements>::operator*=(const Matrix<NumElements, NumElements>& rhs) requires CanMakeMatrix<NumElements, NumElements>
 		{
 			*this = TransformByMatrix(rhs);
 			return *this;
@@ -1062,87 +1090,6 @@ namespace Brawler
 
 				return DirectX::XMComparisonAllTrue(comparisonResult);
 			}
-		}
-	}
-}
-
-namespace Brawler
-{
-	namespace Math
-	{
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator+(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs)
-		{
-			return lhs.AddVector(rhs);
-		}
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator-(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs)
-		{
-			return lhs.SubtractVector(rhs);
-		}
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator*(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs)
-		{
-			return lhs.PerComponentMultiplyVector(rhs);
-		}
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator/(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs)
-		{
-			return lhs.PerComponentDivideVector(rhs);
-		}
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator+(const Brawler::Math::Vector<ElementType, NumElements>& lhs, ElementType rhs)
-		{
-			return lhs.AddScalar(rhs);
-		}
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator+(const ElementType lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs)
-		{
-			// a + b = b + a
-			return rhs.AddScalar(lhs);
-		}
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator-(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs)
-		{
-			return lhs.SubtractScalar(rhs);
-		}
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator-(const ElementType lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs)
-		{
-			// a - b = -b + a
-			return rhs.MultiplyScalar(static_cast<ElementType>(-1)).AddScalar(lhs);
-		}
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator*(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs)
-		{
-			return lhs.MultiplyScalar(rhs);
-		}
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator*(const ElementType lhs, const Brawler::Math::Vector<ElementType, NumElements>& rhs)
-		{
-			// a * b = b * a
-			return rhs.MultiplyScalar(lhs);
-		}
-
-		template <typename ElementType, std::size_t NumElements>
-		constexpr Brawler::Math::Vector<ElementType, NumElements> operator/(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const ElementType rhs)
-		{
-			return lhs.DivideScalar(rhs);
-		}
-
-		template <typename ElementType, std::size_t NumElements, std::size_t MatrixNumColumns>
-		constexpr Brawler::Math::Vector<ElementType, MatrixNumColumns> operator*(const Brawler::Math::Vector<ElementType, NumElements>& lhs, const Brawler::Math::Matrix<NumElements, MatrixNumColumns>& rhs)
-		{
-			return lhs.TransformByMatrix(rhs);
 		}
 	}
 }

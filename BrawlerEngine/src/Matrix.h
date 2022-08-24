@@ -184,10 +184,6 @@ namespace Brawler
 
 			MathType GetDirectXMathMatrix() const;
 
-			template <std::size_t RHSNumRows, std::size_t RHSNumColumns>
-				requires (NumColumns == RHSNumRows)
-			constexpr Matrix<NumRows, RHSNumColumns> operator*(const Matrix<RHSNumRows, RHSNumColumns>& rhs) const;
-
 			constexpr Matrix& operator+=(const Matrix& rhs);
 			constexpr Matrix& operator-=(const Matrix& rhs);
 			constexpr Matrix& operator*=(const Matrix& rhs) requires (NumRows == NumColumns);
@@ -196,6 +192,63 @@ namespace Brawler
 			constexpr Matrix& operator-=(const float rhs);
 			constexpr Matrix& operator*=(const float rhs);
 			constexpr Matrix& operator/=(const float rhs);
+
+			friend constexpr Matrix operator+(const Matrix& lhs, const Matrix& rhs)
+			{
+				return lhs.AddMatrix(rhs);
+			}
+
+			friend constexpr Matrix operator-(const Matrix& lhs, const Matrix& rhs)
+			{
+				return lhs.SubtractMatrix(rhs);
+			}
+
+			friend constexpr Matrix operator+(const Matrix& lhs, const float rhs)
+			{
+				return lhs.AddScalar(rhs);
+			}
+
+			friend constexpr Matrix operator+(const float lhs, const Matrix& rhs)
+			{
+				// a + b = b + a
+				return rhs.AddScalar(lhs);
+			}
+
+			friend constexpr Matrix operator-(const Matrix& lhs, const float rhs)
+			{
+				return lhs.SubtractMatrix(rhs);
+			}
+
+			friend constexpr Matrix operator-(const float lhs, const Matrix& rhs)
+			{
+				// a - b = -b + a
+				return rhs.MultiplyScalar(-1.0f).AddScalar(lhs);
+			}
+
+			friend constexpr Matrix operator*(const Matrix& lhs, const float rhs)
+			{
+				return lhs.MultiplyScalar(rhs);
+			}
+
+			friend constexpr Matrix operator*(const float lhs, const Matrix& rhs)
+			{
+				// a * b = b * a
+				return rhs.MultiplyScalar(lhs);
+			}
+
+			friend constexpr Matrix operator/(const Matrix& lhs, const float rhs)
+			{
+				return lhs.DivideScalar(rhs);
+			}
+
+			// Exclude operator/(const float lhs, const Matrix& rhs) because it makes no sense (i.e., scalar / matrix?).
+
+			template <std::size_t RHSNumRows, std::size_t RHSNumColumns>
+				requires (NumColumns == RHSNumRows)
+			friend constexpr Matrix<NumRows, RHSNumColumns> operator*(const Matrix& lhs, const Matrix<RHSNumRows, RHSNumColumns>& rhs)
+			{
+				return lhs.MultiplyMatrix(rhs);
+			}
 
 		private:
 			/// <summary>
@@ -221,35 +274,6 @@ namespace Brawler
 		};
 	}
 }
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator*(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator*(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs);
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator/(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs);
-
-// Exclude operator/(const float lhs, const Matrix& rhs) because it makes no sense (i.e., scalar / matrix?).
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -847,14 +871,6 @@ namespace Brawler
 		}
 
 		template <std::size_t NumRows, std::size_t NumColumns>
-		template <std::size_t RHSNumRows, std::size_t RHSNumColumns>
-			requires (NumColumns == RHSNumRows)
-		constexpr Matrix<NumRows, RHSNumColumns> Matrix<NumRows, NumColumns>::operator*(const Matrix<RHSNumRows, RHSNumColumns>& rhs) const
-		{
-			return MultiplyMatrix(rhs);
-		}
-
-		template <std::size_t NumRows, std::size_t NumColumns>
 		constexpr Matrix<NumRows, NumColumns>& Matrix<NumRows, NumColumns>::operator+=(const Matrix& rhs)
 		{
 			*this = AddMatrix(rhs);
@@ -996,61 +1012,4 @@ namespace Brawler
 			}
 		}
 	}
-}
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs)
-{
-	return lhs.AddMatrix(rhs);
-}
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs)
-{
-	return lhs.SubtractMatrix(rhs);
-}
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs)
-{
-	return lhs.AddScalar(rhs);
-}
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator+(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs)
-{
-	// a + b = b + a
-	return rhs.AddScalar(lhs);
-}
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs)
-{
-	return lhs.SubtractScalar(rhs);
-}
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator-(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs)
-{
-	// a - b = (-b) + a
-	return rhs.MultiplyScalar(-1.0f).AddScalar(lhs);
-}
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator*(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs)
-{
-	return lhs.MultiplyScalar(rhs);
-}
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator*(const float lhs, const Brawler::Math::Matrix<NumRows, NumColumns>& rhs)
-{
-	// a * b = b * a (Well, for scalar-matrix multiplication, anyways...)
-	return rhs.MultiplyScalar(lhs);
-}
-
-template <std::size_t NumRows, std::size_t NumColumns>
-constexpr Brawler::Math::Matrix<NumRows, NumColumns> operator/(const Brawler::Math::Matrix<NumRows, NumColumns>& lhs, const float rhs)
-{
-	return lhs.DivideScalar(rhs);
 }

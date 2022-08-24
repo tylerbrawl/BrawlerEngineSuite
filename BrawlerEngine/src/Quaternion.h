@@ -204,6 +204,10 @@ namespace Brawler
 	{
 		namespace IMPL
 		{
+			// NOTE: Moving the definitions of these functions into the Quaternion class definition like we do for
+			// Vector and Matrix is causing the MSVC to throw internal compiler errors (ICEs) when importing
+			// Brawler.Math.MathTypes.
+
 			template <typename T>
 				requires std::is_arithmetic_v<T>
 			constexpr Brawler::Math::IMPL::Quaternion operator*(const Brawler::Math::IMPL::Quaternion& lhs, const T rhs);
@@ -236,13 +240,12 @@ namespace
 		// Would you believe me if I told you that using the assert() macro in this file - and only this file - 
 		// is causing the MSVC to spit out false errors?
 
-		if constexpr (Util::General::IsDebugModeEnabled())
-		{
-			(void)(
-				(!!(expression)) ||
-				(_wassert(assertMsg.data(), L"Quaternion.h", srcLocation.line()), 0)
-				);
-		}
+#ifdef _DEBUG
+		(void)(
+			(!!(expression)) ||
+			(_wassert(assertMsg.data(), L"Quaternion.h", srcLocation.line()), 0)
+			);
+#endif // _DEBUG
 	}
 }
 
