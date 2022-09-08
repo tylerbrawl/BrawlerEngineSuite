@@ -143,6 +143,8 @@ export namespace Brawler
 		/// </returns>
 		std::expected<VirtualTextureLogicalPage, HRESULT> Defragment(GlobalTextureUpdateContext& context);
 
+		void NotifyForPageUseInCurrentFrame(const GlobalTexturePageIdentifier pageIdentifier);
+
 		void ClearGlobalTexturePage(const GlobalTexturePageIdentifier pageIdentifier);
 
 		ActiveGlobalTexturePageStats GetActivePageStats() const;
@@ -266,6 +268,15 @@ namespace Brawler
 			mBaseIndexer.UpdateForCombinedPageRemoval(*bestIndexForRemoval);
 
 		return std::expected<VirtualTextureLogicalPage, HRESULT>{ std::move(removedPage) };
+	}
+
+	template <DXGI_FORMAT Format>
+	void GlobalTexture<Format>::NotifyForPageUseInCurrentFrame(const GlobalTexturePageIdentifier pageIdentifier)
+	{
+		assert(GetGlobalTextureID() == pageIdentifier.GetGlobalTextureID());
+
+		const std::size_t flattenedPageIndex = ((static_cast<std::size_t>(pageIdentifier.GlobalTexturePageYCoordinate) * NUM_PAGES_PER_GLOBAL_TEXTURE_ROW) + static_cast<std::size_t>(pageIdentifier.GlobalTexturePageXCoordinate));
+		mBaseIndexer.UpdateForUseInCurrentFrame(flattenedPageIndex);
 	}
 
 	template <DXGI_FORMAT Format>

@@ -92,6 +92,9 @@ export namespace Brawler
 		void BeginStreamingPass();
 
 		static void HandleExtractedRequests(GlobalTextureUpdateContext& context, const std::span<const VirtualTextureLogicalPage> requestedPageSpan);
+		void HandleDefragmentationRequest(GlobalTextureUpdateContext& context);
+
+		void CheckForPendingUpdateContextSubmissions();
 
 	private:
 		ThreadSafeVector<VirtualTextureLogicalPage> mPendingRequestArr;

@@ -43,6 +43,8 @@ export namespace Brawler
 
 		std::expected<void, HRESULT> AddVirtualTexturePage(GlobalTextureUpdateContext& context, const VirtualTextureLogicalPage& logicalPage);
 
+		void NotifyGlobalTextureForUseInCurrentFrame(const GlobalTexturePageIdentifier pageIdentifier);
+
 		void TryDefragmentGlobalTexturesWeak(GlobalTextureUpdateContext& context);
 		void TryDefragmentGlobalTexturesStrong(GlobalTextureUpdateContext& context);
 
@@ -260,6 +262,21 @@ namespace Brawler
 		}
 
 		return std::unexpected{ E_NOT_SUFFICIENT_BUFFER };
+	}
+
+	template <DXGI_FORMAT Format>
+	void GlobalTextureCollection<Format>::NotifyGlobalTextureForUseInCurrentFrame(const GlobalTexturePageIdentifier pageIdentifier)
+	{
+		assert(HasGlobalTextureID(pageIdentifier) && "ERROR: GlobalTextureCollection::NotifyGlobalTextureForUseInCurrentFrame() was called for a GlobalTexture ID which a collection instance did not own!");
+
+		for (const auto& globalTexturePtr : mGlobalTexturePtrArr)
+		{
+			if (globalTexturePtr->GetGlobalTextureID() == pageIdentifier.GlobalTextureID)
+			{
+				globalTexturePtr->NotifyForPageUseInCurrentFrame(pageIdentifier);
+				return;
+			}
+		}
 	}
 
 	template <DXGI_FORMAT Format>

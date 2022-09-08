@@ -12,6 +12,10 @@ import Brawler.JobSystem;
 import Brawler.VirtualTexture;
 import Brawler.VirtualTextureActivePageTracker;
 import Brawler.GlobalTextureDatabase;
+import Brawler.VirtualTextureDatabase;
+import Brawler.Application;
+import Brawler.D3D12.Renderer;
+import Brawler.GPUSceneUpdateRenderModule;
 
 namespace Brawler
 {
@@ -103,7 +107,7 @@ namespace Brawler
 		   have been processed to prevent a GlobalTexture from being deleted only to create a new
 		   GlobalTexture immediately afterwards to fulfill any new page requests. In other words,
 		   we do not want to delete a GlobalTexture instance if it could have been used to fulfill
-		   a new page request. The previous GlobalTextureUpdateContext instances used in Step 2
+		   a new page request. The previous GlobalTextureUpdateContext instance used in Step 2
 		   is also used to perform defragmentation.
 
 		5. If the GlobalTextureUpdateContext instance for this pass has any actual changes which
@@ -128,8 +132,15 @@ namespace Brawler
 		});
 
 		HandleExtractedRequests(*updateContextPtr, std::span<const VirtualTextureLogicalPage>{ extractedRequestArr });
+		VirtualTextureDatabase::GetInstance().TryCleanDeletedVirtualTextures();
+		HandleDefragmentationRequest(*updateContextPtr);
 
-		// TODO: Finish this!
+		if (updateContextPtr->HasPendingGlobalTextureChanges()) [[likely]]
+			mPendingUpdateContextQueue.push(std::move(updateContextPtr));
+
+		CheckForPendingUpdateContextSubmissions();
+
+		mIsEarlierPassRunning.store(false, std::memory_order::release);
 	}
 
 	void VirtualTextureStreamer::HandleExtractedRequests(GlobalTextureUpdateContext& context, const std::span<const VirtualTextureLogicalPage> requestedPageSpan)
@@ -152,6 +163,49 @@ namespace Brawler
 				GlobalTextureDatabase::GetInstance().NotifyGlobalTextureForUseInCurrentFrame(*storagePageIdentifier);
 			else
 				GlobalTextureDatabase::GetInstance().AddVirtualTexturePage(context, requestedPage);
+		}
+	}
+
+	void VirtualTextureStreamer::HandleDefragmentationRequest(GlobalTextureUpdateContext& context)
+	{
+		const GlobalTextureDefragmentationType defragType = mRequestedDefragType.exchange(GlobalTextureDefragmentationType::NONE, std::memory_order::relaxed);
+
+		switch (defragType)
+		{
+		case GlobalTextureDefragmentationType::NONE:
+			break;
+
+		case GlobalTextureDefragmentationType::WEAK:
+		{
+			GlobalTextureDatabase::GetInstance().TryDefragmentGlobalTexturesWeak(context);
+			break;
+		}
+
+		case GlobalTextureDefragmentationType::STRONG:
+		{
+			GlobalTextureDatabase::GetInstance().TryDefragmentGlobalTexturesStrong(context);
+			break;
+		}
+
+		default:
+		{
+			assert(false);
+			std::unreachable();
+
+			break;
+		}
+		}
+	}
+
+	void VirtualTextureStreamer::CheckForPendingUpdateContextSubmissions()
+	{
+		while (!mPendingUpdateContextQueue.empty())
+		{
+			if (!mPendingUpdateContextQueue.front()->ReadyForGPUSubmission())
+				return;
+
+			Brawler::GetRenderer().GetRenderModule<GPUSceneUpdateRenderModule>().CommitGlobalTextureChanges(std::move(mPendingUpdateContextQueue.front()));
+			mPendingUpdateContextQueue.pop();
 		}
 	}
 }

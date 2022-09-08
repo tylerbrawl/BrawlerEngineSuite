@@ -32,7 +32,13 @@ export namespace Brawler
 
 		void NotifyGlobalTextureForUseInCurrentFrame(const GlobalTexturePageIdentifier pageIdentifier);
 
+		void TryDefragmentGlobalTexturesWeak(GlobalTextureUpdateContext& context);
+		void TryDefragmentGlobalTexturesStrong(GlobalTextureUpdateContext& context);
+
 	private:
+		template <typename Callback>
+		void ExecuteCallbackForEachCollection(const Callback& callback);
+
 		template <typename Callback>
 		void ExecuteCallbackForFormat(const DXGI_FORMAT format, const Callback& callback);
 
@@ -51,6 +57,14 @@ export namespace Brawler
 
 namespace Brawler
 {
+	template <typename Callback>
+	void GlobalTextureDatabase::ExecuteCallbackForEachCollection(const Callback& callback)
+	{
+		callback(mBC7UnormSRGBCollection);
+
+		// Add additional entries as extra GlobalTextureCollection instances are added.
+	}
+
 	template <typename Callback>
 	void GlobalTextureDatabase::ExecuteCallbackForFormat(const DXGI_FORMAT format, const Callback& callback)
 	{

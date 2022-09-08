@@ -64,4 +64,28 @@ namespace Brawler
 			});
 		}
 	}
+
+	void GlobalTextureDatabase::NotifyGlobalTextureForUseInCurrentFrame(const GlobalTexturePageIdentifier pageIdentifier)
+	{
+		ExecuteCallbackForGlobalTextureID(pageIdentifier.GlobalTextureID, [pageIdentifier]<DXGI_FORMAT Format>(GlobalTextureCollection<Format>& collection)
+		{
+			collection.NotifyGlobalTextureForUseInCurrentFrame(pageIdentifier);
+		});
+	}
+
+	void GlobalTextureDatabase::TryDefragmentGlobalTexturesWeak(GlobalTextureUpdateContext& context)
+	{
+		ExecuteCallbackForEachCollection([&context]<DXGI_FORMAT Format>(GlobalTextureCollection<Format>& collection)
+		{
+			collection.TryDefragmentGlobalTexturesWeak(context);
+		});
+	}
+
+	void GlobalTextureDatabase::TryDefragmentGlobalTexturesStrong(GlobalTextureUpdateContext& context)
+	{
+		ExecuteCallbackForEachCollection([&context]<DXGI_FORMAT Format>(GlobalTextureCollection<Format>& collection)
+		{
+			collection.TryDefragmentGlobalTexturesStrong(context);
+		});
+	}
 }
