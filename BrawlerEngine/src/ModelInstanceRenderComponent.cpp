@@ -1,6 +1,7 @@
 module;
 #include <optional>
 #include <cassert>
+#include <DirectXMath/DirectXMath.h>
 
 module Brawler.ModelInstanceRenderComponent;
 import Brawler.GPUSceneBufferID;
@@ -29,6 +30,7 @@ namespace Brawler
 		I_Component(),
 		mDescriptorBufferSubAllocation(),
 		mPrevFrameWorldMatrixInfo(),
+		mPendingRenderDataBufferIndex(),
 		mNumPendingGPUTransformUpdates(1)
 	{
 		D3D12::BufferResource& modelInstanceDescriptorBuffer{ GPUSceneManager::GetInstance().GetGPUSceneBufferResource<GPUSceneBufferID::MODEL_INSTANCE_DESCRIPTOR_BUFFER>() };
@@ -39,16 +41,15 @@ namespace Brawler
 		mDescriptorBufferSubAllocation = std::move(*descriptorBufferSubAllocation);
 	}
 
-	ModelInstanceRenderComponent::~ModelInstanceRenderComponent()
-	{
-		// When the ModelInstanceRenderComponent instance is destroyed, we should clear
-		// out the corresponding ModelInstanceDescriptor instance on the GPU. That way,
-		// 
-	}
-
 	void ModelInstanceRenderComponent::Update(const float dt)
 	{
 		UpdateGPUTransformData();
+		UpdateGPUDescriptorData();
+	}
+
+	void ModelInstanceRenderComponent::SetModelInstanceRenderDataBufferIndex(const std::uint32_t index)
+	{
+		mPendingRenderDataBufferIndex = index;
 	}
 
 	std::uint32_t ModelInstanceRenderComponent::GetModelInstanceID() const
@@ -88,5 +89,51 @@ namespace Brawler
 			.RegionSizeInBytes = sizeof(ModelInstanceTransformData)
 		} };
 		const GPUSceneBufferUpdater<GPUSceneBufferID::MODEL_INSTANCE_TRANSFORM_DATA_BUFFER> transformDataBufferUpdater{ std::move(transformDataBufferCopyRegion) };
+
+		ModelInstanceTransformData transformData{};
+
+		DirectX::XMStoreFloat4x3(&(transformData.CurrentFrameWorldMatrix), currWorldMatrixInfo.WorldMatrix.GetDirectXMathMatrix());
+		DirectX::XMStoreFloat4x3(&(transformData.CurrentFrameInverseWorldMatrix), currWorldMatrixInfo.InverseWorldMatrix.GetDirectXMathMatrix());
+		DirectX::XMStoreFloat4x3(&(transformData.PreviousFrameWorldMatrix), mPrevFrameWorldMatrixInfo->WorldMatrix.GetDirectXMathMatrix());
+		DirectX::XMStoreFloat4x3(&(transformData.PreviousFrameInverseWorldMatrix), mPrevFrameWorldMatrixInfo->InverseWorldMatrix.GetDirectXMathMatrix());
+
+		transformDataBufferUpdater.UpdateGPUSceneData(std::move(transformData));
+
+		mPrevFrameWorldMatrixInfo = currWorldMatrixInfo;
+		--mNumPendingGPUTransformUpdates;
+	}
+
+	void ModelInstanceRenderComponent::UpdateGPUDescriptorData()
+	{
+		// Don't bother uploading anything to the GPU if we don't have any changes to
+		// make.
+		if (mPendingRenderDataBufferIndex.empty()) [[likely]]
+			return;
+
+		// In the MSVC (and presumably (?) in HLSL 2021), bit fields are packed in memory
+		// such that the bit fields listed earlier in a structure appear in the less
+		// significant bits of the data containing them. So, since the IsUseful field of
+		// the ModelTransformData struct is listed before the __PaddingBits field (check
+		// MeshTypes.hlsli), we can set the IsUseful field to 1 by also setting the
+		// equivalent IsUsefulAndPadding field in the C++ version of the structure to 1.
+		static constexpr std::uint32_t DESCRIPTOR_IS_USEFUL_AND_PADDING_VALUE = 1;
+
+		const GPUSceneBufferUpdater<GPUSceneBufferID::MODEL_INSTANCE_DESCRIPTOR_BUFFER> descriptorBufferUpdater{ mDescriptorBufferSubAllocation.GetBufferCopyRegion() };
+		descriptorBufferUpdater.UpdateGPUSceneData(ModelInstanceDescriptor{
+			.RenderDataBufferIndex = *mPendingRenderDataBufferIndex,
+			.IsUsefulAndPadding = DESCRIPTOR_IS_USEFUL_AND_PADDING_VALUE
+		});
+
+		mPendingRenderDataBufferIndex.reset();
+	}
+
+	void ModelInstanceRenderComponent::OnComponentRemoval()
+	{
+		// Upon the removal of a ModelInstanceRenderComponent instance from a SceneNode,
+		// we should clear out the relevant ModelInstanceDescriptor to indicate that the
+		// data in the buffer is no longer relevant.
+
+		const GPUSceneBufferUpdater<GPUSceneBufferID::MODEL_INSTANCE_DESCRIPTOR_BUFFER> descriptorBufferUpdater{ mDescriptorBufferSubAllocation.GetBufferCopyRegion() };
+		descriptorBufferUpdater.UpdateGPUSceneData(ModelInstanceDescriptor{});
 	}
 }

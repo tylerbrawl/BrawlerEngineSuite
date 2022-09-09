@@ -21,8 +21,6 @@ export namespace Brawler
 	public:
 		ModelInstanceRenderComponent();
 
-		~ModelInstanceRenderComponent();
-
 		ModelInstanceRenderComponent(const ModelInstanceRenderComponent& rhs) = delete;
 		ModelInstanceRenderComponent& operator=(const ModelInstanceRenderComponent& rhs) = delete;
 
@@ -31,14 +29,20 @@ export namespace Brawler
 
 		void Update(const float dt) override;
 
+		void SetModelInstanceRenderDataBufferIndex(const std::uint32_t index);
+
 		std::uint32_t GetModelInstanceID() const;
 
 	private:
 		void UpdateGPUTransformData();
+		void UpdateGPUDescriptorData();
+
+		void OnComponentRemoval() override;
 
 	private:
 		D3D12::StructuredBufferSubAllocation<ModelInstanceDescriptor, 1> mDescriptorBufferSubAllocation;
 		std::optional<WorldMatrixInfo> mPrevFrameWorldMatrixInfo;
+		std::optional<std::uint32_t> mPendingRenderDataBufferIndex;
 		std::uint32_t mNumPendingGPUTransformUpdates;
 	};
 }
