@@ -618,6 +618,12 @@
     <ClCompile Include="src\GlobalTexturePageRemovalRequest.cpp">
       <Filter>Source Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
     </ClCompile>
+    <ClCompile Include="src\ModelInstanceRenderComponent.ixx">
+      <Filter>Module Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelInstanceRenderComponent.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

@@ -44,6 +44,10 @@ export namespace Brawler
 
 		/// <summary>
 		/// Updates all of the I_Component instances within this ComponentCollection.
+		/// I_Component instances are updated in the order corresponding to the ordering
+		/// imposed in Brawler::ComponentID; that is, an I_Component instance A with a
+		/// Brawler::ComponentID value which is listed before the Brawler::ComponentID
+		/// value of a separate I_Component instance B will be updated before B.
 		/// </summary>
 		/// <param name="dt">
 		/// - The timestep (in seconds) for this update.
@@ -103,6 +107,9 @@ export namespace Brawler
 		template <typename T>
 			requires std::derived_from<T, Brawler::I_Component> && IS_CONST<T>
 		std::vector<const T*> GetComponents() const;
+
+		void PrepareForSceneNodeDeletion();
+		bool IsSceneNodeDeletionSafe();
 
 	private:
 		/// <summary>
@@ -185,7 +192,9 @@ namespace Brawler
 						mComponentsMarkedForRemovalDuringUpdateArr.emplace_back(COMPONENT_ID, itr->get());
 					else
 					{
+						(*itr)->OnComponentRemoval();
 						mComponentsPendingRemoval.push_back(std::move(*itr));
+
 						mComponentMap.at(COMPONENT_ID).erase(itr);
 					}
 

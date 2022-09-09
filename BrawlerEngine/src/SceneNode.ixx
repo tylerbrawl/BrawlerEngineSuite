@@ -101,7 +101,7 @@ export namespace Brawler
 		/// These are pointers to SceneNodes which are pending removal from the
 		/// SceneGraph.
 		/// </summary>
-		std::unordered_set<SceneNode*> mPendingChildRemovals;
+		std::vector<std::unique_ptr<SceneNode>> mPendingChildRemovalsArr;
 	};
 }
 

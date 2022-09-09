@@ -314,6 +314,8 @@
     <ClCompile Include="src\MathTypes.ixx" />
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Model.ixx" />
+    <ClCompile Include="src\ModelInstanceRenderComponent.cpp" />
+    <ClCompile Include="src\ModelInstanceRenderComponent.ixx" />
     <ClCompile Include="src\ModelLoader.ixx" />
     <ClCompile Include="src\ModelLoadEventHandle.ixx" />
     <ClCompile Include="src\Monitor.cpp" />

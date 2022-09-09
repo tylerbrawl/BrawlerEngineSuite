@@ -24,4 +24,12 @@ namespace Brawler
 	{
 		mOwningNode = &owningNode;
 	}
+
+	void I_Component::OnComponentRemoval()
+	{}
+
+	bool I_Component::IsSafeToDelete() const
+	{
+		return true;
+	}
 }

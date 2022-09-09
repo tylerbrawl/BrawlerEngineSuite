@@ -40,4 +40,12 @@ namespace BrawlerHLSL
 		ModelInstanceTransformData TransformData;
 		LODMeshData LODMesh;
 	};
+	
+	struct ModelInstanceDescriptor
+	{
+		uint RenderDataBufferIndex;
+		uint IsUseful : 1;
+		uint __PaddingBits : 31;
+		uint2 __Pad0;
+	};
 }

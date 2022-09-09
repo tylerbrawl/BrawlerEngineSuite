@@ -27,7 +27,7 @@ namespace Brawler
 
 		// Now, update all of the components.
 		mIsUpdating = true;
-		
+
 		ExecuteComponentCommand([dt] (I_Component& component)
 		{
 			component.Update(dt);
@@ -40,12 +40,14 @@ namespace Brawler
 		{
 			assert(mComponentMap.contains(removalInfo.CompID));
 			auto& currContainer{ mComponentMap.at(removalInfo.CompID) };
-			
+
 			for (auto itr = currContainer.begin(); itr != currContainer.end();)
 			{
 				if (static_cast<I_Component*>(itr->get()) == removalInfo.ComponentPtr)
 				{
+					(*itr)->OnComponentRemoval();
 					mComponentsPendingRemoval.push_back(std::move(*itr));
+
 					itr = currContainer.erase(itr);
 				}
 				else
@@ -63,8 +65,33 @@ namespace Brawler
 		mComponentsPendingAddition.clear();
 	}
 
+	void ComponentCollection::PrepareForSceneNodeDeletion()
+	{
+		assert(!mIsUpdating);
+
+		for (auto&& [compID, compPtrArr] : mComponentMap)
+		{
+			for (auto&& compPtr : compPtrArr)
+			{
+				compPtr->OnComponentRemoval();
+				mComponentsPendingRemoval.push_back(std::move(compPtr));
+			}
+		}
+
+		mComponentsPendingRemoval.clear();
+	}
+
+	bool ComponentCollection::IsSceneNodeDeletionSafe()
+	{
+		assert(mComponentMap.empty());
+		assert(!mIsUpdating);
+		
+		ExecutePendingRemovals();
+		return mComponentsPendingRemoval.empty();
+	}
+
 	void ComponentCollection::ExecutePendingRemovals()
 	{
-		mComponentsPendingRemoval.clear();
+		std::erase_if(mComponentsPendingRemoval, [] (const std::unique_ptr<I_Component>& componentPtr) { return componentPtr->IsSafeToDelete(); });
 	}
 }

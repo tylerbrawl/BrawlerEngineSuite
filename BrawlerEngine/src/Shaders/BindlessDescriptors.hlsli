@@ -23,6 +23,7 @@ namespace IMPL
 	StructuredBuffer<BrawlerHLSL::PackedTriangleCluster> Bindless_GlobalTriangleClusterBuffer[] : register(t0, space7);
 	StructuredBuffer<BrawlerHLSL::VirtualTextureDescription> Bindless_GlobalVirtualTextureDescriptionBuffer[] : register(t0, space8);
 	StructuredBuffer<BrawlerHLSL::GlobalTextureDescription> Bindless_GlobalGlobalTextureDescriptionBuffer[] : register(t0, space9);
+	StructuredBuffer<BrawlerHLSL::ModelInstanceDescriptor> Bindless_GlobalModelInstanceDescriptorBuffer[] : register(t0, space10);
 	
 	Texture2D<float> Bindless_GlobalTexture2DFloatArray[] : register(t0, space10);
 	Texture2D<uint> Bindless_GlobalTexture2DUInt[] : register(t0, space11);
@@ -43,6 +44,7 @@ namespace IMPL
 	static const uint BINDLESS_LOD_MESH_DATA_INDEX_BUFFER_INDEX = 7;
 	static const uint BINDLESS_VIRTUAL_TEXTURE_DESCRIPTION_BUFFER_INDEX = 8;
 	static const uint BINDLESS_GLOBAL_TEXTURE_DESCRIPTION_BUFFER_INDEX = 9;
+	static const uint BINDLESS_GLOBAL_MODEL_INSTANCE_DESCRIPTOR_BUFFER_INDEX = 10;
 }
 
 namespace BrawlerHLSL
@@ -112,6 +114,13 @@ namespace BrawlerHLSL
 			StructuredBuffer<BrawlerHLSL::GlobalTextureDescription> globalTextureDescriptionBuffer = IMPL::Bindless_GlobalGlobalTextureDescription[IMPL::BINDLESS_GLOBAL_TEXTURE_DESCRIPTION_BUFFER_INDEX];
 				
 			return globalTextureDescriptionBuffer[NonUniformResourceIndex(globalTextureID)];
+		}
+		
+		BrawlerHLSL::ModelInstanceDescriptor GetGlobalModelInstanceDescriptor(in const uint modelInstanceID)
+		{
+			StructuredBuffer<BrawlerHLSL::ModelInstanceDescriptor> modelInstanceDescriptorBuffer = IMPL::Bindless_GlobalModelInstanceDescriptorBuffer[IMPL::BINDLESS_GLOBAL_MODEL_INSTANCE_DESCRIPTOR_BUFFER_INDEX];
+			
+			return modelInstanceDescriptorBuffer[NonUniformResourceIndex(modelInstanceID)];
 		}
 	}
 }

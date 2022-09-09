@@ -37,6 +37,13 @@ export namespace Brawler
 		std::uint32_t NumTriangleClusters;
 	};
 
+	struct ModelInstanceDescriptor
+	{
+		std::uint32_t RenderDataBufferIndex;
+		std::uint32_t IsUsefulAndPadding;
+		DirectX::XMUINT2 __Pad0;
+	};
+
 	struct ViewTransformData
 	{
 		DirectX::XMFLOAT4X4 CurrentFrameViewProjectionMatrix;

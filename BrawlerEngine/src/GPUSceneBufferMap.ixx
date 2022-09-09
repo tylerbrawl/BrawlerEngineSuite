@@ -68,6 +68,10 @@ namespace Brawler
 	template <>
 	struct GPUSceneBufferInfo<GPUSceneBufferID::GLOBAL_TEXTURE_DESCRIPTION_BUFFER> : public GPUSceneBufferInfoInstantiation<GlobalTextureDescription, MAX_GLOBAL_TEXTURE_DESCRIPTIONS>
 	{};
+
+	template <>
+	struct GPUSceneBufferInfo<GPUSceneBufferID::MODEL_INSTANCE_DESCRIPTOR_BUFFER> : public GPUSceneBufferInfoInstantiation<ModelInstanceDescriptor, MAX_MODEL_INSTANCES>
+	{};
 }
 
 namespace Brawler

@@ -39,6 +39,9 @@ export namespace Brawler
 	private:
 		void SetSceneNode(SceneNode& owningNode);
 
+		virtual void OnComponentRemoval();
+		virtual bool IsSafeToDelete() const;
+
 	private:
 		SceneNode* mOwningNode;
 	};

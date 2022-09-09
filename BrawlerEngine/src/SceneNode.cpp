@@ -19,7 +19,7 @@ namespace Brawler
 		mParentNodePtr(nullptr),
 		mChildNodePtrArr(),
 		mPendingChildAdditionsArr(),
-		mPendingChildRemovals()
+		mPendingChildRemovalsArr()
 	{}
 	
 	void SceneNode::Update(const float dt)
@@ -27,11 +27,14 @@ namespace Brawler
 
 	void SceneNode::RemoveChildSceneNode(SceneNode& childNode)
 	{
-		for (auto& childNodePtr : mChildNodePtrArr)
+		for (auto itr = mChildNodePtrArr.begin(); itr != mChildNodePtrArr.end(); ++itr)
 		{
-			if (childNodePtr.get() == &childNode)
+			if (itr->get() == &childNode)
 			{
-				mPendingChildRemovals.insert(childNodePtr.get());
+				(*itr)->mComponentCollection.PrepareForSceneNodeDeletion();
+				mPendingChildRemovalsArr.push_back(std::move(*itr));
+
+				mChildNodePtrArr.erase(itr);
 				return;
 			}
 		}
@@ -101,12 +104,10 @@ namespace Brawler
 
 	void SceneNode::ExecutePendingChildRemovals()
 	{
-		std::erase_if(mChildNodePtrArr, [this] (const std::unique_ptr<SceneNode>& childNodePtr)
+		std::erase_if(mPendingChildRemovalsArr, [] (const std::unique_ptr<SceneNode>& childNodePtr)
 		{
-			return mPendingChildRemovals.contains(childNodePtr.get());
+			return childNodePtr->mComponentCollection.IsSceneNodeDeletionSafe();
 		});
-
-		mPendingChildRemovals.clear();
 	}
 
 	void SceneNode::SetSceneGraph(SceneGraph& sceneGraph)
