@@ -15,5 +15,9 @@ namespace BrawlerHLSL
 	
 		static const uint MAX_VERTEX_BUFFER_ELEMENTS = (1 << 22);
 		static const uint MAX_INDEX_BUFFER_ELEMENTS = (1 << 22);
+		
+		// Until some form of light culling is implemented, MAX_LIGHTS is intentionally kept to
+		// a pathetically low value.
+		static const uint MAX_LIGHTS = 256;
 	}
 }

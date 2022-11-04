@@ -685,10 +685,25 @@
     <None Include="src\Shaders\PointLight.hlsli">
       <Filter>Shader Files\Lighting</Filter>
     </None>
-    <None Include="src\Shaders\PunctualLight.hlsli">
+    <None Include="src\Shaders\LightingParameters.hlsli">
       <Filter>Shader Files\Lighting</Filter>
     </None>
-    <None Include="src\Shaders\LightingParameters.hlsli">
+    <None Include="src\Shaders\SpecularBRDF.hlsli">
+      <Filter>Shader Files\Lighting</Filter>
+    </None>
+    <None Include="src\Shaders\MathUtil.hlsli">
+      <Filter>Shader Files\Utilities</Filter>
+    </None>
+    <None Include="src\Shaders\Fresnel.hlsli">
+      <Filter>Shader Files\Lighting</Filter>
+    </None>
+    <None Include="src\Shaders\MathConstants.hlsli">
+      <Filter>Shader Files\Constants</Filter>
+    </None>
+    <None Include="src\Shaders\DiffuseBRDF.hlsli">
+      <Filter>Shader Files\Lighting</Filter>
+    </None>
+    <None Include="src\Shaders\LightDescriptor.hlsli">
       <Filter>Shader Files\Lighting</Filter>
     </None>
   </ItemGroup>
@@ -696,5 +711,10 @@
     <Manifest Include="BrawlerEngine.manifest">
       <Filter>Resource Files</Filter>
     </Manifest>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="src\Shaders\DeferredOpaqueShade.hlsl">
+      <Filter>Shader Files\Lighting</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
