@@ -160,6 +160,9 @@
     <Filter Include="Source Files\Streaming Systems\Texture Streaming\Global Texture Updates">
       <UniqueIdentifier>{feaa2828-faaf-45e0-be22-f7ecbf8ba8bb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\Lighting">
+      <UniqueIdentifier>{ab96ca50-24a7-406c-8870-35a9ce3bb903}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -675,6 +678,18 @@
     </None>
     <None Include="src\Shaders\GlobalTextureDescription.hlsli">
       <Filter>Shader Files\Texture Types</Filter>
+    </None>
+    <None Include="src\Shaders\BRDF.hlsli">
+      <Filter>Shader Files\Lighting</Filter>
+    </None>
+    <None Include="src\Shaders\PointLight.hlsli">
+      <Filter>Shader Files\Lighting</Filter>
+    </None>
+    <None Include="src\Shaders\PunctualLight.hlsli">
+      <Filter>Shader Files\Lighting</Filter>
+    </None>
+    <None Include="src\Shaders\LightingParameters.hlsli">
+      <Filter>Shader Files\Lighting</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
