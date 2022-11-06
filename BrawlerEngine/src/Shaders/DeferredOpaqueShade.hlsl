@@ -5,6 +5,7 @@
 #include "GPUSceneLimits.hlsli"
 #include "LightDescriptor.hlsli"
 #include "PointLight.hlsli"
+#include "SpotLight.hlsli"
 #include "MathConstants.hlsli"
 
 Texture2D<float4> BaseColorRoughnessGBuffer : register(t0, space0);
@@ -78,7 +79,19 @@ float3 CalculatePointLightLuminance(in const BrawlerHLSL::SurfaceParameters surf
 	const BrawlerHLSL::LightingParameters lightingParams = currPointLight.CreateLightingParameters(surfaceParams);
 	
 	const float3 brdfReflectance = BrawlerHLSL::BRDF::EvaluateBRDF(lightingParams);
-	const float3 L_i = currPointLight.CalculateIncomingLuminance(surfaceParams);
+	const float3 L_i = currPointLight.CalculateAttenuatedLuminance(lightingParams);
+	
+	// TODO: Modify the returned value based on visibility using shadow maps.
+	return (brdfReflectance * L_i * lightingParams.NDotL);
+}
+
+float3 CalculateSpotLightLuminance(in const BrawlerHLSL::SurfaceParameters surfaceParams, in const uint spotLightID)
+{
+	const BrawlerHLSL::SpotLight currSpotLight = BrawlerHLSL::GetGlobalSpotLight(spotLightID);
+	const BrawlerHLSL::LightingParameters lightingParams = currSpotLight.CreateLightingParameters(surfaceParams);
+	
+	const float3 brdfReflectance = BrawlerHLSL::BRDF::EvaluateBRDF(lightingParams);
+	const float3 L_i = currSpotLight.CalculateAttenuatedLuminance(lightingParams);
 	
 	// TODO: Modify the returned value based on visibility using shadow maps.
 	return (brdfReflectance * L_i * lightingParams.NDotL);
@@ -101,12 +114,18 @@ float3 CalculateLighting(in const BrawlerHLSL::SurfaceParameters surfaceParams)
 		
 		BrawlerHLSL::LightingParameters lightingParams;
 		
-		[branch]
-		switch (currLightDescriptor.TypeID)  // Coherent
+		[branch]  // Coherent
+		switch (currLightDescriptor.TypeID)
 		{
 			case BrawlerHLSL::LightType::POINT_LIGHT:
 			{
 				currLuminance += CalculatePointLightLuminance(surfaceParams, currLightDescriptor.LightBufferIndex);
+				break;
+			}
+			
+			case BrawlerHLSL::LightType::SPOTLIGHT:
+			{
+				currLuminance += CalculateSpotLightLuminance(surfaceParams, currLightDescriptor.LightBufferIndex);
 				break;
 			}
 			

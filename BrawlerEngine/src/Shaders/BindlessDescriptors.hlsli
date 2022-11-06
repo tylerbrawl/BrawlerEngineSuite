@@ -6,6 +6,7 @@
 #include "GPUSceneLimits.hlsli"
 #include "LightDescriptor.hlsli"
 #include "PointLight.hlsli"
+#include "SpotLight.hlsli"
 
 // ================================================================================
 // Bindless Types
@@ -25,7 +26,8 @@ namespace IMPL
 	StructuredBuffer<BrawlerHLSL::PackedTriangleCluster> Bindless_GlobalTriangleClusterBuffer[] : register(t0, space7);
 	StructuredBuffer<BrawlerHLSL::VirtualTextureDescription> Bindless_GlobalVirtualTextureDescriptionBuffer[] : register(t0, space8);
 	StructuredBuffer<BrawlerHLSL::GlobalTextureDescription> Bindless_GlobalGlobalTextureDescriptionBuffer[] : register(t0, space9);
-	StructuredBuffer<BrawlerHLSL::PointLight> Bindless_GlobalPointLightBufferArr[] : register(t0, space10);
+	StructuredBuffer<BrawlerHLSL::PointLight> Bindless_GlobalPointLightBuffer[] : register(t0, space10);
+	StructuredBuffer<BrawlerHLSL::SpotLight> Bindless_GlobalSpotLightBuffer[] : register(t0, space11);
 	
 	Texture2D<float> Bindless_GlobalTexture2DFloatArray[] : register(t0, space10);
 	Texture2D<uint> Bindless_GlobalTexture2DUInt[] : register(t0, space11);
@@ -47,7 +49,8 @@ namespace IMPL
 	static const uint BINDLESS_VIRTUAL_TEXTURE_DESCRIPTION_BUFFER_INDEX = 8;
 	static const uint BINDLESS_GLOBAL_TEXTURE_DESCRIPTION_BUFFER_INDEX = 9;
 	static const uint BINDLESS_LIGHT_DESCRIPTOR_BUFFER_INDEX = 10;
-	static const uint BINDLESS_POINT_LIGHT_BUFFER_ARR_INDEX = 11;
+	static const uint BINDLESS_POINT_LIGHT_BUFFER_INDEX = 11;
+	static const uint BINDLESS_SPOTLIGHT_BUFFER_INDEX = 12;
 }
 
 namespace BrawlerHLSL
@@ -135,9 +138,16 @@ namespace BrawlerHLSL
 		
 		BrawlerHLSL::PointLight GetGlobalPointLight(in const uint pointLightID)
 		{
-			StructuredBuffer<BrawlerHLSL:: PointLight> globalPointLightBuffer = IMPL::Bindless_GlobalPointLightBufferArr[IMPL::BINDLESS_POINT_LIGHT_BUFFER_ARR_INDEX];
+			StructuredBuffer<BrawlerHLSL::PointLight> globalPointLightBuffer = IMPL::Bindless_GlobalPointLightBuffer[IMPL::BINDLESS_POINT_LIGHT_BUFFER_INDEX];
 
 			return globalPointLightBuffer[NonUniformResourceIndex(pointLightID)];
+		}
+		
+		BrawlerHLSL::SpotLight GetGlobalSpotLight(in const uint spotLightID)
+		{
+			StructuredBuffer<BrawlerHLSL::SpotLight> globalSpotLightBuffer = IMPL::Bindless_GlobalSpotLightBuffer[IMPL::BINDLESS_SPOTLIGHT_BUFFER_INDEX];
+			
+			return globalSpotLightBuffer[NonUniformResourceIndex(spotLightID)];
 		}
 	}
 }

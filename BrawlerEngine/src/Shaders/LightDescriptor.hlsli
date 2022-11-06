@@ -3,7 +3,7 @@ namespace BrawlerHLSL
 	enum class LightType
 	{
 		POINT_LIGHT = 0,
-		SPOT_LIGHT = 1
+		SPOTLIGHT = 1
 	};
 		
 	struct PackedLightDescriptor
