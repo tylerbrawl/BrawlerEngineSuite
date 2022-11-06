@@ -25,7 +25,31 @@ namespace BrawlerHLSL
 		//
 		//   - InverseTransposeWorldMatrix = transpose(InverseWorldMatrix)  // This works because (Inverse(Transpose(M)) == Transpose(Inverse(M))) for any invertible matrix M.
 	};
-
+	
+	struct PackedModelInstanceDescriptor
+	{
+		uint TransformDataBufferIndex : 16;
+		uint MeshDescriptorBufferID : 15;
+		uint IsValid : 1;
+	};
+	
+	struct ModelInstanceDescriptor
+	{
+		uint TransformDataBufferIndex;
+		uint MeshDescriptorBufferID;
+		bool IsValid;
+	};
+	
+	struct MeshDescriptor
+	{
+		float3 CurrentFrameAABBMin;
+		uint MaterialDescriptorIndex;
+		
+		float3 CurrentFrameAABBMax;
+		uint IndexBufferIndex;
+	};
+	
+	/*
 	struct LODMeshData
 	{
 		float3 CurrentFrameAABBMin;
@@ -40,4 +64,5 @@ namespace BrawlerHLSL
 		ModelInstanceTransformData TransformData;
 		LODMeshData LODMesh;
 	};
+	*/
 }

@@ -28,6 +28,7 @@ namespace IMPL
 	StructuredBuffer<BrawlerHLSL::GlobalTextureDescription> Bindless_GlobalGlobalTextureDescriptionBuffer[] : register(t0, space9);
 	StructuredBuffer<BrawlerHLSL::PointLight> Bindless_GlobalPointLightBuffer[] : register(t0, space10);
 	StructuredBuffer<BrawlerHLSL::SpotLight> Bindless_GlobalSpotLightBuffer[] : register(t0, space11);
+	StructuredBuffer<BrawlerHLSL::MeshDescriptor> Bindless_GlobalMeshDescriptorBuffer[] : register(t0, space12);
 	
 	Texture2D<float> Bindless_GlobalTexture2DFloatArray[] : register(t0, space10);
 	Texture2D<uint> Bindless_GlobalTexture2DUInt[] : register(t0, space11);
@@ -51,6 +52,8 @@ namespace IMPL
 	static const uint BINDLESS_LIGHT_DESCRIPTOR_BUFFER_INDEX = 10;
 	static const uint BINDLESS_POINT_LIGHT_BUFFER_INDEX = 11;
 	static const uint BINDLESS_SPOTLIGHT_BUFFER_INDEX = 12;
+	static const uint BINDLESS_MODEL_INSTANCE_DESCRIPTOR_BUFFER_INDEX = 13;
+	static const uint BINDLESS_MESH_DESCRIPTOR_BUFFER_INDEX = 14;
 }
 
 namespace BrawlerHLSL
@@ -148,6 +151,25 @@ namespace BrawlerHLSL
 			StructuredBuffer<BrawlerHLSL::SpotLight> globalSpotLightBuffer = IMPL::Bindless_GlobalSpotLightBuffer[IMPL::BINDLESS_SPOTLIGHT_BUFFER_INDEX];
 			
 			return globalSpotLightBuffer[NonUniformResourceIndex(spotLightID)];
+		}
+		
+		BrawlerHLSL::ModelInstanceDescriptor GetGlobalModelInstanceDescriptor(in const uint modelInstanceDescriptorID)
+		{
+			Buffer<uint> globalPackedModelInstanceDescriptorBuffer = IMPL::Bindless_GlobalUIntBuffer[IMPL::BINDLESS_MODEL_INSTANCE_DESCRIPTOR_BUFFER_INDEX];
+			
+			const uint packedModelInstanceDescriptorValue = globalPackedModelInstanceDescriptorBuffer[NonUniformResourceIndex(modelInstanceDescriptorID)];
+			
+			BrawlerHLSL::ModelInstanceDescriptor modelInstanceDescriptor;
+			modelInstanceDescriptor.TransformDataBufferIndex = (packedModelInstanceDescriptorValue >> 16);
+			modelInstanceDescriptor.MeshDescriptorBufferID = ((packedModelInstanceDescriptorValue >> 1) & 0x7FFF);
+			modelInstanceDescriptor.IsValid = ((packedModelInstanceDescriptorValue & 0x1) != 0);
+			
+			return modelInstanceDescriptor;
+		}
+		
+		StructuredBuffer<BrawlerHLSL::MeshDescriptor> GetGlobalMeshDescriptorBuffer(in const uint meshDescriptorBufferID)
+		{
+			return IMPL::Bindless_GlobalMeshDescriptorBuffer[NonUniformResourceIndex(meshDescriptorID)];
 		}
 	}
 }

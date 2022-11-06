@@ -11,6 +11,8 @@ namespace BrawlerHLSL
 		
 		static const uint MAX_MODEL_INSTANCES = (1 << 16);
 		
+		static const uint MAX_MODELS = (1 << 15);
+		
 		static const uint MAX_VIEWS = (1 << 12);
 	
 		static const uint MAX_VERTEX_BUFFER_ELEMENTS = (1 << 22);
@@ -18,6 +20,6 @@ namespace BrawlerHLSL
 		
 		// Until some form of light culling is implemented, MAX_LIGHTS is intentionally kept to
 		// a pathetically low value.
-		static const uint MAX_LIGHTS = 256;
+		static const uint MAX_LIGHTS = (1 << 8);
 	}
 }

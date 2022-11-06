@@ -43,6 +43,8 @@ export namespace Brawler
 		template <typename SceneTextureType>
 		std::optional<SceneTextureHandle<SceneTextureType>> CreateSceneTextureHandle(const FilePathHash pathHash);
 
+		void DeleteUnreferencedSceneTextures();
+
 	private:
 		template <typename SceneTextureType>
 		Brawler::OptionalRef<const SceneTextureType> GetSceneTexture(const FilePathHash pathHash) const;

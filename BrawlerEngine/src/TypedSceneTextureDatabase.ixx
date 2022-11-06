@@ -40,6 +40,7 @@ export namespace Brawler
 		Brawler::OptionalRef<const SceneTextureType> GetSceneTexture(const FilePathHash texturePathHash) const;
 
 		void DecrementSceneTextureReferenceCount(const FilePathHash texturePathHash);
+		void DeleteUnreferencedSceneTextures();
 
 	private:
 		std::unordered_map<FilePathHash, StoredTexture> mSceneTextureMap;
@@ -97,6 +98,20 @@ namespace Brawler
 		const Brawler::ScopedSharedReadLock<std::shared_mutex> lock{ mCritSection };
 
 		assert(mSceneTextureMap.contains(texturePathHash));
-		mSceneTextureMap.at(texturePathHash).fetch_sub(1, std::memory_order::relaxed);
+
+		[[maybe_unused]] const std::uint64_t prevRefCount = mSceneTextureMap.at(texturePathHash).fetch_sub(1, std::memory_order::relaxed);
+		assert(prevRefCount != 0);
+	}
+
+	template <typename SceneTextureType>
+	void TypedSceneTextureDatabase<SceneTextureType>::DeleteUnreferencedSceneTextures()
+	{
+		const Brawler::ScopedSharedWriteLock<std::shared_mutex> lock{ mCritSection };
+
+		std::erase_if(mSceneTextureMap, [] (const auto& mapPair)
+		{
+			const auto& [hash, storedTexture] = mapPair;
+			return (storedTexture.ReferenceCount.load(std::memory_order::relaxed) == 0);
+		});
 	}
 }

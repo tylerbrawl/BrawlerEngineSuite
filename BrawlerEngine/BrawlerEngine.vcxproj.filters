@@ -88,9 +88,6 @@
     <Filter Include="Shader Files\Culling">
       <UniqueIdentifier>{cd5313b6-60c2-43f3-9044-583136286dd7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader Files\Geometry Types">
-      <UniqueIdentifier>{63ce499b-e47b-4d65-a094-14608be46c4e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shader Files\Constants">
       <UniqueIdentifier>{84608e7d-3f19-4440-a37b-cfe2b4a87862}</UniqueIdentifier>
     </Filter>
@@ -168,6 +165,12 @@
     </Filter>
     <Filter Include="Source Files\CPU Scene Representation">
       <UniqueIdentifier>{bc38d29f-5699-471f-a6c1-f23cc1b8d9ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\Convenience Types">
+      <UniqueIdentifier>{e293eaff-b89a-4ab2-b694-7962c847788a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\Geometry">
+      <UniqueIdentifier>{63ce499b-e47b-4d65-a094-14608be46c4e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -671,10 +674,10 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="src\Shaders\TriangleCluster.hlsli">
-      <Filter>Shader Files\Geometry Types</Filter>
+      <Filter>Shader Files\Geometry</Filter>
     </None>
     <None Include="src\Shaders\MeshTypes.hlsli">
-      <Filter>Shader Files\Geometry Types</Filter>
+      <Filter>Shader Files\Geometry</Filter>
     </None>
     <None Include="src\Shaders\TangentFramePacking.hlsli">
       <Filter>Shader Files\Compression</Filter>
@@ -695,7 +698,7 @@
       <Filter>Shader Files\Resource Binding</Filter>
     </None>
     <None Include="src\Shaders\ViewTypes.hlsli">
-      <Filter>Shader Files\Geometry Types</Filter>
+      <Filter>Shader Files\Geometry</Filter>
     </None>
     <None Include="src\Shaders\TransformUtil.hlsli">
       <Filter>Shader Files\Utilities</Filter>
@@ -739,6 +742,12 @@
     <None Include="src\Shaders\PunctualLight.hlsli">
       <Filter>Shader Files\Lighting</Filter>
     </None>
+    <None Include="src\Shaders\D3D12Types.hlsli">
+      <Filter>Shader Files\Convenience Types</Filter>
+    </None>
+    <None Include="src\Shaders\DeferredGeometryRasterTypes.hlsli">
+      <Filter>Shader Files\Geometry</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="BrawlerEngine.manifest">
@@ -748,6 +757,9 @@
   <ItemGroup>
     <FxCompile Include="src\Shaders\DeferredOpaqueShade.hlsl">
       <Filter>Shader Files\Lighting</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\DeferredGeometryRasterVS.hlsl">
+      <Filter>Shader Files\Geometry</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
