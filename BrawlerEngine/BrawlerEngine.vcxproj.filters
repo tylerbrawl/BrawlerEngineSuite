@@ -163,6 +163,12 @@
     <Filter Include="Shader Files\Lighting">
       <UniqueIdentifier>{ab96ca50-24a7-406c-8870-35a9ce3bb903}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\CPU Scene Representation">
+      <UniqueIdentifier>{a2df2201-c56b-49a5-9a62-1c636b3f49be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\CPU Scene Representation">
+      <UniqueIdentifier>{bc38d29f-5699-471f-a6c1-f23cc1b8d9ab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -621,6 +627,27 @@
     <ClCompile Include="src\GlobalTexturePageRemovalRequest.cpp">
       <Filter>Source Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
     </ClCompile>
+    <ClCompile Include="src\MeshData.ixx">
+      <Filter>Module Files\CPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneTextureDatabase.ixx">
+      <Filter>Module Files\CPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneTextures.ixx">
+      <Filter>Module Files\CPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TypedSceneTextureDatabase.ixx">
+      <Filter>Module Files\CPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneTextureHandles.ixx">
+      <Filter>Module Files\CPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneTextureHandles.cpp">
+      <Filter>Source Files\CPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneTextureDatabase.cpp">
+      <Filter>Source Files\CPU Scene Representation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -704,6 +731,12 @@
       <Filter>Shader Files\Lighting</Filter>
     </None>
     <None Include="src\Shaders\LightDescriptor.hlsli">
+      <Filter>Shader Files\Lighting</Filter>
+    </None>
+    <None Include="src\Shaders\SpotLight.hlsli">
+      <Filter>Shader Files\Lighting</Filter>
+    </None>
+    <None Include="src\Shaders\PunctualLight.hlsli">
       <Filter>Shader Files\Lighting</Filter>
     </None>
   </ItemGroup>

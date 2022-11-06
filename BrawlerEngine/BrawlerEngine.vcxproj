@@ -312,6 +312,7 @@
     <ClCompile Include="src\I_WindowState.ixx" />
     <ClCompile Include="src\MathConstants.ixx" />
     <ClCompile Include="src\MathTypes.ixx" />
+    <ClCompile Include="src\MeshData.ixx" />
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Model.ixx" />
     <ClCompile Include="src\ModelLoader.ixx" />
@@ -335,6 +336,11 @@
     <ClCompile Include="src\SceneNode.cpp" />
     <ClCompile Include="src\SceneNode.ixx" />
     <ClCompile Include="src\SceneNodeID.ixx" />
+    <ClCompile Include="src\SceneTextureDatabase.cpp" />
+    <ClCompile Include="src\SceneTextureHandles.cpp" />
+    <ClCompile Include="src\SceneTextureHandles.ixx" />
+    <ClCompile Include="src\SceneTextures.ixx" />
+    <ClCompile Include="src\SceneTextureDatabase.ixx" />
     <ClCompile Include="src\SettingID.ixx" />
     <ClCompile Include="src\SettingsDef.ixx" />
     <ClCompile Include="src\SettingsManager.cpp" />
@@ -351,6 +357,7 @@
     <ClCompile Include="src\SwapChain.ixx" />
     <ClCompile Include="src\TransformComponent.cpp" />
     <ClCompile Include="src\TransformComponent.ixx" />
+    <ClCompile Include="src\TypedSceneTextureDatabase.ixx" />
     <ClCompile Include="src\ViewComponent.cpp" />
     <ClCompile Include="src\ViewComponent.ixx" />
     <ClCompile Include="src\VirtualTexture.cpp" />
@@ -450,6 +457,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
+    <None Include="src\Shaders\PunctualLight.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
     <None Include="src\Shaders\SpecularBRDF.hlsli">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
@@ -476,6 +488,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
     <None Include="src\Shaders\PointLight.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="src\Shaders\SpotLight.hlsli">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -531,6 +548,9 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
