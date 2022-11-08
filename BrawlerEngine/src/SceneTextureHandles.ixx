@@ -25,8 +25,7 @@ export namespace Brawler
 		SceneTextureHandle(SceneTextureHandle&& rhs) noexcept;
 		SceneTextureHandle& operator=(SceneTextureHandle&& rhs) noexcept;
 
-		const SceneTextureType& operator*() const;
-		const SceneTextureType* operator->() const;
+		std::uint32_t GetBindlessSRVIndex() const;
 
 	private:
 		void DecrementReferenceCount();

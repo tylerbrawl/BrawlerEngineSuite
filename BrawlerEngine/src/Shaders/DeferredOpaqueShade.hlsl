@@ -63,7 +63,7 @@ BrawlerHLSL::SurfaceParameters GetSurfaceParameters(in const uint2 dispatchThrea
 	// far off from most common materials."
 	static const float3 DIELECTRIC_F_0 = float3(0.04f, 0.04f, 0.04f);
 		
-	const float3 baseColor = baseColor.rgb;
+	const float3 baseColor = baseColorRoughnessValue.rgb;
 	surfaceParams.SubsurfaceAlbedo = lerp(baseColor, 0.0f, metallicValue);
 	surfaceParams.F_0 = lerp(DIELECTRIC_F_0, baseColor, metallicValue);
 	

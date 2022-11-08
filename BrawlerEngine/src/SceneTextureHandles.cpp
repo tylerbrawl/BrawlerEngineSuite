@@ -37,21 +37,14 @@ namespace Brawler
 	}
 
 	template <typename SceneTextureType>
-	const SceneTextureType& SceneTextureHandle<SceneTextureType>::operator*() const
+	std::uint32_t SceneTextureHandle<SceneTextureType>::GetBindlessSRVIndex() const
 	{
-		const Brawler::OptionalRef<const SceneTextureType> sceneTexture{ GetSceneTexture() };
-		assert(sceneTexture.HasValue());
+		assert(IsValid());
 
-		return *sceneTexture;
-	}
+		const std::optional<std::uint32_t> bindlessSRVIndex = Brawler::SceneTextureDatabase::GetInstance().GetSceneTextureSRVIndex<SceneTextureType>(*mPathHash);
+		assert(bindlessSRVIndex.has_value());
 
-	template <typename SceneTextureType>
-	const SceneTextureType* SceneTextureHandle<SceneTextureType>::operator->() const
-	{
-		const Brawler::OptionalRef<const SceneTextureType> sceneTexture{ GetSceneTexture() };
-		assert(sceneTexture.HasValue());
-
-		return &(*sceneTexture);
+		return *bindlessSRVIndex;
 	}
 
 	template <typename SceneTextureType>

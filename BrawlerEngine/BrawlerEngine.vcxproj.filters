@@ -172,6 +172,9 @@
     <Filter Include="Shader Files\Geometry">
       <UniqueIdentifier>{63ce499b-e47b-4d65-a094-14608be46c4e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\Materials">
+      <UniqueIdentifier>{566b66da-75c7-4d77-a0e3-aa1d2009f6e5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -651,6 +654,9 @@
     <ClCompile Include="src\SceneTextureDatabase.cpp">
       <Filter>Source Files\CPU Scene Representation</Filter>
     </ClCompile>
+    <ClCompile Include="src\MaterialDefinition.ixx">
+      <Filter>Module Files\CPU Scene Representation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -747,6 +753,9 @@
     </None>
     <None Include="src\Shaders\DeferredGeometryRasterTypes.hlsli">
       <Filter>Shader Files\Geometry</Filter>
+    </None>
+    <None Include="src\Shaders\MaterialDescriptor.hlsli">
+      <Filter>Shader Files\Materials</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

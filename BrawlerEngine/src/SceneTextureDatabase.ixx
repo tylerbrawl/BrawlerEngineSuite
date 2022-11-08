@@ -47,7 +47,7 @@ export namespace Brawler
 
 	private:
 		template <typename SceneTextureType>
-		Brawler::OptionalRef<const SceneTextureType> GetSceneTexture(const FilePathHash pathHash) const;
+		std::optional<std::uint32_t> GetSceneTextureSRVIndex(const FilePathHash pathHash) const;
 
 		template <typename SceneTextureType>
 		void DecrementSceneTextureReferenceCount(const FilePathHash pathHash);
@@ -86,11 +86,11 @@ namespace Brawler
 	}
 
 	template <typename SceneTextureType>
-	Brawler::OptionalRef<const SceneTextureType> SceneTextureDatabase::GetSceneTexture(const FilePathHash pathHash) const
+	std::optional<std::uint32_t> SceneTextureDatabase::GetSceneTextureSRVIndex(const FilePathHash pathHash) const
 	{
 		return ExecuteCallbackForTypedDatabase<SceneTextureType>([pathHash] (const TypedSceneTextureDatabase<SceneTextureType>& database)
 		{
-			return database.GetSceneTexture(pathHash);
+			return database.GetSceneTextureSRVIndex(pathHash);
 		});
 	}
 

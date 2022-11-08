@@ -37,7 +37,7 @@ export namespace Brawler
 		void RegisterSceneTexture(const FilePathHash texturePathHash, SceneTextureType&& sceneTexture);
 
 		std::optional<SceneTextureHandle<SceneTextureType>> CreateSceneTextureHandle(const FilePathHash texturePathHash);
-		Brawler::OptionalRef<const SceneTextureType> GetSceneTexture(const FilePathHash texturePathHash) const;
+		std::optional<std::uint32_t> GetSceneTextureSRVIndex(const FilePathHash texturePathHash) const;
 
 		void DecrementSceneTextureReferenceCount(const FilePathHash texturePathHash);
 		void DeleteUnreferencedSceneTextures();
@@ -77,19 +77,14 @@ namespace Brawler
 	}
 
 	template <typename SceneTextureType>
-	Brawler::OptionalRef<const SceneTextureType> TypedSceneTextureDatabase<SceneTextureType>::GetSceneTexture(const FilePathHash texturePathHash) const
+	std::optional<std::uint32_t> TypedSceneTextureDatabase<SceneTextureType>::GetSceneTextureSRVIndex(const FilePathHash texturePathHash) const
 	{
 		const Brawler::ScopedSharedReadLock<std::shared_mutex> lock{ mCritSection };
 
 		if (!mSceneTextureMap.contains(texturePathHash)) [[unlikely]]
 			return {};
 
-		// Since iterators and references within a std::unordered_map instance for a given
-		// entry are only ever invalidated when said entry is erased from the map, and since
-		// we don't erase entries from the map until we know that there are no SceneTextureHandle
-		// instances referring to it, it is safe to return a const& to a SceneTextureType
-		// instance not wrapped within a std::unique_ptr. This reduces heap allocation count.
-		return Brawler::OptionalRef<const SceneTextureType>{ mSceneTextureMap.at(texturePathHash).SceneTexture };
+		return mSceneTextureMap.at(texturePathHash).SceneTexture.GetBindlessSRVIndex();
 	}
 
 	template <typename SceneTextureType>

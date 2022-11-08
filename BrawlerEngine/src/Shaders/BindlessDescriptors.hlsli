@@ -7,6 +7,7 @@
 #include "LightDescriptor.hlsli"
 #include "PointLight.hlsli"
 #include "SpotLight.hlsli"
+#include "MaterialDescriptor.hlsli"
 
 // ================================================================================
 // Bindless Types
@@ -29,6 +30,7 @@ namespace IMPL
 	StructuredBuffer<BrawlerHLSL::PointLight> Bindless_GlobalPointLightBuffer[] : register(t0, space10);
 	StructuredBuffer<BrawlerHLSL::SpotLight> Bindless_GlobalSpotLightBuffer[] : register(t0, space11);
 	StructuredBuffer<BrawlerHLSL::MeshDescriptor> Bindless_GlobalMeshDescriptorBuffer[] : register(t0, space12);
+	StructuredBuffer<BrawlerHLSL::MaterialDescriptor> Bindless_GlobalMaterialDescriptorBuffer[] : register(t0, space13);
 	
 	Texture2D<float> Bindless_GlobalTexture2DFloatArray[] : register(t0, space10);
 	Texture2D<uint> Bindless_GlobalTexture2DUInt[] : register(t0, space11);
@@ -54,6 +56,7 @@ namespace IMPL
 	static const uint BINDLESS_SPOTLIGHT_BUFFER_INDEX = 12;
 	static const uint BINDLESS_MODEL_INSTANCE_DESCRIPTOR_BUFFER_INDEX = 13;
 	static const uint BINDLESS_MESH_DESCRIPTOR_BUFFER_INDEX = 14;
+	static const uint BINDLESS_MATERIAL_DESCRIPTOR_BUFFER_INDEX = 15;
 }
 
 namespace BrawlerHLSL
@@ -170,6 +173,13 @@ namespace BrawlerHLSL
 		StructuredBuffer<BrawlerHLSL::MeshDescriptor> GetGlobalMeshDescriptorBuffer(in const uint meshDescriptorBufferID)
 		{
 			return IMPL::Bindless_GlobalMeshDescriptorBuffer[NonUniformResourceIndex(meshDescriptorID)];
+		}
+		
+		BrawlerHLSL::MaterialDescriptor GetGlobalMaterialDescriptor(in const uint materialDescriptorID)
+		{
+			StructuredBuffer<BrawlerHLSL::MaterialDescriptor> globalMaterialDescriptorBuffer = IMPL::Bindless_GlobalMaterialDescriptorBuffer[IMPL::BINDLESS_MATERIAL_DESCRIPTOR_BUFFER_INDEX];
+			
+			return globalMaterialDescriptorBuffer[NonUniformResourceIndex(materialDescriptorID)];
 		}
 	}
 }
