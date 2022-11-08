@@ -30,43 +30,39 @@ namespace Brawler
 	};
 
 	template <>
-	struct GPUSceneBufferInfo<GPUSceneBufferID::GLOBAL_VERTEX_BUFFER> : public GPUSceneBufferInfoInstantiation<PackedStaticVertex, MAX_VERTEX_BUFFER_ELEMENTS>
+	struct GPUSceneBufferInfo<GPUSceneBufferID::GLOBAL_VERTEX_BUFFER> : public GPUSceneBufferInfoInstantiation<GPUSceneTypes::PackedStaticVertex, GPUSceneLimits::MAX_VERTEX_BUFFER_ELEMENTS>
 	{};
 
 	template <>
-	struct GPUSceneBufferInfo<GPUSceneBufferID::GLOBAL_INDEX_BUFFER> : public GPUSceneBufferInfoInstantiation<std::uint32_t, MAX_INDEX_BUFFER_ELEMENTS>
+	struct GPUSceneBufferInfo<GPUSceneBufferID::MODEL_INSTANCE_TRANSFORM_DATA_BUFFER> : public GPUSceneBufferInfoInstantiation<GPUSceneTypes::ModelInstanceTransformData, GPUSceneLimits::MAX_MODEL_INSTANCES>
 	{};
 
 	template <>
-	struct GPUSceneBufferInfo<GPUSceneBufferID::MODEL_INSTANCE_TRANSFORM_DATA_BUFFER> : public GPUSceneBufferInfoInstantiation<ModelInstanceTransformData, MAX_MODEL_INSTANCES>
+	struct GPUSceneBufferInfo<GPUSceneBufferID::VIEW_TRANSFORM_DATA_BUFFER> : public GPUSceneBufferInfoInstantiation<GPUSceneTypes::ViewTransformData, GPUSceneLimits::MAX_VIEWS>
 	{};
 
 	template <>
-	struct GPUSceneBufferInfo<GPUSceneBufferID::LOD_MESH_DATA_BUFFER> : public GPUSceneBufferInfoInstantiation<LODMeshData, MAX_MODEL_INSTANCES>
+	struct GPUSceneBufferInfo<GPUSceneBufferID::VIEW_DIMENSIONS_DATA_BUFFER> : public GPUSceneBufferInfoInstantiation<GPUSceneTypes::ViewDimensionsData, GPUSceneLimits::MAX_VIEWS>
 	{};
 
 	template <>
-	struct GPUSceneBufferInfo<GPUSceneBufferID::VIEW_TRANSFORM_DATA_BUFFER> : public GPUSceneBufferInfoInstantiation<ViewTransformData, MAX_VIEWS>
+	struct GPUSceneBufferInfo<GPUSceneBufferID::LIGHT_DESCRIPTOR_BUFFER> : public GPUSceneBufferInfoInstantiation<GPUSceneTypes::PackedLightDescriptor, GPUSceneLimits::MAX_LIGHTS>
 	{};
 
 	template <>
-	struct GPUSceneBufferInfo<GPUSceneBufferID::VIEW_DIMENSIONS_DATA_BUFFER> : public GPUSceneBufferInfoInstantiation<ViewDimensionsData, MAX_VIEWS>
+	struct GPUSceneBufferInfo<GPUSceneBufferID::POINT_LIGHT_BUFFER> : public GPUSceneBufferInfoInstantiation<GPUSceneTypes::PointLight, GPUSceneLimits::MAX_LIGHTS>
 	{};
 
 	template <>
-	struct GPUSceneBufferInfo<GPUSceneBufferID::GLOBAL_TRIANGLE_CLUSTER_BUFFER> : public GPUSceneBufferInfoInstantiation<PackedTriangleCluster, MAX_TRIANGLE_CLUSTERS>
+	struct GPUSceneBufferInfo<GPUSceneBufferID::SPOTLIGHT_BUFFER> : public GPUSceneBufferInfoInstantiation<GPUSceneTypes::SpotLight, GPUSceneLimits::MAX_LIGHTS>
 	{};
 
 	template <>
-	struct GPUSceneBufferInfo<GPUSceneBufferID::LOD_MESH_DATA_INDEX_BUFFER> : public GPUSceneBufferInfoInstantiation<std::uint32_t, MAX_MODEL_INSTANCES>
+	struct GPUSceneBufferInfo<GPUSceneBufferID::MODEL_INSTANCE_DESCRIPTOR_BUFFER> : public GPUSceneBufferInfoInstantiation<GPUSceneTypes::PackedModelInstanceDescriptor, GPUSceneLimits::MAX_MODEL_INSTANCES>
 	{};
 
 	template <>
-	struct GPUSceneBufferInfo<GPUSceneBufferID::VIRTUAL_TEXTURE_DESCRIPTION_BUFFER> : public GPUSceneBufferInfoInstantiation<VirtualTextureDescription, MAX_VIRTUAL_TEXTURE_DESCRIPTIONS>
-	{};
-
-	template <>
-	struct GPUSceneBufferInfo<GPUSceneBufferID::GLOBAL_TEXTURE_DESCRIPTION_BUFFER> : public GPUSceneBufferInfoInstantiation<GlobalTextureDescription, MAX_GLOBAL_TEXTURE_DESCRIPTIONS>
+	struct GPUSceneBufferInfo<GPUSceneBufferID::MATERIAL_DESCRIPTOR_BUFFER> : public GPUSceneBufferInfoInstantiation<GPUSceneTypes::MaterialDescriptor, GPUSceneLimits::MAX_MATERIAL_DEFINITIONS>
 	{};
 }
 

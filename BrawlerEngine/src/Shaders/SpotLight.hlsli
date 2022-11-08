@@ -6,7 +6,7 @@ namespace BrawlerHLSL
 	class SpotLight : PunctualLight
 	{
 		/// <summary>
-		/// This is the position, in world space, at which the spotlight is located.
+		/// This is the position, in world space, at which the spotlight is located
 		/// in the scene.
 		/// </summary>
 		float3 PositionWS;
@@ -83,6 +83,19 @@ namespace BrawlerHLSL
 			// a = dot(DirectionWS, -L)
 			// b = CosinePenumbraAngle
 			// c = CosineUmbraAngle
+			
+			// The Frostbite Engine computes LuminousIntensity as follows:
+			//
+			// LuminousIntensity = LuminousPower lumens / PI steradians = (LuminousPower / PI) lm/sr = (LuminousPower / PI) cd
+			//
+			// This is mathematically incorrect because the conversion from luminous power to luminous intensity
+			// involves accounting for the entire solid angle of the cone bounding volume for a spotlight. The 
+			// mathematically/physically correct formulation is as follows:
+			//
+			// LuminousIntensity = (LuminousPower / (2 * PI) * (1 - (CosineUmbraAngle / 2))) cd
+			//
+			// The correct formula was deemed inappropriate for the Frostbite Engine because it made using spotlights
+			// more difficult for artists, both for lighting and for optimization.
 			
 			const float cosineLightAngle = dot(DirectionWS, -shadingParams.L);
 			

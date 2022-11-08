@@ -1,8 +1,5 @@
 #include "MeshTypes.hlsli"
 #include "ViewTypes.hlsli"
-#include "VirtualTextureDescription.hlsli"
-#include "GlobalTextureDescription.hlsli"
-#include "TriangleCluster.hlsli"
 #include "GPUSceneLimits.hlsli"
 #include "LightDescriptor.hlsli"
 #include "PointLight.hlsli"
@@ -21,16 +18,12 @@ namespace IMPL
 	StructuredBuffer<BrawlerHLSL::PackedStaticVertex> Bindless_GlobalVertexBuffer[] : register(t0, space1);
 	Buffer<uint> Bindless_GlobalUIntBuffer[] : register(t0, space2);
 	StructuredBuffer<BrawlerHLSL::ModelInstanceTransformData> Bindless_GlobalModelInstanceTransformDataBuffer[] : register(t0, space3);
-	StructuredBuffer<BrawlerHLSL::LODMeshData> Bindless_GlobalLODMeshDataBuffer[] : register(t0, space4);
-	StructuredBuffer<BrawlerHLSL::ViewTransformData> Bindless_GlobalViewTransformDataBuffer[] : register(t0, space5);
-	StructuredBuffer<BrawlerHLSL::ViewDimensionsData> Bindless_GlobalViewDimensionsDataBuffer[] : register(t0, space6);
-	StructuredBuffer<BrawlerHLSL::PackedTriangleCluster> Bindless_GlobalTriangleClusterBuffer[] : register(t0, space7);
-	StructuredBuffer<BrawlerHLSL::VirtualTextureDescription> Bindless_GlobalVirtualTextureDescriptionBuffer[] : register(t0, space8);
-	StructuredBuffer<BrawlerHLSL::GlobalTextureDescription> Bindless_GlobalGlobalTextureDescriptionBuffer[] : register(t0, space9);
-	StructuredBuffer<BrawlerHLSL::PointLight> Bindless_GlobalPointLightBuffer[] : register(t0, space10);
-	StructuredBuffer<BrawlerHLSL::SpotLight> Bindless_GlobalSpotLightBuffer[] : register(t0, space11);
-	StructuredBuffer<BrawlerHLSL::MeshDescriptor> Bindless_GlobalMeshDescriptorBuffer[] : register(t0, space12);
-	StructuredBuffer<BrawlerHLSL::MaterialDescriptor> Bindless_GlobalMaterialDescriptorBuffer[] : register(t0, space13);
+	StructuredBuffer<BrawlerHLSL::ViewTransformData> Bindless_GlobalViewTransformDataBuffer[] : register(t0, space4);
+	StructuredBuffer<BrawlerHLSL::ViewDimensionsData> Bindless_GlobalViewDimensionsDataBuffer[] : register(t0, space5);
+	StructuredBuffer<BrawlerHLSL::PointLight> Bindless_GlobalPointLightBuffer[] : register(t0, space6);
+	StructuredBuffer<BrawlerHLSL::SpotLight> Bindless_GlobalSpotLightBuffer[] : register(t0, space7);
+	StructuredBuffer<BrawlerHLSL::MeshDescriptor> Bindless_GlobalMeshDescriptorBuffer[] : register(t0, space8);
+	StructuredBuffer<BrawlerHLSL::MaterialDescriptor> Bindless_GlobalMaterialDescriptorBuffer[] : register(t0, space9);
 	
 	Texture2D<float> Bindless_GlobalTexture2DFloatArray[] : register(t0, space10);
 	Texture2D<uint> Bindless_GlobalTexture2DUInt[] : register(t0, space11);
@@ -42,21 +35,14 @@ namespace IMPL
 	// enumeration values found in GPUSceneBufferID.ixx.
 		
 	static const uint BINDLESS_GLOBAL_VERTEX_BUFFER_INDEX = 0;
-	static const uint BINDLESS_GLOBAL_INDEX_BUFFER_INDEX = 1;
-	static const uint BINDLESS_MODEL_INSTANCE_TRANSFORM_DATA_BUFFER_INDEX = 2;
-	static const uint BINDLESS_LOD_MESH_DATA_BUFFER_INDEX = 3;
-	static const uint BINDLESS_VIEW_TRANSFORM_DATA_BUFFER_INDEX = 4;
-	static const uint BINDLESS_VIEW_DIMENSIONS_DATA_BUFFER_INDEX = 5;
-	static const uint BINDLESS_GLOBAL_TRIANGLE_CLUSTER_BUFFER_INDEX = 6;
-	static const uint BINDLESS_LOD_MESH_DATA_INDEX_BUFFER_INDEX = 7;
-	static const uint BINDLESS_VIRTUAL_TEXTURE_DESCRIPTION_BUFFER_INDEX = 8;
-	static const uint BINDLESS_GLOBAL_TEXTURE_DESCRIPTION_BUFFER_INDEX = 9;
-	static const uint BINDLESS_LIGHT_DESCRIPTOR_BUFFER_INDEX = 10;
-	static const uint BINDLESS_POINT_LIGHT_BUFFER_INDEX = 11;
-	static const uint BINDLESS_SPOTLIGHT_BUFFER_INDEX = 12;
-	static const uint BINDLESS_MODEL_INSTANCE_DESCRIPTOR_BUFFER_INDEX = 13;
-	static const uint BINDLESS_MESH_DESCRIPTOR_BUFFER_INDEX = 14;
-	static const uint BINDLESS_MATERIAL_DESCRIPTOR_BUFFER_INDEX = 15;
+	static const uint BINDLESS_MODEL_INSTANCE_TRANSFORM_DATA_BUFFER_INDEX = 1;
+	static const uint BINDLESS_VIEW_TRANSFORM_DATA_BUFFER_INDEX = 2;
+	static const uint BINDLESS_VIEW_DIMENSIONS_DATA_BUFFER_INDEX = 3;
+	static const uint BINDLESS_LIGHT_DESCRIPTOR_BUFFER_INDEX = 4;
+	static const uint BINDLESS_POINT_LIGHT_BUFFER_INDEX = 5;
+	static const uint BINDLESS_SPOTLIGHT_BUFFER_INDEX = 6;
+	static const uint BINDLESS_MODEL_INSTANCE_DESCRIPTOR_BUFFER_INDEX = 7;
+	static const uint BINDLESS_MATERIAL_DESCRIPTOR_BUFFER_INDEX = 8;
 }
 
 namespace BrawlerHLSL

@@ -46,23 +46,6 @@ namespace BrawlerHLSL
 		uint MaterialDescriptorIndex;
 		
 		float3 CurrentFrameAABBMax;
-		uint IndexBufferIndex;
+		uint IndexBufferSRVIndex;
 	};
-	
-	/*
-	struct LODMeshData
-	{
-		float3 CurrentFrameAABBMin;
-		uint StartingTriangleClusterID;
-		
-		float3 CurrentFrameAABBMax;
-		uint NumTriangleClusters;
-	};
-	
-	struct ModelInstanceData
-	{
-		ModelInstanceTransformData TransformData;
-		LODMeshData LODMesh;
-	};
-	*/
 }
