@@ -1,7 +1,6 @@
 module;
-#include <tuple>
-#include <atomic>
-#include <optional>
+#include <vector>
+#include <mutex>
 
 export module Brawler.GPUSceneBufferUpdateSubModule;
 import :GPUSceneBufferUpdateMonitor;

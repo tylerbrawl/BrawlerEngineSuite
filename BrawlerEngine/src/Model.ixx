@@ -1,18 +1,22 @@
 module;
 #include <memory>
-#include <vector>
 
 export module Brawler.Model;
-import Brawler.I_LODMeshDefinition;
-import Brawler.FilePathHash;
+import Brawler.D3D12.BufferResource;
+import Brawler.D3D12.BindlessSRVAllocation;
 
-export namespace Brawler
+/*
+Each Model is represented by a StructuredBuffer<MeshDescriptor>. Each MeshDescriptor has
+some AABBs, a MaterialDescriptor, and an index buffer. Each index buffer identifies a vertex
+within the global vertex buffer.
+*/
+
+export namespace Brawler 
 {
 	class Model
 	{
 	public:
 		Model() = default;
-		explicit Model(const FilePathHash bmdlFileHash);
 
 		Model(const Model& rhs) = delete;
 		Model& operator=(const Model& rhs) = delete;
@@ -20,10 +24,10 @@ export namespace Brawler
 		Model(Model&& rhs) noexcept = default;
 		Model& operator=(Model&& rhs) noexcept = default;
 
-	private:
-		void CreateLODMeshDefinitions(const FilePathHash bmdlFileHash);
+		std::uint32_t GetBindlessMeshDescriptorBufferSRVIndex() const;
 
 	private:
-		std::vector<std::unique_ptr<I_LODMeshDefinition>> mLODMeshDefinitionPtrArr;
+		std::unique_ptr<D3D12::BufferResource> mMeshDescriptorBufferPtr;
+		D3D12::BindlessSRVAllocation mMeshDescriptorBufferBindlessAllocation;
 	};
 }

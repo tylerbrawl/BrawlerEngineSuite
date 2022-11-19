@@ -59,14 +59,8 @@ export namespace Brawler
 		bool HasScheduledBufferUpdates() const;
 
 	private:
-		/// <summary>
-		/// This is a map between offsets from the start of the GPU scene buffer and a
-		/// GPUSceneBufferUpdateOperation for the next frame. Since the object is expected to be accessed
-		/// concurrently by multiple threads, it is thread safe. In fact, the actual map itself is
-		/// lock free; the std::mutex in the template only protects the individual data elements contained
-		/// within the map. However, it is unlikely that two threads will ever access the same element.
-		/// </summary>
-		ThreadSafeUnorderedMap<std::size_t, GPUSceneBufferUpdateOperation<BufferID>, std::mutex> mCurrUpdateRegionsMap;
+		std::vector<GPUSceneBufferUpdateOperation<BufferID>> mUpdateOperationArr;
+		mutable std::mutex mCritSection;
 	};
 }
 
@@ -77,21 +71,9 @@ namespace Brawler
 	template <GPUSceneBufferID BufferID>
 	void GPUSceneBufferUpdateMonitor<BufferID>::UpdateBufferElement(GPUSceneBufferUpdateOperation<BufferID>&& updateOperation)
 	{
-		const std::size_t offsetFromBufferStart = updateOperation.GetDestinationCopyRegion().GetOffsetFromBufferStart();
+		const std::scoped_lock<std::mutex> lock{ mCritSection };
 
-		// Unlike std::unordered_map::try_emplace, Brawler::ThreadSafeUnorderedMap::TryEmplace()
-		// will immediately do a std::move() if possible, even if the data does not end up actually
-		// getting constructed. To prevent the case where the data is moved into a node which never
-		// actually gets added to the map, we first call TryEmplace() with no additional arguments
-		// for the Value; this should be fine, since all of the types stored in GPU scene buffers
-		// should trivially be default constructible.
-		if (!mCurrUpdateRegionsMap.Contains(offsetFromBufferStart))
-			mCurrUpdateRegionsMap.TryEmplace(offsetFromBufferStart);
-
-		mCurrUpdateRegionsMap.AccessData(offsetFromBufferStart, [&updateOperation] (GPUSceneBufferUpdateOperation<BufferID>& storedUpdateOperation)
-		{
-			storedUpdateOperation = std::move(updateOperation);
-		});
+		mUpdateOperationArr.push_back(std::move(updateOperation));
 	}
 
 	template <GPUSceneBufferID BufferID>
@@ -99,14 +81,18 @@ namespace Brawler
 	{
 		std::vector<BufferUpdateInfo> bufferUpdateInfoArr{};
 
-		mCurrUpdateRegionsMap.ForEach([&bufferUpdateInfoArr] (GPUSceneBufferUpdateOperation<BufferID>& updateOperation)
 		{
-			bufferUpdateInfoArr.push_back(BufferUpdateInfo{
-				.UpdateOperation{ std::move(updateOperation) }
-			});
-		});
+			const std::scoped_lock<std::mutex> lock{ mCritSection };
 
-		mCurrUpdateRegionsMap.Clear();
+			for (auto&& updateOperation : mUpdateOperationArr)
+			{
+				bufferUpdateInfoArr.push_back(BufferUpdateInfo{
+					.UpdateOperation{ std::move(updateOperation) }
+				});
+			}
+
+			mUpdateOperationArr.clear();
+		}
 
 		const std::size_t requiredBufferSize = (sizeof(ElementType) * bufferUpdateInfoArr.size());
 		D3D12::BufferResource& uploadBuffer{ builder.CreateTransientResource<D3D12::BufferResource>(D3D12::BufferResourceInitializationInfo{
@@ -117,13 +103,15 @@ namespace Brawler
 		std::optional<D3D12::DynamicByteAddressBufferSubAllocation> uploadDataSubAllocation{ uploadBuffer.CreateBufferSubAllocation<D3D12::DynamicByteAddressBufferSubAllocation>(requiredBufferSize) };
 		assert(uploadDataSubAllocation.has_value());
 
-		for (const auto i : std::views::iota(0ull, bufferUpdateInfoArr.size()))
+		std::size_t currOffsetFromSubAllocationStart = 0;
+		for (auto& updateInfo : bufferUpdateInfoArr)
 		{
-			const std::span<const std::byte> srcDataByteSpan{ std::as_bytes(std::span<const ElementType>{ &(bufferUpdateInfoArr[i].UpdateOperation.GetUpdateSourceData()), 1 }) };
-			const std::size_t offsetFromSubAllocationStart = (sizeof(ElementType) * i);
+			const std::span<const std::byte> srcDataByteSpan{ std::as_bytes(updateInfo.UpdateOperation.GetUpdateSourceDataSpan()) };
 
-			uploadDataSubAllocation->WriteRawBytesToBuffer(srcDataByteSpan, offsetFromSubAllocationStart);
-			bufferUpdateInfoArr[i].SourceCopyRegion = uploadDataSubAllocation->GetBufferCopyRegion(offsetFromSubAllocationStart, sizeof(ElementType));
+			uploadDataSubAllocation->WriteRawBytesToBuffer(srcDataByteSpan, currOffsetFromSubAllocationStart);
+			bufferUpdateInfoArr[i].SourceCopyRegion = uploadDataSubAllocation->GetBufferCopyRegion(currOffsetFromSubAllocationStart, srcDataByteSpan.size_bytes());
+
+			currOffsetFromSubAllocationStart += srcDataByteSpan.size_bytes();
 		}
 
 		BufferUpdateRenderPass_T updatePass{};
@@ -162,6 +150,8 @@ namespace Brawler
 		// up to other classes to ensure this. Otherwise, if a buffer update is scheduled immediately
 		// after this function returns false, then it will still be applied on the next frame.
 		
-		return !mCurrUpdateRegionsMap.Empty();
+		const std::scoped_lock<std::mutex> lock{ mCritSection };
+
+		return !mUpdateOperationArr.empty();
 	}
 }

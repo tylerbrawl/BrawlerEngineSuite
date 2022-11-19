@@ -9,6 +9,7 @@ import Brawler.SceneTextures;
 import Brawler.OptionalRef;
 import Brawler.FilePathHash;
 import Brawler.SceneTextureHandles;
+import Brawler.MaterialDefinitionGraph;
 
 export namespace Brawler
 {
@@ -74,6 +75,11 @@ namespace Brawler
 		{
 			database.RegisterSceneTexture(pathHash, std::move(sceneTexture));
 		});
+
+		// Upon modifying a scene texture, we should notify the MaterialDefinitionGraph that
+		// any I_MaterialDefinition instances using said texture will need to update the
+		// material description in the GPUSceneBuffers.
+		MaterialDefinitionGraph::GetInstance().RequestGPUSceneMaterialDescriptorUpdate(pathHash);
 	}
 
 	template <typename SceneTextureType>

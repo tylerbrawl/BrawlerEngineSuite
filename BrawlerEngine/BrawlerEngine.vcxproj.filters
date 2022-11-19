@@ -79,9 +79,6 @@
     <Filter Include="Module Files\Streaming Systems">
       <UniqueIdentifier>{7b75f20c-a89d-4ddc-9fd6-f749a8f49eff}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module Files\Streaming Systems\Model Streaming">
-      <UniqueIdentifier>{610e4a61-3f7d-4de7-bf03-4a8c56736d7f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Module Files\GPU Scene Representation">
       <UniqueIdentifier>{92c8a67f-1288-4eb9-be80-7d5819e620b5}</UniqueIdentifier>
     </Filter>
@@ -109,9 +106,6 @@
     <Filter Include="Header Files\Math">
       <UniqueIdentifier>{af4b0202-1741-4723-a422-64ef6ded475e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module Files\Streaming Systems\Model Streaming\LOD Mesh Definitions">
-      <UniqueIdentifier>{144de5b8-3116-4dfd-92e7-e1b48c5a1899}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Streaming Systems">
       <UniqueIdentifier>{d380cf9e-3e64-4154-be23-04b435b51b33}</UniqueIdentifier>
     </Filter>
@@ -120,9 +114,6 @@
     </Filter>
     <Filter Include="Source Files\Streaming Systems\Model Streaming\LOD Mesh Definitions">
       <UniqueIdentifier>{0f50e119-9d33-47c1-97bf-751c249440ee}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Module Files\Streaming Systems\Model Streaming\Model Data Definitions">
-      <UniqueIdentifier>{c0699889-4585-4c60-88d2-b1e9bf227a57}</UniqueIdentifier>
     </Filter>
     <Filter Include="Module Files\Streaming Systems\Texture Streaming">
       <UniqueIdentifier>{19ba826c-994b-42a8-9509-73733d1bc3c5}</UniqueIdentifier>
@@ -174,6 +165,12 @@
     </Filter>
     <Filter Include="Shader Files\Materials">
       <UniqueIdentifier>{566b66da-75c7-4d77-a0e3-aa1d2009f6e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\CPU Scene Representation\Materials">
+      <UniqueIdentifier>{e4129474-ab63-453d-a3d0-95391fb00eec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\CPU Scene Representation\Materials">
+      <UniqueIdentifier>{0be26dec-9402-489a-ac01-f059e137a0de}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -378,12 +375,6 @@
     <ClCompile Include="src\MonitorInfoGraph.cpp">
       <Filter>Source Files\Window Management</Filter>
     </ClCompile>
-    <ClCompile Include="src\ModelLoader.ixx">
-      <Filter>Module Files\Streaming Systems\Model Streaming</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ModelLoadEventHandle.ixx">
-      <Filter>Module Files\Streaming Systems\Model Streaming</Filter>
-    </ClCompile>
     <ClCompile Include="src\Shaders\TriangleClusterFrustumCull.hlsl">
       <Filter>Shader Files\Culling</Filter>
     </ClCompile>
@@ -411,23 +402,11 @@
     <ClCompile Include="src\ViewComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="src\Model.ixx">
-      <Filter>Module Files\Streaming Systems\Model Streaming</Filter>
-    </ClCompile>
-    <ClCompile Include="src\I_LODMeshDefinition.ixx">
-      <Filter>Module Files\Streaming Systems\Model Streaming\LOD Mesh Definitions</Filter>
-    </ClCompile>
-    <ClCompile Include="src\StaticLODMeshDefinition.ixx">
-      <Filter>Module Files\Streaming Systems\Model Streaming\LOD Mesh Definitions</Filter>
-    </ClCompile>
     <ClCompile Include="src\StaticLODMeshDefinition.cpp">
       <Filter>Source Files\Streaming Systems\Model Streaming\LOD Mesh Definitions</Filter>
     </ClCompile>
     <ClCompile Include="src\Model.cpp">
       <Filter>Source Files\Streaming Systems\Model Streaming</Filter>
-    </ClCompile>
-    <ClCompile Include="..\BrawlerModelExport\src\MeshTypeID.ixx">
-      <Filter>Module Files\Streaming Systems\Model Streaming\Model Data Definitions</Filter>
     </ClCompile>
     <ClCompile Include="src\VirtualTexture.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
@@ -654,8 +633,41 @@
     <ClCompile Include="src\SceneTextureDatabase.cpp">
       <Filter>Source Files\CPU Scene Representation</Filter>
     </ClCompile>
-    <ClCompile Include="src\MaterialDefinition.ixx">
+    <ClCompile Include="src\Model.ixx">
       <Filter>Module Files\CPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh.ixx">
+      <Filter>Module Files\CPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshBuilder.ixx">
+      <Filter>Module Files\CPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StandardMaterialDefinition.ixx">
+      <Filter>Module Files\CPU Scene Representation\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_MaterialDefinition.ixx">
+      <Filter>Module Files\CPU Scene Representation\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MaterialDefinitionGraph.ixx">
+      <Filter>Module Files\CPU Scene Representation\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StandardMaterialBuilder.ixx">
+      <Filter>Module Files\CPU Scene Representation\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StandardMaterialDefinition.cpp">
+      <Filter>Source Files\CPU Scene Representation\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MaterialDefinitionHandle.ixx">
+      <Filter>Module Files\CPU Scene Representation\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MaterialDefinitionHandle.cpp">
+      <Filter>Source Files\CPU Scene Representation\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_MaterialDefinition.cpp">
+      <Filter>Source Files\CPU Scene Representation\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MaterialDefinitionGraph.cpp">
+      <Filter>Source Files\CPU Scene Representation\Materials</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

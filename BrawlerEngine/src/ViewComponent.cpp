@@ -107,7 +107,7 @@ namespace
 		// In both cases, however, n actually *DOES* refer to the distance to the near plane, and f
 		// refers to the distance to the far plane. The only difference is in how the mapping to NDC
 		// coordinates is done.
-		if constexpr (DEFAULT_USE_REVERSE_Z_VALUE)
+		if constexpr (UseReverseZDepth)
 		{
 			return Brawler::Math::Float4x4{
 				(1.0f / (aspectRatio * tangentHalfVerticalFOV)), 0.0f, 0.0f, 0.0f,
