@@ -158,7 +158,7 @@ namespace BrawlerHLSL
 		
 		StructuredBuffer<BrawlerHLSL::MeshDescriptor> GetGlobalMeshDescriptorBuffer(in const uint meshDescriptorBufferID)
 		{
-			return IMPL::Bindless_GlobalMeshDescriptorBuffer[NonUniformResourceIndex(meshDescriptorID)];
+			return IMPL::Bindless_GlobalMeshDescriptorBuffer[NonUniformResourceIndex(meshDescriptorBufferID)];
 		}
 		
 		BrawlerHLSL::MaterialDescriptor GetGlobalMaterialDescriptor(in const uint materialDescriptorID)

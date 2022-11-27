@@ -34,8 +34,32 @@ namespace BrawlerHLSL
 	
 	struct DeferredGeometryRasterPSOutput
 	{
+		/// <summary>
+		/// Texture Format: DXGI_FORMAT_R8G8B8A8_UNORM
+		///
+		/// G-Buffer Layout:
+		///   - R8: Base Color Red Channel
+		///   - G8: Base Color Green Channel
+		///   - B8: Base Color Blue Channel
+		///   - A8: GGX Roughness Squared
+		/// </summary>
 		float4 BaseColorRoughnessGBuffer : SV_Target0;
+		
+		/// <summary>
+		/// Texture Format: DXGI_FORMAT_R8G8_UNORM
+		///
+		/// G-Buffer Layout:
+		///   - R8: Encoded World-Space Surface Normal X
+		///   - G8: Encoded World-Space Surface Normal Y
+		/// </summary>
 		float2 EncodedNormalGBuffer : SV_Target1;
+		
+		/// <summary>
+		/// Texture Format: DXGI_FORMAT_R8_UINT
+		///
+		/// G-Buffer Layout:
+		///   - R8: Metallic Indicator (0 = Dielectric, >0 = Metallic)
+		/// </summary>
 		uint MetallicGBuffer : SV_Target2;
 	};
 	

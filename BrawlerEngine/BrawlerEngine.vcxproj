@@ -317,6 +317,9 @@
     <ClCompile Include="src\MaterialDefinitionGraph.cpp" />
     <ClCompile Include="src\MaterialDefinitionHandle.cpp" />
     <ClCompile Include="src\MaterialDefinitionHandle.ixx" />
+    <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\MeshBuilder.cpp" />
+    <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\StandardMaterialBuilder.ixx" />
     <ClCompile Include="src\StandardMaterialDefinition.cpp" />
     <ClCompile Include="src\StandardMaterialDefinition.ixx" />
@@ -327,7 +330,6 @@
     <ClCompile Include="src\Mesh.ixx" />
     <ClCompile Include="src\MeshBuilder.ixx" />
     <ClCompile Include="src\MeshData.ixx" />
-    <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Model.ixx" />
     <ClCompile Include="src\Monitor.cpp" />
     <ClCompile Include="src\Monitor.ixx" />
@@ -363,7 +365,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\StaticLODMeshDefinition.cpp" />
     <ClCompile Include="src\SwapChain.cpp" />
     <ClCompile Include="src\SwapChain.ixx" />
     <ClCompile Include="src\TransformComponent.cpp" />

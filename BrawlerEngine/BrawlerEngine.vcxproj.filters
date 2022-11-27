@@ -109,12 +109,6 @@
     <Filter Include="Source Files\Streaming Systems">
       <UniqueIdentifier>{d380cf9e-3e64-4154-be23-04b435b51b33}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Streaming Systems\Model Streaming">
-      <UniqueIdentifier>{4430259e-0d47-4ef7-8163-9bcdfccc896e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Streaming Systems\Model Streaming\LOD Mesh Definitions">
-      <UniqueIdentifier>{0f50e119-9d33-47c1-97bf-751c249440ee}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Module Files\Streaming Systems\Texture Streaming">
       <UniqueIdentifier>{19ba826c-994b-42a8-9509-73733d1bc3c5}</UniqueIdentifier>
     </Filter>
@@ -174,6 +168,9 @@
     </Filter>
     <Filter Include="Module Files\CPU Scene Representation\Meshes">
       <UniqueIdentifier>{be06602a-883d-449a-bfb6-b41e258ac598}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\CPU Scene Representation\Meshes">
+      <UniqueIdentifier>{33a086b1-b40e-4f7b-9274-628534ab8bc2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -404,12 +401,6 @@
     </ClCompile>
     <ClCompile Include="src\ViewComponent.cpp">
       <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="src\StaticLODMeshDefinition.cpp">
-      <Filter>Source Files\Streaming Systems\Model Streaming\LOD Mesh Definitions</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Model.cpp">
-      <Filter>Source Files\Streaming Systems\Model Streaming</Filter>
     </ClCompile>
     <ClCompile Include="src\VirtualTexture.ixx">
       <Filter>Module Files\Streaming Systems\Texture Streaming</Filter>
@@ -686,6 +677,15 @@
     </ClCompile>
     <ClCompile Include="src\GenericPreFrameUpdateSubModule.cpp">
       <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh.cpp">
+      <Filter>Source Files\CPU Scene Representation\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshBuilder.cpp">
+      <Filter>Source Files\CPU Scene Representation\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Model.cpp">
+      <Filter>Source Files\CPU Scene Representation\Meshes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -129,7 +129,7 @@ float3 CalculateLighting(in const BrawlerHLSL::SurfaceParameters surfaceParams)
 				break;
 			}
 			
-			// TODO: Add support for spotlights and other light types.
+			// TODO: Add support for other light types.
 		}
 	}
 
