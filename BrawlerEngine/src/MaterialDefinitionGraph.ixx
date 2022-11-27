@@ -78,6 +78,10 @@ namespace Brawler
 			const std::scoped_lock<std::mutex> lock{ mCritSection };
 
 			{
+				// For each scene texture which this material definition is dependent on, add
+				// this I_MaterialDefinition instance as a dependency. This allows us to track
+				// which GPUSceneBuffer MaterialDescriptor instances need to be updated when a
+				// given scene texture changes.
 				const std::span<const FilePathHash> dependentTexturePathHashSpan{ materialDefinitionPtr->GetDependentSceneTextureFilePathHashSpan() };
 
 				for (const auto pathHash : dependentTexturePathHashSpan)

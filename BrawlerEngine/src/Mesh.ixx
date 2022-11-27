@@ -5,6 +5,7 @@ module;
 export module Brawler.Mesh;
 import Brawler.D3D12.StructuredBufferSubAllocation;
 import Brawler.GPUSceneTypes;
+import Brawler.MeshBuilder;
 
 export namespace Brawler
 {
@@ -12,7 +13,7 @@ export namespace Brawler
 	{
 	public:
 		Mesh() = default;
-		explicit Mesh(const std::size_t numVertices);
+		explicit Mesh(MeshBuilder&& builder);
 
 		Mesh(const Mesh& rhs) = delete;
 		Mesh& operator=(const Mesh& rhs) = delete;
@@ -22,6 +23,6 @@ export namespace Brawler
 
 	private:
 		D3D12::StructuredBufferSubAllocation<GPUSceneTypes::PackedStaticVertex> mGlobalVertexBufferSubAllocation;
-		D3D12::StructuredBufferSubAllocation<GPUSceneTypes::MeshDescriptor> mMeshDescriptorSubAllocation;
+
 	};
 }

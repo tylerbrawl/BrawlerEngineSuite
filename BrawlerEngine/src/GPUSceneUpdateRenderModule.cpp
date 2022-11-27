@@ -9,36 +9,35 @@ module;
 module Brawler.GPUSceneUpdateRenderModule;
 import Brawler.JobSystem;
 import Brawler.D3D12.FrameGraphBuilding;
-import Brawler.VirtualTextureManagementPassCollection;
 
 namespace Brawler
 {
-	void GPUSceneUpdateRenderModule::CommitGlobalTextureChanges(std::unique_ptr<GlobalTextureUpdateContext>&& preparedBufferPtr)
+	void GPUSceneUpdateRenderModule::ScheduleGenericBufferUpdateForNextFrame(GenericPreFrameBufferUpdate&& preFrameUpdate)
 	{
-		mVTManagementSubModule.CommitGlobalTextureChanges(std::move(preparedBufferPtr));
+		mPreFrameUpdateSubModule.AddPreFrameBufferUpdate(std::move(preFrameUpdate));
 	}
-
+	
 	bool GPUSceneUpdateRenderModule::IsRenderModuleEnabled() const
 	{
 		// Don't bother trying to create RenderPass instances for GPU scene updates if there are
 		// no updates to perform this frame.
 		
-		return (mBufferUpdateSubModule.HasScheduledBufferUpdates() || mVTManagementSubModule.HasCommittedGlobalTextureChanges());
+		return (mBufferUpdateSubModule.HasScheduledBufferUpdates() || mPreFrameUpdateSubModule.HasPendingUpdates());
 	}
 
 	void GPUSceneUpdateRenderModule::BuildFrameGraph(D3D12::FrameGraphBuilder& builder)
 	{
 		const bool shouldPerformBufferUpdates = mBufferUpdateSubModule.HasScheduledBufferUpdates();
-		const bool shouldPerformVirtualTextureUpdates = mVTManagementSubModule.HasCommittedGlobalTextureChanges();
+		const bool shouldPerformGenericPreFrameUpdates = mPreFrameUpdateSubModule.HasPendingUpdates();
 
 		// The FrameGraph system should not call this function if GPUSceneUpdateRenderModule::IsRenderModuleEnabled()
 		// returns false.
-		assert(shouldPerformBufferUpdates || shouldPerformVirtualTextureUpdates);
+		assert(shouldPerformBufferUpdates || shouldPerformGenericPreFrameUpdates);
 
 		// We don't need to use std::optional here; we can just verify whether or not the RenderPass
 		// instances contain valid values based on the boolean variables above.
 		GPUSceneBufferUpdateSubModule::GPUSceneBufferUpdatePassTuple gpuSceneBufferUpdatesTuple{};
-		VirtualTextureManagementPassCollection globalTextureUpdatePassCollection{};
+		GenericPreFrameUpdateSubModule::BufferUpdateRenderPass_T genericPreFrameBufferUpdatePass{};
 
 		D3D12::FrameGraph& currFrameGraph{ builder.GetFrameGraph() };
 		std::array<D3D12::FrameGraphBuilder, 2> extraBuildersArr{
@@ -46,8 +45,8 @@ namespace Brawler
 			D3D12::FrameGraphBuilder{ currFrameGraph }
 		};
 
-		// Create the RenderPass instances for updating global textures, indirection textures, and GPU scene
-		// buffers concurrently.
+		// Create the RenderPass instances for executing generic pre-frame updates and GPU scene
+		// buffer updates concurrently.
 		Brawler::JobGroup gpuSceneUpdatePassCreationGroup{};
 
 		if (shouldPerformBufferUpdates) [[likely]]
@@ -59,12 +58,12 @@ namespace Brawler
 			});
 		}
 
-		if (shouldPerformVirtualTextureUpdates)
+		if (shouldPerformGenericPreFrameUpdates)
 		{
-			D3D12::FrameGraphBuilder& globalTextureUpdatePassBuilder{ extraBuildersArr[1] };
-			gpuSceneUpdatePassCreationGroup.AddJob([this, &globalTextureUpdatePassCollection, &globalTextureUpdatePassBuilder] ()
+			D3D12::FrameGraphBuilder& genericPreFrameBufferUpdatePassBuilder{ extraBuildersArr[1] };
+			gpuSceneUpdatePassCreationGroup.AddJob([this, &genericPreFrameBufferUpdatePass, &genericPreFrameBufferUpdatePassBuilder] ()
 			{
-				globalTextureUpdatePassCollection = mVTManagementSubModule.CreateGlobalTextureChangeRenderPasses(globalTextureUpdatePassBuilder);
+				genericPreFrameBufferUpdatePass = mPreFrameUpdateSubModule.CreateBufferUpdateRenderPass(genericPreFrameBufferUpdatePassBuilder);
 			});
 		}
 
@@ -92,9 +91,9 @@ namespace Brawler
 			builder.MergeFrameGraphBuilder(std::move(extraBuildersArr[0]));
 		}
 
-		if (shouldPerformVirtualTextureUpdates)
+		if (shouldPerformGenericPreFrameUpdates)
 		{
-			globalTextureUpdatePassCollection.MoveRenderPassesIntoBundle(gpuSceneUpdatePassBundle);
+			gpuSceneUpdatePassBundle.AddRenderPass(std::move(genericPreFrameBufferUpdatePass));
 			builder.MergeFrameGraphBuilder(std::move(extraBuildersArr[1]));
 		}
 

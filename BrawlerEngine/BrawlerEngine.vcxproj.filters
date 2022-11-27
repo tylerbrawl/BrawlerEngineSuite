@@ -172,6 +172,9 @@
     <Filter Include="Source Files\CPU Scene Representation\Materials">
       <UniqueIdentifier>{0be26dec-9402-489a-ac01-f059e137a0de}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\CPU Scene Representation\Meshes">
+      <UniqueIdentifier>{be06602a-883d-449a-bfb6-b41e258ac598}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -612,9 +615,6 @@
     <ClCompile Include="src\GlobalTexturePageRemovalRequest.cpp">
       <Filter>Source Files\Streaming Systems\Texture Streaming\Global Texture Updates</Filter>
     </ClCompile>
-    <ClCompile Include="src\MeshData.ixx">
-      <Filter>Module Files\CPU Scene Representation</Filter>
-    </ClCompile>
     <ClCompile Include="src\SceneTextureDatabase.ixx">
       <Filter>Module Files\CPU Scene Representation</Filter>
     </ClCompile>
@@ -632,15 +632,6 @@
     </ClCompile>
     <ClCompile Include="src\SceneTextureDatabase.cpp">
       <Filter>Source Files\CPU Scene Representation</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Model.ixx">
-      <Filter>Module Files\CPU Scene Representation</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Mesh.ixx">
-      <Filter>Module Files\CPU Scene Representation</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MeshBuilder.ixx">
-      <Filter>Module Files\CPU Scene Representation</Filter>
     </ClCompile>
     <ClCompile Include="src\StandardMaterialDefinition.ixx">
       <Filter>Module Files\CPU Scene Representation\Materials</Filter>
@@ -668,6 +659,33 @@
     </ClCompile>
     <ClCompile Include="src\MaterialDefinitionGraph.cpp">
       <Filter>Source Files\CPU Scene Representation\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh.ixx">
+      <Filter>Module Files\CPU Scene Representation\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshBuilder.ixx">
+      <Filter>Module Files\CPU Scene Representation\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MeshData.ixx">
+      <Filter>Module Files\CPU Scene Representation\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Model.ixx">
+      <Filter>Module Files\CPU Scene Representation\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IndexBuffer.ixx">
+      <Filter>Module Files\CPU Scene Representation\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GenericPreFrameUpdateSubModule.ixx">
+      <Filter>Module Files\Render Modules\GPU Scene Update</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GenericPreFrameBufferUpdate.ixx">
+      <Filter>Module Files\GPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GenericPreFrameBufferUpdate.cpp">
+      <Filter>Source Files\GPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GenericPreFrameUpdateSubModule.cpp">
+      <Filter>Source Files\Render Modules\GPU Scene Update</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

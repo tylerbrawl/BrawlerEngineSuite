@@ -243,6 +243,10 @@
     <ClCompile Include="src\ApplicationStateStackRequestBundle.cpp" />
     <ClCompile Include="src\AppWindow.cpp" />
     <ClCompile Include="src\AppWindow.ixx" />
+    <ClCompile Include="src\GenericPreFrameBufferUpdate.cpp" />
+    <ClCompile Include="src\GenericPreFrameBufferUpdate.ixx" />
+    <ClCompile Include="src\GenericPreFrameUpdateSubModule.cpp" />
+    <ClCompile Include="src\GenericPreFrameUpdateSubModule.ixx" />
     <ClCompile Include="src\GlobalTexture.ixx" />
     <ClCompile Include="src\GlobalTextureCollection.ixx" />
     <ClCompile Include="src\GlobalTextureDatabase.cpp" />
@@ -300,6 +304,7 @@
     <ClCompile Include="src\GPUSceneTypes.ixx" />
     <ClCompile Include="src\GPUSceneUpdateRenderModule.cpp" />
     <ClCompile Include="src\GPUSceneUpdateRenderModule.ixx" />
+    <ClCompile Include="src\IndexBuffer.ixx" />
     <ClCompile Include="src\IndirectionTextureUpdater.cpp" />
     <ClCompile Include="src\IndirectionTextureUpdater.ixx" />
     <ClCompile Include="src\I_ApplicationState.cpp" />
