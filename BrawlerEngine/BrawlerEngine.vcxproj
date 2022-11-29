@@ -320,6 +320,10 @@
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\MeshBuilder.cpp" />
     <ClCompile Include="src\Model.cpp" />
+    <ClCompile Include="src\ModelDatabase.cpp" />
+    <ClCompile Include="src\ModelDatabase.ixx" />
+    <ClCompile Include="src\ModelHandle.cpp" />
+    <ClCompile Include="src\ModelHandle.ixx" />
     <ClCompile Include="src\StandardMaterialBuilder.ixx" />
     <ClCompile Include="src\StandardMaterialDefinition.cpp" />
     <ClCompile Include="src\StandardMaterialDefinition.ixx" />

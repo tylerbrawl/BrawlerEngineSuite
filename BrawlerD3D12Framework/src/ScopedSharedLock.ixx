@@ -46,7 +46,7 @@ namespace Brawler
 	ScopedSharedReadLock<T...>::ScopedSharedReadLock(T&... critSections) :
 		mCritSectionTuple(std::tie(critSections...))
 	{
-		(critSections.lock(), ...);
+		(critSections.lock_shared(), ...);
 	}
 
 	template <typename... T>
@@ -67,6 +67,6 @@ namespace Brawler
 		if constexpr ((CurrIndex + 1) < std::tuple_size_v<decltype(mCritSectionTuple)>)
 			UnlockCriticalSections<(CurrIndex + 1)>();
 
-		std::get<CurrIndex>(mCritSectionTuple).unlock();
+		std::get<CurrIndex>(mCritSectionTuple).unlock_shared();
 	}
 }

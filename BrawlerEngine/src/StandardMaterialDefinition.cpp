@@ -58,7 +58,7 @@ namespace Brawler
 
 	void StandardMaterialDefinition::InitializeSceneTextureHandles(const StandardMaterialBuilder& builder)
 	{
-		static constexpr auto INITIALIZE_SCENE_TEXTURE_HANDLE_LAMBDA = [] (std::optional<SceneTexture2DHandle>& hSceneTexture, const std::optional<FilePathHash> textureFilePathHash)
+		const auto initializeSceneTextureHandleLambda = [this] (std::optional<SceneTexture2DHandle>& hSceneTexture, const std::optional<FilePathHash> textureFilePathHash)
 		{
 			if (textureFilePathHash.has_value()) [[likely]]
 			{
@@ -69,9 +69,9 @@ namespace Brawler
 			}
 		};
 		
-		INITIALIZE_SCENE_TEXTURE_HANDLE_LAMBDA(mHandleCollection.HBaseColorTexture, builder.GetBaseColorFilePathHash());
-		INITIALIZE_SCENE_TEXTURE_HANDLE_LAMBDA(mHandleCollection.HNormalMap, builder.GetNormalMapFilePathHash());
-		INITIALIZE_SCENE_TEXTURE_HANDLE_LAMBDA(mHandleCollection.HRoughnessTexture, builder.GetRoughnessFilePathHash());
-		INITIALIZE_SCENE_TEXTURE_HANDLE_LAMBDA(mHandleCollection.HMetallicTexture, builder.GetMetallicFilePathHash());
+		initializeSceneTextureHandleLambda(mHandleCollection.HBaseColorTexture, builder.GetBaseColorFilePathHash());
+		initializeSceneTextureHandleLambda(mHandleCollection.HNormalMap, builder.GetNormalMapFilePathHash());
+		initializeSceneTextureHandleLambda(mHandleCollection.HRoughnessTexture, builder.GetRoughnessFilePathHash());
+		initializeSceneTextureHandleLambda(mHandleCollection.HMetallicTexture, builder.GetMetallicFilePathHash());
 	}
 }

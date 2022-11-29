@@ -687,6 +687,18 @@
     <ClCompile Include="src\Model.cpp">
       <Filter>Source Files\CPU Scene Representation\Meshes</Filter>
     </ClCompile>
+    <ClCompile Include="src\ModelDatabase.ixx">
+      <Filter>Module Files\CPU Scene Representation\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelHandle.ixx">
+      <Filter>Module Files\CPU Scene Representation\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelHandle.cpp">
+      <Filter>Source Files\CPU Scene Representation\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelDatabase.cpp">
+      <Filter>Source Files\CPU Scene Representation\Meshes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
