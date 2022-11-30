@@ -31,6 +31,10 @@ namespace IMPL
 	struct ComponentIDMap<Brawler::ViewComponent> final : public ComponentIDMapInstantiation<Brawler::ComponentID::VIEW_COMPONENT>
 	{};
 
+	template <>
+	struct ComponentIDMap<Brawler::ModelInstanceComponent> final : public ComponentIDMapInstantiation<Brawler::ComponentID::MODEL_INSTANCE_COMPONENT>
+	{};
+
 	// --------------------------------------------------------------------------------
 
 	// Mapping from ComponentID to I_Component Derived Class...
@@ -56,6 +60,10 @@ namespace IMPL
 
 	template <>
 	struct ComponentTypeMap<Brawler::ComponentID::VIEW_COMPONENT> final : public ComponentTypeMapInstantiation<Brawler::ViewComponent>
+	{};
+
+	template <>
+	struct ComponentTypeMap<Brawler::ComponentID::MODEL_INSTANCE_COMPONENT> final : public ComponentTypeMapInstantiation<Brawler::ModelInstanceComponent>
 	{};
 
 	// ---------------------------------------------------------------------------------

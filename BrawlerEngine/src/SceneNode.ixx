@@ -38,7 +38,63 @@ export namespace Brawler
 		SceneNode(SceneNode&& rhs) noexcept = default;
 		SceneNode& operator=(SceneNode&& rhs) noexcept = default;
 
+		/// <summary>
+		/// This function is called once per SceneGraph update per SceneNode, just *before*
+		/// the I_Component instances of a SceneNode have been updated.
+		/// 
+		/// By default, this function does nothing. However, derived classes can override
+		/// this function to implement their own actions.
+		/// 
+		/// The entire SceneGraph update process is defined in pseudocode by the following 
+		/// recursive algorithm:
+		/// 
+		/// UpdateSceneNode(SceneNode& node):
+		///		node.Update()
+		///		node.UpdateComponents()
+		///		node.LateUpdate()
+		/// 
+		///		for each child in node.GetChildSceneNodes():
+		///			UpdateSceneNode(child)
+		/// 
+		/// UpdateSceneGraph():
+		///		UpdateSceneNode(RootNode)
+		/// </summary>
+		/// <param name="dt">
+		/// - The time, in seconds, which has elapsed since the last SceneGraph update.
+		/// </param>
 		virtual void Update(const float dt);
+
+		/// <summary>
+		/// This function is called once per SceneGraph update per SceneNode, just *after*
+		/// the I_Component instances of a SceneNode have been updated.
+		/// 
+		/// By default, this function does nothing. However, derived classes can override
+		/// this function to implement their own actions.
+		/// 
+		/// The entire SceneGraph update process is defined in pseudocode by the following 
+		/// recursive algorithm:
+		/// 
+		/// UpdateSceneNode(SceneNode& node):
+		///		node.Update()
+		///		node.UpdateComponents()
+		///		node.LateUpdate()
+		/// 
+		///		for each child in node.GetChildSceneNodes():
+		///			UpdateSceneNode(child)
+		/// 
+		/// UpdateSceneGraph():
+		///		UpdateSceneNode(RootNode)
+		/// </summary>
+		/// <param name="dt">
+		///  - The time, in seconds, which has elapsed since the last SceneGraph update.
+		/// </param>
+		virtual void LateUpdate(const float dt);
+
+		template <typename T, typename... Args>
+		void CreateComponent(Args&&... args);
+
+		template <typename T>
+		void RemoveComponent(T* const componentPtr);
 
 		template <typename T>
 		std::size_t GetComponentCount() const;
@@ -109,6 +165,18 @@ export namespace Brawler
 
 namespace Brawler
 {
+	template <typename T, typename... Args>
+	void SceneNode::CreateComponent(Args&&... args)
+	{
+		mComponentCollection.CreateComponent<T>(std::forward<Args>(args)...);
+	}
+
+	template <typename T>
+	void SceneNode::RemoveComponent(T* const componentPtr)
+	{
+		mComponentCollection.RemoveComponent(componentPtr);
+	}
+
 	template <typename T>
 	std::size_t SceneNode::GetComponentCount() const
 	{

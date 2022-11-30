@@ -314,6 +314,8 @@
     <ClCompile Include="src\I_VirtualTexturePageState.ixx" />
     <ClCompile Include="src\I_WindowState.cpp" />
     <ClCompile Include="src\I_WindowState.ixx" />
+    <ClCompile Include="src\LightDescriptorUpdater.ixx" />
+    <ClCompile Include="src\LightID.ixx" />
     <ClCompile Include="src\MaterialDefinitionGraph.cpp" />
     <ClCompile Include="src\MaterialDefinitionHandle.cpp" />
     <ClCompile Include="src\MaterialDefinitionHandle.ixx" />
@@ -324,6 +326,12 @@
     <ClCompile Include="src\ModelDatabase.ixx" />
     <ClCompile Include="src\ModelHandle.cpp" />
     <ClCompile Include="src\ModelHandle.ixx" />
+    <ClCompile Include="src\ModelInstanceComponent.cpp" />
+    <ClCompile Include="src\ModelInstanceComponent.ixx" />
+    <ClCompile Include="src\ModelInstanceTransformUpdater.cpp" />
+    <ClCompile Include="src\ModelInstanceTransformUpdater.ixx" />
+    <ClCompile Include="src\PointLight.cpp" />
+    <ClCompile Include="src\PointLight.ixx" />
     <ClCompile Include="src\StandardMaterialBuilder.ixx" />
     <ClCompile Include="src\StandardMaterialDefinition.cpp" />
     <ClCompile Include="src\StandardMaterialDefinition.ixx" />

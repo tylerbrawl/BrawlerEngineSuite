@@ -18,6 +18,7 @@ export namespace Brawler
 		// IMPL::ComponentTypeMap in ComponentMap.ixx.
 		TRANSFORM_COMPONENT,
 		VIEW_COMPONENT,
+		MODEL_INSTANCE_COMPONENT,
 
 		COUNT_OR_ERROR
 	};

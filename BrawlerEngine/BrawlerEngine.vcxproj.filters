@@ -172,6 +172,24 @@
     <Filter Include="Source Files\CPU Scene Representation\Meshes">
       <UniqueIdentifier>{33a086b1-b40e-4f7b-9274-628534ab8bc2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Components\Model Instance Component">
+      <UniqueIdentifier>{e1fa1fc6-b5d6-459c-beb7-b56169f47afe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components\Model Instance Component">
+      <UniqueIdentifier>{81506283-f24f-4abe-89e3-d1e4f474bd7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Scene Nodes">
+      <UniqueIdentifier>{350dde02-6b01-4db8-8efb-b25c4cee4d4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Scene Nodes\Lights">
+      <UniqueIdentifier>{ca5cc41f-12e3-4ad1-baaa-d4bb3de37350}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scene Nodes">
+      <UniqueIdentifier>{32106af0-7928-4e0f-879c-11827d45591d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scene Nodes\Lights">
+      <UniqueIdentifier>{fc278bf5-06cf-40e8-bc4b-5eba1fa1a8a8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -698,6 +716,30 @@
     </ClCompile>
     <ClCompile Include="src\ModelDatabase.cpp">
       <Filter>Source Files\CPU Scene Representation\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelInstanceComponent.ixx">
+      <Filter>Module Files\Components\Model Instance Component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelInstanceTransformUpdater.ixx">
+      <Filter>Module Files\Components\Model Instance Component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelInstanceTransformUpdater.cpp">
+      <Filter>Source Files\Components\Model Instance Component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ModelInstanceComponent.cpp">
+      <Filter>Source Files\Components\Model Instance Component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LightID.ixx">
+      <Filter>Module Files\Scene Nodes\Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LightDescriptorUpdater.ixx">
+      <Filter>Module Files\Scene Nodes\Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PointLight.ixx">
+      <Filter>Module Files\Scene Nodes\Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PointLight.cpp">
+      <Filter>Source Files\Scene Nodes\Lights</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

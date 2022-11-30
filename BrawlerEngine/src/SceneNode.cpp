@@ -25,6 +25,9 @@ namespace Brawler
 	void SceneNode::Update(const float dt)
 	{}
 
+	void SceneNode::LateUpdate(const float dt)
+	{}
+
 	void SceneNode::RemoveChildSceneNode(SceneNode& childNode)
 	{
 		for (auto& childNodePtr : mChildNodePtrArr)
@@ -124,6 +127,7 @@ namespace Brawler
 		// First, update this SceneNode.
 		Update(dt);
 		mComponentCollection.Update(dt);
+		LateUpdate(dt);
 
 		// Create a separate CPU job for updating every child SceneNode.
 		Brawler::JobGroup childUpdateGroup{};

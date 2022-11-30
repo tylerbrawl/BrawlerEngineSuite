@@ -224,7 +224,7 @@ namespace Brawler
 		// (Here, we see another benefit of using quaternions to represent the view space basis:
 		// We only have to update that part of the view matrix if the actual view direction
 		// changes.)
-		const TransformComponent* const transformPtr = GetSceneNode().GetComponent<TransformComponent>();
+		const TransformComponent* const transformPtr = GetSceneNode().GetComponent<const TransformComponent>();
 		assert(transformPtr != nullptr && "ERROR: A ViewComponent was assigned to a SceneNode, but it was never given a TransformComponent!");
 
 		const bool isCachedTranslationOutdated = (transformPtr->GetTranslation() != mLastRecordedTranslation);

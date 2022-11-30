@@ -6,3 +6,4 @@ export import Brawler.ComponentID;
 export import Brawler.I_Component;
 export import Brawler.ViewComponent;
 export import Brawler.TransformComponent;
+export import Brawler.ModelInstanceComponent;
