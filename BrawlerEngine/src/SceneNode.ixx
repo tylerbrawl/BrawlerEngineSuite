@@ -115,7 +115,7 @@ export namespace Brawler
 
 		template <typename NodeType, typename... Args>
 			requires std::derived_from<NodeType, SceneNode>
-		void CreateChildSceneNode(Args&&... args);
+		NodeType& CreateChildSceneNode(Args&&... args);
 
 		void RemoveChildSceneNode(SceneNode& childNode);
 
@@ -211,16 +211,20 @@ namespace Brawler
 
 	template <typename NodeType, typename... Args>
 		requires std::derived_from<NodeType, SceneNode>
-	void SceneNode::CreateChildSceneNode(Args&&... args)
+	NodeType& SceneNode::CreateChildSceneNode(Args&&... args)
 	{
 		using DecayedNodeT = std::decay_t<NodeType>;
 
-		std::unique_ptr<SceneNode> childNodePtr{ std::make_unique<DecayedNodeT>(std::forward<Args>(args)...) };
+		std::unique_ptr<NodeType> childNodePtr{ std::make_unique<DecayedNodeT>(std::forward<Args>(args)...) };
+		NodeType& createdChildNode{ *childNodePtr };
+
 		childNodePtr->SetParentNode(*this);
 
 		assert(mSceneGraph != nullptr);
 		childNodePtr->SetSceneGraph(*mSceneGraph);
 
 		mPendingChildAdditionsArr.push_back(std::move(childNodePtr));
+
+		return createdChildNode;
 	}
 }

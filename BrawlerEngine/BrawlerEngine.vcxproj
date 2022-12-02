@@ -332,6 +332,8 @@
     <ClCompile Include="src\ModelInstanceTransformUpdater.ixx" />
     <ClCompile Include="src\PointLight.cpp" />
     <ClCompile Include="src\PointLight.ixx" />
+    <ClCompile Include="src\SpotLight.cpp" />
+    <ClCompile Include="src\SpotLight.ixx" />
     <ClCompile Include="src\StandardMaterialBuilder.ixx" />
     <ClCompile Include="src\StandardMaterialDefinition.cpp" />
     <ClCompile Include="src\StandardMaterialDefinition.ixx" />

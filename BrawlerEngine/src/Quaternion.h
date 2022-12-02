@@ -164,6 +164,39 @@ namespace Brawler
 				/// </returns>
 				constexpr Matrix<3, 3> ConvertToRotationMatrix() const;
 
+				/// <summary>
+				/// Assuming that this Quaternion instance is a unit quaternion, this function returns the
+				/// result of rotating a vector via the rotation specified by this Quaternion instance.
+				/// 
+				/// Mathematically, let q be a unit quaternion and v be a vector which is to be rotated in
+				/// the manner specified by q. Then, this function returns the vector v' calculated as
+				/// follows:
+				/// 
+				/// v' = (q)v(q^(-1)) = qvq*
+				/// 
+				/// (Note that for any unit quaternion q, q^(-1) = q* because the full equation for the
+				/// inverse of a quaternion is q^(-1) = q*/(||q||^2).)
+				/// 
+				/// If the vector specified by rhs is a unit vector, then the returned vector will also be
+				/// a unit vector. This is guaranteed because for any two quaternions p and q, ||pq|| =
+				/// ||p|| * ||q||. (A vector can be considered a quaternion with a zero real part.)
+				/// 
+				/// Internally, this function will use a simplified equation to get the same result as qvq*.
+				/// Thus, calling this function is preferred over performing the rotation manually.
+				/// 
+				/// *NOTE*: The function asserts in Debug builds if this Quaternion instance is unnormalized.
+				/// </summary>
+				/// <param name="rhs">
+				/// - The vector which is to be rotated according to the rotation specified by this
+				///   Quaternion instance.
+				/// </param>
+				/// <returns>
+				/// The function returns the vector rhs rotated according to the rotation specified by
+				/// this Quaternion instance. If rhs is a unit vector, then the returned vector will
+				/// also be normalized.
+				/// </returns>
+				constexpr Vector<float, 3> RotateVector(const Vector<float, 3>& rhs) const;
+
 				constexpr Quaternion Inverse() const;
 				constexpr Quaternion Conjugate() const;
 
@@ -706,6 +739,29 @@ namespace Brawler
 
 					return returnMatrix;
 				}
+			}
+
+			constexpr Vector<float, 3> Quaternion::RotateVector(const Vector<float, 3>& rhs) const
+			{
+				SafeAssert(IsNormalized(), L"ERROR: Quaternion::RotateVector() was called on a Quaternion instance which was not normalized!");
+
+				// Mathematically, rotating a vector v according to a unit quaternion q can be achieved as follows:
+				//
+				// v' = (q)v(q^(-1)) = qvq* (For unit quaternions, q^(-1) = q*.)
+				//
+				// This is the correct and generalized equation, but it would involve a lot of operations.
+				// As it turns out, there is a faster way to do this for unit quaternions, as explained
+				// at https://fgiesen.wordpress.com/2019/02/09/rotating-a-single-vector-using-a-quaternion/:
+				//
+				// t = (2 * q.xyz) x v
+				// v' = v + (q.w * t) + (q.xyz x t)
+				
+				const Vector<float, 3> imaginaryPart{ GetVectorComponent() };
+				const Vector<float, 3> twoTimesImaginaryPart{ imaginaryPart * 2.0f };
+
+				const Vector<float, 3> t{ twoTimesImaginaryPart.Cross(rhs) };
+
+				return (rhs + (GetScalarComponent() * t) + imaginaryPart.Cross(t));
 			}
 
 			constexpr Quaternion Quaternion::Inverse() const

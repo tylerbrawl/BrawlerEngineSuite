@@ -112,8 +112,8 @@ namespace Brawler
 		const TransformComponent* const transformComponentPtr = GetComponent<const TransformComponent>();
 		assert(transformComponentPtr != nullptr);
 
-		const Math::Float3 prevFrameTranslation{ mPointLightData.PositionWS };
-		const Math::Float3 currFrameTranslation{ transformComponentPtr->GetTranslation() };
+		const Math::Float3& prevFrameTranslation{ mPointLightData.PositionWS };
+		const Math::Float3& currFrameTranslation{ transformComponentPtr->GetTranslation() };
 
 		if (currFrameTranslation != prevFrameTranslation) [[unlikely]]
 		{

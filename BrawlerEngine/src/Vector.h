@@ -689,6 +689,9 @@ namespace Brawler
 			{
 				const float vectorMagnitude = GetLength();
 
+				if (vectorMagnitude == 0.0f) [[unlikely]]
+					return Vector<float, NumElements>{};
+
 				typename VectorInfo<float, NumElements>::StorageType storedResult{};
 				storedResult.x = (mStoredVector.x / vectorMagnitude);
 				storedResult.y = (mStoredVector.y / vectorMagnitude);

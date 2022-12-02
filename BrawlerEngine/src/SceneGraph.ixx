@@ -24,11 +24,6 @@ export namespace Brawler
 		/// <typeparam name="NodeType">
 		/// - The type of SceneNode to add. NodeType must derive from SceneNode.
 		/// </typeparam>
-		/// <typeparam name="EdgeType">
-		/// - The type of SceneGraphEdge which will be used to connect the root node of the
-		/// SceneGraph to the newly created child node. By default, this is the same type
-		/// as SceneGraphEdge.
-		/// </typeparam>
 		/// <typeparam name="...Args">
 		/// - The types of the arguments specified by args which are to be forwarded to a
 		/// constructor of NodeType.
@@ -36,9 +31,12 @@ export namespace Brawler
 		/// <param name="...args">
 		/// - The arguments which are to be forwarded to a constructor of NodeType.
 		/// </param>
+		/// <returns>
+		/// The function returns a reference to the created child SceneNode.
+		/// </returns>
 		template <typename NodeType, typename... Args>
 			requires std::derived_from<NodeType, SceneNode>
-		void AddRootLevelSceneNode(Args&&... args);
+		NodeType& AddRootLevelSceneNode(Args&&... args);
 
 		/// <summary>
 		/// Marks the SceneNode specified by sceneNode for removal. It will be completely removed
@@ -87,6 +85,6 @@ namespace Brawler
 		requires std::derived_from<NodeType, SceneNode>
 	void SceneGraph::AddRootLevelSceneNode(Args&&... args)
 	{
-		mRootNode.CreateChildSceneNode<NodeType, Args...>(std::forward<Args>(args)...);
+		return mRootNode.CreateChildSceneNode<NodeType, Args...>(std::forward<Args>(args)...);
 	}
 }

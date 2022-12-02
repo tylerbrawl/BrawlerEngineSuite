@@ -741,6 +741,12 @@
     <ClCompile Include="src\PointLight.cpp">
       <Filter>Source Files\Scene Nodes\Lights</Filter>
     </ClCompile>
+    <ClCompile Include="src\SpotLight.ixx">
+      <Filter>Module Files\Scene Nodes\Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SpotLight.cpp">
+      <Filter>Source Files\Scene Nodes\Lights</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
