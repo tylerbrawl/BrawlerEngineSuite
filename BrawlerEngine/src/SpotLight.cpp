@@ -106,7 +106,10 @@ namespace Brawler
 		assert(lightDirectionLS.IsNormalized() && "ERROR: An attempt was made to specify an unnormalized light direction in a call to SpotLight::SetLightDirection()!");
 
 		mLightDirectionLS = lightDirectionLS;
-		MarkGPUSceneDataAsDirty();
+
+		// Don't bother marking the GPU scene buffer data as dirty; if SpotLight::CheckForRotationChange()
+		// notices that the light direction in world space has changed since the previous frame, then it
+		// will do that for us.
 	}
 
 	bool SpotLight::IsGPUSceneDataDirty() const
