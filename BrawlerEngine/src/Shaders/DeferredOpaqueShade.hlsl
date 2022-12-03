@@ -16,7 +16,6 @@ Texture2D<float> DepthBuffer : register(t3, space0);
 
 struct ShadingConstantsInfo
 {
-	float2 InverseOutputTextureDimensions;
 	uint ViewID;
 };
 
@@ -27,16 +26,23 @@ RWTexture2D<float4> OutputTexture : register(u0, space0);
 static const uint NUM_THREADS_X = 8;
 static const uint NUM_THREADS_Y = 8;
 
-float3 GetWorldSpacePosition(in const uint2 dispatchThreadID, in const BrawlerHLSL::ViewTransformData viewTransform)
+struct WorldSpacePositionParams
+{
+	uint2 DispatchThreadID;
+	BrawlerHLSL::ViewTransformData ViewTransform;
+	BrawlerHLSL::ViewDimensionsData ViewDimensions;
+};
+
+float3 GetWorldSpacePosition(in const WorldSpacePositionParams params)
 {
 	// Get the current lane's coordinates in NDC space.
-	float4 currLanePosNDC = float4((float2(dispatchThreadID) + 0.5f) * ShadingConstants.InverseOutputTextureDimensions, DepthBuffer[NonUniformResourceIndex(dispatchThreadID)], 1.0f);
+	float4 currLanePosNDC = float4((float2(params.DispatchThreadID) + 0.5f) * params.ViewDimensions.InverseViewDimensions, DepthBuffer[NonUniformResourceIndex(params.DispatchThreadID)], 1.0f);
 	currLanePosNDC.xy = mad(currLanePosNDC.xy, 2.0f, -1.0f);
 	currLanePosNDC.y *= -1.0f;
 	
 	// Transform this position back into world space using the inverse view-projection
 	// matrix of the view.
-	float4 currLanePosWS = mul(currLanePosNDC, viewTransform.CurrentFrameInverseViewProjectionMatrix);
+	float4 currLanePosWS = mul(currLanePosNDC, params.ViewTransform.CurrentFrameInverseViewProjectionMatrix);
 	
 	// Perform the perspective divide.
 	currLanePosWS.xyz /= currLanePosWS.w;
@@ -47,9 +53,18 @@ float3 GetWorldSpacePosition(in const uint2 dispatchThreadID, in const BrawlerHL
 BrawlerHLSL::SurfaceParameters GetSurfaceParameters(in const uint2 dispatchThreadID)
 {
 	BrawlerHLSL::SurfaceParameters surfaceParams;
-	const BrawlerHLSL::ViewTransformData viewTransform = WaveReadLaneFirst(BrawlerHLSL::GetGlobalViewTransformData(ShadingConstants.ViewID));
 	
-	surfaceParams.SurfacePosWS = GetWorldSpacePosition(dispatchThreadID, viewTransform);
+	{
+		const BrawlerHLSL::ViewDescriptor viewDescriptor = WaveReadLaneFirst(BrawlerHLSL::GetGlobalViewDescriptor(ShadingConstants.ViewID));
+		
+		WorldSpacePositionParams worldSpacePosParams;
+		worldSpacePosParams.DispatchThreadID = dispatchThreadID;
+		worldSpacePosParams.ViewTransform = WaveReadLaneFirst(BrawlerHLSL::GetGlobalViewTransformData(viewDescriptor.ViewTransformBufferIndex));
+		worldSpacePosParams.ViewDimensions = WaveReadLaneFirst(BrawlerHLSL::GetGlobalViewDimensionsData(viewDescriptor.ViewDimensionsBufferIndex));
+		
+		surfaceParams.SurfacePosWS = GetWorldSpacePosition(worldSpacePosParams);
+	}
+	
 	surfaceParams.V = normalize(viewTransform.CurrentFrameViewOrigin - surfaceParams.SurfacePosWS);
 	
 	const float4 baseColorRoughnessValue = BaseColorRoughnessGBuffer[NonUniformResourceIndex(dispatchThreadID)];

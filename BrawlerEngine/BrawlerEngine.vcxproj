@@ -386,6 +386,10 @@
     <ClCompile Include="src\TypedSceneTextureDatabase.ixx" />
     <ClCompile Include="src\ViewComponent.cpp" />
     <ClCompile Include="src\ViewComponent.ixx" />
+    <ClCompile Include="src\ViewDimensionsUpdater.cpp" />
+    <ClCompile Include="src\ViewDimensionsUpdater.ixx" />
+    <ClCompile Include="src\ViewTransformUpdater.cpp" />
+    <ClCompile Include="src\ViewTransformUpdater.ixx" />
     <ClCompile Include="src\VirtualTexture.cpp" />
     <ClCompile Include="src\VirtualTexture.ixx" />
     <ClCompile Include="src\VirtualTextureActivePageTracker.cpp" />

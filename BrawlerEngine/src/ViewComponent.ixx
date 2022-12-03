@@ -2,13 +2,20 @@ module;
 #include <cstdint>
 
 export module Brawler.ViewComponent;
+import :ViewTransformUpdater;
+import :ViewDimensionsUpdater;
 import Brawler.I_Component;
 import Brawler.Math.MathTypes;
+import Brawler.D3D12.AlignedByteAddressBufferSubAllocation;
+import Brawler.GPUSceneTypes;
 
 export namespace Brawler
 {
 	class ViewComponent final : public I_Component
 	{
+	private:
+		using SubAllocationType = D3D12::AlignedByteAddressBufferSubAllocation<sizeof(GPUSceneTypes::PackedViewDescriptor), alignof(GPUSceneTypes::PackedViewDescriptor)>;
+
 	public:
 		ViewComponent();
 
@@ -33,15 +40,28 @@ export namespace Brawler
 		void SetReverseZDepthState(const bool useReverseZ);
 
 	private:
+		void InitializeGPUSceneBufferData();
+		GPUSceneTypes::PackedViewDescriptor GetPackedViewDescriptor() const;
+
+		void TryReBuildViewData();
+
 		void ReBuildViewSpaceQuaternion();
 		void MarkViewSpaceQuaternionAsDirty();
+
+		void ReBuildViewMatrix();
 
 		void ReBuildProjectionMatrix();
 		void MarkProjectionMatrixAsDirty();
 
 		void ReBuildViewProjectionMatrix();
 
+		ViewTransformInfo GetViewTransformInfo() const;
+
 	private:
+		SubAllocationType mViewDescriptorBufferSubAllocation;
+		ViewTransformUpdater mTransformUpdater;
+		ViewDimensionsUpdater mDimensionsUpdater;
+
 		/// <summary>
 		/// A quaternion can compactly store a rotation. As it turns out, every rotation can be
 		/// represented as an orthogonal matrix, and every orthogonal matrix represents a unique
@@ -68,7 +88,9 @@ export namespace Brawler
 		float mFarPlaneDistance;
 		bool mIsProjectionMatrixDirty;
 
+		Math::Float4x4 mViewMatrix;
 		Math::Float4x4 mViewProjectionMatrix;
+		Math::Float4x4 mInverseViewProjectionMatrix;
 		Math::Float3 mLastRecordedTranslation;
 
 		bool mUseReverseZDepth;

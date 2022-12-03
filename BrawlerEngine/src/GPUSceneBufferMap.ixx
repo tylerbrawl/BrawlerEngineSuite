@@ -64,6 +64,10 @@ namespace Brawler
 	template <>
 	struct GPUSceneBufferInfo<GPUSceneBufferID::MATERIAL_DESCRIPTOR_BUFFER> : public GPUSceneBufferInfoInstantiation<GPUSceneTypes::MaterialDescriptor, GPUSceneLimits::MAX_MATERIAL_DEFINITIONS>
 	{};
+
+	template <>
+	struct GPUSceneBufferInfo<GPUSceneBufferID::VIEW_DESCRIPTOR_BUFFER> : public GPUSceneBufferInfoInstantiation<GPUSceneTypes::PackedViewDescriptor, GPUSceneLimits::MAX_VIEWS>
+	{};
 }
 
 namespace Brawler

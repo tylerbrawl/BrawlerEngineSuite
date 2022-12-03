@@ -45,12 +45,27 @@ export namespace Brawler
 
 			DirectX::XMFLOAT4 CurrentFrameViewSpaceQuaternion;
 
-			DirectX::XMFLOAT3 CurrentFrameViewSpaceOrigin;
+			/// <summary>
+			/// This is the origin of the world space coordinate system with respect
+			/// to the view space coordinate system for the current frame. 
+			/// 
+			/// It is done like this so that the values can directly be used in the 
+			/// construction of a view space matrix.
+			/// </summary>
+			DirectX::XMFLOAT3 CurrentFrameWorldSpaceOriginVS;
 			std::uint32_t __Pad0;
 
 			DirectX::XMFLOAT4 PreviousFrameViewSpaceQuaternion;
 
-			DirectX::XMFLOAT3 PreviousFrameViewSpaceOrigin;
+			/// <summary>
+			/// This is the origin of the world space coordinate system with respect
+			/// to the view space coordinate system for the previous frame. 
+			/// 
+			/// It is done like this so that the values can directly be used in the 
+			/// construction of a view space matrix.
+			/// </summary>
+			DirectX::XMFLOAT3 PreviousFrameWorldSpaceOriginVS;
+
 			std::uint32_t __Pad1;
 		};
 
@@ -61,6 +76,7 @@ export namespace Brawler
 		};
 
 		using PackedModelInstanceDescriptor = std::uint32_t;
+		using PackedViewDescriptor = std::uint32_t;
 
 		struct MeshDescriptor
 		{

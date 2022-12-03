@@ -43,6 +43,7 @@ namespace IMPL
 	static const uint BINDLESS_SPOTLIGHT_BUFFER_INDEX = 6;
 	static const uint BINDLESS_MODEL_INSTANCE_DESCRIPTOR_BUFFER_INDEX = 7;
 	static const uint BINDLESS_MATERIAL_DESCRIPTOR_BUFFER_INDEX = 8;
+	static const uint BINDLESS_VIEW_DESCRIPTOR_BUFFER_INDEX = 9;
 }
 
 namespace BrawlerHLSL
@@ -70,15 +71,6 @@ namespace BrawlerHLSL
 			return transformDataBuffer[NonUniformResourceIndex(modelInstanceID)];
 		}
 
-		BrawlerHLSL::LODMeshData GetGlobalModelInstanceLODMeshData(in const uint modelInstanceID)
-		{
-			Buffer<uint> lodMeshDataIndexBuffer = IMPL::Bindless_GlobalUIntBuffer[IMPL::BINDLESS_LOD_MESH_DATA_INDEX_BUFFER_INDEX];
-			const uint modelInstanceLODMeshDataIndex = lodMeshDataIndexBuffer[NonUniformResourceIndex(modelInstanceID)];
-				
-			StructuredBuffer<BrawlerHLSL::LODMeshData> lodMeshDataBuffer = IMPL::Bindless_GlobalLODMeshDataBuffer[IMPL::BINDLESS_LOD_MESH_DATA_BUFFER_INDEX];
-			return lodMeshDataBuffer[NonUniformResourceIndex(modelInstanceLODMeshDataIndex)];
-		}
-
 		BrawlerHLSL::ViewTransformData GetGlobalViewTransformData(in const uint viewID)
 		{
 			StructuredBuffer<BrawlerHLSL::ViewTransformData> viewTransformDataBuffer = IMPL::Bindless_GlobalViewTransformDataBuffer[IMPL::BINDLESS_VIEW_TRANSFORM_DATA_BUFFER_INDEX];
@@ -91,27 +83,6 @@ namespace BrawlerHLSL
 			StructuredBuffer<BrawlerHLSL::ViewDimensionsData> viewDimensionsDataBuffer = IMPL::Bindless_GlobalViewDimensionsDataBuffer[IMPL::BINDLESS_VIEW_DIMENSIONS_DATA_BUFFER_INDEX];
 
 			return viewDimensionsDataBuffer[NonUniformResourceIndex(viewID)];
-		}
-
-		BrawlerHLSL::PackedTriangleCluster GetGlobalPackedTriangleCluster(in const uint clusterID)
-		{
-			StructuredBuffer<BrawlerHLSL::PackedTriangleCluster> triangleClusterBuffer = IMPL::Bindless_GlobalTriangleClusterBuffer[IMPL::BINDLESS_GLOBAL_TRIANGLE_CLUSTER_BUFFER_INDEX];
-
-			return triangleClusterBuffer[NonUniformResourceIndex(clusterID)];
-		}
-			
-		BrawlerHLSL::VirtualTextureDescription GetGlobalVirtualTextureDescription(in const uint virtualTextureID)
-		{
-			StructuredBuffer<BrawlerHLSL::VirtualTextureDescription> vtDescriptionBuffer = IMPL::Bindless_GlobalVirtualTextureDescriptionBuffer[IMPL::BINDLESS_VIRTUAL_TEXTURE_DESCRIPTION_BUFFER_INDEX];
-				
-			return vtDescriptionBuffer[NonUniformResourceIndex(virtualTextureID)];
-		}
-			
-		BrawlerHLSL::GlobalTextureDescription GetGlobalTextureDescription(in const uint globalTextureID)
-		{
-			StructuredBuffer<BrawlerHLSL::GlobalTextureDescription> globalTextureDescriptionBuffer = IMPL::Bindless_GlobalGlobalTextureDescription[IMPL::BINDLESS_GLOBAL_TEXTURE_DESCRIPTION_BUFFER_INDEX];
-				
-			return globalTextureDescriptionBuffer[NonUniformResourceIndex(globalTextureID)];
 		}
 		
 		BrawlerHLSL::LightDescriptor GetGlobalLightDescriptor(in const uint lightDescriptorID)
@@ -166,6 +137,19 @@ namespace BrawlerHLSL
 			StructuredBuffer<BrawlerHLSL::MaterialDescriptor> globalMaterialDescriptorBuffer = IMPL::Bindless_GlobalMaterialDescriptorBuffer[IMPL::BINDLESS_MATERIAL_DESCRIPTOR_BUFFER_INDEX];
 			
 			return globalMaterialDescriptorBuffer[NonUniformResourceIndex(materialDescriptorID)];
+		}
+		
+		BrawlerHLSL::ViewDescriptor GetGlobalViewDescriptor(in const uint viewID)
+		{
+			Buffer<uint> globalPackedViewDescriptorBuffer = IMPL::Bindless_GlobalUIntBuffer[IMPL::BINDLESS_VIEW_DESCRIPTOR_BUFFER_INDEX];
+			
+			const uint packedViewDescriptorValue = globalPackedViewDescriptorBuffer[NonUniformResourceIndex(viewID)];
+			
+			BrawlerHLSL::ViewDescriptor viewDescriptor;
+			viewDescriptor.ViewTransformBufferIndex = (packedViewDescriptorValue >> 20);
+			viewDescriptor.ViewDimensionsBufferIndex = ((packedViewDescriptorValue >> 8) & 0xFFF);
+			
+			return viewDescriptor;
 		}
 	}
 }

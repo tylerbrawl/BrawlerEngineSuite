@@ -98,6 +98,10 @@ namespace Brawler
 			constexpr Vector(const ElementType x, const ElementType y, const ElementType z) requires (NumElements == 3);
 			constexpr Vector(const ElementType x, const ElementType y, const ElementType z, const ElementType w) requires (NumElements == 4);
 
+			template <typename RHSElementType>
+				requires std::convertible_to<RHSElementType, ElementType>
+			constexpr explicit Vector(const Vector<RHSElementType, NumElements>& rhs)
+
 			constexpr Vector(const Vector& rhs) = default;
 			constexpr Vector& operator=(const Vector& rhs) = default;
 
@@ -280,6 +284,22 @@ namespace Brawler
 			mStoredVector.y = y;
 			mStoredVector.z = z;
 			mStoredVector.w = w;
+		}
+
+		template <typename ElementType, std::size_t NumElements>
+		template <typename RHSElementType>
+			requires std::convertible_to<RHSElementType, ElementType>
+		constexpr Vector<ElementType, NumElements>::Vector(const Vector<RHSElementType, NumElements>& rhs) :
+			mStoredVector()
+		{
+			mStoredVector.x = static_cast<ElementType>(rhs.GetX());
+			mStoredVector.y = static_cast<ElementType>(rhs.GetY());
+
+			if constexpr (NumElements >= 3)
+				mStoredVector.z = static_cast<ElementType>(rhs.GetZ());
+
+			if constexpr (NumElements >= 4)
+				mStoredVector.w = static_cast<ElementType>(rhs.GetW());
 		}
 
 		template <typename ElementType, std::size_t NumElements>

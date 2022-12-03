@@ -1,6 +1,7 @@
 module;
 #include <cstdint>
 #include <cmath>
+#include <span>
 #include <DirectXMath/DirectXMath.h>
 
 module Brawler.ViewComponent;
@@ -8,6 +9,13 @@ import Brawler.Math.MathConstants;
 import Util.Math;
 import Brawler.SceneNode;
 import Brawler.TransformComponent;
+import Brawler.GPUSceneManager;
+import Brawler.GPUSceneBufferID;
+import Brawler.D3D12.BufferResource;
+import Brawler.GPUSceneBufferUpdateOperation;
+import Brawler.Application;
+import Brawler.D3D12.Renderer;
+import Brawler.GPUSceneUpdateRenderModule;
 
 // A lot of the equations here were taken from "Introduction to 3D Game Programming with DirectX 12" by
 // Frank Luna. Yes, this is supposed to be an introductory text, but the realm of computer graphics is
@@ -141,14 +149,13 @@ namespace
 
 	static constexpr Brawler::Math::Float3 DEFAULT_TRANSLATION_VECTOR{};
 
-	struct ViewProjectionMatrixParameters
+	struct ViewMatrixParameters
 	{
 		const Brawler::Math::Quaternion& ViewSpaceQuaternion;
 		const Brawler::Math::Float3& ViewOrigin;
-		const Brawler::Math::Float4x4& ProjectionMatrix;
 	};
 
-	constexpr Brawler::Math::Float4x4 CreateViewProjectionMatrix(const ViewProjectionMatrixParameters& params)
+	constexpr Brawler::Math::Float4x4 CreateViewMatrix(const ViewMatrixParameters& params)
 	{
 		const Brawler::Math::Float3 negatedOrigin{ params.ViewOrigin * -1.0f };
 
@@ -164,19 +171,29 @@ namespace
 		viewSpaceMatrix.GetElement(3, 1) = negatedOrigin.Dot(yAxisVector);
 		viewSpaceMatrix.GetElement(3, 2) = negatedOrigin.Dot(zAxisVector);
 
-		return (viewSpaceMatrix * params.ProjectionMatrix);
+		return viewSpaceMatrix;
 	}
 
-	static constexpr Brawler::Math::Float4x4 DEFAULT_VIEW_PROJECTION_MATRIX{ []()
+	static constexpr Brawler::Math::Float4x4 DEFAULT_VIEW_MATRIX{ []()
 	{
-		const ViewProjectionMatrixParameters defaultParams{
+		const ViewMatrixParameters defaultParams{
 			.ViewSpaceQuaternion{ DEFAULT_VIEW_SPACE_QUATERNION },
-			.ViewOrigin{ DEFAULT_TRANSLATION_VECTOR },
-			.ProjectionMatrix{ DEFAULT_PROJECTION_MATRIX }
+			.ViewOrigin{ DEFAULT_TRANSLATION_VECTOR }
 		};
 
-		return CreateViewProjectionMatrix(defaultParams);
+		return CreateViewMatrix(defaultParams);
 	}() };
+
+	static constexpr Brawler::Math::Float4x4 DEFAULT_VIEW_PROJECTION_MATRIX{ DEFAULT_VIEW_MATRIX * DEFAULT_PROJECTION_MATRIX };
+
+	static constexpr Brawler::Math::Float4x4 DEFAULT_INVERSE_VIEW_PROJECTION_MATRIX{ DEFAULT_VIEW_PROJECTION_MATRIX.Inverse() };
+
+	static constexpr Brawler::ViewTransformInfo DEFAULT_VIEW_TRANSFORM_INFO{
+		.ViewProjectionMatrix{ DEFAULT_VIEW_PROJECTION_MATRIX },
+		.InverseViewProjectionMatrix{ DEFAULT_INVERSE_VIEW_PROJECTION_MATRIX },
+		.ViewSpaceQuaternion{ DEFAULT_VIEW_SPACE_QUATERNION },
+		.ViewSpaceOriginWS{ DEFAULT_TRANSLATION_VECTOR }
+	};
 }
 
 namespace Brawler
@@ -192,6 +209,9 @@ namespace Brawler
 	// be correct until any of their associated parameters are changed.
 
 	ViewComponent::ViewComponent() :
+		mViewDescriptorBufferSubAllocation(),
+		mTransformUpdater(DEFAULT_VIEW_TRANSFORM_INFO),
+		mDimensionsUpdater(),
 		mViewSpaceQuaternion(DEFAULT_VIEW_SPACE_QUATERNION),
 		mViewDirection(DEFAULT_VIEW_DIRECTION),
 		mIsViewSpaceQuaternionDirty(false),
@@ -201,41 +221,26 @@ namespace Brawler
 		mNearPlaneDistance(DEFAULT_NEAR_PLANE_DISTANCE_METERS),
 		mFarPlaneDistance(DEFAULT_FAR_PLANE_DISTANCE_METERS),
 		mIsProjectionMatrixDirty(false),
+		mViewMatrix(DEFAULT_VIEW_MATRIX),
 		mViewProjectionMatrix(DEFAULT_VIEW_PROJECTION_MATRIX),
+		mInverseViewProjectionMatrix(DEFAULT_INVERSE_VIEW_PROJECTION_MATRIX),
 		mLastRecordedTranslation(DEFAULT_TRANSLATION_VECTOR),
 		mUseReverseZDepth(DEFAULT_USE_REVERSE_Z_VALUE)
-	{}
-
-	void ViewComponent::Update(const float dt)
 	{
-		const bool areInternalComponentsOutdated = (mIsViewSpaceQuaternionDirty || mIsProjectionMatrixDirty);
+		InitializeGPUSceneBufferData();
+	}
 
-		if (mIsViewSpaceQuaternionDirty) [[unlikely]]
-			ReBuildViewSpaceQuaternion();
+	void ViewComponent::Update(const float)
+	{
+		// Before we update any of the matrices, inform mTransformUpdater about the ViewTransformInfo
+		// for the previous frame.
+		mTransformUpdater.SetPreviousFrameTransformData(GetViewTransformInfo());
 
-		if (mIsProjectionMatrixDirty) [[unlikely]]
-			ReBuildProjectionMatrix();
+		TryReBuildViewData();
 
-		// In addition to the view space quaternion and the projection matrix, we need to check if
-		// the SceneNode itself has moved in world space. If so, then we need to re-build the
-		// view-projection matrix, but not necessarily the view space quaternion or the projection
-		// matrix.
-		//
-		// (Here, we see another benefit of using quaternions to represent the view space basis:
-		// We only have to update that part of the view matrix if the actual view direction
-		// changes.)
-		const TransformComponent* const transformPtr = GetSceneNode().GetComponent<const TransformComponent>();
-		assert(transformPtr != nullptr && "ERROR: A ViewComponent was assigned to a SceneNode, but it was never given a TransformComponent!");
-
-		const bool isCachedTranslationOutdated = (transformPtr->GetTranslation() != mLastRecordedTranslation);
-
-		if (isCachedTranslationOutdated) [[unlikely]]
-			mLastRecordedTranslation = transformPtr->GetTranslation();
-
-		const bool viewProjectionMatrixNeedsUpdate = (areInternalComponentsOutdated || isCachedTranslationOutdated);
-
-		if (viewProjectionMatrixNeedsUpdate) [[unlikely]]
-			ReBuildViewProjectionMatrix();
+		// Now, make sure that the GPU scene buffer data is up-to-date.
+		mTransformUpdater.CheckForGPUSceneBufferUpdate(GetViewTransformInfo());
+		mDimensionsUpdater.CheckForGPUSceneBufferUpdate(mViewDimensions);
 	}
 
 	void ViewComponent::SetViewDirection(Math::Float3&& normalizedViewDirection)
@@ -268,20 +273,20 @@ namespace Brawler
 	{
 		mViewDimensions = Math::UInt2{ width, height };
 		MarkProjectionMatrixAsDirty();
+
+		// Upon changing the dimensions of the view, notify mDimensionsUpdater that we will need
+		// to update the relevant GPU scene buffer data, too.
+		mDimensionsUpdater.ResetUpdateCounter();
 	}
 
 	void ViewComponent::SetNearPlaneDistance(const float nearPlaneDistanceInMeters)
 	{
-		assert(nearPlaneDistanceInMeters <= mFarPlaneDistance && "ERROR: An attempt was made to set the near plane distance of a ViewComponent past the far plane!");
-
 		mNearPlaneDistance = nearPlaneDistanceInMeters;
 		MarkProjectionMatrixAsDirty();
 	}
 
 	void ViewComponent::SetFarPlaneDistance(const float farPlaneDistanceInMeters)
 	{
-		assert(farPlaneDistanceInMeters >= mNearPlaneDistance && "ERROR: An attempt was made to set the far plane distance of a ViewComponent closer than the near plane!");
-
 		mFarPlaneDistance = farPlaneDistanceInMeters;
 		MarkProjectionMatrixAsDirty();
 	}
@@ -290,6 +295,83 @@ namespace Brawler
 	{
 		mUseReverseZDepth = useReverseZ;
 		MarkProjectionMatrixAsDirty();
+	}
+
+	void ViewComponent::InitializeGPUSceneBufferData()
+	{
+		[[maybe_unused]] const bool wasReservationSuccessful = GPUSceneManager::GetInstance().GetGPUSceneBufferResource<GPUSceneBufferID::VIEW_DESCRIPTOR_BUFFER>().AssignReservation(mViewDescriptorBufferSubAllocation);
+		assert(wasReservationSuccessful && "ERROR: An attempt to assign a reservation from the PackedViewDescriptor GPU scene buffer failed!");
+
+		const GPUSceneTypes::PackedViewDescriptor packedViewDescriptor = GetPackedViewDescriptor();
+
+		GPUSceneBufferUpdateOperation<GPUSceneBufferID::VIEW_DESCRIPTOR_BUFFER> viewDescriptorUpdateOperation{ mViewDescriptorBufferSubAllocation.GetBufferCopyRegion() };
+		viewDescriptorBufferSubAllocation.SetUpdateSourceData(std::span<const GPUSceneTypes::PackedViewDescriptor>{ &packedViewDescriptor, 1 });
+
+		Brawler::GetRenderer().GetRenderModule<GPUSceneUpdateRenderModule>().ScheduleGPUSceneBufferUpdateForNextFrame(std::move(viewDescriptorUpdateOperation));
+	}
+
+	GPUSceneTypes::PackedViewDescriptor ViewComponent::GetPackedViewDescriptor() const
+	{
+		GPUSceneTypes::PackedViewDescriptor packedViewDescriptor = 0;
+
+		// We reserve 12 bits for both the ViewTransformData buffer index and the ViewDimensionsData buffer
+		// index. This matches the maximum number of views specified in GPUSceneLimits.hlsli.
+		static constexpr std::uint32_t HIGHEST_EXPECTED_BUFFER_INDEX = ((1 << 12) - 1);
+
+		const std::uint32_t viewTransformDataBufferIndex = mTransformUpdater.GetViewTransformDataBufferIndex();
+		assert(viewTransformDataBufferIndex <= HIGHEST_EXPECTED_BUFFER_INDEX && "ERROR: The maximum number of supported ViewTransformData instances has been exceeded! (This should never happen unless the value of MAX_VIEWS in GPUSceneLimits.hlsli was changed.)");
+
+		packedViewDescriptor |= (viewTransformDataBufferIndex << 20);
+
+		const std::uint32_t viewDimensionsDataBufferIndex = mDimensionsUpdater.GetViewDimensionsDataBufferIndex();
+		assert(viewDimensionsDataBufferIndex <= HIGHEST_EXPECTED_BUFFER_INDEX && "ERROR: The maximum number of supported ViewDimensionsData instances has been exceeded! (This should never happen unless the value of MAX_VIEWS in GPUSceneLimits.hlsli was changed.)");
+
+		packedViewDescriptor |= (viewDimensionsDataBufferIndex << 8);
+
+		return packedViewDescriptor;
+	}
+
+	void ViewComponent::TryReBuildViewData()
+	{
+		const bool isViewSpaceQuaternionOutdated = mIsViewSpaceQuaternionDirty;
+		const bool isProjectionMatrixOutdated = mIsProjectionMatrixDirty;
+
+		const bool areInternalComponentsOutdated = (isViewSpaceQuaternionOutdated || isProjectionMatrixOutdated);
+
+		if (isViewSpaceQuaternionOutdated) [[unlikely]]
+			ReBuildViewSpaceQuaternion();
+
+		if (isProjectionMatrixOutdated) [[unlikely]]
+			ReBuildProjectionMatrix();
+
+		// In addition to the view space quaternion and the projection matrix, we need to check if
+		// the SceneNode itself has moved in world space. If so, then we need to re-build the
+		// view-projection matrix, but not necessarily the view space quaternion or the projection
+		// matrix.
+		//
+		// (Here, we see another benefit of using quaternions to represent the view space basis:
+		// We only have to update that part of the view matrix if the actual view direction
+		// changes.)
+		const TransformComponent* const transformPtr = GetSceneNode().GetComponent<const TransformComponent>();
+		assert(transformPtr != nullptr && "ERROR: A ViewComponent was assigned to a SceneNode, but it was never given a TransformComponent!");
+
+		const bool isCachedTranslationOutdated = (transformPtr->GetTranslation() != mLastRecordedTranslation);
+
+		if (isCachedTranslationOutdated) [[unlikely]]
+		{
+			mLastRecordedTranslation = transformPtr->GetTranslation();
+			mTransformUpdater.ResetUpdateCounter();
+		}
+
+		const bool isViewMatrixOutdated = (isViewSpaceQuaternionOutdated || isCachedTranslationOutdated);
+
+		if (isViewMatrixOutdated) [[unlikely]]
+			ReBuildViewMatrix();
+
+		const bool isViewProjectionMatrixOutdated = (isViewMatrixOutdated || isProjectionMatrixOutdated);
+
+		if (isViewProjectionMatrixOutdated) [[unlikely]]
+			ReBuildViewProjectionMatrix();
 	}
 
 	void ViewComponent::ReBuildViewSpaceQuaternion()
@@ -326,11 +408,25 @@ namespace Brawler
 	void ViewComponent::MarkViewSpaceQuaternionAsDirty()
 	{
 		mIsViewSpaceQuaternionDirty = true;
+		mTransformUpdater.ResetUpdateCounter();
+	}
+
+	void ViewComponent::ReBuildViewMatrix()
+	{
+		assert(!mIsViewSpaceQuaternionDirty && "ERROR: ViewComponent::ReBuildViewMatrix() was called even though the view space quaternion it was going to use was marked as dirty!");
+
+		const ViewMatrixParameters matrixParams{
+			.ViewSpaceQuaternion{ mViewSpaceQuaternion },
+			.ViewOrigin{ mLastRecordedTranslation }
+		};
+
+		mViewMatrix = CreateViewMatrix(matrixParams);
 	}
 
 	void ViewComponent::ReBuildProjectionMatrix()
 	{
 		assert(mIsProjectionMatrixDirty && "ERROR: ViewComponent::ReBuildProjectionMatrix() was called even though the associated matrix was never marked as dirty!");
+		assert(mNearPlaneDistance <= mFarPlaneDistance && "ERROR: An attempt was made to set the near plane distance of a ViewComponent past the far plane!");
 
 		const ProjectionMatrixParameters matrixParams{
 			.ViewDimensions{ mViewDimensions },
@@ -350,6 +446,7 @@ namespace Brawler
 	void ViewComponent::MarkProjectionMatrixAsDirty()
 	{
 		mIsProjectionMatrixDirty = true;
+		mTransformUpdater.ResetUpdateCounter();
 	}
 
 	void ViewComponent::ReBuildViewProjectionMatrix()
@@ -357,12 +454,17 @@ namespace Brawler
 		assert(!mIsViewSpaceQuaternionDirty && "ERROR: ViewComponent::ReBuildViewProjectionMatrix() was called even though the view space quaternion it was going to use was marked as dirty!");
 		assert(!mIsProjectionMatrixDirty && "ERROR: ViewComponent::ReBuildViewProjectionMatrix() was called even though the projection matrix it was going to use was marked as dirty!");
 
-		const ViewProjectionMatrixParameters matrixParams{
-			.ViewSpaceQuaternion{ mViewSpaceQuaternion },
-			.ViewOrigin{ mLastRecordedTranslation },
-			.ProjectionMatrix{ mProjectionMatrix }
-		};
+		mViewProjectionMatrix = (mViewMatrix * mProjectionMatrix);
+		mInverseViewProjectionMatrix = mViewProjectionMatrix.Inverse();
+	}
 
-		mViewProjectionMatrix = CreateViewProjectionMatrix(matrixParams);
+	ViewTransformInfo ViewComponent::GetViewTransformInfo() const
+	{
+		return ViewTransformInfo{
+			.ViewProjectionMatrix{ mViewProjectionMatrix },
+			.InverseViewProjectionMatrix{ mInverseViewProjectionMatrix },
+			.ViewSpaceQuaternion{ mViewSpaceQuaternion },
+			.WorldSpaceOriginVS{ mViewMatrix.GetElement(3, 0), mViewMatrix.GetElement(3, 1), mViewMatrix.GetElement(3, 2) }
+		};
 	}
 }

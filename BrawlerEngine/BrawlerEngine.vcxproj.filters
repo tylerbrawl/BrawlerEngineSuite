@@ -190,6 +190,12 @@
     <Filter Include="Source Files\Scene Nodes\Lights">
       <UniqueIdentifier>{fc278bf5-06cf-40e8-bc4b-5eba1fa1a8a8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Components\View Component">
+      <UniqueIdentifier>{8fbf8f65-7767-46e8-8681-99ba28cf1f36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components\View Component">
+      <UniqueIdentifier>{e4e987db-f055-447b-8fbc-96588f022578}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -412,12 +418,6 @@
       <Filter>Module Files\Math</Filter>
     </ClCompile>
     <ClCompile Include="src\TransformComponent.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ViewComponent.ixx">
-      <Filter>Module Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ViewComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="src\VirtualTexture.ixx">
@@ -746,6 +746,24 @@
     </ClCompile>
     <ClCompile Include="src\SpotLight.cpp">
       <Filter>Source Files\Scene Nodes\Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ViewComponent.ixx">
+      <Filter>Module Files\Components\View Component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ViewTransformUpdater.ixx">
+      <Filter>Module Files\Components\View Component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ViewComponent.cpp">
+      <Filter>Source Files\Components\View Component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ViewTransformUpdater.cpp">
+      <Filter>Source Files\Components\View Component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ViewDimensionsUpdater.ixx">
+      <Filter>Module Files\Components\View Component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ViewDimensionsUpdater.cpp">
+      <Filter>Source Files\Components\View Component</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

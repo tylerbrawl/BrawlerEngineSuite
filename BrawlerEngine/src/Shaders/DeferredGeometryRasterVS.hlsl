@@ -21,7 +21,9 @@ BrawlerHLSL::DeferredGeometryRasterVSOutput main(in const BrawlerHLSL::DeferredG
 	const BrawlerHLSL::MeshDescriptor currMeshDescriptor = currModelMeshDescriptorBuffer[NonUniformResourceIndex(meshDescriptorBufferIndex)];
 	
 	const BrawlerHLSL::ModelInstanceTransformData currTransformData = BrawlerHLSL::GetGlobalModelInstanceTransformData(currModelInstanceDescriptor.TransformDataBufferIndex);
-	const BrawlerHLSL::ViewTransformData currViewTransformData = WaveReadLaneFirst(BrawlerHLSL::GetGlobalViewTransformData(DeferredGeometryRasterConstants.ViewID));
+	
+	const BrawlerHLSL::ViewDescriptor currViewDescriptor = WaveReadLaneFirst(BrawlerHLSL::GetGlobalViewDescriptor(DeferredGeometryRasterConstants.ViewID));
+	const BrawlerHLSL::ViewTransformData currViewTransformData = WaveReadLaneFirst(BrawlerHLSL::GetGlobalViewTransformData(currViewDescriptor.ViewTransformBufferIndex));
 	
 	const float4x4 worldMatrix = Util::Transform::ExpandWorldMatrix(currTransformData.CurrentFrameWorldMatrix);
 	

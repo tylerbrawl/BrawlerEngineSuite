@@ -10,12 +10,28 @@ namespace BrawlerHLSL
 		
 		float4 CurrentFrameViewSpaceQuaternion;
 		
-		float3 CurrentFrameViewOrigin;
+		/// <summary>
+		/// This is the origin of the world space coordinate system with respect
+		/// to the view space coordinate system for the current frame. 
+		/// 
+		/// It is done like this so that the values can directly be used in the 
+		/// construction of a view space matrix.
+		/// </summary>
+		float3 CurrentFrameWorldSpaceOriginVS;
+		
 		uint __Pad0;
 		
 		float4 PreviousFrameViewSpaceQuaternion;
 		
-		float3 PreviousFrameViewOrigin;
+		/// <summary>
+		/// This is the origin of the world space coordinate system with respect
+		/// to the view space coordinate system for the previous frame. 
+		/// 
+		/// It is done like this so that the values can directly be used in the 
+		/// construction of a view space matrix.
+		/// </summary>
+		float3 PreviousFrameWorldSpaceOriginVS;
+		
 		uint __Pad1;
 		
 		// In addition, the following matrices can be calculated in a shader, should
@@ -29,5 +45,18 @@ namespace BrawlerHLSL
 	{
 		uint2 ViewDimensions;
 		float2 InverseViewDimensions;
+	};
+	
+	struct PackedViewDescriptor
+	{
+		uint ViewTransformBufferIndex : 12;
+		uint ViewDimensionsBufferIndex : 12;
+		uint __Pad0 : 8;
+	};
+	
+	struct ViewDescriptor
+	{
+		uint ViewTransformBufferIndex;
+		uint ViewDimensionsBufferIndex;
 	};
 }
