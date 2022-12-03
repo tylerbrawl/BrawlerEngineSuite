@@ -765,6 +765,12 @@
     <ClCompile Include="src\ViewDimensionsUpdater.cpp">
       <Filter>Source Files\Components\View Component</Filter>
     </ClCompile>
+    <ClCompile Include="src\Camera.ixx">
+      <Filter>Module Files\Scene Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera.cpp">
+      <Filter>Source Files\Scene Nodes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

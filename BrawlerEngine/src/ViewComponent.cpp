@@ -225,21 +225,39 @@ namespace Brawler
 		mViewProjectionMatrix(DEFAULT_VIEW_PROJECTION_MATRIX),
 		mInverseViewProjectionMatrix(DEFAULT_INVERSE_VIEW_PROJECTION_MATRIX),
 		mLastRecordedTranslation(DEFAULT_TRANSLATION_VECTOR),
-		mUseReverseZDepth(DEFAULT_USE_REVERSE_Z_VALUE)
+		mUseReverseZDepth(DEFAULT_USE_REVERSE_Z_VALUE),
+		mIsFirstUpdateComplete(false)
 	{
 		InitializeGPUSceneBufferData();
 	}
 
 	void ViewComponent::Update(const float)
 	{
-		// Before we update any of the matrices, inform mTransformUpdater about the ViewTransformInfo
-		// for the previous frame.
-		mTransformUpdater.SetPreviousFrameTransformData(GetViewTransformInfo());
+		// On the first update, we set the previous frame's transform data to be the same as that
+		// of the current frame, since we don't have any useful data at that point.
+		if (!mIsFirstUpdateComplete) [[unlikely]]
+		{
+			TryReBuildViewData();
 
-		TryReBuildViewData();
+			const ViewTransformInfo currFrameTransformInfo{ GetViewTransformInfo() };
+			
+			mTransformUpdater.SetPreviousFrameTransformData(currFrameTransformInfo);
+			mTransformUpdater.CheckForGPUSceneBufferUpdate(currFrameTransformInfo);
 
-		// Now, make sure that the GPU scene buffer data is up-to-date.
-		mTransformUpdater.CheckForGPUSceneBufferUpdate(GetViewTransformInfo());
+			mIsFirstUpdateComplete = true;
+		}
+		else [[likely]]
+		{
+			// Before we update any of the matrices, inform mTransformUpdater about the ViewTransformInfo
+			// for the previous frame.
+			mTransformUpdater.SetPreviousFrameTransformData(GetViewTransformInfo());
+
+			TryReBuildViewData();
+
+			// Now, make sure that the GPU scene buffer data is up-to-date.
+			mTransformUpdater.CheckForGPUSceneBufferUpdate(GetViewTransformInfo());
+		}
+		
 		mDimensionsUpdater.CheckForGPUSceneBufferUpdate(mViewDimensions);
 	}
 
@@ -335,8 +353,6 @@ namespace Brawler
 	{
 		const bool isViewSpaceQuaternionOutdated = mIsViewSpaceQuaternionDirty;
 		const bool isProjectionMatrixOutdated = mIsProjectionMatrixDirty;
-
-		const bool areInternalComponentsOutdated = (isViewSpaceQuaternionOutdated || isProjectionMatrixOutdated);
 
 		if (isViewSpaceQuaternionOutdated) [[unlikely]]
 			ReBuildViewSpaceQuaternion();

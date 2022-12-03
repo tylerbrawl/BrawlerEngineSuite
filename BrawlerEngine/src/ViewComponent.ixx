@@ -94,5 +94,6 @@ export namespace Brawler
 		Math::Float3 mLastRecordedTranslation;
 
 		bool mUseReverseZDepth;
+		bool mIsFirstUpdateComplete;
 	};
 }
