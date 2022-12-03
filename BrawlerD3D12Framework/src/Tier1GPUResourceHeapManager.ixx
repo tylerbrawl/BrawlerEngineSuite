@@ -124,8 +124,9 @@ namespace Brawler
 				return true;
 
 			const ResourceType requiredType = GetResourceType(*(aliasedResources[0]));
+			const std::span<I_GPUResource* const> remainingResourcesSpan{ aliasedResources.subspan(1) };
 
-			for (const auto& resourcePtr : aliasedResources | std::views::drop(1))
+			for (const auto& resourcePtr : remainingResourcesSpan)
 			{
 				if (GetResourceType(*resourcePtr) != requiredType)
 					return false;

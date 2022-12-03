@@ -6,7 +6,6 @@ export module Brawler.D3D12.GPUResourceBindlessSRVManager;
 import Brawler.ThreadSafeVector;
 import Brawler.OptionalRef;
 import Brawler.D3D12.BindlessSRVSentinel;
-import Brawler.D3D12.BindlessGPUResourceGroupRegistration;
 
 export namespace Brawler
 {
@@ -35,14 +34,12 @@ export namespace Brawler
 			BindlessSRVAllocation CreateBindlessSRV(D3D12_SHADER_RESOURCE_VIEW_DESC&& srvDesc, Brawler::OptionalRef<Brawler::D3D12Resource> d3dResource);
 			void ReturnBindlessSRV(BindlessSRVSentinel& sentinel);
 
-			void UpdateBindlessSRVs(Brawler::D3D12Resource& d3dResource);
+			bool HasBindlessSRVs() const;
 
-			void AddBindlessGPUResourceGroupAssociation(BindlessGPUResourceGroupRegistration& groupRegistration);
-			void RemoveBindlessGPUResourceGroupAssociation(BindlessGPUResourceGroupRegistration& groupRegistration);
+			void UpdateBindlessSRVs(Brawler::D3D12Resource& d3dResource);
 
 		private:
 			Brawler::ThreadSafeVector<std::unique_ptr<BindlessSRVSentinel>> mBindlessSentinelArr;
-			Brawler::ThreadSafeVector<BindlessGPUResourceGroupRegistration*> mGroupRegistrationPtrArr;
 		};
 	}
 }

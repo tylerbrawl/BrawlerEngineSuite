@@ -155,7 +155,7 @@ namespace Brawler
 		}
 
 		template <typename PointerT>
-		ScopedGPUResourceMapping<PointerT>::UnderlyingPointer_T* ScopedGPUResourceMapping<PointerT>::Get()
+		typename ScopedGPUResourceMapping<PointerT>::UnderlyingPointer_T* ScopedGPUResourceMapping<PointerT>::Get()
 		{
 			return mDataPtr;
 		}

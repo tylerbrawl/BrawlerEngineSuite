@@ -12,6 +12,7 @@ import Util.Math;
 import Brawler.ScopedSharedLock;
 import Brawler.D3D12.CommittedD3D12ResourceContainer;
 import Brawler.D3D12.PlacedD3D12ResourceContainer;
+import Brawler.D3D12.BorrowedD3D12ResourceContainer;
 import Brawler.OptionalRef;
 
 namespace Brawler
@@ -140,6 +141,26 @@ namespace Brawler
 			ExecutePostD3D12ResourceInitializationCallback();
 		}
 
+		void I_GPUResource::BorrowD3D12Resource(Microsoft::WRL::ComPtr<Brawler::D3D12Resource>&& d3dResourcePtr)
+		{
+			std::unique_ptr<BorrowedD3D12ResourceContainer> borrowedResourceContainer{ std::make_unique<BorrowedD3D12ResourceContainer>(*this) };
+
+			{
+				Brawler::ScopedSharedWriteLock<std::shared_mutex> writeLock{ mResourceCritSection };
+
+				borrowedResourceContainer->BorrowD3D12Resource(std::move(d3dResourcePtr));
+
+				// When we assign an I_GPUResource instance a new ID3D12Resource*, all of its
+				// previous descriptors become invalidated. This is because it now has a new
+				// GPU virtual address.
+				UpdateDescriptors(borrowedResourceContainer->GetD3D12Resource());
+
+				mResourceContainer = std::move(borrowedResourceContainer);
+			}
+
+			ExecutePostD3D12ResourceInitializationCallback();
+		}
+
 		BindlessSRVAllocation I_GPUResource::CreateBindlessSRV(D3D12_SHADER_RESOURCE_VIEW_DESC&& srvDesc)
 		{
 			Brawler::ScopedSharedReadLock<std::shared_mutex> readLock{ mResourceCritSection };
@@ -150,14 +171,9 @@ namespace Brawler
 			return mBindlessSRVManager.CreateBindlessSRV(std::move(srvDesc), Brawler::OptionalRef<Brawler::D3D12Resource>{});
 		}
 
-		void I_GPUResource::AddBindlessGPUResourceGroupAssociation(BindlessGPUResourceGroupRegistration& groupRegistration)
+		bool I_GPUResource::HasBindlessSRVs() const
 		{
-			mBindlessSRVManager.AddBindlessGPUResourceGroupAssociation(groupRegistration);
-		}
-
-		void I_GPUResource::RemoveBindlessGPUResourceGroupAssociation(BindlessGPUResourceGroupRegistration& groupRegistration)
-		{
-			mBindlessSRVManager.RemoveBindlessGPUResourceGroupAssociation(groupRegistration);
+			return mBindlessSRVManager.HasBindlessSRVs();
 		}
 
 		void I_GPUResource::ExecutePostD3D12ResourceInitializationCallback()

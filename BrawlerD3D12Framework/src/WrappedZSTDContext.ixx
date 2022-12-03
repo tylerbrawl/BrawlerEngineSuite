@@ -68,21 +68,21 @@ namespace Brawler
 
 	template <typename T>
 		requires IsZSTDContextType<T>
-	WrappedZSTDContext<T>::ContextType* WrappedZSTDContext<T>::Get() const
+	typename WrappedZSTDContext<T>::ContextType* WrappedZSTDContext<T>::Get() const
 	{
 		return mUniqueContextPtr.get();
 	}
 
 	template <typename T>
 		requires IsZSTDContextType<T>
-	WrappedZSTDContext<T>::ContextType& WrappedZSTDContext<T>::operator*() const
+	typename WrappedZSTDContext<T>::ContextType& WrappedZSTDContext<T>::operator*() const
 	{
 		return *mUniqueContextPtr;
 	}
 
 	template <typename T>
 		requires IsZSTDContextType<T>
-	WrappedZSTDContext<T>::ContextType* WrappedZSTDContext<T>::operator->() const
+	typename WrappedZSTDContext<T>::ContextType* WrappedZSTDContext<T>::operator->() const
 	{
 		return mUniqueContextPtr.get();
 	}

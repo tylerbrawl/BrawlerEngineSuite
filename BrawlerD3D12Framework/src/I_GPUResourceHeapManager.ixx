@@ -180,8 +180,9 @@ namespace Brawler
 				return true;
 
 			const D3D12_HEAP_TYPE requiredHeapType = aliasedResources[0]->GetHeapType();
+			const std::span<I_GPUResource* const> remainingResourcesSpan{ aliasedResources.subspan(1) };
 
-			for (const auto resourcePtr : aliasedResources | std::views::drop(1))
+			for (const auto resourcePtr : remainingResourcesSpan)
 			{
 				if (resourcePtr->GetHeapType() != requiredHeapType)
 					return false;

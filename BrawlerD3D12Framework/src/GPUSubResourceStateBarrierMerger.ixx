@@ -14,6 +14,8 @@ import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.D3D12.FrameGraphResourceDependency;
 import Brawler.D3D12.I_RenderPass;
 import Brawler.OptionalRef;
+import Brawler.CompositeEnum;
+import Brawler.D3D12.BindlessResourceDependencyType;
 
 export namespace Brawler
 {
@@ -50,6 +52,9 @@ export namespace Brawler
 			bool CanUseAdditionalBeginBarrierRenderPasses() const;
 
 		private:
+			template <GPUCommandQueueType QueueType>
+			static std::optional<D3D12_RESOURCE_STATES> GetRenderPassBindlessResourceState(const I_RenderPass<QueueType>& renderPass);
+
 			void AddPotentialBeginBarrierRenderPass(RenderPassVariant passVariant);
 
 			template <GPUCommandQueueType QueueType>
@@ -81,7 +86,7 @@ namespace Brawler
 		void GPUSubResourceStateBarrierMerger::TrackRenderPass(const I_RenderPass<QueueType>& renderPass)
 		{
 			const std::span<const FrameGraphResourceDependency> dependencySpan{ renderPass.GetResourceDependencies() };
-			I_GPUResource* const resourcePtr = std::addressof(mStateContainer.GetGPUResource());
+			I_GPUResource* const resourcePtr = &(mStateContainer.GetGPUResource());
 
 			const Brawler::OptionalRef<const FrameGraphResourceDependency> currDependency{ [this, resourcePtr, &dependencySpan]()
 			{
@@ -94,16 +99,58 @@ namespace Brawler
 				return Brawler::OptionalRef<const FrameGraphResourceDependency>{};
 			}() };
 
+			// Explicit sub-resource dependencies will always take precedence over bindless
+			// resource dependencies. (We assume that if the user specifies a resource dependency with
+			// a write state for a sub-resource with bindless SRVs, then they will not use the sub-resource
+			// in an invalid manner.)
+
 			if (currDependency.HasValue())
 				HandleResourceDependency(renderPass, currDependency->RequiredState);
+
+			else if (resourcePtr->HasBindlessSRVs())
+			{
+				const std::optional<D3D12_RESOURCE_STATES> bindlessResourceState{ GetRenderPassBindlessResourceState(renderPass) };
+
+				if (bindlessResourceState.has_value()) [[unlikely]]
+					HandleResourceDependency(renderPass, *bindlessResourceState);
+				else
+					AddPotentialBeginBarrierRenderPass(RenderPassVariant{ &renderPass });
+			}
+
 			else
-				AddPotentialBeginBarrierRenderPass(RenderPassVariant{ std::addressof(renderPass) });
+				AddPotentialBeginBarrierRenderPass(RenderPassVariant{ &renderPass });
 		}
 
 		template <GPUCommandQueueType QueueType>
 		void GPUSubResourceStateBarrierMerger::AddPotentialBeginBarrierRenderPass(const I_RenderPass<QueueType>& renderPass)
 		{
-			AddPotentialBeginBarrierRenderPass(RenderPassVariant{ std::addressof(renderPass) });
+			AddPotentialBeginBarrierRenderPass(RenderPassVariant{ &renderPass });
+		}
+
+		template <GPUCommandQueueType QueueType>
+		std::optional<D3D12_RESOURCE_STATES> GPUSubResourceStateBarrierMerger::GetRenderPassBindlessResourceState(const I_RenderPass<QueueType>& renderPass)
+		{
+			// Check for bindless resource dependencies specified for renderPass. If there are any,
+			// and if this resource has bindless SRVs, then we add an implicit resource dependency.
+			//
+			// Currently, there is no way to determine if an individual sub-resource has a bindless
+			// SRV or not. (TODO: Add this functionality! This might require inspecting the
+			// D3D12_SHADER_RESOURCE_VIEW_DESC instance passed to I_GPUResource::CreateBindlessSRV()
+			// to see which sub-resources a bindless SRV is being created for.)
+			const CompositeEnum<BindlessResourceDependencyType> bindlessDependencies{ renderPass.GetBindlessResourceDependencies() };
+
+			if (bindlessDependencies.CountOneBits() == 0) [[likely]]
+				return {};
+
+			D3D12_RESOURCE_STATES bindlessResourceState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON;
+
+			if (bindlessDependencies.ContainsAnyFlag(BindlessResourceDependencyType::PIXEL_SHADER_RESOURCE)) [[unlikely]]
+				bindlessResourceState |= D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
+			if (bindlessDependencies.ContainsAnyFlag(BindlessResourceDependencyType::NON_PIXEL_SHADER_RESOURCE)) [[unlikely]]
+				bindlessResourceState |= D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+
+			return bindlessResourceState;
 		}
 
 		template <GPUCommandQueueType QueueType>
@@ -126,7 +173,7 @@ namespace Brawler
 			mStateContainer.UpdateAfterState(requiredState);
 
 			if (mStateContainer.HasExplicitStateTransition() && !mEndBarrierPass.has_value())
-				mEndBarrierPass = RenderPassVariant{ std::addressof(renderPass) };
+				mEndBarrierPass = RenderPassVariant{ &renderPass };
 		}
 
 		template <GPUCommandQueueType QueueType>

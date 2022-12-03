@@ -8,14 +8,7 @@ import Brawler.D3D12.I_GPUResourceHeapManager;
 import Brawler.D3D12.GPUResourceLifetimeType;
 import Brawler.Win32.SafeHandle;
 import Brawler.ThreadSafeVector;
-
-export namespace Brawler
-{
-	namespace D3D12
-	{
-		class I_GPUResource;
-	}
-}
+import Brawler.D3D12.I_GPUResource;
 
 export namespace Brawler
 {

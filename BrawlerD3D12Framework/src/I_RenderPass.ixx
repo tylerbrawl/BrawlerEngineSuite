@@ -6,6 +6,8 @@ export module Brawler.D3D12.I_RenderPass;
 import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.D3D12.GPUCommandQueueContextType;
 import Brawler.D3D12.FrameGraphResourceDependency;
+import Brawler.CompositeEnum;
+import Brawler.D3D12.BindlessResourceDependencyType;
 
 export namespace Brawler
 {
@@ -31,7 +33,10 @@ export namespace Brawler
 			I_RenderPass& operator=(I_RenderPass&& rhs) noexcept = default;
 
 			virtual bool RecordRenderPassCommands(GPUCommandQueueContextType<QueueType>& context) const = 0;
+
 			virtual std::span<const FrameGraphResourceDependency> GetResourceDependencies() const = 0;
+			virtual CompositeEnum<BindlessResourceDependencyType> GetBindlessResourceDependencies() const = 0;
+
 			virtual const std::string_view GetRenderPassName() const = 0;
 		};
 	}

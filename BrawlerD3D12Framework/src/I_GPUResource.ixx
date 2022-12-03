@@ -15,7 +15,6 @@ import Brawler.D3D12.D3D12ResourceContainer;
 import Brawler.D3D12.GPUResourceCreationType;
 import Brawler.D3D12.BindlessSRVAllocation;
 import Brawler.D3D12.GPUSubResourceStateManager;
-import Brawler.D3D12.BindlessGPUResourceGroupRegistration;
 
 namespace Brawler
 {
@@ -67,14 +66,29 @@ export namespace Brawler
 			void CreateCommittedD3D12Resource();
 			void CreatePlacedD3D12Resource(GPUResourceAllocationHandle&& hAllocation);
 
-			BindlessSRVAllocation CreateBindlessSRV(D3D12_SHADER_RESOURCE_VIEW_DESC&& srvDesc);
+			/// <summary>
+			/// Assigns this I_GPUResource instance an ID3D12Resource which is owned by some other
+			/// component of the application. It is not expected that this I_GPUResource instance
+			/// manage the lifetime of the ID3D12Resource instance assigned to it when using
+			/// I_GPUResource::BorrowD3D12Resource() (hence the term "borrow").
+			/// 
+			/// There are VERY few use cases for this, with the most notable one being obtaining
+			/// a reference to the ID3D12Resource objects behind an IDXGISwapChain instance's
+			/// back buffers. This function should only really be used when the application has
+			/// no control over how the ID3D12Resource object in question is to be created.
+			/// </summary>
+			/// <param name="d3dResourcePtr">
+			/// - A Microsoft::WRL::ComPtr<Brawler::D3D12Resource> which refers to the ID3D12Resource
+			///   instance being borrowed.
+			/// </param>
+			void BorrowD3D12Resource(Microsoft::WRL::ComPtr<Brawler::D3D12Resource>&& d3dResourcePtr);
 
-			void AddBindlessGPUResourceGroupAssociation(BindlessGPUResourceGroupRegistration& groupRegistration);
-			void RemoveBindlessGPUResourceGroupAssociation(BindlessGPUResourceGroupRegistration& groupRegistration);
+			BindlessSRVAllocation CreateBindlessSRV(D3D12_SHADER_RESOURCE_VIEW_DESC&& srvDesc);
+			bool HasBindlessSRVs() const;
 
 		protected:
 			/// <summary>
-			/// This virtual function is called immediately after the ID3D12Resouce of this
+			/// This virtual function is called immediately after the ID3D12Resource of this
 			/// I_GPUResource is initialized.
 			/// 
 			/// Derived classes can override this function to execute custom tasks as a

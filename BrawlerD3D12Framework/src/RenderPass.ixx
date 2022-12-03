@@ -19,7 +19,8 @@ import Util.D3D12;
 import Util.General;
 import Brawler.D3D12.I_BufferSubAllocation;
 import Brawler.D3D12.TextureSubResource;
-import Brawler.D3D12.BindlessGPUResourceGroup;
+import Brawler.CompositeEnum;
+import Brawler.D3D12.BindlessResourceDependencyType;
 
 namespace Brawler
 {
@@ -176,9 +177,11 @@ export namespace Brawler
 			void AddResourceDependency(I_BufferSubAllocation& bufferSubAllocation, const D3D12_RESOURCE_STATES requiredState);
 			void AddResourceDependency(TextureSubResource& textureSubResource, const D3D12_RESOURCE_STATES requiredState);
 
-			void AddBindlessResourceGroupDependency(BindlessGPUResourceGroup& bindlessGroup, const D3D12_RESOURCE_STATES requiredState);
+			void AddBindlessPixelShaderResourceDependency();
+			void AddBindlessNonPixelShaderResourceDependency();
 
 			std::span<const FrameGraphResourceDependency> GetResourceDependencies() const override;
+			CompositeEnum<BindlessResourceDependencyType> GetBindlessResourceDependencies() const override;
 
 			void SetRenderPassName(const std::string_view name);
 			const std::string_view GetRenderPassName() const override;
@@ -190,6 +193,7 @@ export namespace Brawler
 			std::optional<typename CallbackInfo<QueueType, InputDataType>::CallbackType> mCmdRecordCallback;
 			std::optional<InputDataType> mInputData;
 			std::vector<FrameGraphResourceDependency> mResourceDependencyArr;
+			CompositeEnum<BindlessResourceDependencyType> mBindlessDependencyType;
 		};
 	}
 }
@@ -322,19 +326,27 @@ namespace Brawler
 		}
 
 		template <GPUCommandQueueType QueueType, typename InputDataType>
-		void RenderPass<QueueType, InputDataType>::AddBindlessResourceGroupDependency(BindlessGPUResourceGroup& bindlessGroup, const D3D12_RESOURCE_STATES requiredState)
+		void RenderPass<QueueType, InputDataType>::AddBindlessPixelShaderResourceDependency()
 		{
-			std::vector<FrameGraphResourceDependency> groupDependencyArr{ bindlessGroup.CreateResourceDependencyArray(requiredState) };
-			mResourceDependencyArr.reserve(mResourceDependencyArr.size() + groupDependencyArr.size());
+			mBindlessDependencyType |= BindlessResourceDependencyType::PIXEL_SHADER_RESOURCE;
+		}
 
-			for (auto&& dependency : groupDependencyArr)
-				AddResourceDependency(std::move(dependency));
+		template <GPUCommandQueueType QueueType, typename InputDataType>
+		void RenderPass<QueueType, InputDataType>::AddBindlessNonPixelShaderResourceDependency()
+		{
+			mBindlessDependencyType |= BindlessResourceDependencyType::NON_PIXEL_SHADER_RESOURCE;
 		}
 
 		template <GPUCommandQueueType QueueType, typename InputDataType>
 		std::span<const FrameGraphResourceDependency> RenderPass<QueueType, InputDataType>::GetResourceDependencies() const
 		{
 			return std::span<const FrameGraphResourceDependency>{ mResourceDependencyArr };
+		}
+
+		template <GPUCommandQueueType QueueType, typename InputDataType>
+		CompositeEnum<BindlessResourceDependencyType> RenderPass<QueueType, InputDataType>::GetBindlessResourceDependencies() const
+		{
+			return mBindlessDependencyType;
 		}
 
 		template <GPUCommandQueueType QueueType, typename InputDataType>
