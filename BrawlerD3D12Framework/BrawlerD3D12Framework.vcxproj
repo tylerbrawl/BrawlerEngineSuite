@@ -377,6 +377,7 @@
     <ClCompile Include="src\PSOLibrary.cpp" />
     <ClCompile Include="src\PSOLibrary.ixx" />
     <ClCompile Include="src\Renderer.cpp" />
+    <ClCompile Include="src\RenderTargetBundle.ixx" />
     <ClCompile Include="src\RenderTargetView.ixx" />
     <ClCompile Include="src\ResourceStateTrackingTest.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

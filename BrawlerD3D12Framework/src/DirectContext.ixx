@@ -1,4 +1,5 @@
 module;
+#include <array>
 #include <functional>
 #include <optional>
 #include "DxDef.h"
@@ -15,6 +16,7 @@ import Brawler.D3D12.RootParameterCache;
 import Brawler.PSOs.PSOID;
 import Brawler.PSOs.PSODefinition;
 import Brawler.D3D12.RenderTargetView;
+import Brawler.D3D12.RenderTargetBundle;
 
 namespace Brawler
 {
@@ -102,6 +104,9 @@ export namespace Brawler
 			template <DXGI_FORMAT Format, D3D12_RTV_DIMENSION ViewDimension>
 			void ClearRenderTargetView(const RenderTargetView<Format, ViewDimension>& rtv) const;
 
+			template <std::size_t RTVCount, std::size_t DSVCount>
+			void OMSetRenderTargets(RenderTargetBundle<RTVCount, DSVCount>& renderTargetBundle) const;
+
 		protected:
 			void PrepareCommandListIMPL() override;
 
@@ -133,6 +138,29 @@ namespace Brawler
 			const D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{ rtv.CreateRTVDescription() };
 
 			ClearRenderTargetViewIMPL(resource, rtvDesc);
+		}
+
+		template <std::size_t RTVCount, std::size_t DSVCount>
+		void DirectContext::OMSetRenderTargets(RenderTargetBundle<RTVCount, DSVCount>& renderTargetBundle) const
+		{
+			const std::array<CD3DX12_CPU_DESCRIPTOR_HANDLE, RTVCount> hRTVArr{ renderTargetBundle.GetCPUDescriptorHandleArrayForRTVs() };
+			const std::array<CD3DX12_CPU_DESCRIPTOR_HANDLE, DSVCount> hDSVArr{ renderTargetBundle.GetCPUDescriptorHandleArrayForDSVs() };
+
+			const CD3DX12_CPU_DESCRIPTOR_HANDLE* rtvArrDataPtr = nullptr;
+			const CD3DX12_CPU_DESCRIPTOR_HANDLE* dsvArrDataPtr = nullptr;
+
+			if constexpr (RTVCount > 0)
+				rtvArrDataPtr = hRTVArr.data();
+
+			if constexpr (DSVCount > 0)
+				dsvArrDataPtr = hDSVArr.data();
+
+			GetCommandList().OMSetRenderTargets(
+				static_cast<std::uint32_t>(hRTVArr.size()),
+				rtvArrDataPtr,
+				FALSE,
+				dsvArrDataPtr
+			);
 		}
 
 		template <Brawler::PSOs::PSOID PSOIdentifier>

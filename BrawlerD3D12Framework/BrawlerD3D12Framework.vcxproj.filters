@@ -1266,6 +1266,9 @@
     <ClCompile Include="src\DSVDimensionInfo.ixx">
       <Filter>Module Files\GPU Resources\GPU Resource Descriptors\Non-Shader-Visible Descriptors</Filter>
     </ClCompile>
+    <ClCompile Include="src\RenderTargetBundle.ixx">
+      <Filter>Module Files\GPU Resources\GPU Resource Descriptors\Non-Shader-Visible Descriptors</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

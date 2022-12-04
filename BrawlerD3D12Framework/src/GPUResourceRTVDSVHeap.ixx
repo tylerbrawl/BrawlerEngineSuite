@@ -30,7 +30,7 @@ namespace Brawler
 		{};
 
 		template <>
-		struct NSVDescriptorHeapInfo<NonShaderVisibleDescriptorType::DSV> : public NSVDescriptorHeapInfoInstantiation<5000, D3D12_DESCRIPTOR_HEAP_TYPE::D3D12_DESCRIPTOR_HEAP_TYPE_RTV>
+		struct NSVDescriptorHeapInfo<NonShaderVisibleDescriptorType::DSV> : public NSVDescriptorHeapInfoInstantiation<5000, D3D12_DESCRIPTOR_HEAP_TYPE::D3D12_DESCRIPTOR_HEAP_TYPE_DSV>
 		{};
 	}
 }
