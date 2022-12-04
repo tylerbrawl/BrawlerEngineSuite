@@ -273,8 +273,10 @@
     <ClCompile Include="src\DelayedJobSubmitter.ixx" />
     <ClCompile Include="src\DepthStencilTexture.cpp" />
     <ClCompile Include="src\DepthStencilTexture.ixx" />
+    <ClCompile Include="src\DepthStencilView.ixx" />
     <ClCompile Include="src\DLLManager.cpp" />
     <ClCompile Include="src\DLLManager.ixx" />
+    <ClCompile Include="src\DSVDimensionInfo.ixx" />
     <ClCompile Include="src\FastUnorderedMap.ixx" />
     <ClCompile Include="src\BufferSubAllocationReservationHandle.cpp" />
     <ClCompile Include="src\BufferSubAllocationReservationHandle.ixx" />
