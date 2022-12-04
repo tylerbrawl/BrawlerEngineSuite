@@ -36,7 +36,7 @@ export namespace Brawler
 			/// GPUResourceHeaps for transient resources used by the FrameGraph which
 			/// owns this TransientGPUResourceManager instance.
 			/// 
-			/// This implies that the lifetime of transient resource in a FrameGraph - 
+			/// This implies that the lifetime of transient resources in a FrameGraph - 
 			/// both on the CPU and on the GPU - is managed by the FrameGraph's
 			/// TransientGPUResourceManager.
 			/// </summary>

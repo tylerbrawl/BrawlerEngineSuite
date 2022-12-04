@@ -196,6 +196,12 @@
     <Filter Include="Source Files\Components\View Component">
       <UniqueIdentifier>{e4e987db-f055-447b-8fbc-96588f022578}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Frame Graph Blackboard">
+      <UniqueIdentifier>{3961592c-6ede-4fed-9b48-b4cba3b30ab8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Frame Graph Blackboard\Blackboard Types">
+      <UniqueIdentifier>{63eb26e7-5caf-41d4-bd06-4ff97133c3e8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -770,6 +776,18 @@
     </ClCompile>
     <ClCompile Include="src\Camera.cpp">
       <Filter>Source Files\Scene Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphBlackboard.ixx">
+      <Filter>Module Files\Frame Graph Blackboard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphBlackboardElementID.ixx">
+      <Filter>Module Files\Frame Graph Blackboard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphBlackboardElementMap.ixx">
+      <Filter>Module Files\Frame Graph Blackboard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DeferredRasterGBuffer.ixx">
+      <Filter>Module Files\Frame Graph Blackboard\Blackboard Types</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,10 +1,12 @@
 module;
+#include <functional>
 #include <vector>
 #include <memory>
 #include <span>
 #include "DxDef.h"
 
 export module Brawler.D3D12.FrameGraph;
+import :FrameGraphCallbackCollection;
 import Brawler.D3D12.I_RenderModule;
 import Brawler.D3D12.FrameGraphBlackboard;
 import Brawler.D3D12.TransientGPUResourceManager;
@@ -40,6 +42,9 @@ export namespace Brawler
 
 			void ProcessCurrentFrame(const std::span<const std::unique_ptr<I_RenderModule>> renderModuleSpan);
 
+			void AddPersistentFrameGraphCompletionCallback(std::move_only_function<void()>&& persistentCallback);
+			void AddTransientFrameGraphCompletionCallback(std::move_only_function<void()>&& transientCallback);
+
 			FrameGraphBlackboard& GetBlackboard();
 			const FrameGraphBlackboard& GetBlackboard() const;
 
@@ -61,6 +66,7 @@ export namespace Brawler
 			FrameGraphBlackboard mBlackboard;
 			FrameGraphExecutionContext mExecutionContext;
 			CommandAllocatorStorage mCmdAllocatorStorage;
+			FrameGraphCallbackCollection mCallbackCollection;
 		};
 	}
 }

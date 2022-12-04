@@ -1248,6 +1248,18 @@
     <ClCompile Include="src\BindlessResourceDependencyType.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
     </ClCompile>
+    <ClCompile Include="src\FrameGraphCallbackCollection.ixx">
+      <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphCallbackCollection.cpp">
+      <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DepthStencilTexture.ixx">
+      <Filter>Module Files\GPU Resources\Texture Resource Types\2D Texture Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DepthStencilTexture.cpp">
+      <Filter>Source Files\GPU Resources\Texture Resource Types\2D Texture Resource Types</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

@@ -6,6 +6,7 @@ module;
 #include <ranges>
 #include <atomic>
 #include <span>
+#include <functional>
 #include "DxDef.h"
 
 module Brawler.D3D12.FrameGraph;
@@ -133,6 +134,16 @@ namespace Brawler
 		{
 			GenerateFrameGraph(renderModuleSpan);
 			SubmitFrameGraph();
+		}
+
+		void FrameGraph::AddPersistentFrameGraphCompletionCallback(std::move_only_function<void()>&& persistentCallback)
+		{
+			mCallbackCollection.AddPersistentCallback(std::move(persistentCallback));
+		}
+
+		void FrameGraph::AddTransientFrameGraphCompletionCallback(std::move_only_function<void()>&& transientCallback)
+		{
+			mCallbackCollection.AddTransientCallback(std::move(transientCallback));
 		}
 
 		FrameGraphBlackboard& FrameGraph::GetBlackboard()
@@ -366,7 +377,7 @@ namespace Brawler
 
 			switch (hAllocationResult)
 			{
-			case S_OK:
+			case S_OK: [[likely]]
 				break;
 
 			case E_OUTOFMEMORY:
@@ -375,7 +386,7 @@ namespace Brawler
 				break;
 			}
 				
-			default:
+			default: [[unlikely]]
 			{
 				Util::General::CheckHRESULT(hAllocationResult);
 				break;

@@ -1,4 +1,5 @@
 module;
+#include <functional>
 #include <span>
 #include <memory>
 #include <vector>
@@ -21,6 +22,16 @@ namespace Brawler
 		{
 			FrameGraph& currFrameGraph{ GetCurrentFrameGraph() };
 			currFrameGraph.ProcessCurrentFrame(std::span<const std::unique_ptr<I_RenderModule>>{ mRenderModuleArr });
+		}
+
+		void FrameGraphManager::AddPersistentFrameGraphCompletionCallback(std::move_only_function<void()>&& persistentCallback)
+		{
+			GetCurrentFrameGraph().AddPersistentFrameGraphCompletionCallback(std::move(persistentCallback));
+		}
+
+		void FrameGraphManager::AddTransientFrameGraphCompletionCallback(std::move_only_function<void()>&& transientCallback)
+		{
+			GetCurrentFrameGraph().AddTransientFrameGraphCompletionCallback(std::move(transientCallback));
 		}
 
 		Brawler::D3D12CommandAllocator& FrameGraphManager::GetD3D12CommandAllocator(const GPUCommandQueueType queueType)

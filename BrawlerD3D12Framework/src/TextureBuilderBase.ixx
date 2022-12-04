@@ -305,7 +305,7 @@ namespace Brawler
 			requires IsTextureDimension<ResourceDimension>
 		constexpr TextureBuilderBase<ResourceDimension, Type>::TextureBuilderBase() :
 			mResourceDesc(),
-			mInitialResourceState(),
+			mInitialResourceState(BuilderInfo<Type>::INITIAL_RESOURCE_STATE),
 			mOptimizedClearValue(),
 
 			// For performance, always prefer to DISCARD by default.

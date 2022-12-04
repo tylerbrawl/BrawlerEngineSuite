@@ -3,6 +3,7 @@ module;
 #include <memory>
 #include <array>
 #include <cassert>
+#include <functional>
 #include "DxDef.h"
 
 export module Brawler.D3D12.FrameGraphManager;
@@ -44,6 +45,9 @@ export namespace Brawler
 			void Initialize();
 
 			void ProcessCurrentFrame();
+
+			void AddPersistentFrameGraphCompletionCallback(std::move_only_function<void()>&& persistentCallback);
+			void AddTransientFrameGraphCompletionCallback(std::move_only_function<void()>&& transientCallback);
 
 			template <typename T, typename... Args>
 				requires std::derived_from<T, I_RenderModule>
