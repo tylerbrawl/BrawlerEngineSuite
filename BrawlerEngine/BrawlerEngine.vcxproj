@@ -243,8 +243,11 @@
     <ClCompile Include="src\ApplicationStateStackRequestBundle.cpp" />
     <ClCompile Include="src\AppWindow.cpp" />
     <ClCompile Include="src\AppWindow.ixx" />
+    <ClCompile Include="src\BlackboardTransientResourceBuilder.cpp" />
+    <ClCompile Include="src\BlackboardTransientResourceBuilder.ixx" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\Camera.ixx" />
+    <ClCompile Include="src\DeferredRasterGBuffer.cpp" />
     <ClCompile Include="src\DeferredRasterGBuffer.ixx" />
     <ClCompile Include="src\FrameGraphBlackboard.ixx" />
     <ClCompile Include="src\FrameGraphBlackboardElementID.ixx" />

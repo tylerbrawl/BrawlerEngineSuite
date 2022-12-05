@@ -194,8 +194,9 @@ export namespace Brawler
 
 			const GPUResourceUsageTracker& GetUsageTracker() const;
 
-		private:
 			void SetGPUResourceLifetimeType(const GPUResourceLifetimeType lifetimeType);
+
+		private:
 			void MarkAsUsedForCurrentFrame();
 
 			/// <summary>

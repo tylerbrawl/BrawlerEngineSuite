@@ -334,8 +334,7 @@ namespace Brawler
 
 			// For render targets and depth/stencil textures, set the default optimized clear value
 			// to zero. This is consistent with the APIs for clearing views in DirectContext and
-			// ComputeContext. (Depth/Stencil textures which are meant to be used as reverse-Z depth
-			// buffers will need to explicitly modify the clear value.)
+			// ComputeContext.
 			if constexpr (NeedsSpecialResourceInitialization<Type>)
 				mOptimizedClearValue = D3D12_CLEAR_VALUE{};
 		}

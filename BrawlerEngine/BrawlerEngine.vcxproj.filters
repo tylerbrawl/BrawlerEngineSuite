@@ -202,6 +202,12 @@
     <Filter Include="Module Files\Frame Graph Blackboard\Blackboard Types">
       <UniqueIdentifier>{63eb26e7-5caf-41d4-bd06-4ff97133c3e8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Frame Graph Blackboard">
+      <UniqueIdentifier>{104f4e5f-f99f-4b4e-8f40-4d88a932736a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Frame Graph Blackboard\Blackboard Types">
+      <UniqueIdentifier>{7ec6dec5-6436-4f3e-9fc0-ad3e6f26b5f9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -788,6 +794,15 @@
     </ClCompile>
     <ClCompile Include="src\DeferredRasterGBuffer.ixx">
       <Filter>Module Files\Frame Graph Blackboard\Blackboard Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BlackboardTransientResourceBuilder.ixx">
+      <Filter>Module Files\Frame Graph Blackboard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BlackboardTransientResourceBuilder.cpp">
+      <Filter>Source Files\Frame Graph Blackboard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DeferredRasterGBuffer.cpp">
+      <Filter>Source Files\Frame Graph Blackboard\Blackboard Types</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
