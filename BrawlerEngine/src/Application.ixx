@@ -34,7 +34,6 @@ export namespace Brawler
 		const WorkerThreadPool& GetWorkerThreadPool() const;
 
 		HINSTANCE GetInstanceHandle() const;
-		std::int32_t GetInitialCmdShow() const;
 
 		D3D12::Renderer& GetRenderer();
 		const D3D12::Renderer& GetRenderer() const;

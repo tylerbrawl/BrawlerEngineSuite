@@ -184,6 +184,7 @@
       <AdditionalDependencies>dxgi.lib;D3D12.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest />
+    <Manifest />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -207,6 +208,7 @@
       <AdditionalDependencies>dxgi.lib;D3D12.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest />
+    <Manifest />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">
     <ClCompile>
@@ -229,6 +231,7 @@
       <AdditionalLibraryDirectories>D:\repos\BrawlerEngine\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>dxgi.lib;D3D12.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <Manifest />
     <Manifest />
   </ItemDefinitionGroup>
   <ItemGroup>

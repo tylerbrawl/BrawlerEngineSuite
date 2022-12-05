@@ -63,6 +63,7 @@ namespace Brawler
 		AddRenderModules();
 
 		mMainWindowManager.CreateMainWindow();
+		GetMainAppWindow().ShowWindow(mInitialCmdShow);
 	}
 
 	void Application::AddRenderModules()
@@ -143,11 +144,6 @@ namespace Brawler
 	HINSTANCE Application::GetInstanceHandle() const
 	{
 		return mHInstance;
-	}
-
-	std::int32_t Application::GetInitialCmdShow() const
-	{
-		return mInitialCmdShow;
 	}
 
 	D3D12::Renderer& Application::GetRenderer()

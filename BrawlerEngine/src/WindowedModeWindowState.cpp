@@ -47,9 +47,15 @@ namespace Brawler
 		// Get the Monitor which is most relevant to the associated AppWindow instance.
 		const Monitor& bestMonitor{ MonitorHub::GetInstance().GetMonitorFromWindow(GetAppWindow()) };
 
+		// We need to use the client RECT to size the back buffers for the SwapChain; if
+		// we use the values in mWindowSize, which specify the size of the entire window,
+		// then we will be including the window border in this size. This will cause the
+		// generated back buffers to be too large.
+		const RECT clientRect{ GetAppWindow().GetClientRect() };
+
 		Brawler::DXGI_SWAP_CHAIN_DESC windowedModeDesc{ GetDefaultSwapChainDescription(bestMonitor) };
-		windowedModeDesc.Width = mWindowSize.GetX();
-		windowedModeDesc.Height = mWindowSize.GetY();
+		windowedModeDesc.Width = clientRect.right;
+		windowedModeDesc.Height = clientRect.bottom;
 
 		return SwapChainCreationInfo{
 			.HWnd = GetAppWindow().GetWindowHandle(),

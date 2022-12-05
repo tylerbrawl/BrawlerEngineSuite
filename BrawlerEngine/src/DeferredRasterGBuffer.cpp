@@ -6,6 +6,9 @@ module;
 module Brawler.DeferredRasterGBuffer;
 import Brawler.D3D12.Texture2DBuilders;
 import Brawler.D3D12.GPUResourceSpecialInitializationMethod;
+import Brawler.Application;
+import Brawler.AppWindow;
+import Brawler.Math.MathTypes;
 
 namespace
 {
@@ -71,7 +74,7 @@ namespace Brawler
 {
 	void DeferredRasterGBuffer::InitializeTransientResources(BlackboardTransientResourceBuilder& builder)
 	{
-
+		const Math::UInt2 gBufferResolution{ Brawler::GetApplication().GetMainAppWindow().GetSuggestedRenderResolution() };
 	}
 
 	D3D12::Texture2D& DeferredRasterGBuffer::GetBaseColorRoughnessGBuffer()

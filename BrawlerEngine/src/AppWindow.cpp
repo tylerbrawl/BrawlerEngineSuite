@@ -1,6 +1,8 @@
 module;
 #include <cassert>
+#include <cmath>
 #include <memory>
+#include <algorithm>
 #include <DxDef.h>
 #include <dwmapi.h>
 
@@ -11,8 +13,11 @@ import Brawler.FullscreenModeWindowState;
 import Brawler.Manifest;
 import Brawler.Application;
 import Brawler.SwapChainCreationInfo;
+import Util.Math;
 import Util.Threading;
 import Brawler.WindowMessageHandler;
+import Brawler.SettingsManager;
+import Brawler.SettingID;
 
 namespace Brawler
 {
@@ -59,6 +64,17 @@ namespace Brawler
 		return mHwnd.get();
 	}
 
+	RECT AppWindow::GetClientRect() const
+	{
+		RECT clientRect{};
+		const BOOL getClientRectResult = ::GetClientRect(GetWindowHandle(), &clientRect);
+
+		// When can ::GetClientRect() even fail?
+		assert(getClientRectResult && "ERROR: Somehow, the Win32 function GetClientRect() failed to get the client area RECT of an AppWindow instance!");
+
+		return clientRect;
+	}
+
 	RECT AppWindow::GetWindowRect() const
 	{
 		// Get the window's bounds in screen coordinates.
@@ -66,6 +82,46 @@ namespace Brawler
 		Util::General::CheckHRESULT(DwmGetWindowAttribute(GetWindowHandle(), DWMWINDOWATTRIBUTE::DWMWA_EXTENDED_FRAME_BOUNDS, &windowScreenCoordsRect, sizeof(windowScreenCoordsRect)));
 
 		return windowScreenCoordsRect;
+	}
+
+	Math::UInt2 AppWindow::GetSuggestedRenderResolution() const
+	{
+		// We need to find the value x to scale our dimensions by so that the total
+		// number of texels in the back buffer is scaled by the render resolution factor
+		// specified in the user's configuration file. We derive x using simple algebraic
+		// operations as follows:
+		//
+		// Width * Height = BackBufferResolution
+		// (Width * x) * (Height * x) = (BackBufferResolution * RenderResolutionFactor)
+		// (Width * Height) * x^2 = BackBufferResolution * RenderResolutionFactor
+		// (Width * Height) * x^2 = (Width * Height) * RenderResolutionFactor
+		// x^2 = RenderResolutionFactor
+		// x = sqrt(RenderResolutionFactor)
+		//
+		// So, we find that the value we need to scale each dimension by is the square
+		// root of the specified render resolution factor.
+
+		// TODO: This looks pretty expensive (square roots, rounding, etc.). Could we make
+		// this faster?
+
+		static constexpr float MINIMUM_RENDER_RESOLUTION_FACTOR = 0.25f;
+		static constexpr float MINIMUM_DIMENSIONS_SCALE_FACTOR = Util::Math::GetSquareRoot(MINIMUM_RENDER_RESOLUTION_FACTOR);
+
+		const RECT clientRect{ GetClientRect() };
+		const float renderResolutionFactor = SettingsManager::GetInstance().GetOption<SettingID::RENDER_RESOLUTION_FACTOR>();
+
+		// Skip this madness if the render resolution factor is just 1.0f.
+		if (renderResolutionFactor == 1.0f)
+			return Math::UInt2{ static_cast<std::uint32_t>(clientRect.right), static_cast<std::uint32_t>(clientRect.bottom) };
+
+		const float dimensionsScaleFactor = std::max(Util::Math::GetSquareRoot(renderResolutionFactor), MINIMUM_DIMENSIONS_SCALE_FACTOR);
+
+		const Math::Float2 clientRectSize{ static_cast<float>(clientRect.right), static_cast<float>(clientRect.bottom) };
+		const Math::Float2 dimensionsScaleVector{ dimensionScaleFactor, dimensionsScaleFactor };
+
+		const Math::Float2 scaledDimensionsVector{ clientRectSize * dimensionsScaleVector };
+
+		return Math::UInt2{ static_cast<std::uint32_t>(std::lrintf(scaledDimensionsVector.GetX())), static_cast<std::uint32_t>(std::lrintf(scaledDimensionsVector.GetY())) };
 	}
 
 	void AppWindow::EnableWindowedMode(const WindowedModeParams& params)
