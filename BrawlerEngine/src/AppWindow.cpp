@@ -1,49 +1,93 @@
 module;
 #include <cassert>
+#include <memory>
 #include <DxDef.h>
-#include <DirectXMath/DirectXMath.h>
+#include <dwmapi.h>
 
 module Brawler.AppWindow;
 import Brawler.WindowedModeWindowState;
 import Brawler.BorderlessWindowedModeWindowState;
 import Brawler.FullscreenModeWindowState;
-import Brawler.Win32.CreateWindowInfo;
 import Brawler.Manifest;
 import Brawler.Application;
-import Brawler.MonitorHub;
+import Brawler.SwapChainCreationInfo;
+import Util.Threading;
+import Brawler.WindowMessageHandler;
 
 namespace Brawler
 {
-	AppWindow::AppWindow(const Brawler::WindowDisplayMode displayMode) :
-		mOwningMonitorPtr(nullptr),
+	AppWindow::AppWindow(const WindowedModeParams& windowedModeParams) :
 		mSwapChain(),
-		mHWnd(nullptr), 
-		mWndStateAdapter()
+		mHWnd(),
+		mWndStateAdapter(WindowedModeWindowState{ *this, windowedModeParams })
 	{
-		SetDisplayMode(displayMode);
+		SpawnWindow();
 	}
-	
+
+	AppWindow::AppWindow(const BorderlessWindowedModeParams borderlessWindowedModeParams) :
+		mSwapChain(),
+		mHWnd(),
+		mWndStateAdapter(BorderlessWindowedModeWindowState{ *this, borderlessWindowedModeParams });
+	{
+		SpawnWindow();
+	}
+
+	AppWindow::AppWindow(const FullscreenModeParams& fullscreenModeParams) :
+		mSwapChain(),
+		mHWnd(),
+		mWndStateAdapter(FullscreenModeWindowState{ *this, fullscreenModeParams })
+	{
+		SpawnWindow();
+	}
+
 	Win32::WindowMessageResult AppWindow::ProcessWindowMessage(const Win32::WindowMessage& msg)
 	{
-		return mWndStateAdapter.AccessData([&msg]<typename CurrWindowState>(CurrWindowState& wndState)
+		return mWndStateAdapter.AccessData([&msg]<typename WindowState>(WindowState& wndState)
 		{
 			return wndState.ProcessWindowMessage(msg);
 		});
 	}
 
-	void AppWindow::SpawnWindow()
+	void AppWindow::ShowWindow(const std::int32_t nCmdShow)
 	{
-		// Get the parameters needed to create the window based on its current state.
-		Win32::CreateWindowInfo windowCreationInfo{ mWndStateAdapter.AccessData([]<typename WindowState>(const WindowState& wndState)
-		{
-			return wndState.GetCreateWindowInfo();
-		}) };
+		::ShowWindow(nCmdShow);
+	}
 
-		mHWnd.reset(Brawler::MonitorHub::GetInstance().GetWindowMessageHandler().RequestWindowCreation(std::move(windowCreationInfo)));
+	HWND AppWindow::GetWindowHandle() const
+	{
+		assert(mHWnd.get() != nullptr);
+		return mHwnd.get();
+	}
 
-		if (mHWnd.get() == nullptr) [[unlikely]]
-			throw std::runtime_error{ "ERROR: An attempt to create a window for the application failed!" };
+	RECT AppWindow::GetWindowRect() const
+	{
+		// Get the window's bounds in screen coordinates.
+		RECT windowScreenCoordsRect{};
+		Util::General::CheckHRESULT(DwmGetWindowAttribute(GetWindowHandle(), DWMWINDOWATTRIBUTE::DWMWA_EXTENDED_FRAME_BOUNDS, &windowScreenCoordsRect, sizeof(windowScreenCoordsRect)));
 
+		return windowScreenCoordsRect;
+	}
+
+	void AppWindow::EnableWindowedMode(const WindowedModeParams& params)
+	{
+		mWndStateAdapter = WindowedModeWindowState{ *this, params };
+		UpdateWindowForDisplayModeChange();
+	}
+
+	void AppWindow::EnableBorderlessWindowedMode(const BorderlessWindowedModeParams params)
+	{
+		mWndStateAdapter = BorderlessWindowedModeWindowState{ *this, params };
+		UpdateWindowForDisplayModeChange();
+	}
+
+	void AppWindow::EnableFullscreenMode(const FullscreenModeParams& params)
+	{
+		mWndStateAdapter = FullscreenModeWindowState{ *this, params };
+		UpdateWindowForDisplayModeChange();
+	}
+
+	void AppWindow::CreateSwapChain()
+	{
 		// Create the swap chain for the current mode.
 		const SwapChainCreationInfo swapChainInfo{ mWndStateAdapter.AccessData([]<typename WindowState>(const WindowState& wndState)
 		{
@@ -53,68 +97,54 @@ namespace Brawler
 		mSwapChain.CreateSwapChain(swapChainInfo);
 	}
 
-	void AppWindow::ShowWindow(const bool useInitialCmdShow)
+	void AppWindow::SpawnWindow()
 	{
-		const std::int32_t nCmdShow = (useInitialCmdShow ? Brawler::GetApplication().GetInitialCmdShow() : SW_SHOW);
-		::ShowWindow(mHWnd.get(), nCmdShow);
-
-		if (IsWindowVisible(mHWnd.get())) [[likely]]
+		// Get the parameters needed to create the window based on its current state.
+		const Win32::CreateWindowInfo windowCreationInfo{ mWndStateAdapter.AccessData([]<typename WindowState>(const WindowState& wndState)
 		{
-			mWndStateAdapter.AccessData([]<typename WindowState>(WindowState& wndState)
-			{
-				wndState.OnShowWindow();
-			});
-		}
+			return wndState.GetCreateWindowInfo();
+		}) };
+
+		mHWnd.reset(CreateWin32Window(windowCreationInfo));
+
+		if (mHWnd.get() == nullptr) [[unlikely]]
+			throw std::runtime_error{ "ERROR: An attempt to create a window for the application failed!" };
+
+		// Register this AppWindow with the WindowMessageHandler.
+		WindowMessageHandler::GetInstance().RegisterWindow(*this);
+
+		CreateSwapChain();
 	}
 
-	HWND AppWindow::GetWindowHandle() const
+	void AppWindow::UpdateWindowForDisplayModeChange()
 	{
-		assert(mHWnd.get() != nullptr && "ERROR: AppWindow::GetWindowHandle() was called before an AppWindow instance could ever create a window!");
-		return mHWnd.get();
+		assert(mHWnd.get() != nullptr && "ERROR: An attempt was made to call AppWindow::UpdateWindowForDisplayModeChange() before the associated AppWindow could ever create a Win32 window!");
+		mWndStateAdapter.AccessData([]<typename WindowState>(WindowState& wndState)
+		{
+			wndState.UpdateWindowForDisplayMode();
+		});
+
+		// Re-build the SwapChain after the display mode changes.
+		CreateSwapChain();
 	}
 
-	const Monitor& AppWindow::GetOwningMonitor() const
+	HWND AppWindow::CreateWin32Window(const Win32::CreateWindowInfo& creationInfo)
 	{
-		assert(mOwningMonitorPtr != nullptr && "ERROR: An AppWindow instance was not correctly assigned a pointer to its owning Monitor instance!");
-		return *mOwningMonitorPtr;
-	}
+		assert(Util::Threading::IsMainThread() && "ERROR: Only the main thread can call AppWindow::CreateWin32Window()! (It is assumed that only the main thread will handle Win32 windows and window messages. This is an artifact of the Win32 window message system, since only the thread which creates a window is able to retrieve its window messages.)");
 
-	void AppWindow::SetOwningMonitor(const Monitor& owningMonitor)
-	{
-		mOwningMonitorPtr = &owningMonitor;
-	}
-
-	void AppWindow::SetDisplayMode(const Brawler::WindowDisplayMode displayMode)
-	{
-		switch (displayMode)
-		{
-		case WindowDisplayMode::WINDOWED:
-		{
-			mWndStateAdapter = WindowedModeWindowState{ *this };
-			break;
-		}
-
-		case WindowDisplayMode::FULL_SCREEN:
-		{
-			mWndStateAdapter = FullscreenModeWindowState{ *this };
-			break;
-		}
-
-		case WindowDisplayMode::MULTI_MONITOR: [[fallthrough]];
-		case WindowDisplayMode::BORDERLESS_WINDOWED_FULL_SCREEN:
-		{
-			mWndStateAdapter = BorderlessWindowedModeWindowState{ *this };
-			break;
-		}
-
-		default: [[unlikely]]
-		{
-			assert(false && "ERROR: An unknown Brawler::WindowDisplayMode was provided when constructing an AppWindow instance!");
-			std::unreachable();
-
-			mWndStateAdapter = WindowedModeWindowState{ *this };
-			break;
-		}
-		}
+		return CreateWindowEx(
+			creationInfo.WindowStyleEx,
+			Brawler::Manifest::WINDOW_CLASS_NAME_STR.C_Str(),
+			Brawler::Manifest::APPLICATION_NAME.C_Str(),
+			creationInfo.WindowStyleEx,
+			creationInfo.WindowStartCoordinates.x,
+			creationInfo.WindowStartCoordinates.y,
+			static_cast<std::uint32_t>(creationInfo.WindowSize.x),
+			static_cast<std::uint32_t>(creationInfo.WindowSize.y),
+			nullptr,
+			nullptr,
+			Brawler::GetApplication().GetInstanceHandle(),
+			nullptr
+		);
 	}
 }

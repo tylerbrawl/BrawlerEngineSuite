@@ -345,7 +345,7 @@
     <ClCompile Include="src\Monitor.cpp">
       <Filter>Source Files\Window Management</Filter>
     </ClCompile>
-    <ClCompile Include="src\AppWindow.ixx">
+    <ClCompile Include="src\AppWindowOld.ixx">
       <Filter>Module Files\Window Management</Filter>
     </ClCompile>
     <ClCompile Include="src\I_WindowState.ixx">
@@ -369,7 +369,7 @@
     <ClCompile Include="src\WindowStateTraits.ixx">
       <Filter>Module Files\Window Management\Window States</Filter>
     </ClCompile>
-    <ClCompile Include="src\AppWindow.cpp">
+    <ClCompile Include="src\AppWindowOld.cpp">
       <Filter>Source Files\Window Management</Filter>
     </ClCompile>
     <ClCompile Include="src\SwapChain.ixx">
@@ -398,9 +398,6 @@
     </ClCompile>
     <ClCompile Include="src\WindowMessageHandler.cpp">
       <Filter>Source Files\Window Management</Filter>
-    </ClCompile>
-    <ClCompile Include="src\I_WindowState.cpp">
-      <Filter>Source Files\Window Management\Window States</Filter>
     </ClCompile>
     <ClCompile Include="src\MonitorInfoGraph.ixx">
       <Filter>Module Files\Window Management</Filter>
@@ -803,6 +800,30 @@
     </ClCompile>
     <ClCompile Include="src\DeferredRasterGBuffer.cpp">
       <Filter>Source Files\Frame Graph Blackboard\Blackboard Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AppWindow.ixx">
+      <Filter>Module Files\Window Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WindowedModeParams.ixx">
+      <Filter>Module Files\Window Management\Window States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AppWindow.cpp">
+      <Filter>Source Files\Window Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BorderlessWindowedModeParams.ixx">
+      <Filter>Module Files\Window Management\Window States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_WindowState.cpp">
+      <Filter>Source Files\Window Management\Window States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FullscreenModeParams.ixx">
+      <Filter>Module Files\Window Management\Window States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MainWindowManager.ixx">
+      <Filter>Module Files\Window Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MainWindowManager.cpp">
+      <Filter>Source Files\Window Management</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

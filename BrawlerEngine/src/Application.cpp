@@ -5,7 +5,6 @@ module;
 module Brawler.Application;
 import Brawler.SettingsManager;
 import Brawler.SettingID;
-import Brawler.MonitorHub;
 import Brawler.GPUSceneUpdateRenderModule;
 
 namespace
@@ -41,6 +40,7 @@ namespace Brawler
 		mCurrUpdateTick(0),
 		mRunning(true),
 		mRenderer(),
+		mMainWindowManager(),
 		mStateStack()
 	{
 		// Only allow one instance of the Application class.
@@ -62,7 +62,7 @@ namespace Brawler
 		mRenderer.Initialize();
 		AddRenderModules();
 
-		MonitorHub::GetInstance().ResetApplicationWindows();
+		mMainWindowManager.CreateMainWindow();
 	}
 
 	void Application::AddRenderModules()
@@ -158,6 +158,16 @@ namespace Brawler
 	const D3D12::Renderer& Application::GetRenderer() const
 	{
 		return mRenderer;
+	}
+
+	AppWindow& Application::GetMainAppWindow()
+	{
+		return mMainWindowManager.GetMainAppWindow();
+	}
+
+	const AppWindow& Application::GetMainAppWindow() const
+	{
+		return mMainWindowManager.GetMainAppWindow();
 	}
 
 	std::uint64_t Application::GetCurrentUpdateTick() const

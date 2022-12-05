@@ -8,9 +8,8 @@ export module Brawler.MonitorHub;
 import Brawler.Monitor;
 import Brawler.WindowDisplayMode;
 import Brawler.AppWindow;
-import Brawler.Win32.WindowMessage;
-import Brawler.WindowMessageHandler;
 import Brawler.MonitorInfoGraph;
+import Brawler.Math.MathTypes;
 
 export namespace Brawler
 {
@@ -30,15 +29,11 @@ export namespace Brawler
 
 		static MonitorHub& GetInstance();
 
-		Win32::WindowMessageResult ProcessWindowMessage(const HWND hWnd, const Win32::WindowMessage& msg);
-
-		void ResetApplicationWindows();
-
-		WindowMessageHandler& GetWindowMessageHandler();
-		const WindowMessageHandler& GetWindowMessageHandler() const;
-
 		MonitorInfoGraph& GetMonitorInfoGraph();
 		const MonitorInfoGraph& GetMonitorInfoGraph() const;
+
+		const Monitor& GetMonitorFromPoint(const Math::Int2 desktopCoords) const;
+		const Monitor& GetMonitorFromWindow(const AppWindow& window) const;
 
 	private:
 		void EnumerateDisplayOutputs();
@@ -46,12 +41,8 @@ export namespace Brawler
 		Monitor& GetPrimaryMonitor();
 		const Monitor& GetPrimaryMonitor() const;
 
-		void CreateWindowForMonitor(Monitor& monitor, const WindowDisplayMode displayMode);
-
 	private:
 		std::vector<std::unique_ptr<Monitor>> mMonitorArr;
-		std::unordered_map<HWND, AppWindow*> mHWndMap;
-		WindowMessageHandler mMsgHandler;
 		MonitorInfoGraph mMonitorInfoGraph;
 	};
 }

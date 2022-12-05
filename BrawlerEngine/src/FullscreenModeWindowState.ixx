@@ -6,13 +6,14 @@ import Brawler.I_WindowState;
 import Brawler.Win32.WindowMessage;
 import Brawler.Win32.CreateWindowInfo;
 import Brawler.SwapChain;
+import Brawler.FullscreenModeParams;
 
 export namespace Brawler
 {
 	class FullscreenModeWindowState final : public I_WindowState<FullscreenModeWindowState>
 	{
 	public:
-		explicit FullscreenModeWindowState(AppWindow& owningWnd);
+		FullscreenModeWindowState(AppWindow& owningWnd, const FullscreenModeParams& params);
 
 		FullscreenModeWindowState(const FullscreenModeWindowState& rhs) = delete;
 		FullscreenModeWindowState& operator=(const FullscreenModeWindowState& rhs) = delete;
@@ -25,22 +26,13 @@ export namespace Brawler
 
 		SwapChainCreationInfo GetSwapChainCreationInfo() const;
 
-		void OnShowWindow();
+		void UpdateWindowForDisplayMode();
 
 	private:
-		/// <summary>
-		/// Retrieves the best possible Brawler::DXGI_MODE_DESC for the Monitor associated with
-		/// the AppWindow instance containing this FullscreenModeWindowState instance by comparing
-		/// the supported modes to the mode specified within the user configuration file.
-		/// 
-		/// This is left as a function, rather than cached as a member, because the configuration
-		/// file values might change while the program is running.
-		/// </summary>
-		/// <returns>
-		/// The function returns the best possible Brawler::DXGI_MODE_DESC for the Monitor associated 
-		/// with the AppWindow instance containing this FullscreenModeWindowState instance by 
-		/// comparing the supported modes to the mode specified within the user configuration file.
-		/// </returns>
-		Brawler::DXGI_MODE_DESC GetBestFullscreenMode() const;
+		static Brawler::DXGI_MODE_DESC GetBestFullscreenMode(const FullscreenModeParams& params);
+
+	private:
+		const Monitor* mMonitorPtr;
+		Brawler::DXGI_MODE_DESC mBestFullscreenModeDesc;
 	};
 }

@@ -7,13 +7,15 @@ import Brawler.I_WindowState;
 import Brawler.Win32.WindowMessage;
 import Brawler.Win32.CreateWindowInfo;
 import Brawler.SwapChain;
+import Brawler.BorderlessWindowedModeParams;
+import Brawler.Monitor;
 
 export namespace Brawler
 {
 	class BorderlessWindowedModeWindowState final : public I_WindowState<BorderlessWindowedModeWindowState>
 	{
 	public:
-		explicit BorderlessWindowedModeWindowState(AppWindow& owningWnd);
+		BorderlessWindowedModeWindowState(AppWindow& owningWnd, const BorderlessWindowedModeParams params);
 
 		~BorderlessWindowedModeWindowState();
 
@@ -24,7 +26,8 @@ export namespace Brawler
 		BorderlessWindowedModeWindowState& operator=(BorderlessWindowedModeWindowState&& rhs) noexcept = default;
 
 		Win32::WindowMessageResult ProcessWindowMessage(const Win32::WindowMessage& msg);
-		void OnShowWindow();
+
+		void UpdateWindowForDisplayMode();
 
 		Win32::CreateWindowInfo GetCreateWindowInfo() const;
 		SwapChainCreationInfo GetSwapChainCreationInfo() const;
@@ -54,6 +57,7 @@ export namespace Brawler
 		void HideTaskbar() const;
 
 	private:
+		const Monitor* mMonitorPtr;
 		HWND mHMonitorTaskbarWnd;
 	};
 }

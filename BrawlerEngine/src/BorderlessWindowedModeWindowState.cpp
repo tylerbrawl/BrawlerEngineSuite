@@ -7,15 +7,26 @@ module Brawler.BorderlessWindowedModeWindowState;
 import Brawler.SettingID;
 import Brawler.SettingsManager;
 import Brawler.AppWindow;
-import Brawler.Monitor;
 import Brawler.NZStringView;
+
+namespace
+{
+	static constexpr std::uint32_t WINDOW_STYLE_BORDERLESS_WINDOWED_MODE = 0;
+	static constexpr std::uint32_t WINDOW_STYLE_EX_BORDERLESS_WINDOWED_MODE = 0;
+}
 
 namespace Brawler
 {
-	BorderlessWindowedModeWindowState::BorderlessWindowedModeWindowState(AppWindow& owningWnd) :
+	BorderlessWindowedModeWindowState::BorderlessWindowedModeWindowState(AppWindow& owningWnd, const BorderlessWindowedModeParams params) :
 		I_WindowState<BorderlessWindowedModeWindowState>(owningWnd),
+		mMonitorPtr(&(params.AssociatedMonitor)),
 		mHMonitorTaskbarWnd(nullptr)
-	{}
+	{
+		const std::optional<HWND> hTaskbarWnd{ GetTaskbarWindowForCurrentMonitor() };
+
+		if (hTaskbarWnd.has_value()) [[likely]]
+			mHMonitorTaskbarWnd = *hTaskbarWnd;
+	}
 
 	BorderlessWindowedModeWindowState::~BorderlessWindowedModeWindowState()
 	{
@@ -50,27 +61,20 @@ namespace Brawler
 		}
 	}
 
-	void BorderlessWindowedModeWindowState::OnShowWindow()
+	void BorderlessWindowedModeWindowState::UpdateWindowForDisplayMode()
 	{
-		// In borderless windowed mode, hide the taskbar. There doesn't seem to be any documented method
-		// for doing this without ugly hacks.
-		if (mHMonitorTaskbarWnd == nullptr) [[likely]]
-		{
-			const std::optional<HWND> hTaskbarWnd{ GetTaskbarWindowForCurrentMonitor() };
+		const RECT& currMonitorRect{ mMonitorPtr->GetOutputDescription().DesktopCoordinates };
 
-			if (hTaskbarWnd.has_value()) [[likely]]
-				mHMonitorTaskbarWnd = *hTaskbarWnd;
-		}
-
-		HideTaskbar();
+		UpdateWindowStyle(WindowStyleParams{
+			.WindowStyle = WINDOW_STYLE_BORDERLESS_WINDOWED_MODE,
+			.WindowStyleEx = WINDOW_STYLE_EX_BORDERLESS_WINDOWED_MODE,
+			.WindowPosRect{ currMonitorRect }
+		});
 	}
 
 	Win32::CreateWindowInfo BorderlessWindowedModeWindowState::GetCreateWindowInfo() const
 	{
-		constexpr std::uint32_t WINDOW_STYLE_BORDERLESS_WINDOWED_MODE = 0;
-		constexpr std::uint32_t WINDOW_STYLE_EX_BORDERLESS_WINDOWED_MODE = 0;
-
-		const Brawler::DXGI_OUTPUT_DESC& currMonitorDesc{ GetAppWindow().GetOwningMonitor().GetOutputDescription() };
+		const Brawler::DXGI_OUTPUT_DESC& currMonitorDesc{ mMonitorPtr->GetOutputDescription() };
 
 		DirectX::XMINT2 windowStartCoordinates{
 			currMonitorDesc.DesktopCoordinates.left,
@@ -92,9 +96,9 @@ namespace Brawler
 
 	SwapChainCreationInfo BorderlessWindowedModeWindowState::GetSwapChainCreationInfo() const
 	{
-		const Brawler::DXGI_OUTPUT_DESC& currMonitorDesc{ GetAppWindow().GetOwningMonitor().GetOutputDescription() };
+		const Brawler::DXGI_OUTPUT_DESC& currMonitorDesc{ mMonitorPtr->GetOutputDescription() };
 
-		Brawler::DXGI_SWAP_CHAIN_DESC swapChainDesc{ GetDefaultSwapChainDescription() };
+		Brawler::DXGI_SWAP_CHAIN_DESC swapChainDesc{ GetDefaultSwapChainDescription(*mMonitorPtr) };
 		swapChainDesc.Width = static_cast<std::uint32_t>(std::abs(currMonitorDesc.DesktopCoordinates.right - currMonitorDesc.DesktopCoordinates.left));
 		swapChainDesc.Height = static_cast<std::uint32_t>(std::abs(currMonitorDesc.DesktopCoordinates.bottom - currMonitorDesc.DesktopCoordinates.top));
 
@@ -107,7 +111,7 @@ namespace Brawler
 
 	std::optional<HWND> BorderlessWindowedModeWindowState::GetTaskbarWindowForCurrentMonitor() const
 	{
-		const HMONITOR hMonitor = GetAppWindow().GetOwningMonitor().GetMonitorHandle();
+		const HMONITOR hMonitor = mMonitorPtr->GetMonitorHandle();
 
 		MONITORINFOEX monitorInfo{};
 		monitorInfo.cbSize = sizeof(monitorInfo);

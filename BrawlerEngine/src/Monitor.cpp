@@ -14,8 +14,7 @@ namespace Brawler
 	Monitor::Monitor(Microsoft::WRL::ComPtr<Brawler::DXGIOutput>&& dxgiOutputPtr) :
 		mDXGIOutputPtr(std::move(dxgiOutputPtr)),
 		mOutputDesc(),
-		mDisplayModeArr(),
-		mAppWindowPtr()
+		mDisplayModeArr()
 	{
 		assert(mDXGIOutputPtr != nullptr);
 		UpdateMonitorInformation();
@@ -71,42 +70,6 @@ namespace Brawler
 			return DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT;
 		}
 		}
-	}
-
-	void Monitor::AssignWindow(std::unique_ptr<AppWindow>&& appWindowPtr)
-	{
-		assert(mAppWindowPtr == nullptr && "ERROR: An attempt was made to call Monitor::AssignWindow() on a Monitor instance which already had a window!");
-
-		mAppWindowPtr = std::move(appWindowPtr);
-		mAppWindowPtr->SetOwningMonitor(*this);
-	}
-
-	void Monitor::ResetWindow()
-	{
-		mAppWindowPtr.reset();
-	}
-
-	void Monitor::SpawnWindowForMonitor()
-	{
-		assert(mAppWindowPtr != nullptr);
-		mAppWindowPtr->SpawnWindow();
-	}
-
-	bool Monitor::HasWindow() const
-	{
-		return (mAppWindowPtr != nullptr);
-	}
-
-	AppWindow& Monitor::GetAppWindow()
-	{
-		assert(HasWindow() && "ERROR: Monitor::GetAppWindow() was called for a Monitor instance which was never assigned an AppWindow instance!");
-		return *mAppWindowPtr;
-	}
-
-	const AppWindow& Monitor::GetAppWindow() const
-	{
-		assert(HasWindow() && "ERROR: Monitor::GetAppWindow() was called for a Monitor instance which was never assigned an AppWindow instance!");
-		return *mAppWindowPtr;
 	}
 
 	std::span<const Brawler::DXGI_MODE_DESC> Monitor::GetDisplayModeSpan() const

@@ -1,16 +1,17 @@
 module;
-#include <cassert>
 #include <memory>
 #include <DxDef.h>
-#include <DirectXMath/DirectXMath.h>
 
 export module Brawler.AppWindow;
+import Brawler.SwapChain;
 import Brawler.Win32.WindowMessage;
-import Brawler.WindowDisplayMode;
 import Brawler.PolymorphicAdapter;
 import Brawler.I_WindowState;
 export import Brawler.WindowStateTraits;
-import Brawler.SwapChain;
+import Brawler.WindowedModeParams;
+import Brawler.BorderlessWindowedModeParams;
+import Brawler.FullscreenModeParams;
+import Brawler.Win32.CreateWindowInfo;
 
 namespace Brawler
 {
@@ -28,15 +29,12 @@ namespace Brawler
 
 export namespace Brawler
 {
-	class Monitor;
-}
-
-export namespace Brawler
-{
 	class AppWindow
 	{
 	public:
-		explicit AppWindow(const Brawler::WindowDisplayMode displayMode);
+		explicit AppWindow(const WindowedModeParams& windowedModeParams);
+		explicit AppWindow(const BorderlessWindowedModeParams borderlessWindowedModeParams);
+		explicit AppWindow(const FullscreenModeParams& fullscreenModeParams);
 
 		AppWindow(const AppWindow& rhs) = delete;
 		AppWindow& operator=(const AppWindow& rhs) = delete;
@@ -46,18 +44,24 @@ export namespace Brawler
 
 		Win32::WindowMessageResult ProcessWindowMessage(const Win32::WindowMessage& msg);
 
-		void SpawnWindow();
-		void ShowWindow(const bool useInitialCmdShow);
+		void ShowWindow(const std::int32_t nCmdShow);
 
 		HWND GetWindowHandle() const;
+		RECT GetWindowRect() const;
 
-		const Monitor& GetOwningMonitor() const;
-		void SetOwningMonitor(const Monitor& owningMonitor);
+		void EnableWindowedMode(const WindowedModeParams& params);
+		void EnableBorderlessWindowedMode(const BorderlessWindowedModeParams& params);
+		void EnableFullscreenMode(const FullscreenModeParams& params);
 
-		void SetDisplayMode(const Brawler::WindowDisplayMode displayMode);
+		void CreateSwapChain();
 
 	private:
-		const Monitor* mOwningMonitorPtr;
+		void SpawnWindow();
+		void UpdateWindowForDisplayModeChange();
+
+		static HWND CreateWin32Window(const Win32::CreateWindowInfo& creationInfo);
+
+	private:
 		SwapChain mSwapChain;
 		SafeWindow mHWnd;
 

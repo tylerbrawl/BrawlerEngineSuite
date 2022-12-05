@@ -243,8 +243,11 @@
     <ClCompile Include="src\ApplicationStateStackRequestBundle.cpp" />
     <ClCompile Include="src\AppWindow.cpp" />
     <ClCompile Include="src\AppWindow.ixx" />
+    <ClCompile Include="src\AppWindowOld.cpp" />
+    <ClCompile Include="src\AppWindowOld.ixx" />
     <ClCompile Include="src\BlackboardTransientResourceBuilder.cpp" />
     <ClCompile Include="src\BlackboardTransientResourceBuilder.ixx" />
+    <ClCompile Include="src\BorderlessWindowedModeParams.ixx" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\Camera.ixx" />
     <ClCompile Include="src\DeferredRasterGBuffer.cpp" />
@@ -252,6 +255,7 @@
     <ClCompile Include="src\FrameGraphBlackboard.ixx" />
     <ClCompile Include="src\FrameGraphBlackboardElementID.ixx" />
     <ClCompile Include="src\FrameGraphBlackboardElementMap.ixx" />
+    <ClCompile Include="src\FullscreenModeParams.ixx" />
     <ClCompile Include="src\GenericPreFrameBufferUpdate.cpp" />
     <ClCompile Include="src\GenericPreFrameBufferUpdate.ixx" />
     <ClCompile Include="src\GenericPreFrameUpdateSubModule.cpp" />
@@ -325,6 +329,8 @@
     <ClCompile Include="src\I_WindowState.ixx" />
     <ClCompile Include="src\LightDescriptorUpdater.ixx" />
     <ClCompile Include="src\LightID.ixx" />
+    <ClCompile Include="src\MainWindowManager.cpp" />
+    <ClCompile Include="src\MainWindowManager.ixx" />
     <ClCompile Include="src\MaterialDefinitionGraph.cpp" />
     <ClCompile Include="src\MaterialDefinitionHandle.cpp" />
     <ClCompile Include="src\MaterialDefinitionHandle.ixx" />
@@ -426,6 +432,7 @@
     <ClCompile Include="src\WindowDisplayMode.ixx" />
     <ClCompile Include="src\WindowedModeWindowState.cpp" />
     <ClCompile Include="src\WindowedModeWindowState.ixx" />
+    <ClCompile Include="src\WindowedModeParams.ixx" />
     <ClCompile Include="src\WindowMessage.ixx" />
     <ClCompile Include="src\WindowMessageHandler.cpp" />
     <ClCompile Include="src\WindowMessageHandler.ixx" />

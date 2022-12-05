@@ -1,81 +1,20 @@
-#define OEMRESOURCE
-
 module;
 #include <vector>
 #include <memory>
 #include <cassert>
 #include <DxDef.h>
+#include <dwmapi.h>
 
 module Brawler.MonitorHub;
 import Util.Engine;
 import Util.General;
-import Brawler.Win32.WindowMessage;
-import Brawler.NZStringView;
-import Brawler.Application;
-import Brawler.Manifest;
-import Brawler.SettingID;
-import Brawler.SettingsManager;
-import Brawler.WindowDisplayMode;
-
-namespace
-{
-	static LRESULT WndProc(
-		const HWND hWnd,
-		const UINT uMsg,
-		const WPARAM wParam,
-		const LPARAM lParam
-	)
-	{
-		const Brawler::Win32::WindowMessage windowMsg{
-			.Msg = uMsg,
-			.WParam = wParam,
-			.LParam = lParam
-		};
-		
-		const Brawler::Win32::WindowMessageResult msgResult{ Brawler::MonitorHub::GetInstance().ProcessWindowMessage(hWnd, windowMsg) };
-		return (msgResult.MessageHandled ? msgResult.Result : DefWindowProc(hWnd, uMsg, wParam, lParam));
-	}
-
-	void RegisterBrawlerEngineWindowClass()
-	{
-		constexpr WNDCLASSEX DEFAULT_WINDOW_CLASS_VALUE{
-			.cbSize = sizeof(WNDCLASSEX),
-			.style = CS_DROPSHADOW,
-			.lpfnWndProc = WndProc,
-			.lpszClassName = Brawler::Manifest::WINDOW_CLASS_NAME_STR.C_Str()
-		};
-
-		WNDCLASSEX wndClass{ DEFAULT_WINDOW_CLASS_VALUE };
-		wndClass.hInstance = Brawler::GetApplication().GetInstanceHandle();
-
-		// TODO: Allow for the application to use a different HICON to change how it appears in
-		// the taskbar, among other places.
-
-		wndClass.hCursor = reinterpret_cast<HCURSOR>(LoadImage(
-			nullptr,
-			MAKEINTRESOURCE(OCR_NORMAL),
-			IMAGE_CURSOR,
-			0,
-			0,
-			LR_DEFAULTSIZE | LR_SHARED
-		));
-
-		const ATOM registerClassResult = RegisterClassEx(&wndClass);
-
-		if (registerClassResult == 0) [[unlikely]]
-			throw std::runtime_error{ "ERROR: The application's window class could not be registered!" };
-	}
-}
 
 namespace Brawler
 {
 	MonitorHub::MonitorHub() :
 		mMonitorArr(),
-		mHWndMap(),
-		mMsgHandler(),
 		mMonitorInfoGraph()
 	{
-		RegisterBrawlerEngineWindowClass();
 		EnumerateDisplayOutputs();
 
 		mMonitorInfoGraph.UpdateCachedMonitorInformation();
@@ -88,14 +27,6 @@ namespace Brawler
 	{
 		static MonitorHub instance{};
 		return instance;
-	}
-
-	Win32::WindowMessageResult MonitorHub::ProcessWindowMessage(const HWND hWnd, const Win32::WindowMessage& msg)
-	{
-		if (!mHWndMap.contains(hWnd)) [[unlikely]]
-			return Win32::UnhandledMessageResult();
-
-		return mHWndMap.at(hWnd)->ProcessWindowMessage(msg);
 	}
 
 	void MonitorHub::EnumerateDisplayOutputs()
@@ -157,6 +88,10 @@ namespace Brawler
 			}
 		}
 	}
+
+	/*
+	I'm going to leave this function as a comment for now, since it has some neat implementation hints
+	for window creation later on. This shouldn't stay here for long, though.
 
 	void MonitorHub::ResetApplicationWindows()
 	{
@@ -308,16 +243,7 @@ namespace Brawler
 				monitorPtr->GetAppWindow().ShowWindow(true);
 		}
 	}
-
-	WindowMessageHandler& MonitorHub::GetWindowMessageHandler()
-	{
-		return mMsgHandler;
-	}
-
-	const WindowMessageHandler& MonitorHub::GetWindowMessageHandler() const
-	{
-		return mMsgHandler;
-	}
+	*/
 
 	MonitorInfoGraph& MonitorHub::GetMonitorInfoGraph()
 	{
@@ -327,6 +253,56 @@ namespace Brawler
 	const MonitorInfoGraph& MonitorHub::GetMonitorInfoGraph() const
 	{
 		return mMonitorInfoGraph;
+	}
+
+	const Monitor& MonitorHub::GetMonitorFromPoint(const Math::Int2 desktopCoords) const
+	{
+		for (const auto& monitorPtr : mMonitorArr)
+		{
+			const RECT& monitorDesktopCoords{ monitorPtr->GetOutputDescription().DesktopCoordinates };
+			const bool isPointWithinMonitorBounds = (monitorDesktopCoords.left <= desktopCoords.GetX() && monitorDesktopCoords.right > desktopCoords.GetX() &&
+				monitorDesktopCoords.top <= desktopCoords.GetY() && monitorDesktopCoords.bottom > desktopCoords.GetY());
+
+			if (isPointWithinMonitorBounds)
+				return *monitorPtr;
+		}
+
+		return GetPrimaryMonitor();
+	}
+
+	const Monitor& MonitorHub::GetMonitorFromWindow(const AppWindow& window) const
+	{
+		// Get the window's RECT in screen coordinates.
+		const RECT windowScreenCoordsRect{ window.GetWindowRect() };
+
+		const Monitor* monitorWithGreatestIntersectionAreaPtr = nullptr;
+		std::uint32_t largestIntersectionAreaFound = std::numeric_limits<float>::min();
+
+		for (const auto& monitorPtr : mMonitorArr)
+		{
+			const RECT& monitorDesktopCoords{ monitorPtr->GetOutputDescription().DesktopCoordinates };
+			const RECT intersectionRect{
+				.left = std::max(windowScreenCoordsRect.left, monitorDesktopCoords.left),
+				.top = std::max(windowScreenCoordsRect.top, monitorDesktopCoords.top),
+				.right = std::min(windowScreenCoordsRect.right, monitorDesktopCoords.right),
+				.bottom = std::min(windowScreenCoordsRect.bottom, monitorDesktopCoords.bottom)
+			};
+
+			// If intersectionRect.left > intersectionRect.right and/or intersectionRect.top > intersectionRect.bottom,
+			// then the rectangles do *NOT* intersect.
+			if (intersectionRect.left <= intersectionRect.right && intersectionRect.top <= intersectionRect.bottom)
+			{
+				const std::uint32_t intersectionArea = static_cast<std::uint32_t>(intersectionRect.right - intersectionRect.left) * static_cast<std::uint32_t>(intersectionRect.bottom - intersectionRect.top);
+
+				if (intersectionArea > largestIntersectionAreaFound) [[likely]]
+				{
+					monitorWithGreatestIntersectionAreaPtr = monitorPtr.get();
+					largestIntersectionAreaFound = intersectionArea;
+				}
+			}
+		}
+
+		return (monitorWithGreatestIntersectionAreaPtr != nullptr ? *monitorWithGreatestIntersectionAreaPtr : GetPrimaryMonitor());
 	}
 
 	Monitor& MonitorHub::GetPrimaryMonitor()
@@ -343,21 +319,5 @@ namespace Brawler
 		assert(mMonitorArr[0] != nullptr);
 
 		return *(mMonitorArr[0]);
-	}
-
-	void MonitorHub::CreateWindowForMonitor(Monitor& monitor, const WindowDisplayMode displayMode)
-	{
-		std::unique_ptr<AppWindow> appWindowPtr{ std::make_unique<AppWindow>(displayMode) };
-		AppWindow* const rawAppWindowPtr = appWindowPtr.get();
-
-		monitor.AssignWindow(std::move(appWindowPtr));
-		
-		// Have the Monitor instance call AppWindow::SpawnWindow() on the AppWindow instance which we just
-		// assigned it. This will assign the AppWindow an HWND value, allowing it to receive window messages.
-		monitor.SpawnWindowForMonitor();
-
-		// Associate the HWND with its corresponding AppWindow instance. We need to do this in order to
-		// process window messages.
-		mHWndMap.try_emplace(rawAppWindowPtr->GetWindowHandle(), rawAppWindowPtr);
 	}
 }

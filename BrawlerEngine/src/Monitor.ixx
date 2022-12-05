@@ -5,7 +5,6 @@ module;
 #include <DxDef.h>
 
 export module Brawler.Monitor;
-import Brawler.AppWindow;
 import Brawler.WindowDisplayMode;
 import Brawler.Math.MathTypes;
 
@@ -31,16 +30,6 @@ export namespace Brawler
 
 		DXGI_FORMAT GetPreferredSwapChainFormat() const;
 
-		void AssignWindow(std::unique_ptr<AppWindow>&& appWindowPtr);
-		void ResetWindow();
-
-		void SpawnWindowForMonitor();
-
-		bool HasWindow() const;
-
-		AppWindow& GetAppWindow();
-		const AppWindow& GetAppWindow() const;
-
 		std::span<const Brawler::DXGI_MODE_DESC> GetDisplayModeSpan() const;
 
 	private:
@@ -59,11 +48,5 @@ export namespace Brawler
 		/// Keep in mind that the display modes are relevant for fullscreen swap chains.
 		/// </summary>
 		std::vector<Brawler::DXGI_MODE_DESC> mDisplayModeArr;
-
-		/// <summary>
-		/// We expect each Monitor instance to own at most one AppWindow instance. This is
-		/// why we do not store a std::vector of AppWindow instances.
-		/// </summary>
-		std::unique_ptr<AppWindow> mAppWindowPtr;
 	};
 }

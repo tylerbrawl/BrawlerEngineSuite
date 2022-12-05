@@ -7,6 +7,8 @@ export module Brawler.Application;
 import Brawler.WorkerThreadPool;
 import Brawler.D3D12.Renderer;
 import Brawler.ApplicationStateStack;
+import Brawler.AppWindow;
+import Brawler.MainWindowManager;
 
 export namespace Brawler
 {
@@ -37,6 +39,9 @@ export namespace Brawler
 		D3D12::Renderer& GetRenderer();
 		const D3D12::Renderer& GetRenderer() const;
 
+		AppWindow& GetMainAppWindow();
+		const AppWindow& GetMainAppWindow() const;
+
 		std::uint64_t GetCurrentUpdateTick() const;
 
 		void Terminate(const std::int32_t exitCode = 0);
@@ -60,6 +65,7 @@ export namespace Brawler
 		std::uint64_t mCurrUpdateTick;
 		std::atomic<bool> mRunning;
 		D3D12::Renderer mRenderer;
+		MainWindowManager mMainWindowManager;
 		ApplicationStateStack mStateStack;
 	};
 

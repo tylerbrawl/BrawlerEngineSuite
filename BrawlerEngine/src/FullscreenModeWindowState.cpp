@@ -16,11 +16,20 @@ import Util.Engine;
 import Brawler.MonitorHub;
 import Brawler.MonitorInfoGraph;
 import Brawler.Win32.MonitorInformation;
+import Brawler.Math.MathTypes;
+
+namespace
+{
+	static constexpr std::uint32_t WINDOW_STYLE_FULLSCREEN_MODE = 0;
+	static constexpr std::uint32_t WINDOW_STYLE_EX_FULLSCREEN_MODE = 0;
+}
 
 namespace Brawler
 {
-	FullscreenModeWindowState::FullscreenModeWindowState(AppWindow& owningWnd) :
-		I_WindowState<FullscreenModeWindowState>(owningWnd)
+	FullscreenModeWindowState::FullscreenModeWindowState(AppWindow& owningWnd, const FullscreenModeParams& params) :
+		I_WindowState<FullscreenModeWindowState>(owningWnd),
+		mMonitorPtr(&(params.AssociatedMonitor)),
+		mBestFullscreenModeDesc(GetBestFullscreenMode(params))
 	{}
 
 	Win32::WindowMessageResult FullscreenModeWindowState::ProcessWindowMessage(const Win32::WindowMessage& msg)
@@ -30,21 +39,16 @@ namespace Brawler
 
 	Win32::CreateWindowInfo FullscreenModeWindowState::GetCreateWindowInfo() const
 	{
-		constexpr std::uint32_t WINDOW_STYLE_FULLSCREEN_MODE = 0;
-		constexpr std::uint32_t WINDOW_STYLE_EX_FULLSCREEN_MODE = 0;
-
-		const Brawler::DXGI_OUTPUT_DESC& currMonitorDesc{ GetAppWindow().GetOwningMonitor().GetOutputDescription() };
+		const Brawler::DXGI_OUTPUT_DESC& currMonitorDesc{ mMonitorPtr->GetOutputDescription() };
 
 		DirectX::XMINT2 windowStartCoordinates{
 			currMonitorDesc.DesktopCoordinates.left,
 			currMonitorDesc.DesktopCoordinates.top
 		};
 
-		const Brawler::DXGI_MODE_DESC bestFullscreenMode{ GetBestFullscreenMode() };
-
 		DirectX::XMUINT2 windowSize{
-			bestFullscreenMode.Width,
-			bestFullscreenMode.Height
+			mBestFullscreenModeDesc.Width,
+			mBestFullscreenModeDesc.Height
 		};
 
 		return Win32::CreateWindowInfo{
@@ -57,17 +61,16 @@ namespace Brawler
 
 	SwapChainCreationInfo FullscreenModeWindowState::GetSwapChainCreationInfo() const
 	{
-		const Brawler::DXGI_OUTPUT_DESC& currMonitorDesc{ GetAppWindow().GetOwningMonitor().GetOutputDescription() };
-		const Brawler::DXGI_MODE_DESC bestFullscreenMode{ GetBestFullscreenMode() };
+		const Brawler::DXGI_OUTPUT_DESC& currMonitorDesc{ mMonitorPtr->GetOutputDescription() };
 
 		Brawler::DXGI_SWAP_CHAIN_DESC swapChainDesc{ GetDefaultSwapChainDescription() };
-		swapChainDesc.Width = bestFullscreenMode.Width;
-		swapChainDesc.Height = bestFullscreenMode.Height;
+		swapChainDesc.Width = mBestFullscreenModeDesc.Width;
+		swapChainDesc.Height = mBestFullscreenModeDesc.Height;
 
 		DXGI_SWAP_CHAIN_FULLSCREEN_DESC swapChainFullscreenDesc{
-			.RefreshRate{ bestFullscreenMode.RefreshRate },
-			.ScanlineOrdering = bestFullscreenMode.ScanlineOrdering,
-			.Scaling = bestFullscreenMode.Scaling,
+			.RefreshRate{ mBestFullscreenModeDesc.RefreshRate },
+			.ScanlineOrdering = mBestFullscreenModeDesc.ScanlineOrdering,
+			.Scaling = mBestFullscreenModeDesc.Scaling,
 			.Windowed = FALSE
 		};
 
@@ -78,19 +81,41 @@ namespace Brawler
 		};
 	}
 
-	void FullscreenModeWindowState::OnShowWindow()
-	{}
+	void FullscreenModeWindowState::UpdateWindowForDisplayMode()
+	{
+		const Brawler::DXGI_OUTPUT_DESC& currMonitorDesc{ mMonitorPtr->GetOutputDescription() };
 
-	Brawler::DXGI_MODE_DESC FullscreenModeWindowState::GetBestFullscreenMode() const
+		const Math::Int2 windowStartCoordinates{
+			currMonitorDesc.DesktopCoordinates.left,
+			currMonitorDesc.DesktopCoordinates.top
+		};
+
+		const Math::Int2 windowSize{
+			static_cast<std::int32_t>(mBestFullscreenModeDesc.Width),
+			static_cast<std::int32_t>(mBestFullscreenModeDesc.Height)
+		};
+
+		const Math::Int2 windowEndCoordinates{ windowStartCoordinates + windowSize };
+		
+		UpdateWindowStyle(WindowStyleParams{
+			.WindowStyle = WINDOW_STYLE_FULLSCREEN_MODE,
+			.WindowStyleEx = WINDOW_STYLE_EX_FULLSCREEN_MODE,
+			.WindowPosRect{
+				.left = windowStartCoordinates.GetX(),
+				.top = windowStartCoordinates.GetY(),
+				.right = windowEndCoordinates.GetX(),
+				.bottom = windowEndCoordinates.GetY()
+			}
+		});
+	}
+
+	Brawler::DXGI_MODE_DESC FullscreenModeWindowState::GetBestFullscreenMode(const FullscreenModeParams& params)
 	{
 		Brawler::DXGI_MODE_DESC desiredModeDesc{
-			.Width = Brawler::SettingsManager::GetInstance().GetOption<SettingID::FULLSCREEN_RESOLUTION_WIDTH>(),
-			.Height = Brawler::SettingsManager::GetInstance().GetOption<SettingID::FULLSCREEN_RESOLUTION_HEIGHT>(),
-			.RefreshRate{
-				.Numerator = Brawler::SettingsManager::GetInstance().GetOption<SettingID::FULLSCREEN_REFRESH_RATE_NUMERATOR>(),
-				.Denominator = Brawler::SettingsManager::GetInstance().GetOption<SettingID::FULLSCREEN_REFRESH_RATE_DENOMINATOR>()
-			},
-			.Format = GetAppWindow().GetOwningMonitor().GetPreferredSwapChainFormat(),
+			.Width = params.DesiredWidth,
+			.Height = params.DesiredHeight,
+			.RefreshRate{ params.DesiredRefreshRate },
+			.Format = params.AssociatedMonitor.GetPreferredSwapChainFormat(),
 			.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER::DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
 			.Scaling = DXGI_MODE_SCALING::DXGI_MODE_SCALING_UNSPECIFIED,
 			.Stereo = FALSE
@@ -102,7 +127,7 @@ namespace Brawler
 		//
 		// This means that we need to implement a search ourselves.
 
-		const std::span<const Brawler::DXGI_MODE_DESC> monitorDisplayModeSpan{ GetAppWindow().GetOwningMonitor().GetDisplayModeSpan() };
+		const std::span<const Brawler::DXGI_MODE_DESC> monitorDisplayModeSpan{ params.AssociatedMonitor.GetDisplayModeSpan() };
 		std::vector<const Brawler::DXGI_MODE_DESC*> modesForDesiredFormatArr{};
 
 		{
@@ -186,7 +211,7 @@ namespace Brawler
 
 		// In the unlikely event that this failed, then we should fallback to the system settings for the
 		// current Monitor.
-		const DISPLAYCONFIG_VIDEO_SIGNAL_INFO& currMonitorSignalInfo{ MonitorHub::GetInstance().GetMonitorInfoGraph().GetMonitorInformation(GetAppWindow().GetOwningMonitor()).TargetMode.targetVideoSignalInfo };
+		const DISPLAYCONFIG_VIDEO_SIGNAL_INFO& currMonitorSignalInfo{ MonitorHub::GetInstance().GetMonitorInfoGraph().GetMonitorInformation(*mMonitorPtr).TargetMode.targetVideoSignalInfo };
 		desiredModeDesc.Width = currMonitorSignalInfo.activeSize.cx;
 		desiredModeDesc.Height = currMonitorSignalInfo.activeSize.cy;
 		desiredModeDesc.RefreshRate.Numerator = currMonitorSignalInfo.vSyncFreq.Numerator;
