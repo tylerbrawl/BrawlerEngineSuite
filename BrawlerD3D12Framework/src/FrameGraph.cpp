@@ -130,30 +130,15 @@ namespace Brawler
 			mCmdAllocatorStorage.Initialize();
 		}
 
-		void FrameGraph::ProcessCurrentFrame(const std::span<const std::unique_ptr<I_RenderModule>> renderModuleSpan)
+		void FrameGraph::ProcessCurrentFrame(const FrameProcessingContext& context)
 		{
-			GenerateFrameGraph(renderModuleSpan);
+			GenerateFrameGraph(context);
 			SubmitFrameGraph();
 		}
 
-		void FrameGraph::AddPersistentFrameGraphCompletionCallback(std::move_only_function<void()>&& persistentCallback)
-		{
-			mCallbackCollection.AddPersistentCallback(std::move(persistentCallback));
-		}
-
-		void FrameGraph::AddTransientFrameGraphCompletionCallback(std::move_only_function<void()>&& transientCallback)
+		void FrameGraph::AddTransientFrameGraphCompletionCallback(CallbackType&& transientCallback)
 		{
 			mCallbackCollection.AddTransientCallback(std::move(transientCallback));
-		}
-
-		FrameGraphBlackboard& FrameGraph::GetBlackboard()
-		{
-			return mBlackboard;
-		}
-
-		const FrameGraphBlackboard& FrameGraph::GetBlackboard() const
-		{
-			return mBlackboard;
 		}
 
 		Brawler::D3D12CommandAllocator& FrameGraph::GetD3D12CommandAllocator(const GPUCommandQueueType queueType)
@@ -161,11 +146,14 @@ namespace Brawler
 			return mCmdAllocatorStorage.GetD3D12CommandAllocator(queueType);
 		}
 
-		void FrameGraph::GenerateFrameGraph(const std::span<const std::unique_ptr<I_RenderModule>> renderModuleSpan)
+		void FrameGraph::GenerateFrameGraph(const FrameProcessingContext& context)
 		{
 			ResetFrameGraph();
 
-			std::vector<FrameGraphBuilder> frameGraphBuilderArr{ CreateFrameGraphBuilders(renderModuleSpan) };
+			// Execute any FrameGraph completion callback functions.
+			mCallbackCollection.ExecuteFrameGraphCompletionCallbacks(context.PersistentCallbackArr);
+
+			std::vector<FrameGraphBuilder> frameGraphBuilderArr{ CreateFrameGraphBuilders(context.RenderModuleSpan) };
 
 			// Move all of the transient GPU resources into the TransientGPUResourceManager.
 			for (auto& builder : frameGraphBuilderArr)
@@ -202,7 +190,6 @@ namespace Brawler
 			// clean-up actions as necessary.
 
 			Util::Engine::GetGPUResourceDescriptorHeap().ResetPerFrameDescriptorHeapIndex();
-			mBlackboard.ClearBlackboard();
 			mTransientResourceManager.DeleteTransientResources();
 			mFenceCollection.Reset();
 			mCmdAllocatorStorage.ResetCommandAllocators();

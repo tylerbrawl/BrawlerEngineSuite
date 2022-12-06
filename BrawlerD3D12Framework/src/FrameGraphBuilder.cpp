@@ -91,18 +91,6 @@ namespace Brawler
 			return *mFrameGraphPtr;
 		}
 
-		FrameGraphBlackboard& FrameGraphBuilder::GetBlackboard()
-		{
-			assert(mFrameGraphPtr != nullptr);
-			return mFrameGraphPtr->GetBlackboard();
-		}
-
-		const FrameGraphBlackboard& FrameGraphBuilder::GetBlackboard() const
-		{
-			assert(mFrameGraphPtr != nullptr);
-			return mFrameGraphPtr->GetBlackboard();
-		}
-
 		std::span<RenderPassBundle> FrameGraphBuilder::GetRenderPassBundleSpan()
 		{
 			return std::span<RenderPassBundle>{ mRenderPassBundleArr };

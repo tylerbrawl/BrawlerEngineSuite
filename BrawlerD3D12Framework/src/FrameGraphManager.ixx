@@ -11,6 +11,7 @@ import Brawler.D3D12.FrameGraph;
 import Util.Engine;
 import Brawler.D3D12.I_RenderModule;
 import Brawler.D3D12.GPUCommandQueueType;
+import Brawler.ThreadSafeVector;
 
 // No RTTI? No problem!
 namespace Brawler
@@ -33,6 +34,9 @@ export namespace Brawler
 	{
 		class FrameGraphManager
 		{
+		private:
+			using CallbackType = std::move_only_function<void()>;
+
 		public:
 			FrameGraphManager() = default;
 
@@ -46,8 +50,8 @@ export namespace Brawler
 
 			void ProcessCurrentFrame();
 
-			void AddPersistentFrameGraphCompletionCallback(std::move_only_function<void()>&& persistentCallback);
-			void AddTransientFrameGraphCompletionCallback(std::move_only_function<void()>&& transientCallback);
+			void AddPersistentFrameGraphCompletionCallback(CallbackType&& persistentCallback);
+			void AddTransientFrameGraphCompletionCallback(CallbackType&& transientCallback);
 
 			template <typename T, typename... Args>
 				requires std::derived_from<T, I_RenderModule>
@@ -69,6 +73,31 @@ export namespace Brawler
 
 		private:
 			std::array<FrameGraph, Util::Engine::MAX_FRAMES_IN_FLIGHT> mFrameGraphArr;
+
+			/// <summary>
+			/// We use multithreaded execution of callback functions, which is why we need to
+			/// wrap each persistent CallbackType instance around a std::unique_ptr. Otherwise, 
+			/// we would have a race condition where the following could potentially happen:
+			/// 
+			///   - Thread A calls FrameGraphCallbackCollection::ExecuteFrameGraphCallbacks() and
+			///     adds a CPU job to a JobGroup which captures a persistent CallbackType instance
+			///     by reference.
+			/// 
+			///   - Thread B calls FrameGraphManager::AddPersistentFrameGraphCompletionCallback() to 
+			///     add a new persistent CallbackType instance to mPersistentCallbackArr. This causes
+			///     the underlying std::vector to perform a re-size to store the new callback
+			///     function, invalidating the reference to the persistent CallbackType instance
+			///     made by Thread A.
+			/// 
+			///   - Some thread executes the CPU job created by Thread A and attempts to access the
+			///     persistent CallbackType instance captured by reference. Since this memory
+			///     location now refers to garbage, we just invoked undefined behavior.
+			/// 
+			/// Yes, this is slow (std::move_only_function definitely already has a virtual function
+			/// call and might also have its own heap allocation), but it's necessary as shown above.
+			/// </summary>
+			Brawler::ThreadSafeVector<std::unique_ptr<CallbackType>> mPersistentCallbackPtrArr;
+
 			std::vector<std::unique_ptr<I_RenderModule>> mRenderModuleArr;
 		};
 	}

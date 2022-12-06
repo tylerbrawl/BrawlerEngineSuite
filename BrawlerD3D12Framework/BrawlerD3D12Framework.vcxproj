@@ -478,10 +478,6 @@
     <ClCompile Include="src\EngineUtil.ixx" />
     <ClCompile Include="src\FrameGraph.cpp" />
     <ClCompile Include="src\FrameGraph.ixx" />
-    <ClCompile Include="src\FrameGraphBlackboard.cpp" />
-    <ClCompile Include="src\FrameGraphBlackboard.ixx" />
-    <ClCompile Include="src\FrameGraphBlackboardComponent.ixx" />
-    <ClCompile Include="src\FrameGraphBlackboardComponentMap.ixx" />
     <ClCompile Include="src\FrameGraphBuilder.cpp" />
     <ClCompile Include="src\FrameGraphBuilder.ixx" />
     <ClCompile Include="src\FrameGraphExecutionContext.cpp" />

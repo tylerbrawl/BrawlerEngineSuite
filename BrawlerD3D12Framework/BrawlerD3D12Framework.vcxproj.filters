@@ -82,12 +82,6 @@
     <Filter Include="Source Files\GPU Work Submission\Frame Graph">
       <UniqueIdentifier>{246ec2eb-20ca-4107-9208-00c8fb11a5af}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module Files\GPU Work Submission\Frame Graph\Blackboard">
-      <UniqueIdentifier>{fe911240-91fc-421a-b153-8c358e1b6394}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\GPU Work Submission\Frame Graph\Blackboard">
-      <UniqueIdentifier>{4c06d846-8c83-499c-813c-120647f31f66}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Module Files\GPU Work Submission\Frame Graph\Compilation">
       <UniqueIdentifier>{1666afcc-8217-4ea6-a1f8-c59bb0c7aad9}</UniqueIdentifier>
     </Filter>
@@ -485,18 +479,6 @@
     </ClCompile>
     <ClCompile Include="src\FrameGraphBuilder.cpp">
       <Filter>Source Files\GPU Work Submission\Frame Graph</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FrameGraphBlackboard.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\Blackboard</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FrameGraphBlackboardComponent.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\Blackboard</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FrameGraphBlackboardComponentMap.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\Blackboard</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FrameGraphBlackboard.cpp">
-      <Filter>Source Files\GPU Work Submission\Frame Graph\Blackboard</Filter>
     </ClCompile>
     <ClCompile Include="src\FrameGraphExecutionContext.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph</Filter>

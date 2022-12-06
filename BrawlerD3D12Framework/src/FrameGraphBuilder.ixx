@@ -6,7 +6,6 @@ export module Brawler.D3D12.FrameGraphBuilder;
 import Brawler.D3D12.RenderPass;
 import Brawler.D3D12.RenderPassBundle;
 import Brawler.D3D12.GPUCommandQueueType;
-import Brawler.D3D12.FrameGraphBlackboard;
 import Brawler.D3D12.GPUResourceLifetimeType;
 import Brawler.SortedVector;
 
@@ -67,9 +66,6 @@ export namespace Brawler
 
 			FrameGraph& GetFrameGraph();
 			const FrameGraph& GetFrameGraph() const;
-
-			FrameGraphBlackboard& GetBlackboard();
-			const FrameGraphBlackboard& GetBlackboard() const;
 
 			std::span<RenderPassBundle> GetRenderPassBundleSpan();
 

@@ -8,12 +8,12 @@ module;
 export module Brawler.D3D12.FrameGraph;
 import :FrameGraphCallbackCollection;
 import Brawler.D3D12.I_RenderModule;
-import Brawler.D3D12.FrameGraphBlackboard;
 import Brawler.D3D12.TransientGPUResourceManager;
 import Brawler.D3D12.FrameGraphExecutionContext;
 import Brawler.D3D12.FrameGraphFenceCollection;
 import Brawler.D3D12.CommandAllocatorStorage;
 import Brawler.D3D12.GPUCommandQueueType;
+import Brawler.ThreadSafeVector;
 
 namespace Brawler
 {
@@ -29,6 +29,16 @@ export namespace Brawler
 	{
 		class FrameGraph
 		{
+		private:
+			using CallbackType = std::move_only_function<void()>;
+
+		public:
+			struct FrameProcessingContext
+			{
+				std::span<const std::unique_ptr<I_RenderModule>> RenderModuleSpan;
+				const Brawler::ThreadSafeVector<std::unique_ptr<CallbackType>>& PersistentCallbackArr;
+			};
+
 		public:
 			FrameGraph() = default;
 
@@ -40,18 +50,14 @@ export namespace Brawler
 
 			void Initialize();
 
-			void ProcessCurrentFrame(const std::span<const std::unique_ptr<I_RenderModule>> renderModuleSpan);
+			void ProcessCurrentFrame(const FrameProcessingContext& context);
 
-			void AddPersistentFrameGraphCompletionCallback(std::move_only_function<void()>&& persistentCallback);
-			void AddTransientFrameGraphCompletionCallback(std::move_only_function<void()>&& transientCallback);
-
-			FrameGraphBlackboard& GetBlackboard();
-			const FrameGraphBlackboard& GetBlackboard() const;
+			void AddTransientFrameGraphCompletionCallback(CallbackType&& transientCallback);
 
 			Brawler::D3D12CommandAllocator& GetD3D12CommandAllocator(const GPUCommandQueueType queueType);
 
 		private:
-			void GenerateFrameGraph(const std::span<const std::unique_ptr<I_RenderModule>> renderModuleSpan);
+			void GenerateFrameGraph(const FrameProcessingContext& context);
 			void SubmitFrameGraph();
 
 			void WaitForPreviousFrameGraphExecution() const;
@@ -63,7 +69,6 @@ export namespace Brawler
 		private:
 			FrameGraphFenceCollection mFenceCollection;
 			TransientGPUResourceManager mTransientResourceManager;
-			FrameGraphBlackboard mBlackboard;
 			FrameGraphExecutionContext mExecutionContext;
 			CommandAllocatorStorage mCmdAllocatorStorage;
 			FrameGraphCallbackCollection mCallbackCollection;

@@ -10,14 +10,6 @@ namespace Brawler
 {
 	namespace D3D12
 	{
-		void FrameGraphCallbackCollection::AddPersistentCallback(CallbackType&& callback)
-		{
-			// Invoking an empty std::move_only_function instance results in undefined behavior.
-			assert(callback && "ERROR: An attempt was made to specify an empty std::move_only_function instance in a call to FrameGraphCallbackCollection::AddPersistentCallback()!");
-			
-			mPersistentCallbackArr.PushBack(std::make_unique<CallbackType>(std::move(callback)));
-		}
-
 		void FrameGraphCallbackCollection::AddTransientCallback(CallbackType&& callback)
 		{
 			// Invoking an empty std::move_only_function instance results in undefined behavior.
@@ -26,13 +18,13 @@ namespace Brawler
 			mTransientCallbackArr.PushBack(std::move(callback));
 		}
 
-		void FrameGraphCallbackCollection::ExecuteFrameGraphCompletionCallbacks()
+		void FrameGraphCallbackCollection::ExecuteFrameGraphCompletionCallbacks(const Brawler::ThreadSafeVector<std::unique_ptr<CallbackType>>& persistentCallbackArr)
 		{
 			Brawler::JobGroup executionJobGroup{};
 
 			// Capture each persistent CallbackType instance by reference, since we are going to
 			// need it in subsequent frames.
-			mPersistentCallbackArr.ForEach([&executionJobGroup] (const std::unique_ptr<CallbackType>& callbackPtr)
+			persistentCallbackArr.ForEach([&executionJobGroup] (const std::unique_ptr<CallbackType>& callbackPtr)
 			{
 				CallbackType& currCallback{ *callbackPtr };
 				executionJobGroup.AddJob([&currCallback] () { currCallback(); });

@@ -9,6 +9,7 @@ import Util.Engine;
 import Brawler.D3D12.GPUCapabilities;
 import Brawler.D3D12.Tier1GPUResourceHeapManager;
 import Brawler.D3D12.Tier2GPUResourceHeapManager;
+import Brawler.D3D12.GPUResourceLifetimeType;
 
 namespace Brawler
 {
@@ -31,7 +32,10 @@ namespace Brawler
 			mTransientResourceArr.reserve(mTransientResourceArr.size() + transientResourceSpan.size());
 			
 			for (auto&& resource : transientResourceSpan)
+			{
+				assert(resource->GetGPUResourceLifetimeType() == GPUResourceLifetimeType::TRANSIENT && "ERROR: An attempt was made to add a persistent I_GPUResource instance to a TransientGPUResourceManager in a call to TransientGPUResourceManager::AddTransientResources()!");
 				mTransientResourceArr.push_back(std::move(resource));
+			}
 		}
 
 		void TransientGPUResourceManager::DeleteTransientResources()

@@ -4,6 +4,7 @@ module;
 #include <memory>
 #include <vector>
 #include <array>
+#include <cassert>
 #include "DxDef.h"
 
 module Brawler.D3D12.FrameGraphManager;
@@ -21,15 +22,23 @@ namespace Brawler
 		void FrameGraphManager::ProcessCurrentFrame()
 		{
 			FrameGraph& currFrameGraph{ GetCurrentFrameGraph() };
-			currFrameGraph.ProcessCurrentFrame(std::span<const std::unique_ptr<I_RenderModule>>{ mRenderModuleArr });
+			const FrameGraph::FrameProcessingContext frameProcessingContext{
+				.RenderModuleSpan{ mRenderModuleArr },
+				.PersistentCallbackArr{ mPersistentCallbackPtrArr }
+			};
+
+			currFrameGraph.ProcessCurrentFrame(frameProcessingContext);
 		}
 
-		void FrameGraphManager::AddPersistentFrameGraphCompletionCallback(std::move_only_function<void()>&& persistentCallback)
+		void FrameGraphManager::AddPersistentFrameGraphCompletionCallback(CallbackType&& persistentCallback)
 		{
-			GetCurrentFrameGraph().AddPersistentFrameGraphCompletionCallback(std::move(persistentCallback));
+			// Invoking an empty std::move_only_function instance results in undefined behavior.
+			assert(persistentCallback && "ERROR: An attempt was made to specify an empty std::move_only_function instance in a call to FrameGraphManager::AddPersistentFrameGraphCompletionCallback()!");
+
+			mPersistentCallbackPtrArr.PushBack(std::make_unique<CallbackType>(std::move(persistentCallback)));
 		}
 
-		void FrameGraphManager::AddTransientFrameGraphCompletionCallback(std::move_only_function<void()>&& transientCallback)
+		void FrameGraphManager::AddTransientFrameGraphCompletionCallback(CallbackType&& transientCallback)
 		{
 			GetCurrentFrameGraph().AddTransientFrameGraphCompletionCallback(std::move(transientCallback));
 		}
