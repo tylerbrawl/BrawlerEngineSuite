@@ -4,15 +4,10 @@ export module Brawler.I_ApplicationState;
 
 export namespace Brawler
 {
-	class ApplicationStateStack;
-}
-
-export namespace Brawler
-{
 	class I_ApplicationState
 	{
 	protected:
-		explicit I_ApplicationState(ApplicationStateStack& stateStack);
+		I_ApplicationState() = default;
 
 	public:
 		virtual ~I_ApplicationState() = default;
@@ -30,7 +25,7 @@ export namespace Brawler
 		/// should also be updated and false otherwise.
 		/// </summary>
 		/// <param name="dt">
-		/// - The time (in milliseconds) which is to be used as the timestep for updates.
+		/// - The time, in seconds, which is to be used as the timestep for updates.
 		/// </param>
 		/// <returns>
 		/// Derived classes should implement this function to return true if I_ApplicationState
@@ -38,12 +33,5 @@ export namespace Brawler
 		/// and false otherwise.
 		/// </returns>
 		virtual bool Update(const float dt) = 0;
-
-	protected:
-		ApplicationStateStack& GetStateStack();
-		const ApplicationStateStack& GetStateStack() const;
-
-	private:
-		ApplicationStateStack* mOwningStack;
 	};
 }

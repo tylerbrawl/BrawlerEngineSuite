@@ -16,31 +16,40 @@ namespace Brawler
 	{
 		mPreFrameUpdateSubModule.AddPreFrameBufferUpdate(std::move(preFrameUpdate));
 	}
+
+	void GPUSceneUpdateRenderModule::ScheduleGenericTextureUpdateForNextFrame(GenericPreFrameTextureUpdate&& preFrameUpdate)
+	{
+		mPreFrameUpdateSubModule.AddPreFrameTextureUpdate(std::move(preFrameUpdate));
+	}
 	
 	bool GPUSceneUpdateRenderModule::IsRenderModuleEnabled() const
 	{
 		// Don't bother trying to create RenderPass instances for GPU scene updates if there are
 		// no updates to perform this frame.
 		
-		return (mBufferUpdateSubModule.HasScheduledBufferUpdates() || mPreFrameUpdateSubModule.HasPendingUpdates());
+		return (mBufferUpdateSubModule.HasScheduledBufferUpdates() || mPreFrameUpdateSubModule.HasPendingBufferUpdates() ||
+			mPreFrameUpdateSubModule.HasPendingTextureUpdates());
 	}
 
 	void GPUSceneUpdateRenderModule::BuildFrameGraph(D3D12::FrameGraphBuilder& builder)
 	{
 		const bool shouldPerformBufferUpdates = mBufferUpdateSubModule.HasScheduledBufferUpdates();
-		const bool shouldPerformGenericPreFrameUpdates = mPreFrameUpdateSubModule.HasPendingUpdates();
+		const bool shouldPerformGenericPreFrameBufferUpdates = mPreFrameUpdateSubModule.HasPendingBufferUpdates();
+		const bool shouldPerformGenericPreFrameTextureUpdates = mPreFrameUpdateSubModule.HasPendingTextureUpdates();
 
 		// The FrameGraph system should not call this function if GPUSceneUpdateRenderModule::IsRenderModuleEnabled()
 		// returns false.
-		assert(shouldPerformBufferUpdates || shouldPerformGenericPreFrameUpdates);
+		assert(shouldPerformBufferUpdates || shouldPerformGenericPreFrameBufferUpdates || shouldPerformGenericPreFrameTextureUpdates);
 
 		// We don't need to use std::optional here; we can just verify whether or not the RenderPass
 		// instances contain valid values based on the boolean variables above.
 		GPUSceneBufferUpdateSubModule::GPUSceneBufferUpdatePassTuple gpuSceneBufferUpdatesTuple{};
 		GenericPreFrameUpdateSubModule::BufferUpdateRenderPass_T genericPreFrameBufferUpdatePass{};
+		GenericPreFrameUpdateSubModule::TextureUpdateRenderPass_T genericPreFrameTextureUpdatePass{};
 
 		D3D12::FrameGraph& currFrameGraph{ builder.GetFrameGraph() };
-		std::array<D3D12::FrameGraphBuilder, 2> extraBuildersArr{
+		std::array<D3D12::FrameGraphBuilder, 3> extraBuildersArr{
+			D3D12::FrameGraphBuilder{ currFrameGraph },
 			D3D12::FrameGraphBuilder{ currFrameGraph },
 			D3D12::FrameGraphBuilder{ currFrameGraph }
 		};
@@ -58,12 +67,21 @@ namespace Brawler
 			});
 		}
 
-		if (shouldPerformGenericPreFrameUpdates)
+		if (shouldPerformGenericPreFrameBufferUpdates)
 		{
 			D3D12::FrameGraphBuilder& genericPreFrameBufferUpdatePassBuilder{ extraBuildersArr[1] };
 			gpuSceneUpdatePassCreationGroup.AddJob([this, &genericPreFrameBufferUpdatePass, &genericPreFrameBufferUpdatePassBuilder] ()
 			{
 				genericPreFrameBufferUpdatePass = mPreFrameUpdateSubModule.CreateBufferUpdateRenderPass(genericPreFrameBufferUpdatePassBuilder);
+			});
+		}
+
+		if (shouldPerformGenericPreFrameTextureUpdates)
+		{
+			D3D12::FrameGraphBuilder& genericPreFrameTextureUpdatePassBuilder{ extraBuildersArr[2] };
+			gpuSceneUpdatePassCreationGroup.AddJob([this, &genericPreFrameTextureUpdatePass, &genericPreFrameTextureUpdatePassBuilder] ()
+			{
+				genericPreFrameTextureUpdatePass = mPreFrameUpdateSubModule.CreateTextureUpdateRenderPass(genericPreFrameTextureUpdatePassBuilder);
 			});
 		}
 
@@ -91,10 +109,16 @@ namespace Brawler
 			builder.MergeFrameGraphBuilder(std::move(extraBuildersArr[0]));
 		}
 
-		if (shouldPerformGenericPreFrameUpdates)
+		if (shouldPerformGenericPreFrameBufferUpdates)
 		{
 			gpuSceneUpdatePassBundle.AddRenderPass(std::move(genericPreFrameBufferUpdatePass));
 			builder.MergeFrameGraphBuilder(std::move(extraBuildersArr[1]));
+		}
+
+		if (shouldPerformGenericPreFrameTextureUpdates)
+		{
+			gpuSceneUpdatePassBundle.AddRenderPass(std::move(genericPreFrameTextureUpdatePass));
+			builder.MergeFrameGraphBuilder(std::move(extraBuildersArr[2]));
 		}
 
 		builder.AddRenderPassBundle(std::move(gpuSceneUpdatePassBundle));

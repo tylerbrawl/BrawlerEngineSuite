@@ -4,6 +4,7 @@ module;
 
 export module Brawler.FrameGraphBlackboard:FrameGraphBlackboardElementMap;
 import Brawler.FrameGraphBlackboardElementID;
+import Brawler.DeferredRasterGBuffer;
 
 namespace Brawler
 {
@@ -18,6 +19,10 @@ namespace Brawler
 	{
 		using ElementType = ElementType_;
 	};
+
+	template <>
+	struct BlackboardElementIDMap<FrameGraphBlackboardElementID::DEFERRED_RASTER_GBUFFER> : public BlackboardElementIDMapInstantiation<DeferredRasterGBuffer>
+	{};
 }
 
 namespace Brawler
@@ -54,4 +59,7 @@ namespace Brawler
 export namespace Brawler
 {
 	using BlackboardElementTuple_T = typename BlackboardElementTupleSolver<std::to_underlying(FrameGraphBlackboardID::COUNT_OR_ERROR)>::ResultType;
+
+	template <FrameGraphBlackboardElementID ElementID>
+	using BlackboardElement_T = typename BlackboardElementIDMap<ElementID>::ElementType;
 }

@@ -246,8 +246,10 @@
     <ClCompile Include="src\ApplicationStateStackRequestBundle.cpp" />
     <ClCompile Include="src\AppWindow.cpp" />
     <ClCompile Include="src\AppWindow.ixx" />
-    <ClCompile Include="src\AppWindowOld.cpp" />
-    <ClCompile Include="src\AppWindowOld.ixx" />
+    <ClCompile Include="src\AssimpLoadState.cpp" />
+    <ClCompile Include="src\AssimpLoadState.ixx" />
+    <ClCompile Include="src\AssimpMaterialLoader.cpp" />
+    <ClCompile Include="src\AssimpMaterialLoader.ixx" />
     <ClCompile Include="src\BlackboardTransientResourceBuilder.cpp" />
     <ClCompile Include="src\BlackboardTransientResourceBuilder.ixx" />
     <ClCompile Include="src\BorderlessWindowedModeParams.ixx" />
@@ -255,12 +257,15 @@
     <ClCompile Include="src\Camera.ixx" />
     <ClCompile Include="src\DeferredRasterGBuffer.cpp" />
     <ClCompile Include="src\DeferredRasterGBuffer.ixx" />
+    <ClCompile Include="src\FrameGraphBlackboard.cpp" />
     <ClCompile Include="src\FrameGraphBlackboard.ixx" />
     <ClCompile Include="src\FrameGraphBlackboardElementID.ixx" />
     <ClCompile Include="src\FrameGraphBlackboardElementMap.ixx" />
     <ClCompile Include="src\FullscreenModeParams.ixx" />
     <ClCompile Include="src\GenericPreFrameBufferUpdate.cpp" />
     <ClCompile Include="src\GenericPreFrameBufferUpdate.ixx" />
+    <ClCompile Include="src\GenericPreFrameTextureUpdate.cpp" />
+    <ClCompile Include="src\GenericPreFrameTextureUpdate.ixx" />
     <ClCompile Include="src\GenericPreFrameUpdateSubModule.cpp" />
     <ClCompile Include="src\GenericPreFrameUpdateSubModule.ixx" />
     <ClCompile Include="src\GlobalTexture.ixx" />
@@ -323,7 +328,6 @@
     <ClCompile Include="src\IndexBuffer.ixx" />
     <ClCompile Include="src\IndirectionTextureUpdater.cpp" />
     <ClCompile Include="src\IndirectionTextureUpdater.ixx" />
-    <ClCompile Include="src\I_ApplicationState.cpp" />
     <ClCompile Include="src\I_ApplicationState.ixx" />
     <ClCompile Include="src\ApplicationStateStackRequest.ixx" />
     <ClCompile Include="src\I_MaterialDefinition.cpp" />

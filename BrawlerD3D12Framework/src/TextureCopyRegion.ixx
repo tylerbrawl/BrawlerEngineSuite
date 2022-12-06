@@ -15,6 +15,7 @@ export namespace Brawler
 		{
 		public:
 			TextureCopyRegion() = default;
+			explicit TextureCopyRegion(const TextureSubResource& textureSubResource);
 
 			template <typename T>
 				requires std::is_same_v<std::decay_t<T>, CD3DX12_BOX>

@@ -6,6 +6,7 @@ import Brawler.D3D12.I_RenderModule;
 import Brawler.GPUSceneBufferUpdateSubModule;
 import Brawler.GenericPreFrameUpdateSubModule;
 import Brawler.GenericPreFrameBufferUpdate;
+import Brawler.GenericPreFrameTextureUpdate;
 import Brawler.GPUSceneBufferID;
 import Brawler.GPUSceneBufferUpdateOperation;
 
@@ -26,6 +27,7 @@ export namespace Brawler
 		void ScheduleGPUSceneBufferUpdateForNextFrame(GPUSceneBufferUpdateOperation<BufferID>&& updateOperation);
 
 		void ScheduleGenericBufferUpdateForNextFrame(GenericPreFrameBufferUpdate&& preFrameUpdate);
+		void ScheduleGenericTextureUpdateForNextFrame(GenericPreFrameTextureUpdate&& preFrameUpdate);
 
 		bool IsRenderModuleEnabled() const override;
 

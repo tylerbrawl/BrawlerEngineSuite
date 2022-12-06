@@ -20,16 +20,14 @@ namespace Brawler
 	void ApplicationStateStackRequestBundle::RequestStatePop()
 	{
 		mRequestArr.push_back(IMPL::ApplicationStateStackRequest{
-			.Type = IMPL::ApplicationStateStackRequestType::POP,
-			.StateID = ApplicationStateID::COUNT_OR_ERROR
+			.Type = IMPL::ApplicationStateStackRequestType::POP
 		});
 	}
 
 	void ApplicationStateStackRequestBundle::RequestStateClear()
 	{
 		mRequestArr.push_back(IMPL::ApplicationStateStackRequest{
-			.Type = IMPL::ApplicationStateStackRequestType::CLEAR,
-			.StateID = ApplicationStateID::COUNT_OR_ERROR
+			.Type = IMPL::ApplicationStateStackRequestType::CLEAR
 		});
 	}
 

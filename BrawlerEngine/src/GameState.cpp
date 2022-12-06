@@ -1,12 +1,12 @@
 module;
 
 module Brawler.GameState;
-import Brawler.ApplicationStateStack;
 
 namespace Brawler
 {
-	GameState::GameState(ApplicationStateStack& stateStack) :
-		I_ApplicationState(stateStack)
+	GameState::GameState(World&& world) :
+		I_ApplicationState(),
+		mWorld(std::move(world))
 	{}
 
 	bool GameState::Update(const float dt)

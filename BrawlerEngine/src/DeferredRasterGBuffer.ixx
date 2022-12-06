@@ -42,6 +42,10 @@ export namespace Brawler
 		void AccessRenderTargetBundle(const Callback& callback) const;
 
 	private:
+		void CreateGBufferResources(BlackboardTransientResourceBuilder& builder);
+		void CreateRenderTargetBundle();
+
+	private:
 		D3D12::Texture2D* mBaseColorRoughnessGBufferPtr;
 		D3D12::Texture2D* mEncodedNormalGBufferPtr;
 		D3D12::Texture2D* mMetallicGBufferPtr;

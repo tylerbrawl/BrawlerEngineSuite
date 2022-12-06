@@ -20,7 +20,7 @@ namespace Brawler
 
 	void ApplicationStateStack::SubmitStateStackRequestBundle(ApplicationStateStackRequestBundle&& requestBundle)
 	{
-		bool result = mRequestQueue.PushBack(std::move(requestBundle));
+		[[maybe_unused]] const bool result = mRequestQueue.PushBack(std::move(requestBundle));
 		assert(result && "ERROR: The ApplicationStateStack request queue could not contain all of the submitted bundles before the next update tick!");
 	}
 
@@ -61,8 +61,8 @@ namespace Brawler
 			{
 			case IMPL::ApplicationStateStackRequestType::PUSH:
 			{
-				std::unique_ptr<I_ApplicationState> statePtr{ CreateApplicationState(request.StateID, *this) };
-				mStateStack.push_back(std::move(statePtr));
+				assert(request.StatePtr != nullptr);
+				mStateStack.push_back(std::move(request.StatePtr));
 
 				break;
 			}
@@ -85,6 +85,7 @@ namespace Brawler
 			default:
 			{
 				assert(false && "ERROR: An unhandled IMPL::ApplicationStateStackRequestType was detected! (See ApplicationStateStack::ProcessRequestBundle() in ApplicationStateStack.cpp.)");
+				std::unreachable();
 
 				break;
 			}

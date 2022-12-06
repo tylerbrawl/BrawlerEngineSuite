@@ -14,7 +14,7 @@ export namespace Brawler
 	class GameState : public I_ApplicationState
 	{
 	public:
-		explicit GameState(ApplicationStateStack& stateStack);
+		explicit GameState(World&& world);
 
 		bool Update(const float dt) override;
 

@@ -48,11 +48,11 @@ namespace
 		// over to a separate texture in a RenderPass executed before the compute shader.
 		depthBufferBuilder.AllowShaderResourceViews();
 
-		// We use reverse Z-depth buffers, so it's worth considering how we want to clear
-		// it. Mathematically, we treat reverse Z-depth as mapping the Z-ranges [n, f] in
-		// view space to [1, 0] in NDC space, where n and f are the near and far planes,
-		// respectively. This is in contrast to traditional depth buffers, which map [n, f]
-		// in view space to [0, 1] in NDC space.
+		// We use reverse Z-depth buffers (because why wouldn't you at this point), so it's 
+		// worth considering how we want to clear it. Mathematically, we treat reverse Z-depth 
+		// as mapping the Z-ranges [n, f] in view space to [1, 0] in NDC space, where n and 
+		// f are the near and far planes, respectively. This is in contrast to traditional 
+		// depth buffers, which map [n, f] in view space to [0, 1] in NDC space.
 		//
 		// Regardless of whether we use regular or reverse Z-depth buffers, we want to
 		// clear our depth buffers such that any draw within the view frustum in between
@@ -64,6 +64,7 @@ namespace
 		// to Z = 0.0f in NDC space. This is the default behavior provided by the
 		// Brawler::D3D12::DepthStencilTextureBuilder instance, so we don't need to
 		// call DepthStencilTextureBuilder::SetOptimizedClearValue().
+
 		depthBufferBuilder.SetPreferredSpecialInitializationMethod(Brawler::D3D12::GPUResourceSpecialInitializationMethod::CLEAR);
 
 		return depthBufferBuilder;
@@ -74,7 +75,8 @@ namespace Brawler
 {
 	void DeferredRasterGBuffer::InitializeTransientResources(BlackboardTransientResourceBuilder& builder)
 	{
-		const Math::UInt2 gBufferResolution{ Brawler::GetApplication().GetMainAppWindow().GetSuggestedRenderResolution() };
+		CreateGBufferResources(builder);
+		CreateRenderTargetBundle();
 	}
 
 	D3D12::Texture2D& DeferredRasterGBuffer::GetBaseColorRoughnessGBuffer()
@@ -123,5 +125,53 @@ namespace Brawler
 	{
 		assert(mDepthBufferPtr != nullptr);
 		return *mDepthBufferPtr;
+	}
+
+	void DeferredRasterGBuffer::CreateGBufferResources(BlackboardTransientResourceBuilder& builder)
+	{
+		const Math::UInt2 gBufferResolution{ Brawler::GetApplication().GetMainAppWindow().GetSuggestedRenderResolution() };
+
+		// Build the base color and roughness G-buffer.
+		{
+			D3D12::RenderTargetTexture2DBuilder baseColorRoughnessGBufferBuilder{ BASE_COLOR_ROUGHNESS_GBUFFER_BUILDER };
+			baseColorRoughnessGBufferBuilder.SetTextureDimensions(gBufferResolution.GetX(), gBufferResolution.GetY());
+
+			mBaseColorRoughnessGBufferPtr = &(builder.CreateTransientResource<D3D12::Texture2D>(baseColorRoughnessGBufferBuilder));
+		}
+
+		// Build the encoded normal G-buffer.
+		{
+			D3D12::RenderTargetTexture2DBuilder encodedNormalGBufferBuilder{ ENCODED_NORMAL_GBUFFER_BUILDER };
+			encodedNormalGBufferBuilder.SetTextureDimensions(gBufferResolution.GetX(), gBufferResolution.GetY());
+
+			mEncodedNormalGBufferPtr = &(builder.CreateTransientResource<D3D12::Texture2D>(encodedNormalGBufferBuilder));
+		}
+
+		// Build the metallic G-buffer.
+		{
+			D3D12::RenderTargetTexture2DBuilder metallicGBufferBuilder{ METALLIC_GBUFFER_BUILDER };
+			metallicGBufferBuilder.SetTextureDimensions(gBufferResolution.GetX(), gBufferResolution.GetY());
+
+			mMetallicGBufferPtr = &(builder.CreateTransientResource<D3D12::Texture2D>(metallicGBufferBuilder));
+		}
+
+		// Build the depth buffer.
+		{
+			D3D12::DepthStencilTextureBuilder depthBufferBuilder{ DEPTH_BUFFER_BUILDER };
+			depthBufferBuilder.SetTextureDimensions(gBufferResolution.GetX(), gBufferResolution.GetY());
+
+			mDepthBufferPtr = &(builder.CreateTransientResource<D3D12::Texture2D>(depthBufferBuilder));
+		}
+	}
+
+	void DeferredRasterGBuffer::CreateRenderTargetBundle()
+	{
+		const std::scoped_lock<std::mutex> lock{ mRTBundleCritSection };
+
+		mRTBundle.CreateRenderTargetView<0>(GetBaseColorRoughnessGBuffer().CreateRenderTargetView<BASE_COLOR_ROUGHNESS_GBUFFER_FORMAT>());
+		mRTBundle.CreateRenderTargetView<1>(GetEncodedNormalGBuffer().CreateRenderTargetView<ENCODED_NORMAL_GBUFFER_FORMAT>());
+		mRTBundle.CreateRenderTargetView<2>(GetMetallicGBuffer().CreateRenderTargetView<METALLIC_GBUFFER_FORMAT>());
+
+		mRTBundle.CreateDepthStencilView<0>(GetDepthBuffer().CreateDepthStencilView<DEPTH_BUFFER_FORMAT, D3D12::DepthStencilAccessMode::DEPTH_WRITE_STENCIL_READ>());
 	}
 }

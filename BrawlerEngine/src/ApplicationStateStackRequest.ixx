@@ -1,7 +1,9 @@
 module;
+#include <memory>
 
 export module Brawler.IMPL.ApplicationStateStackRequest;
 import Brawler.ApplicationStateID;
+import Brawler.I_ApplicationState;
 
 export namespace Brawler
 {
@@ -17,7 +19,7 @@ export namespace Brawler
 		struct ApplicationStateStackRequest
 		{
 			ApplicationStateStackRequestType Type;
-			Brawler::ApplicationStateID StateID;
+			std::unique_ptr<Brawler::I_ApplicationState> StatePtr;
 		};
 	}
 }

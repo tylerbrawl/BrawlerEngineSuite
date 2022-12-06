@@ -12,6 +12,37 @@ import Brawler.I_MaterialDefinition;
 import Brawler.MaterialDefinitionHandle;
 
 /*
+Brawler Engine Material Definition System
+---------------------------------------------
+
+Materials typically consist of a unique set of textures which are used during the shading
+process. Each material definition consists of a set of SceneTextureHandle instances which
+refer to SceneTextures stored in the SceneTextureDatabase.
+
+I_MaterialDefinition is the base class for all material definition classes. Derived classes
+will typically have different sets of SceneTextureHandles which need to be filled. It might
+help to think of material definition classes as templates for materials which get filled
+out when instantiations of said classes are made.
+
+For instance, each StandardMaterialDefinition instance has (at the time of writing this)
+a base color texture, a normal map texture, a roughness texture, and a metallic texture.
+These are stored as SceneTextureHandles which refer to SceneTextures stored in the
+SceneTextureDatabase.
+
+The MaterialDefinitionGraph maps derived I_MaterialDefinition instances to the SceneTextures
+they use; this is done so that changes to a given SceneTexture instance (e.g., a new mip
+level being streamed in) are reflected in all of the material definitions which use them.
+Other classes are not intended to directly own derived I_MaterialDefinition instances; rather,
+they are given a MaterialDefinitionHandle instance which prolongs the lifetime of the
+material definition.
+
+There is a one-to-one mapping between MaterialDefinitionHandle instances and derived
+I_MaterialDefinition instances. When a MaterialDefinitionHandle instance is destroyed, the
+corresponding derived I_MaterialDefinition instance is marked for deletion, and will be
+removed from the MaterialDefinitionGraph when it is safe to do so.
+*/
+
+/*
 An interesting thing to note is that the MaterialDefinitionGraph does not care about the
 types of the scene textures; it only maps between texture FilePathHash values and the
 I_MaterialDefinition instances which depend on them.

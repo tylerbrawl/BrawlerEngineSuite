@@ -208,6 +208,12 @@
     <Filter Include="Source Files\Frame Graph Blackboard\Blackboard Types">
       <UniqueIdentifier>{7ec6dec5-6436-4f3e-9fc0-ad3e6f26b5f9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Streaming Systems\Assimp Loading">
+      <UniqueIdentifier>{171a6f58-5537-4942-b7fd-5fd50da66010}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Streaming Systems\Assimp Loading">
+      <UniqueIdentifier>{6e2033de-28a9-44c4-9557-34a9e2ff8eb0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -291,9 +297,6 @@
     <ClCompile Include="src\I_ApplicationState.ixx">
       <Filter>Module Files\Application State</Filter>
     </ClCompile>
-    <ClCompile Include="src\I_ApplicationState.cpp">
-      <Filter>Source Files\Application State</Filter>
-    </ClCompile>
     <ClCompile Include="src\ApplicationStateID.ixx">
       <Filter>Module Files\Application State</Filter>
     </ClCompile>
@@ -345,9 +348,6 @@
     <ClCompile Include="src\Monitor.cpp">
       <Filter>Source Files\Window Management</Filter>
     </ClCompile>
-    <ClCompile Include="src\AppWindowOld.ixx">
-      <Filter>Module Files\Window Management</Filter>
-    </ClCompile>
     <ClCompile Include="src\I_WindowState.ixx">
       <Filter>Module Files\Window Management\Window States</Filter>
     </ClCompile>
@@ -368,9 +368,6 @@
     </ClCompile>
     <ClCompile Include="src\WindowStateTraits.ixx">
       <Filter>Module Files\Window Management\Window States</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AppWindowOld.cpp">
-      <Filter>Source Files\Window Management</Filter>
     </ClCompile>
     <ClCompile Include="src\SwapChain.ixx">
       <Filter>Module Files\Window Management</Filter>
@@ -824,6 +821,27 @@
     </ClCompile>
     <ClCompile Include="src\MainWindowManager.cpp">
       <Filter>Source Files\Window Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FrameGraphBlackboard.cpp">
+      <Filter>Source Files\Frame Graph Blackboard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssimpLoadState.ixx">
+      <Filter>Module Files\Application State\States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssimpLoadState.cpp">
+      <Filter>Source Files\Application State\States</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssimpMaterialLoader.ixx">
+      <Filter>Module Files\Streaming Systems\Assimp Loading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssimpMaterialLoader.cpp">
+      <Filter>Source Files\Streaming Systems\Assimp Loading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GenericPreFrameTextureUpdate.ixx">
+      <Filter>Module Files\GPU Scene Representation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GenericPreFrameTextureUpdate.cpp">
+      <Filter>Source Files\GPU Scene Representation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

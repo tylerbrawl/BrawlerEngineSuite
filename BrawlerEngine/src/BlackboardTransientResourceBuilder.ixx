@@ -22,7 +22,7 @@ export namespace Brawler
 		BlackboardTransientResourceBuilder& operator=(BlackboardTransientResourceBuilder&& rhs) noexcept = default;
 
 		template <typename T, typename... Args>
-			requires std::derived_from<T, D3D12::I_GPUResource> && std::constructible_from<T, Args...>
+			requires (std::derived_from<T, D3D12::I_GPUResource> && std::constructible_from<T, Args...>)
 		T& CreateTransientResource(Args&&... args);
 
 		std::span<std::unique_ptr<D3D12::I_GPUResource>> GetTransientResourceSpan();
@@ -38,7 +38,7 @@ export namespace Brawler
 namespace Brawler
 {
 	template <typename T, typename... Args>
-		requires std::derived_from<T, D3D12::I_GPUResource> && std::constructible_from<T, Args...>
+		requires (std::derived_from<T, D3D12::I_GPUResource> && std::constructible_from<T, Args...>)
 	T& BlackboardTransientResourceBuilder::CreateTransientResource(Args&&... args)
 	{
 		std::unique_ptr<T> transientResourcePtr{ std::make_unique<T>(std::forward<Args>(args)...) };
