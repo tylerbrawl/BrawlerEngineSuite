@@ -214,6 +214,9 @@
     <Filter Include="Source Files\Streaming Systems\Assimp Loading">
       <UniqueIdentifier>{6e2033de-28a9-44c4-9557-34a9e2ff8eb0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files\Lighting\Environment Maps">
+      <UniqueIdentifier>{af7974c2-b5b2-4506-b207-caf9b85036d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -943,6 +946,9 @@
     <None Include="src\Shaders\MaterialDescriptor.hlsli">
       <Filter>Shader Files\Materials</Filter>
     </None>
+    <None Include="src\Shaders\SamplingUtil.hlsli">
+      <Filter>Shader Files\Utilities</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="BrawlerEngine.manifest">
@@ -955,6 +961,9 @@
     </FxCompile>
     <FxCompile Include="src\Shaders\DeferredGeometryRasterVS.hlsl">
       <Filter>Shader Files\Geometry</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\EnvironmentMapDownsample.hlsl">
+      <Filter>Shader Files\Lighting\Environment Maps</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
