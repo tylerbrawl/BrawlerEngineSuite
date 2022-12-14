@@ -1,17 +1,15 @@
+#include "TextureCubeFace.hlsli"
+
 // NOTE: This shader is part of the environment map pre-filtering process described
 // in "Fast Filtering of Reflection Probes" by Manson and Sloan.
 
 Texture2D<float4> InputTextureArr[6] : register(t0, space0);
-RWTexture2D<float4> OutputMip1Arr[6] : register(u0, space0);
-RWTexture2D<float4> OutputMip2Arr[6] : register(u6, space0);
+RWTexture2D<float4> OutputTextureArr[6] : register(u0, space0);
 
 struct DownsampleConstantsInfo
 {
 	float StartingMipLevel;
 	float InverseStartingMipLevelDimensions;
-	float InverseOutputMip1Dimensions;
-	float InverseOutputMip2Dimensions;
-	uint NumMipLevels;
 };
 
 ConstantBuffer<DownsampleConstantsInfo> DownsampleConstants : register(b0, space0);
@@ -159,93 +157,38 @@ static const uint NUM_THREADS_IN_THREAD_GROUP = (NUM_THREADS_X * NUM_THREADS_Y);
 // and t = 0.75 in the y-direction, and then multiply the sampled value by (1/4). This can be accomplished
 // with texture coordinate offsets of (x + 0.75f) and (y + 0.75f).
 
-enum class TextureCubeFace
+struct EnvironmentMapSampleInfo
 {
-	POSITIVE_X = 0,
-	NEGATIVE_X = 1,
-	POSITIVE_Y = 2,
-	NEGATIVE_Y = 3,
-	POSITIVE_Z = 4,
-	NEGATIVE_Z = 5
+	float2 TexelAUVCoords;
+	float2 TexelBUVCoords;
+	float2 TexelCUVCoords;
+	float2 TexelDUVCoords;
+	
+	BrawlerHLSL::TextureCubeFace FaceID;
+	
+	float4 Weights;
 };
 
-float3 GetReflectionVector(in const float2 uvCoords, in const TextureCubeFace faceID)
+float CalculateJacobian(in const float2 uvCoords)
 {
-	// We refer to the diagram given in the Direct3D 11.3 Specifications which describes the
-	// coordinate system for each face of a TextureCube being accessed as a render target.
+	// The Jacobian J(x, y, z) maps from a [-1, 1]^3 cube to a unit sphere, and is
+	// defined as follows:
+	//
+	// J(x, y, z) = 1 / pow(x^2 + y^2 + z^2, 3/2)
+	//
+	// Since we are always sampling a location on one of the faces of the cube, one
+	// of x, y, or z will always be +/- 1, and thus its squared value will be 1.
+	// The remaining coordinates come directly from the uvCoords after being scaled
+	// to the [-1, 1] cube space.
 	
-	// TextureCube reflection vectors exist in the [-1, 1]^3 cube, so we need to
-	// appropriately scale the uvCoords from [0, 1] to [-1, 1].
 	const float2 scaledUVCoords = (2.0f * uvCoords) - 1.0f;
+	const float cubeCoordsDotProduct = dot(scaledUVCoords, scaledUVCoords) + 1.0f;
 	
-	// We can avoid divergence by calculating the reflection vector using homogeneous
-	// coordinates [u, v, w]. We store the transformation matrices in a static array
-	// which is indexed based on textureCubeFaceIndex, and transform our scaledUVCoords
-	// by the transformation matrix. To understand why these matrices were chosen, refer
-	// to the Resource Type Illustrations diagram given at the beginning of Section 5 of the
-	// Direct3D 11.3 Specifications.
-	
-	static const float3x3 UV_TRANSFORM_MATRIX_ARR[6] = {
-		// TextureCubeFace::POSITIVE_X (+X Face, Index 0)
-		float3x3(
-			0.0f, 0.0f, -1.0f,
-			0.0f, -1.0f, 0.0f,
-			1.0f, 0.0f, 0.0f
-		),
-		
-		// TextureCubeFace::NEGATIVE_X (-X Face, Index 1)
-		float3x3(
-			0.0f, 0.0f, 1.0f,
-			0.0f, -1.0f, 0.0f,
-			-1.0f, 0.0f, 0.0f
-		),
-		
-		// TextureCubeFace::POSITIVE_Y (+Y Face, Index 2)
-		float3x3(
-			1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f,
-			0.0f, 1.0f, 0.0f
-		),
-		
-		// TextureCubeFace::NEGATIVE_Y (-Y Face, Index 3)
-		float3x3(
-			1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, -1.0f,
-			0.0f, -1.0f, 0.0f
-		),
-		
-		// TextureCubeFace::POSITIVE_Z (+Z Face, Index 4)
-		float3x3(
-			1.0f, 0.0f, 0.0f,
-			0.0f, -1.0f, 0.0f,
-			0.0f, 0.0f, 1.0f
-		),
-		
-		// TextureCubeFace::NEGATIVE_Z (-Z Face, Index 5)
-		float3x3(
-			-1.0f, 0.0f, 0.0f,
-			0.0f, -1.0f, 0.0f,
-			0.0f, 0.0f, -1.0f
-		)
-	};
-
-	const uint transformMatrixArrIndex = uint(faceID);
-	return mul(float3(scaledUVCoords, 1.0f), UV_TRANSFORM_MATRIX_ARR[transformMatrixArrIndex]);
+	return (1.0f / pow(cubeCoordsDotProduct, 1.5f));
 }
 
-[numthreads(NUM_THREADS_X, NUM_THREADS_Y, 1)]
-void main(in const ThreadInfo threadInfo)
+void CalculateSampleWeights(inout EnvironmentMapSampleInfo sampleInfo)
 {
-	const float2 baseTexelCoords = float2(threadInfo.DispatchThreadID * 2);
-	const uint textureArrayIndex = threadInfo.GroupID.z;
-	
-	// Each lane is responsible for a single 2x2 quad in the input texture. Refer to the comments
-	// above to understand how these offset values are derived.
-	const float texelCoordsXOffset = (threadInfo.DispatchThreadID.x % 2 == 0 ? 1.25f : 0.75f);
-	const float texelCoordsYOffset = (threadInfo.DispatchThreadID.y % 2 == 0 ? 1.25f : 0.75f);
-	
-	const float2 uvCoords = ((baseTexelCoords + float2(texelCoordsXOffset, texelCoordsYOffset)) * DownsampleConstants.InverseStartingMipLevelDimensions);
-	
 	// In the paper, Mason and Sloan mention that quadratic b-splines are smooth, but the projection
 	// of a constant function over a sphere onto a cubemap is not smooth between faces. To counteract
 	// this, they weight the samples using the weight w calculated as follows:
@@ -266,15 +209,77 @@ void main(in const ThreadInfo threadInfo)
 	// We will do the same thing as they did. However, for our w value, we use (1/4) * (1/2) = (1/8)
 	// instead of (1/2) because we need to multiply our sampled values by 1/4, as discussed in the
 	// comments regarding texel coordinate calculation.
-	const float2 outputMip1UVCoords = ((float2(threadInfo.DispatchThreadID) + 0.5f) * DownsampleConstants.InverseOutputMip1Dimensions);
-	const float3 currLaneMip1ReflectionVector = GetReflectionVector(outputMip1UVCoords, TextureCubeFace(textureArrayIndex));
 	
-	float jacobianValue = (1.0f / pow(dot(currLaneMip1ReflectionVector, currLaneMip1ReflectionVector), 1.5f));
-	float w = (0.125f * (1.0f + jacobianValue));
+	const float4 partialWeights = float4(
+		CalculateJacobian(sampleInfo.TexelAUVCoords),
+		CalculateJacobian(sampleInfo.TexelBUVCoords),
+		CalculateJacobian(sampleInfo.TexelCUVCoords),
+		CalculateJacobian(sampleInfo.TexelDUVCoords)
+	) + 1.0f;
 	
-	float4 currLaneSampledValue = InputTextureArr[NonUniformResourceIndex(textureArrayIndex)].SampleLevel(BilinearClampSampler, uvCoords, DownsampleConstants.StartingMipLevel) * w;
+	// The sum of all of the weights, S, is as follows:
+	//
+	// S = (1/2) * (1 + J_1) + (1/2) * (1 + J_2) + (1/2) * (1 + J_3) + (1/2) * (1 + J_4)
+	//
+	//   = (1/2) * ((1 + J_1) + (1 + J_2) + (1 + J_3) + (1 + J_4))
+	//
+	// where J_X represents the Jacobian for texel X. You'll notice a missing (1/2) in
+	// the calculation of partialWeightsSum. This is not an oversight: We factor out a
+	// (1/2) in both each partial weight and the sum of the partial weights when
+	// calculating the actual weight values.
 	
-	OutputMip1Arr[NonUniformResourceIndex(textureArrayIndex)][threadInfo.DispatchThreadID] = currLaneSampledValue;
+	// The unoptimized version of the weights calculation might look something like
+	// this:
+	//
+	// 1. Convert each value in partialWeights to w = (1/2) * (1 + J(x, y, z)):
+	// partialWeights *= 0.5f;  
+	// 
+	// 2. Calculate partialWeightsSum by adding all components of partialWeights:
+	// partialWeightsSum = (partialWeights.x + partialWeights.y + partialWeights.z + partialWeights.w);
+	//
+	// 3. Scale each partialWeight by the sum of all weights:
+	// sampleInfo.Weights = (partialWeights / partialWeightsSum)
+	//
+	// 4. Multiply each weight by (1/4) to account for the factor described in the comments
+	// above:
+	// sampleInfo.Weights *= 0.25f;
+	//
+	// To make things more efficient, however, we simply skip Step 1 (0.5x / 0.5y = x / y),
+	// combine the contributions of Steps 2 and 4 into a single scalar value, and take the 
+	// inverse of the sum to use multiplication instead of division when possible. This reduces
+	// instruction count while remaining mathematically correct, but it makes the calculations
+	// more difficult to understand (hence these comments).
 	
-	// TODO: Implement writes for OutputMip2!
+	const float inversePartialWeightsSum = 0.25f / (partialWeights.x + partialWeights.y + partialWeights.z + partialWeights.w);
+	sampleInfo.Weights = (partialWeights * inversePartialWeightsSum);
+}
+
+float4 SampleEnvironmentMap(in const EnvironmentMapSampleInfo sampleInfo)
+{
+	Texture2D<float4> inputTexture = InputTextureArr[NonUniformResourceIndex(uint(sampleInfo.FaceID))];
+	
+	float4 currLaneSampledValue = (inputTexture.SampleLevel(BilinearClampSampler, sampleInfo.TexelAUVCoords, DownsampleConstants.StartingMipLevel) * sampleInfo.Weights.x);
+	currLaneSampledValue += (inputTexture.SampleLevel(BilinearClampSampler, sampleInfo.TexelBUVCoords, DownsampleConstants.StartingMipLevel) * sampleInfo.Weights.y);
+	currLaneSampledValue += (inputTexture.SampleLevel(BilinearClampSampler, sampleInfo.TexelCUVCoords, DownsampleConstants.StartingMipLevel) * sampleInfo.Weights.z);
+	currLaneSampledValue += (inputTexture.SampleLevel(BilinearClampSampler, sampleInfo.TexelDUVCoords, DownsampleConstants.StartingMipLevel) * sampleInfo.Weights.w);
+	
+	return currLaneSampledValue;
+}
+
+[numthreads(NUM_THREADS_X, NUM_THREADS_Y, 1)]
+void main(in const ThreadInfo threadInfo)
+{
+	const float2 baseTexelCoords = float2(threadInfo.DispatchThreadID * 2);
+	
+	EnvironmentMapSampleInfo sampleInfo;
+	sampleInfo.TexelAUVCoords = ((baseTexelCoords + float2(1.25f, 1.25f)) * DownsampleConstants.InverseStartingMipLevelDimensions);
+	sampleInfo.TexelBUVCoords = ((baseTexelCoords + float2(0.75f, 1.25f)) * DownsampleConstants.InverseStartingMipLevelDimensions);
+	sampleInfo.TexelCUVCoords = ((baseTexelCoords + float2(1.25f, 0.75f)) * DownsampleConstants.InverseStartingMipLevelDimensions);
+	sampleInfo.TexelDUVCoords = ((baseTexelCoords + float2(0.75f, 0.75f)) * DownsampleConstants.InverseStartingMipLevelDimensions);
+	sampleInfo.FaceID = BrawlerHLSL::TextureCubeFace(threadInfo.GroupID.z);
+	
+	CalculateSampleWeights(sampleInfo);
+	
+	RWTexture2D<float4> outputTexture = OutputTextureArr[NonUniformResourceIndex(threadInfo.GroupID.z)];
+	outputTexture[threadInfo.DispatchThreadID] = SampleEnvironmentMap(sampleInfo);
 }

@@ -949,6 +949,9 @@
     <None Include="src\Shaders\SamplingUtil.hlsli">
       <Filter>Shader Files\Utilities</Filter>
     </None>
+    <None Include="src\Shaders\TextureCubeFace.hlsli">
+      <Filter>Shader Files\Texture Types</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="BrawlerEngine.manifest">
