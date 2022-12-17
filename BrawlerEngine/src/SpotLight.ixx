@@ -13,6 +13,16 @@ export namespace Brawler
 {
 	class SpotLight final : public SceneNode
 	{
+	private:
+		struct SpotLightInfo
+		{
+			Math::Float3 LightColor;
+			float LuminousIntensityInCandelas;
+			float MaxDistanceInMeters;
+			float UmbraAngleInRadians;
+			float PenumbraAngleInRadians;
+		};
+
 	public:
 		SpotLight();
 
@@ -125,7 +135,9 @@ export namespace Brawler
 	private:
 		D3D12::StructuredBufferSubAllocation<GPUSceneTypes::SpotLight> mSpotLightBufferSubAllocation;
 		LightDescriptorUpdater<LightID::SPOTLIGHT> mLightDescriptorUpdater;
-		GPUSceneTypes::SpotLight mSpotLightData;
+		SpotLightInfo mSpotLightInfo;
+		Math::Float3 mCachedDirectionWS;
+		Math::Float3 mCachedTranslation;
 		Float3 mLightDirectionLS;
 		bool mIsGPUSceneDataDirty;
 	};

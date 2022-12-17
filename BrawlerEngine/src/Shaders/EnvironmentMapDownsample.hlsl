@@ -61,6 +61,9 @@ static const uint NUM_THREADS_IN_THREAD_GROUP = (NUM_THREADS_X * NUM_THREADS_Y);
 //
 // What follows is a breakdown of the calculation of the texture coordinates for each output
 // texel. (You know, it would've been nice if Mason and Sloan provided these in the paper...)
+//
+// EDIT: I'm blind, apparently. You can get the source code for these operations at
+// https://research.activision.com/publications/archives/fast-filtering-of-reflection-probes.
 	
 // =============================================================================================================================
 	

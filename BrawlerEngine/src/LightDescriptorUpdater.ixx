@@ -71,7 +71,7 @@ namespace Brawler
 	}
 
 	template <LightID LightIdentifier>
-	void LightDescriptorUpdater<LightIdentifier>::InitializeGPUSceneGPUSceneBufferData(const std::uint32_t lightBufferIndex) const
+	void LightDescriptorUpdater<LightIdentifier>::InitializeGPUSceneBufferData(const std::uint32_t lightBufferIndex) const
 	{
 		const GPUSceneTypes::PackedLightDescriptor packedDescriptor = GetPackedLightDescriptor(lightBufferIndex);
 

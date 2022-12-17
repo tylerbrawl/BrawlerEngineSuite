@@ -115,23 +115,6 @@ export namespace Brawler
 			DirectX::XMFLOAT3 PositionWS;
 
 			/// <summary>
-			/// This is the luminous intensity, in Candelas (cd), of the light.
-			///
-			/// NOTE: Frostbite exposes luminous power (in lumens, or lm) to artists and converts
-			/// these values to luminous intensity for point lights as follows:
-			///
-			/// LuminousIntensity = LuminousPower lumens / (4 * PI steradians) = (LuminousPower / (4 * PI)) lm/sr = (LuminousPower / (4 * PI)) cd
-			/// </summary>
-			float LuminousIntensity;
-
-			/// <summary>
-			/// This is the color of the light expressed as an RGB triple in (linear) sRGB color
-			/// space. (Future work would be to compute this value from, e.g., color temperature,
-			/// but such conversions should never have to happen on the GPU.)
-			/// </summary>
-			DirectX::XMFLOAT3 LightColor;
-
-			/// <summary>
 			/// This is (1.0f / MaxDistance)^2, where MaxDistance is the maximum distance, in meters, 
 			/// which the light reaches. If one were to imagine the point light as a sphere, then
 			/// MaxDistance would be the sphere's radius.
@@ -140,6 +123,23 @@ export namespace Brawler
 			/// light in the Brawler Engine.
 			/// </summary>
 			float InverseMaxDistanceSquared;
+
+			/// <summary>
+			/// This is the color of the light expressed as an RGB triple in (linear) sRGB color
+			/// space. The value is scaled by the luminous intensity, in Candelas (cd), of the
+			/// light.
+			///
+			/// NOTE: Frostbite exposes luminous power (in lumens, or lm) to artists and converts
+			/// these values to luminous intensity for point lights as follows:
+			///
+			/// LuminousIntensity = LuminousPower lumens / (4 * PI steradians) = (LuminousPower / (4 * PI)) lm/sr = (LuminousPower / (4 * PI)) cd
+			///
+			/// (Future work would be to compute this value from, e.g., color temperature,
+			/// but such conversions should never have to happen on the GPU.)
+			/// </summary>
+			DirectX::XMFLOAT3 ScaledLightColor;
+
+			std::uint32_t __Pad0;
 		};
 
 		struct SpotLight
@@ -149,26 +149,6 @@ export namespace Brawler
 			/// in the scene.
 			/// </summary>
 			DirectX::XMFLOAT3 PositionWS;
-
-			/// <summary>
-			/// This is the luminous intensity, in Candelas (cd), of the light.
-			///
-			/// NOTE: Frostbite exposes luminous power (in lumens, or lm) to artists and converts
-			/// these values to luminous intensity for spotlights as follows:
-			///
-			/// LuminousIntensity = LuminousPower lumens / PI steradians = (LuminousPower / PI) lm/sr = (LuminousPower / PI) cd
-			///
-			/// This is intentionally *NOT* mathematically correct; see the comments in
-			/// SpotLight::CalculateAttenuatedLuminance() within SpotLight.hlsli for more details.
-			/// </summary>
-			float LuminousIntensity;
-
-			/// <summary>
-			/// This is the color of the light expressed as an RGB triple in (linear) sRGB color
-			/// space. (Future work would be to compute this value from, e.g., color temperature,
-			/// but such conversions should never have to happen on the GPU.)
-			/// </summary>
-			DirectX::XMFLOAT3 LightColor;
 
 			/// <summary>
 			/// This is (1.0f / MaxDistance)^2, where MaxDistance is the maximum distance, in meters, 
@@ -181,10 +161,19 @@ export namespace Brawler
 			float InverseMaxDistanceSquared;
 
 			/// <summary>
-			///	This is the (normalized) direction vector of the spotlight in world space. The direction
-			/// vector describes the orientation of the spotlight.
+			/// This is the color of the light expressed as an RGB triple in (linear) sRGB color
+			/// space. The value is scaled by the luminous intensity, in Candelas (cd), of the
+			/// light.
+			///
+			/// NOTE: Frostbite exposes luminous power (in lumens, or lm) to artists and converts
+			/// these values to luminous intensity for spotlights as follows:
+			///
+			/// LuminousIntensity = LuminousPower lumens / PI steradians = (LuminousPower / PI) lm/sr = (LuminousPower / PI) cd
+			///
+			/// (Future work would be to compute this value from, e.g., color temperature,
+			/// but such conversions should never have to happen on the GPU.)
 			/// </summary>
-			DirectX::XMFLOAT3 DirectionWS;
+			DirectX::XMFLOAT3 ScaledLightColor;
 
 			/// <summary>
 			/// This is the value of cos(UmbraAngle), where UmbraAngle describes the angle from the vector
@@ -193,6 +182,12 @@ export namespace Brawler
 			/// This value is sometimes less formally referred to as the "outer angle" of the spotlight.
 			/// </summary>
 			float CosineUmbraAngle;
+
+			/// <summary>
+			///	This is the (normalized) direction vector of the spotlight in world space. The direction
+			/// vector describes the orientation of the spotlight.
+			/// </summary>
+			DirectX::XMFLOAT3 DirectionWS;
 
 			/// <summary>
 			/// This is the value of cos(PenumbraAngle), where PenumbraAngle describes the angle from the
@@ -204,8 +199,6 @@ export namespace Brawler
 			/// This value is sometimes less formally referred to as the "inner angle" of the spotlight.
 			/// </summary>
 			float CosinePenumbraAngle;
-
-			DirectX::XMFLOAT3 __Pad0;
 		};
 	}
 }

@@ -59,6 +59,8 @@ namespace Brawler
 	template <typename TextureType>
 	void SceneTexture<TextureType>::SetTexture(std::unique_ptr<TextureType>&& texturePtr)
 	{
+		assert(texturePtr != nullptr);
+		
 		mBindlessSRVAllocation = texturePtr->CreateBindlessSRV();
 		mTexturePtr = std::move(texturePtr);
 	}

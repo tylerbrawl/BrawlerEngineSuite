@@ -1,5 +1,6 @@
 module;
 #include <concepts>
+#include <memory>
 
 export module Brawler.SceneGraph;
 import Brawler.SceneNode;
@@ -19,7 +20,7 @@ export namespace Brawler
 
 		/// <summary>
 		/// Creates a SceneNode of type NodeType and adds it as a child node of the singular
-		/// root node of the SceneGraph.
+		/// root node of this SceneGraph instance.
 		/// </summary>
 		/// <typeparam name="NodeType">
 		/// - The type of SceneNode to add. NodeType must derive from SceneNode.
@@ -36,7 +37,23 @@ export namespace Brawler
 		/// </returns>
 		template <typename NodeType, typename... Args>
 			requires std::derived_from<NodeType, SceneNode>
-		NodeType& AddRootLevelSceneNode(Args&&... args);
+		NodeType& CreateRootLevelSceneNode(Args&&... args);
+
+		/// <summary>
+		/// Adds the SceneNode instance of type NodeType as a child node of the singlular root
+		/// node of this SceneGraph instance.
+		/// </summary>
+		/// <typeparam name="NodeType">
+		/// - The type of SceneNode to add. NodeType must derive from SceneNode.
+		/// </typeparam>
+		/// <param name="sceneNodePtr">
+		/// - The std::unique_ptr&lt;NodeType&gt; instance which represents the SceneNode which
+		///   is to be added as a child node of the singular root node of this SceneGraph
+		///   instance.
+		/// </param>
+		template <typename NodeType>
+			requires std::derived_from<NodeType, SceneNode>
+		void AddRootLevelSceneNode(std::unique_ptr<NodeType>&& sceneNodePtr);
 
 		/// <summary>
 		/// Marks the SceneNode specified by sceneNode for removal. It will be completely removed
@@ -83,8 +100,15 @@ namespace Brawler
 {
 	template <typename NodeType, typename... Args>
 		requires std::derived_from<NodeType, SceneNode>
-	void SceneGraph::AddRootLevelSceneNode(Args&&... args)
+	NodeType& SceneGraph::CreateRootLevelSceneNode(Args&&... args)
 	{
 		return mRootNode.CreateChildSceneNode<NodeType, Args...>(std::forward<Args>(args)...);
+	}
+
+	template <typename NodeType>
+		requires std::derived_from<NodeType, SceneNode>
+	void SceneGraph::AddRootLevelSceneNode(std::unique_ptr<SceneNode>&& sceneNodePtr)
+	{
+		mRootNode.AddChildSceneNode(std::move(sceneNodePtr));
 	}
 }

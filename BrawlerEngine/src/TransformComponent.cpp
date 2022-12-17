@@ -48,6 +48,11 @@ namespace Brawler
 		// of the parent SceneNode, should it exist. This "append" operation is actually just a copy
 		// of the value in this case, because by default, the world matrix of a TransformComponent is
 		// just the identity matrix.
+		//
+		// It's possible that the TransformComponent is created and added to a SceneNode instance before
+		// said instance is inserted into a SceneGraph. In that case, we explicitly mark the world matrix
+		// as dirty so that when the SceneNode is added to the SceneGraph, it will get the correct parent
+		// world matrix during the next SceneGraph update.
 		const SceneNode& currNode{ GetSceneNode() };
 
 		if (currNode.HasParentSceneNode()) [[likely]]
@@ -57,6 +62,8 @@ namespace Brawler
 			if (parentNodeTransformPtr != nullptr) [[likely]]
 				mWorldMatrix = parentNodeTransformPtr->GetWorldMatrix();
 		}
+		else [[unlikely]]
+			MarkWorldMatrixAsDirty();
 	}
 
 	void TransformComponent::Update(const float dt)

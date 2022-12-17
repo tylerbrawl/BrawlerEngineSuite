@@ -43,20 +43,6 @@ namespace
 
 	static constexpr float DEFAULT_UMBRA_ANGLE = Util::Math::DegreesToRadians(60.0f);
 	static constexpr float DEFAULT_PENUMBRA_ANGLE = Util::Math::DegreesToRadians(30.0f);
-
-	static constexpr Brawler::GPUSceneTypes::SpotLight DEFAULT_SPOTLIGHT_PARAMS{
-		.LuminousIntensity = DEFAULT_LUMINOUS_INTENSITY,
-		.LightColor{ DEFAULT_LIGHT_COLOR },
-		.InverseMaxDistanceSquared = (1.0f / (DEFAULT_MAX_DISTANCE * DEFAULT_MAX_DISTANCE)),
-
-		// We assume that the default rotation for the SceneNode is the identity quaternion, i.e., that no rotation
-		// occurs. In that case, the world space direction of the light is the same as its direction in its
-		// local coordinate system.
-		.DirectionWS{ DEFAULT_LIGHT_DIRECTION },
-
-		.CosineUmbraAngle = Util::Math::GetCosineAngle(DEFAULT_UMBRA_ANGLE),
-		.CosinePenumbraAngle = Util::Math::GetCosineAngle(DEFAULT_PENUMBRA_ANGLE)
-	};
 }
 
 namespace Brawler
@@ -65,7 +51,15 @@ namespace Brawler
 		SceneNode(),
 		mSpotLightBufferSubAllocation(),
 		mLightDescriptorUpdater(),
-		mSpotLightData(DEFAULT_SPOTLIGHT_PARAMS),
+		mSpotLightInfo(SpotLightInfo{
+			.LightColor{ DEFAULT_LIGHT_COLOR },
+			.LuminousIntensityInCandelas = DEFAULT_LUMINOUS_INTENSITY,
+			.MaxDistanceInMeters = DEFAULT_MAXIMUM_DISTANCE,
+			.UmbraAngleInRadians = DEFAULT_UMBRA_ANGLE,
+			.PenumbraAngleInRadians = DEFAULT_PENUMBRA_ANGLE
+		}),
+		mCachedDirectionWS(),
+		mCachedTranslation(),
 		mLightDirectionLS(DEFAULT_LIGHT_DIRECTION),
 		mIsGPUSceneDataDirty(true)
 	{
@@ -93,9 +87,9 @@ namespace Brawler
 
 	void SpotLight::SetLuminousIntensity(const float intensityInCandelas)
 	{
-		assert(intensityInCandelas >= 0.0f && "ERROR: An attempt was made to specify negative luminous intensity value in a call to SpotLight::SetLuminousIntensity()!");
+		assert(intensityInCandelas >= 0.0f && "ERROR: An attempt was made to specify a negative luminous intensity value in a call to SpotLight::SetLuminousIntensity()!");
 
-		mSpotLightData.LuminousIntensity = intensityInCandelas;
+		mSpotLightInfo.LuminousIntensityInCandelas = intensityInCandelas;
 		MarkGPUSceneDataAsDirty();
 	}
 
@@ -105,7 +99,7 @@ namespace Brawler
 		assert(lightColor.GetY() >= 0.0f && "ERROR: An attempt was made to specify a light color with a negative G channel in a call to SpotLight::SetLightColor()!");
 		assert(lightColor.GetZ() >= 0.0f && "ERROR: An attempt was made to specify a light color with a negative B channel in a call to SpotLight::SetLightColor()!");
 
-		mSpotLightData.LightColor = DirectX::XMFLOAT3{ lightColor.GetX(), lightColor.GetY(), lightColor.GetZ() };
+		mSpotLightInfo.LightColor = lightColor;
 		MarkGPUSceneDataAsDirty();
 	}
 
@@ -113,9 +107,7 @@ namespace Brawler
 	{
 		assert(maxDistanceInMeters >= 0.01f && "ERROR: An attempt was made to specify a maximum light distance which was less than the size of a punctual light (1 cm) in a call to SpotLight::SetMaximumLightDistance()!");
 
-		const float inverseDistance = (1.0f / maxDistanceInMeters);
-		mSpotLightData.InverseMaxDistanceSquared = (inverseDistance * inverseDistance);
-
+		mSpotLightInfo.MaxDistanceInMeters = maxDistanceInMeters;
 		MarkGPUSceneDataAsDirty();
 	}
 
@@ -132,13 +124,13 @@ namespace Brawler
 
 	void SpotLight::SetUmbraAngle(const float umbraAngle)
 	{
-		mSpotLightData.CosineUmbraAngle = std::cosf(umbraAngle);
+		mSpotLightInfo.UmbraAngleInRadians = umbraAngle;
 		MarkGPUSceneDataAsDirty();
 	}
 
 	void SpotLight::SetPenumbraAngle(const float penumbraAngle)
 	{
-		mSpotLightData.CosinePenumbraAngle = std::cosf(penumbraAngle);
+		mSpotLightInfo.PenumbraAngleInRadians = penumbraAngle;
 		MarkGPUSceneDataAsDirty();
 	}
 
@@ -155,11 +147,10 @@ namespace Brawler
 	void SpotLight::CheckForRotationChange(const TransformComponent& transformComponent)
 	{
 		const Math::Float3 currFrameLightDirectionWS{ transformComponent.GetRotation().RotateVector(mLightDirectionLS) };
-		const Math::Float3& prevFrameLightDirectionWS{ mSpotLightData.DirectionWS };
 
-		if (currFrameLightDirectionWS != prevFrameLightDirectionWS) [[unlikely]]
+		if (currFrameLightDirectionWS != mCachedDirectionWS) [[unlikely]]
 		{
-			mSpotLightInfo.DirectionWS = DirectX::XMFLOAT3{ currFrameLightDirectionWS.GetX(), currFrameLightDirectionWS.GetY(), currFrameLightDirectionWS.GetZ() };
+			mCachedDirectionWS = currFrameLightDirectionWS;
 			MarkGPUSceneDataAsDirty();
 		}
 	}
@@ -167,11 +158,10 @@ namespace Brawler
 	void SpotLight::CheckForTranslationChange(const TransformComponent& transformComponent)
 	{
 		const Math::Float3& currFramePositionWS{ transformComponent.GetTranslation() };
-		const Math::Float3& prevFramePositionWS{ mSpotLightData.PositionWS };
 
-		if (currFramePositionWS != prevFramePositionWS) [[unlikely]]
+		if (currFramePositionWS != mCachedTranslation) [[unlikely]]
 		{
-			mSpotLightInfo.PositionWS = DirectX::XMFLOAT3{ currFramePositionWS.GetX(), currFramePositionWS.GetY(), currFramePositionWS.GetZ() };
+			mCachedTranslation = currFramePositionWS;
 			MarkGPUSceneDataAsDirty();
 		}
 	}
@@ -181,10 +171,20 @@ namespace Brawler
 		assert(IsGPUSceneDataDirty() && "ERROR: An attempt was made to call SpotLight::UpdateGPUSceneBufferData() when the GPU scene buffer data didn't need to be updated!");
 
 		// Ensure that the specified parameters are valid.
-		assert(mSpotLightData.CosinePenumbraAngle >= mSpotLightData.CosineUmbraAngle, "ERROR: The penumbra angle of a SpotLight instance cannot be larger than its umbra angle!");
+		assert(mSpotLightInfo.PenumbraAngleInRadians <= mSpotLightInfo.UmbraAngleInRadians && "ERROR: The penumbra angle of a SpotLight instance cannot be larger than its umbra angle!");
+
+		const Math::Float3 scaledLightColor{ mSpotLightInfo.LightColor * mSpotLightInfo.LuminousIntensityInCandelas };
+		const GPUSceneTypes::SpotLight gpuSceneBufferData{
+			.PositionWS{ mCachedTranslation.GetX(), mCachedTranslation.GetY(), mCachedTranslation.GetZ() },
+			.InverseMaxDistanceSquared = (1.0f / (mSpotLightInfo.MaxDistanceInMeters * mSpotLightInfo.MaxDistanceInMeters)),
+			.ScaledLightColor{ scaledLightColor.GetX(), scaledLightColor.GetY(), scaledLightColor.GetZ() },
+			.CosineUmbraAngle = std::cosf(mSpotLightInfo.UmbraAngleInRadians),
+			.DirectionWS{ mCachedDirectionWS.GetX(), mCachedDirectionWS.GetY(), mCachedDirectionWS.GetZ() },
+			.CosinePenumbraAngle = std::cosf(mSpotLightInfo.PenumbraAngleInRadians)
+		};
 
 		GPUSceneBufferUpdateOperation<GPUSceneBufferID::SPOTLIGHT_BUFFER> spotLightUpdateOperation{ mSpotLightBufferSubAllocation.GetBufferCopyRegion() };
-		spotLightUpdateOperation.SetUpdateSourceData(std::span<const GPUSceneTypes::SpotLight>{ &mSpotLightData, 1 });
+		spotLightUpdateOperation.SetUpdateSourceData(std::span<const GPUSceneTypes::SpotLight>{ &gpuSceneBufferData, 1 });
 
 		Brawler::GetRenderer().GetRenderModule<GPUSceneUpdateRenderModule>().ScheduleGPUSceneBufferUpdateForNextFrame(std::move(spotLightUpdateOperation));
 

@@ -423,11 +423,25 @@ namespace Util
 			if (std::is_constant_evaluated())
 			{
 				// Much like sin(x), cos(x) does indeed have its own power series. To keep things simple,
-				// however, we will just use the pythagorean identity sin^2(x) + cos^2(x) = 1. Remember that
+				// however, we will just use the pythagorean identity sin^2(x) + cos^2(x) = +/- 1. Remember that
 				// this slow code path is only taken at compile time.
+				//
+				// To determine whether the result of cos(x) = +/- sqrt(1 - sin^2(x)) is positive or negative,
+				// we need to take into consideration the quadrant in which angleInRadians is located. If the
+				// angle is greater than (PI / 2) but less than (3 * PI / 2), then we need to negate the
+				// result.
 
 				const float sineAngle = GetSineAngle(static_cast<float>(angleInRadians));
-				return GetSquareRoot(1.0f - (sineAngle * sineAngle));
+
+				constexpr float HALF_PI = (PI / 2.0f);
+				constexpr float THREE_HALVES_PI = (3.0f * PI / 2.0f);
+
+				float cosineAngle = GetSquareRoot(1.0f - (sineAngle * sineAngle));
+
+				if (angleInRadians > HALF_PI && angleInRadians < THREE_HALVES_PI)
+					cosineAngle *= -1.0f;
+
+				return cosineAngle;
 			}
 			else
 				return std::cosf(static_cast<float>(angleInRadians));
@@ -529,7 +543,7 @@ namespace Util
 				return (HALF_PI - GetArcSineValue(value));
 			}
 			else
-				return std::acosf(value);
+				return std::acosf(static_cast<float>(value));
 		}
 
 		template <typename T>

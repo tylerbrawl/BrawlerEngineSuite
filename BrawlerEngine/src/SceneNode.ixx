@@ -8,11 +8,6 @@ module;
 export module Brawler.SceneNode;
 import Brawler.ComponentCollection;
 
-export namespace Brawler
-{
-	class SceneGraph;
-}
-
 namespace Brawler
 {
 	template <typename T>
@@ -21,10 +16,26 @@ namespace Brawler
 
 export namespace Brawler
 {
+	class SceneNode;
+}
+
+export namespace Brawler
+{
+	class SceneNodeManager
+	{
+	public:
+		SceneNodeManager() = default;
+
+		static void UpdateSceneNodeIMPL(SceneNode& sceneNode, const float dt);
+	};
+}
+
+export namespace Brawler
+{
 	class SceneNode
 	{
 	private:
-		friend class SceneGraph;
+		friend class SceneNodeManager;
 
 	protected:
 		SceneNode();
@@ -117,10 +128,11 @@ export namespace Brawler
 			requires std::derived_from<NodeType, SceneNode>
 		NodeType& CreateChildSceneNode(Args&&... args);
 
-		void RemoveChildSceneNode(SceneNode& childNode);
+		template <typename NodeType>
+			requires std::derived_from<NodeType, SceneNode>
+		void AddChildSceneNode(std::unique_ptr<NodeType>&& childNodePtr);
 
-		SceneGraph& GetSceneGraph();
-		const SceneGraph& GetSceneGraph() const;
+		void RemoveChildSceneNode(SceneNode& childNode);
 
 		bool HasParentSceneNode() const;
 
@@ -132,14 +144,12 @@ export namespace Brawler
 		void ExecutePendingChildAdditions();
 		void ExecutePendingChildRemovals();
 
-		void SetSceneGraph(SceneGraph& sceneGraph);
 		void SetParentNode(SceneNode& parentNode);
 
 		void UpdateIMPL(const float dt);
 
 	private:
 		ComponentCollection mComponentCollection;
-		SceneGraph* mSceneGraph;
 		SceneNode* mParentNodePtr;
 
 		/// <summary>
@@ -213,18 +223,21 @@ namespace Brawler
 		requires std::derived_from<NodeType, SceneNode>
 	NodeType& SceneNode::CreateChildSceneNode(Args&&... args)
 	{
-		using DecayedNodeT = std::decay_t<NodeType>;
-
-		std::unique_ptr<NodeType> childNodePtr{ std::make_unique<DecayedNodeT>(std::forward<Args>(args)...) };
+		std::unique_ptr<NodeType> childNodePtr{ std::make_unique<NodeType>(std::forward<Args>(args)...) };
 		NodeType& createdChildNode{ *childNodePtr };
 
-		childNodePtr->SetParentNode(*this);
-
-		assert(mSceneGraph != nullptr);
-		childNodePtr->SetSceneGraph(*mSceneGraph);
-
-		mPendingChildAdditionsArr.push_back(std::move(childNodePtr));
+		AddChildSceneNode(std::move(childNodePtr));
 
 		return createdChildNode;
+	}
+
+	template <typename NodeType>
+		requires std::derived_from<NodeType, SceneNode>
+	void SceneNode::AddChildSceneNode(std::unique_ptr<NodeType>&& childNodePtr)
+	{
+		assert(childNodePtr != nullptr);
+
+		childNodePtr->SetParentNode(*this);
+		mPendingChildAdditionsArr.push_back(std::move(childNodePtr));
 	}
 }

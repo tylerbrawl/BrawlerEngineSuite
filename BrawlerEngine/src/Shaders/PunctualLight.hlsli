@@ -23,7 +23,7 @@ namespace BrawlerHLSL
 			return lightingParams;
 		}
 		
-		static float3 CalculateDistanceAttenuation(in const BrawlerHLSL::LightingParameters shadingParams, in const float inverseMaxDistanceSquared)
+		static float CalculateDistanceAttenuation(in const BrawlerHLSL::LightingParameters shadingParams, in const float inverseMaxDistanceSquared)
 		{
 			// From "Moving Frostbite to Physically Based Rendering 3.0"
 			// and Real-Time Rendering 4th Edition - Equations 5.14, 5.13
@@ -54,8 +54,7 @@ namespace BrawlerHLSL
 			float windowingFunction = saturate(1.0f - (distancesFactor * distancesFactor));
 			windowingFunction *= windowingFunction;
 			
-			float invSquareAttenuation = (1.0f / max(shadingParams.LightDistanceSquared, PUNCTUAL_LIGHT_MINIMUM_SIZE_SQUARED));
-			invSquareAttenuation *= invSquareAttenuation;
+			const float invSquareAttenuation = (1.0f / max(shadingParams.LightDistanceSquared, PUNCTUAL_LIGHT_MINIMUM_SIZE_SQUARED));
 			
 			return (windowingFunction * invSquareAttenuation);
 		}

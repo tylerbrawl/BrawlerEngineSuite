@@ -9,13 +9,20 @@ module Brawler.SceneNode;
 import Brawler.JobSystem;
 import Util.Engine;
 import Util.Coroutine;
-import Brawler.SceneGraph;
+
+namespace Brawler
+{
+	void SceneNodeManager::UpdateSceneNodeIMPL(SceneNode& sceneNode, const float dt)
+	{
+		sceneNode.ExecuteSceneGraphUpdates();
+		sceneNode.UpdateIMPL(dt);
+	}
+}
 
 namespace Brawler
 {
 	SceneNode::SceneNode() :
 		mComponentCollection(*this),
-		mSceneGraph(nullptr),
 		mParentNodePtr(nullptr),
 		mChildNodePtrArr(),
 		mPendingChildAdditionsArr(),
@@ -38,18 +45,6 @@ namespace Brawler
 				return;
 			}
 		}
-	}
-
-	SceneGraph& SceneNode::GetSceneGraph()
-	{
-		assert(mSceneGraph != nullptr);
-		return *mSceneGraph;
-	}
-
-	const SceneGraph& SceneNode::GetSceneGraph() const
-	{
-		assert(mSceneGraph != nullptr);
-		return *mSceneGraph;
 	}
 
 	bool SceneNode::HasParentSceneNode() const
@@ -110,11 +105,6 @@ namespace Brawler
 		});
 
 		mPendingChildRemovals.clear();
-	}
-
-	void SceneNode::SetSceneGraph(SceneGraph& sceneGraph)
-	{
-		mSceneGraph = &sceneGraph;
 	}
 
 	void SceneNode::SetParentNode(SceneNode& parentNode)

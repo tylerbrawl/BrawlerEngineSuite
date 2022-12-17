@@ -12,6 +12,14 @@ export namespace Brawler
 {
 	class PointLight final : public SceneNode
 	{
+	private:
+		struct PointLightInfo
+		{
+			Math::Float3 LightColor;
+			float LuminousIntensityInCandelas;
+			float MaxDistanceInMeters;
+		};
+
 	public:
 		PointLight();
 
@@ -74,7 +82,8 @@ export namespace Brawler
 	private:
 		D3D12::StructuredBufferSubAllocation<GPUSceneTypes::PointLight> mPointLightBufferSubAllocation;
 		LightDescriptorUpdater<LightID::POINT_LIGHT> mLightDescriptorUpdater;
-		GPUSceneTypes::PointLight mPointLightData;
+		PointLightInfo mPointLightInfo;
+		Math::Float3 mCachedTranslation;
 		bool mIsGPUSceneDataDirty;
 	};
 }

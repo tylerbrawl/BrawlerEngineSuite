@@ -2,9 +2,11 @@ module;
 #include <span>
 #include <vector>
 #include <assimp/scene.h>
+#include <assimp/material.h>
 
 export module Brawler.AssimpMaterialLoader;
 import Brawler.MaterialDefinitionHandle;
+import Brawler.StandardMaterialDefinition;
 
 export namespace Brawler 
 {
@@ -25,6 +27,11 @@ export namespace Brawler
 		std::span<const MaterialDefinitionHandle> GetMaterialDefinitionHandleSpan() const;
 
 	private:
+		void CreateSceneTextures(const std::span<const aiMaterial*> materialPtrSpan);
+		void CreateMaterialDefinitions();
+
+	private:
 		std::vector<MaterialDefinitionHandle> mHMaterialDefinitionArr;
+		std::vector<StandardMaterialBuilder> mMaterialBuilderArr;
 	};
 }

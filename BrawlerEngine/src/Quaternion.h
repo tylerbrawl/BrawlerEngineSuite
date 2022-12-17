@@ -296,14 +296,11 @@ namespace Brawler
 				if (std::is_constant_evaluated())
 				{
 					const float halfAngle = (rotationInRadians / 2.0f);
+
 					const float sineHalfAngle = Util::Math::GetSineAngle(halfAngle);
+					const float cosineHalfAngle = Util::Math::GetCosineAngle(halfAngle);
 
-					// Now, sineHalfAngle ~= sin(halfAngle). We need this to get the quaternion, but we also need cos(halfAngle).
-					// However, we know that (sin(halfAngle))^2 + (cos(halfAngle))^2 = 1, so we can solve for that without
-					// using the power series definition for cosine.
-					const float cosineHalfAngle = Util::Math::GetSquareRoot(1.0f - (sineHalfAngle * sineHalfAngle));
-
-					// Finally, we can store the quaternion as q = (sineHalfAngle * normalizedRotationAxis, cosineHalfAngle).
+					// We can store the quaternion as q = (sineHalfAngle * normalizedRotationAxis, cosineHalfAngle).
 					const Vector<float, 3> scaledRotationNormal{ normalizedRotationAxis * sineHalfAngle };
 
 					mQuaternionVector.x = scaledRotationNormal.GetX();
@@ -327,27 +324,109 @@ namespace Brawler
 			{
 				if (std::is_constant_evaluated())
 				{
-					// These equations were derived by hand. There are equivalent expressions which involve less
-					// square roots, but these equations will always produce defined results because a divide
-					// by zero never happens.
-					//
-					// In addition, this code path is only taken at compile time, so we don't pay for this at
-					// runtime.
+					// Find the component of the quaternion with the largest absolute value.
+					float quaternionXComparisonValue = (rotationMatrix.GetElement(0, 0) - rotationMatrix.GetElement(1, 1) - rotationMatrix.GetElement(2, 2) + 1.0f);
+					
+					if (quaternionXComparisonValue < 0.0f)
+						quaternionXComparisonValue *= -1.0f;
 
-					const float quaternionYSquared = ((rotationMatrix.GetElement(1, 1) - rotationMatrix.GetElement(0, 0) - rotationMatrix.GetElement(2, 2) + 1.0f) / 4.0f);
-					mQuaternionVector.y = Util::Math::GetSquareRoot(quaternionYSquared);
+					float quaternionYComparisonValue = (-(rotationMatrix.GetElement(0, 0)) + rotationMatrix.GetElement(1, 1) - rotationMatrix.GetElement(2, 2) + 1.0f);
 
-					const float twoTimesQuaternionYSquared = (2.0f * quaternionYSquared);
+					if (quaternionYComparisonValue < 0.0f)
+						quaternionYComparisonValue *= -1.0f;
 
-					const float quaternionXSquared = ((rotationMatrix.GetElement(0, 0) + twoTimesQuaternionYSquared - rotationMatrix.GetElement(1, 1)) / 2.0f);
-					mQuaternionVector.x = Util::Math::GetSquareRoot(quaternionXSquared);
+					float quaternionZComparisonValue = (-(rotationMatrix.GetElement(0, 0)) - rotationMatrix.GetElement(1, 1) + rotationMatrix.GetElement(2, 2) + 1.0f);
 
-					const float quaternionZSquared = ((1.0f - rotationMatrix.GetElement(0, 0) - twoTimesQuaternionYSquared) / 2);
-					mQuaternionVector.z = Util::Math::GetSquareRoot(quaternionZSquared);
+					if (quaternionZComparisonValue < 0.0f)
+						quaternionZComparisonValue *= -1.0f;
 
-					// Construct a unit quaternion, meaning that the sum of all squared components should equal
-					// one. So, if x^2 + y^2 + z^2 + w^2 = 1, then w^2 = 1 - x^2 - y^2 - z^2.
-					mQuaternionVector.w = Util::Math::GetSquareRoot(1.0f - quaternionXSquared - quaternionYSquared - quaternionZSquared);
+					float quaternionWComparisonValue = (rotationMatrix.GetElement(0, 0) + rotationMatrix.GetElement(1, 1) + rotationMatrix.GetElement(2, 2) + 1.0f);
+
+					if (quaternionWComparisonValue < 0.0f)
+						quaternionWComparisonValue *= -1.0f;
+
+					enum class QuaternionComponentID
+					{
+						COMPONENT_X,
+						COMPONENT_Y,
+						COMPONENT_Z,
+						COMPONENT_W
+					};
+
+					QuaternionComponentID largestComponentID = QuaternionComponentID::COMPONENT_X;
+
+					{
+						float largestComparisonValue = quaternionXComparisonValue;
+
+						if (quaternionYComparisonValue > largestComparisonValue)
+						{
+							largestComparisonValue = quaternionYComparisonValue;
+							largestComponentID = QuaternionComponentID::COMPONENT_Y;
+						}
+
+						if (quaternionZComparisonValue > largestComparisonValue)
+						{
+							largestComparisonValue = quaternionZComparisonValue;
+							largestComponentID = QuaternionComponentID::COMPONENT_Z;
+						}
+
+						if (quaternionWComparisonValue > largestComparisonValue)
+						{
+							largestComparisonValue = quaternionWComparisonValue;
+							largestComponentID = QuaternionComponentID::COMPONENT_W;
+						}
+					}
+
+					switch (largestComponentID)
+					{
+					case QuaternionComponentID::COMPONENT_X:
+					{
+						mQuaternionVector.x = (Util::Math::GetSquareRoot(quaternionXComparisonValue) * 0.5f);
+						const float scalarValue = (0.25f / mQuaternionVector.x);
+
+						mQuaternionVector.y = (rotationMatrix.GetElement(0, 1) + rotationMatrix.GetElement(1, 0)) * scalarValue;
+						mQuaternionVector.z = (rotationMatrix.GetElement(2, 0) + rotationMatrix.GetElement(0, 2)) * scalarValue;
+						mQuaternionVector.w = (rotationMatrix.GetElement(1, 2) - rotationMatrix.GetElement(2, 1)) * scalarValue;
+
+						break;
+					}
+
+					case QuaternionComponentID::COMPONENT_Y:
+					{
+						mQuaternionVector.y = (Util::Math::GetSquareRoot(quaternionYComparisonValue) * 0.5f);
+						const float scalarValue = (0.25f / mQuaternionVector.y);
+
+						mQuaternionVector.x = (rotationMatrix.GetElement(0, 1) + rotationMatrix.GetElement(1, 0)) * scalarValue;
+						mQuaternionVector.z = (rotationMatrix.GetElement(1, 2) + rotationMatrix.GetElement(2, 1)) * scalarValue;
+						mQuaternionVector.w = (rotationMatrix.GetElement(2, 0) - rotationMatrix.GetElement(0, 2)) * scalarValue;
+
+						break;
+					}
+
+					case QuaternionComponentID::COMPONENT_Z:
+					{
+						mQuaternionVector.z = (Util::Math::GetSquareRoot(quaternionZComparisonValue) * 0.5f);
+						const float scalarValue = (0.25f / mQuaternionVector.z);
+
+						mQuaternionVector.x = (rotationMatrix.GetElement(2, 0) + rotationMatrix.GetElement(0, 2)) * scalarValue;
+						mQuaternionVector.y = (rotationMatrix.GetElement(1, 2) + rotationMatrix.GetElement(2, 1)) * scalarValue;
+						mQuaternionVector.w = (rotationMatrix.GetElement(0, 1) - rotationMatrix.GetElement(1, 0)) * scalarValue;
+
+						break;
+					}
+
+					default:
+					{
+						mQuaternionVector.w = (Util::Math::GetSquareRoot(quaternionWComparisonValue) * 0.5f);
+						const float scalarValue = (0.25f / mQuaternionVector.w);
+
+						mQuaternionVector.x = (rotationMatrix.GetElement(1, 2) - rotationMatrix.GetElement(2, 1)) * scalarValue;
+						mQuaternionVector.y = (rotationMatrix.GetElement(2, 0) - rotationMatrix.GetElement(0, 2)) * scalarValue;
+						mQuaternionVector.z = (rotationMatrix.GetElement(0, 1) - rotationMatrix.GetElement(1, 0)) * scalarValue;
+
+						break;
+					}
+					}
 				}
 				else
 				{

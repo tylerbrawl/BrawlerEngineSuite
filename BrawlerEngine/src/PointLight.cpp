@@ -21,7 +21,9 @@ namespace
 		// LuminousIntensity = LuminousPower lumens / (4 * PI steradians) = (LuminousPower / (4 * PI)) lm/sr = (LuminousPower / (4 * PI)) cd
 
 		constexpr float FOUR_PI = (4.0f * Brawler::Math::PI);
-		return (luminousPowerInLumens / FOUR_PI);
+		constexpr float INVERSE_FOUR_PI = (1.0f / FOUR_PI);
+
+		return (luminousPowerInLumens * INVERSE_FOUR_PI);
 	}
 
 	// According to https://www.blancocountynightsky.org/basics.php, "[a] standard 100-watt incandescent light bulb
@@ -33,13 +35,6 @@ namespace
 	// 5 meters is completely empirical based on real-world lightbulbs, and probably isn't a good fit for real-time
 	// rendering.
 	static constexpr float DEFAULT_MAXIMUM_DISTANCE = 5.0f;
-	
-	static constexpr Brawler::GPUSceneTypes::PointLight DEFAULT_POINT_LIGHT_PARAMETERS{
-		.PositionWS{},
-		.LuminousIntensity = DEFAULT_LUMINOUS_INTENSITY,
-		.LightColor{ DEFAULT_LIGHT_COLOR },
-		.InverseMaxDistanceSquared = (1.0f / (DEFAULT_MAX_DISTANCE * DEFAULT_MAX_DISTANCE))
-	};
 }
 
 namespace Brawler 
@@ -48,7 +43,12 @@ namespace Brawler
 		SceneNode(),
 		mPointLightBufferSubAllocation(),
 		mLightDescriptorUpdater(),
-		mPointLightData(DEFAULT_MAXIMUM_DISTANCE),
+		mPointLightInfo(PointLightInfo{
+			.LightColor{ DEFAULT_LIGHT_COLOR },
+			.LuminousIntensityInCandelas = DEFAULT_LUMINOUS_INTENSITY,
+			.MaxDistanceInMeters = DEFAULT_MAX_DISTANCE
+		}),
+		mCachedTranslation(),
 		mIsGPUSceneDataDirty(true)
 	{
 		[[maybe_unused]] const bool wasReservationSuccessful = GPUSceneManager::GetInstance().GetGPUSceneBufferResource<GPUSceneBufferID::POINT_LIGHT_BUFFER>().AssignReservation(mPointLightBufferSubAllocation);
@@ -71,9 +71,9 @@ namespace Brawler
 
 	void PointLight::SetLuminousIntensity(const float intensityInCandelas)
 	{
-		assert(intensityInCandelas >= 0.0f && "ERROR: An attempt was made to specify negative luminous intensity value in a call to PointLight::SetLuminousIntensity()!");
+		assert(intensityInCandelas >= 0.0f && "ERROR: An attempt was made to specify a negative luminous intensity value in a call to PointLight::SetLuminousIntensity()!");
 		
-		mPointLightData.LuminousIntensity = intensityInCandelas;
+		mPointLightInfo.LuminousIntensityInCandelas = intensityInCandelas;
 		MarkGPUSceneDataAsDirty();
 	}
 
@@ -83,7 +83,7 @@ namespace Brawler
 		assert(lightColor.GetY() >= 0.0f && "ERROR: An attempt was made to specify a light color with a negative G channel in a call to PointLight::SetLightColor()!");
 		assert(lightColor.GetZ() >= 0.0f && "ERROR: An attempt was made to specify a light color with a negative B channel in a call to PointLight::SetLightColor()!");
 
-		mPointLightData.LightColor = DirectX::XMFLOAT3{ lightColor.GetX(), lightColor.GetY(), lightColor.GetZ() };
+		mPointLightInfo.LightColor = lightColor;
 		MarkGPUSceneDataAsDirty();
 	}
 
@@ -91,9 +91,7 @@ namespace Brawler
 	{
 		assert(maxDistanceInMeters >= 0.01f && "ERROR: An attempt was made to specify a maximum light distance which was less than the size of a punctual light (1 cm) in a call to PointLight::SetMaximumLightDistance()!");
 
-		const float inverseMaxDistance = (1.0f / maxDistanceInMeters);
-		mPointLightData.InverseMaxDistanceSquared = (inverseMaxDistance * inverseMaxDistance);
-
+		mPointLightInfo.MaxDistanceInMeters = maxDistanceInMeters;
 		MarkGPUSceneDataAsDirty();
 	}
 
@@ -112,12 +110,11 @@ namespace Brawler
 		const TransformComponent* const transformComponentPtr = GetComponent<const TransformComponent>();
 		assert(transformComponentPtr != nullptr);
 
-		const Math::Float3& prevFrameTranslation{ mPointLightData.PositionWS };
 		const Math::Float3& currFrameTranslation{ transformComponentPtr->GetTranslation() };
 
-		if (currFrameTranslation != prevFrameTranslation) [[unlikely]]
+		if (currFrameTranslation != mCachedTranslation) [[unlikely]]
 		{
-			mPointLightData.PositionWS = DirectX::XMFLOAT3{ currFrameTranslation.GetX(), currFrameTranslation.GetY(), currFrameTranslation.GetZ() };
+			mCachedTranslation = currFrameTranslation;
 			MarkGPUSceneDataAsDirty();
 		}
 	}
@@ -126,8 +123,15 @@ namespace Brawler
 	{
 		assert(IsGPUSceneDataDirty() && "ERROR: An attempt was made to call PointLight::UpdateGPUSceneBufferData() when the GPU scene buffer data didn't need to be updated!");
 
+		const Math::Float3 scaledLightColor{ mPointLightInfo.LightColor * mPointLightInfo.LuminousIntensityInCandelas };
+		const GPUSceneTypes::PointLight gpuSceneBufferData{
+			.PositionWS{ mCachedTranslation.GetX(), mCachedTranslation.GetY(), mCachedTranslation.GetZ() },
+			.InverseMaxDistanceSquared = (1.0f / (mPointLightInfo.MaxDistanceInMeters * mPointLightInfo.MaxDistanceInMeters)),
+			.ScaledLightColor{ scaledLightColor.GetX(), scaledLightColor.GetY(), scaledLightColor.GetZ() }
+		};
+
 		GPUSceneBufferUpdateOperation<GPUSceneBufferID::POINT_LIGHT_BUFFER> pointLightUpdateOperation{ mPointLightBufferSubAllocation.GetBufferCopyRegion() };
-		pointLightUpdateOperation.SetUpdateSourceData(std::span<const GPUSceneTypes::PointLight>{ &mPointLightData, 1 });
+		pointLightUpdateOperation.SetUpdateSourceData(std::span<const GPUSceneTypes::PointLight>{ &gpuSceneBufferData, 1 });
 
 		Brawler::GetRenderer().GetRenderModule<GPUSceneUpdateRenderModule>().ScheduleGPUSceneBufferUpdateForNextFrame(std::move(pointLightUpdateOperation));
 

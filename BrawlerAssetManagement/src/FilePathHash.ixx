@@ -6,7 +6,7 @@ export module Brawler.FilePathHash;
 
 namespace
 {
-	consteval std::uint64_t CreateFilePathHash(const std::wstring_view filePath)
+	constexpr std::uint64_t CreateFilePathHash(const std::wstring_view filePath)
 	{
 		// Shamelessly copied from http://www.cse.yorku.ca/~oz/hash.html...
 
@@ -35,12 +35,23 @@ namespace
 	}
 }
 
+namespace Brawler
+{
+	struct AllowRuntimeFilePathHashConstruction_T
+	{};
+}
+
+export namespace Brawler
+{
+	inline constexpr AllowRuntimeFilePathHashConstruction_T CONSTRUCT_FILE_PATH_HASH_AT_RUNTIME{};
+}
+
 export namespace Brawler
 {
 	class FilePathHash
 	{
 	public:
-		constexpr FilePathHash() = default;
+		FilePathHash() = default;
 		
 		// By forcing the constructor which takes a std::wstring_view to be consteval, we
 		// ensure that the hash is computed at compile time. With proper usage, the file
@@ -55,6 +66,11 @@ export namespace Brawler
 		//   2. Create all FilePathHash instances using the std::wstring_view constructor as
 		//      constexpr. (The compiler won't even allow you to do otherwise, anyways.)
 		consteval FilePathHash(const std::wstring_view filePath);
+
+		// When it is necessary, however, we will also allow construction of FilePathHash instances
+		// from strings at runtime. This must be done explicitly using the tag object
+		// CONSTRUCT_FILE_PATH_HASH_AT_RUNTIME.
+		constexpr FilePathHash(const AllowRuntimeFilePathHashConstruction_T, const std::wstring_view filePath);
 
 		// In cases where a file path hash is read directly from a binary file, this
 		// constructor can instead be used.
@@ -76,6 +92,10 @@ export namespace Brawler
 namespace Brawler
 {
 	consteval FilePathHash::FilePathHash(const std::wstring_view filePath) :
+		mHash(CreateFilePathHash(filePath))
+	{}
+
+	constexpr FilePathHash::FilePathHash(const AllowRuntimeFilePathHashConstruction_T, const std::wstring_view filePath) :
 		mHash(CreateFilePathHash(filePath))
 	{}
 
