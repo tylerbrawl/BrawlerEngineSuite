@@ -12,7 +12,7 @@ module;
 #include <assimp/scene.h>
 #include <assimp/material.h>
 
-module Brawler.AssimpMaterialLoader;
+module Brawler.AssimpSceneLoader;
 import Brawler.FilePathHash;
 import Brawler.JobSystem;
 import Brawler.GenericPreFrameTextureUpdate;

@@ -50,13 +50,13 @@ BrawlerHLSL::DeferredGeometryRasterVSOutput main(in const BrawlerHLSL::DeferredG
 	// These might just be the crustiest vertex normals ever conceived.
 	const uint reallyPackedTangentFrame = asuint(currVertex.PositionAndTangentFrame.w);
 
-	static const float ENCODED_NORMAL_SCALE_VALUE = (1.0f / 255.0f);  // Mapping [0, 255] to [0, 1]: y = (1/255)x
-	static const float COS_ROTATION_SCALE_VALUE = (2.0f / 255.0f);  // Mapping [0, 255] to [-1, 1]: y = (2/255)x - 1
+	static const float ENCODED_NORMAL_SCALE_VALUE = 0.00392157f;  // Mapping [0, 255] to [0, 1]: y = (1/255)x
+	static const float ROTATION_SCALE_VALUE = 0.02463994f;  // Mapping [0, 255] to [0, 2Pi]: y = (2Pi/255)x
 	
 	float3 packedTangentFrame = float3(
 		float(reallyPackedTangentFrame >> 24) * ENCODED_NORMAL_SCALE_VALUE,  // x stores the encoded x component of the normal.
 		float((reallyPackedTangentFrame >> 16) & 0xFF) * ENCODED_NORMAL_SCALE_VALUE,  // y stores the encoded y component of the normal.
-		float((reallyPackedTangentFrame >> 8) & 0xFF) * COS_ROTATION_SCALE_VALUE  // z stores the cos(rotationRadians).
+		float((reallyPackedTangentFrame >> 8) & 0xFF) * ROTATION_SCALE_VALUE  // z stores the rotation, in radians, of tangent_b about the normal to get the tangent.
 	);
 	
 	// Finish the transformation from [0, 255] to [-1, 1].

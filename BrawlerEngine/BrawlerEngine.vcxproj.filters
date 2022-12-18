@@ -852,6 +852,30 @@
     <ClCompile Include="src\AssimpSceneLoader.cpp">
       <Filter>Source Files\Streaming Systems\Assimp Loading</Filter>
     </ClCompile>
+    <ClCompile Include="src\AssimpLoadingUtil.ixx">
+      <Filter>Module Files\Streaming Systems\Assimp Loading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssimpLoadingUtil.cpp">
+      <Filter>Source Files\Streaming Systems\Assimp Loading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssimpLightLoader.ixx">
+      <Filter>Module Files\Streaming Systems\Assimp Loading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssimpLightLoader.cpp">
+      <Filter>Source Files\Streaming Systems\Assimp Loading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssimpModelLoader.ixx">
+      <Filter>Module Files\Streaming Systems\Assimp Loading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssimpModelLoader.cpp">
+      <Filter>Source Files\Streaming Systems\Assimp Loading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssimpMeshBuilder.ixx">
+      <Filter>Module Files\Streaming Systems\Assimp Loading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AssimpMeshBuilder.cpp">
+      <Filter>Source Files\Streaming Systems\Assimp Loading</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

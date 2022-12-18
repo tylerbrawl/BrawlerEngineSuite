@@ -5,7 +5,7 @@
 
 float2 OctahedronWrap(in const float2 v)
 {
-    return ((1.0f - abs(v.yx)) * (v.xy >= 0.0f ? 1.0f : -1.0f));
+    return ((1.0f - abs(v.yx)) * select(v.xy >= 0.0f, 1.0f, -1.0f));
 }
 
 float2 PackNormal(in float3 unpackedNormal)

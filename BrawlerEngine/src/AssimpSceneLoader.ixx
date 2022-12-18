@@ -1,6 +1,4 @@
 module;
-#include <vector>
-#include <memory>
 #include <assimp/scene.h>
 
 export module Brawler.AssimpSceneLoader;
@@ -23,9 +21,6 @@ export namespace Brawler
 		void LoadScene(const aiScene& scene);
 
 		SceneGraph ExtractSceneGraph();
-
-	private:
-		static std::vector<std::unique_ptr<SceneNode>> CreateLightSceneNodes(const aiScene& scene);
 
 	private:
 		SceneGraph mSceneGraph;

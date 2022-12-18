@@ -4,7 +4,7 @@ module;
 #include <assimp/scene.h>
 #include <assimp/material.h>
 
-export module Brawler.AssimpMaterialLoader;
+export module Brawler.AssimpSceneLoader:AssimpMaterialLoader;
 import Brawler.MaterialDefinitionHandle;
 import Brawler.StandardMaterialDefinition;
 
