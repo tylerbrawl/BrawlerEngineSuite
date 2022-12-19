@@ -107,22 +107,17 @@ namespace
 
 namespace Brawler
 {
-	AssimpMeshBuilder::AssimpMeshBuilder(const aiMesh& mesh) :
-		mBuilder(),
-		mMeshPtr(&mesh)
+	void AssimpMeshBuilder::InitializeMeshData(const aiMesh& mesh)
 	{
 		assert(mesh.HasPositions() && "ERROR: An attempt was made to construct a Brawler::Mesh from an aiMesh instance with no vertex positions!");
 		assert(mesh.HasFaces() && "ERROR: An attempt was made to construct a Brawler::Mesh from an aiMesh instance with no faces!");
 		assert(mesh.HasNormals() && "ERROR: An attempt was made to construct a Brawler::Mesh from an aiMesh instance with no normals!");
 		assert(mesh.HasTangentsAndBitangents() && "ERROR: An attempt was made to construct a Brawler::Mesh from an aiMesh instance with no tangents or bitangents!");
-		assert(mesh.HasTextureCoords() && "ERROR: An attempt was made to construct a Brawler::Mesh from an aiMesh instance with no UV texture coordinates!");
-	}
+		assert(mesh.HasTextureCoords(0) && "ERROR: An attempt was made to construct a Brawler::Mesh from an aiMesh instance with no UV texture coordinates!");
 
-	void AssimpMeshBuilder::InitializeMeshData()
-	{
-		InitializeVertexBufferData();
-		InitializeIndexBufferData();
-		InitializeAABBData();
+		InitializeVertexBufferData(mesh);
+		InitializeIndexBufferData(mesh);
+		InitializeAABBData(mesh);
 	}
 
 	void AssimpMeshBuilder::SetMaterialDefinitionHandle(MaterialDefinitionHandle&& hMaterial)
@@ -135,18 +130,18 @@ namespace Brawler
 		return mBuilder.CreateMesh();
 	}
 
-	void AssimpMeshBuilder::InitializeVertexBufferData()
+	void AssimpMeshBuilder::InitializeVertexBufferData(const aiMesh& mesh)
 	{
-		const std::size_t numVertices = mMeshPtr->mNumVertices;
+		const std::size_t numVertices = mesh.mNumVertices;
 		mBuilder.SetVertexBufferSize(numVertices);
 
 		const std::span<GPUSceneTypes::PackedStaticVertex> destVertexSpan{ mBuilder.GetVertexSpan() };
 
-		const std::span<const aiVector3D> vertexPositionsSpan{ mMeshPtr->mVertices, numVertices };
-		const std::span<const aiVector3D> normalsSpan{ mMeshPtr->mNormals, numVertices };
-		const std::span<const aiVector3D> tangentsSpan{ mMeshPtr->mTangents, numVertices };
-		const std::span<const aiVector3D> bitangentsSpan{ mMeshPtr->mBitangents, numVertices };
-		const std::span<const aiVector3D> uvCoordsSpan{ mMeshPtr->mTextureCoords[0], numVertices };
+		const std::span<const aiVector3D> vertexPositionsSpan{ mesh.mVertices, numVertices };
+		const std::span<const aiVector3D> normalsSpan{ mesh.mNormals, numVertices };
+		const std::span<const aiVector3D> tangentsSpan{ mesh.mTangents, numVertices };
+		const std::span<const aiVector3D> bitangentsSpan{ mesh.mBitangents, numVertices };
+		const std::span<const aiVector3D> uvCoordsSpan{ mesh.mTextureCoords[0], numVertices };
 
 		for (auto& [destVertex, currPos, currNormal, currTangent, currBitangent, currUVCoords] : std::views::zip(
 			destVertexSpan,
@@ -172,18 +167,18 @@ namespace Brawler
 		}
 	}
 
-	void AssimpMeshBuilder::InitializeIndexBufferData()
+	void AssimpMeshBuilder::InitializeIndexBufferData(const aiMesh& mesh)
 	{
 		// Assimp supports meshes composed of many different types of primitives, but we
 		// are concerned with only triangular meshes. (Indeed, we ask Assimp to triangulate
 		// complex meshes as necessary to reduce them to only triangles.)
-		const std::size_t numTriangles = mMeshPtr->mNumFaces;
+		const std::size_t numTriangles = mesh.mNumFaces;
 		const std::size_t numIndices = (numTriangles * 3);
 
 		mBuilder.SetIndexBufferSize(numIndices);
 
 		const auto destTriangleRange{ mBuilder.GetIndexSpan() | std::views::chunk(3) };
-		const std::span<const aiFace> faceSpan{ mMeshPtr->mFaces, numTriangles };
+		const std::span<const aiFace> faceSpan{ mesh.mFaces, numTriangles };
 
 		for (auto& [destTriangle, srcFace] : std::views::zip(destTriangleRange, faceSpan))
 		{
@@ -194,11 +189,11 @@ namespace Brawler
 		}
 	}
 
-	void AssimpMeshBuilder::InitializeAABBData()
+	void AssimpMeshBuilder::InitializeAABBData(const aiMesh& mesh)
 	{
 		// Assimp actually calculates AABB points for us automatically, so we can just use
 		// those instead of calculating them ourselves.
-		const aiAABB& meshAABB{ mMeshPtr->mAABB };
+		const aiAABB& meshAABB{ mesh.mAABB };
 
 		mBuilder.SetMinimumAABBPoint(Math::Float3{ meshAABB.mMin.x, meshAABB.mMin.y, meshAABB.mMin.z });
 		mBuilder.SetMaximumAABBPoint(Math::Float3{ meshAABB.mMax.x, meshAABB.mMax.y, meshAABB.mMax.z });

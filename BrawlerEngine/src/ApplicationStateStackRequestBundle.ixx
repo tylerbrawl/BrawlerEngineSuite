@@ -82,8 +82,6 @@ namespace Brawler
 		requires std::derived_from<T, I_ApplicationState> && !std::is_same_v<T, I_ApplicationState>
 	void ApplicationStateStackRequestBundle::RequestStatePush(Args&&... args)
 	{
-		constexpr ApplicationStateID STATE_ID = GetApplicationStateID<T>();
-
 		mRequestArr.push_back(IMPL::ApplicationStateStackRequest{
 			.Type = IMPL::ApplicationStateStackRequestType::PUSH,
 			.StatePtr{ std::make_unique<T>(std::forward<Args>(args)...) }

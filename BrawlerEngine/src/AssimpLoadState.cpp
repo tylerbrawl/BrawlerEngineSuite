@@ -7,12 +7,17 @@ module;
 #include <assimp/scene.h>
 
 module Brawler.AssimpLoadState;
+import Brawler.ApplicationStateStackRequestBundle;
+import Brawler.GameState;
+import Brawler.World;
+import Brawler.AssimpSceneLoader;
+import Brawler.Application;
+import Brawler.ApplicationStateStack;
 
 namespace Brawler 
 {
 	AssimpLoadState::AssimpLoadState(std::filesystem::path modelFilePath) :
 		mImporter(),
-		mLoadedWorld(),
 		mScenePtr(),
 		mModelFilePath(std::move(modelFilePath))
 	{}
@@ -23,7 +28,25 @@ namespace Brawler
 		// unfortunately.
 		ImportModelFile();
 
+		// Next, create the SceneGraph using the created aiScene instance. This is implicitly
+		// done in a multithreaded fashion.
+		const AssimpSceneLoadParams sceneLoadParams{
+				.AssimpScene{ *mScenePtr },
+				.SceneFilePath{ mModelFilePath }
+		};
 
+		AssimpSceneLoader sceneLoader{};
+		sceneLoader.LoadScene(sceneLoadParams);
+
+		World createdWorld{ sceneLoader.ExtractSceneGraph() };
+
+		// Transition the application to the GameState.
+		ApplicationStateStackRequestBundle stateStackRequestBundle{ 2 };
+
+		stateStackRequestBundle.RequestStatePop();
+		stateStackRequestBundle.RequestStatePush<GameState>(std::move(createdWorld));
+
+		Brawler::GetApplication().GetApplicationStateStack().SubmitStateStackRequestBundle(std::move(stateStackRequestBundle));
 	}
 
 	void AssimpLoadState::ImportModelFile()
@@ -40,7 +63,8 @@ namespace Brawler
 			aiProcess_ConvertToLeftHanded |
 			aiPostProcessSteps::aiProcess_TransformUVCoords |
 			aiPostProcessSteps::aiProcess_GlobalScale |
-			aiPostProcessSteps::aiProcess_OptimizeGraph
+			aiPostProcessSteps::aiProcess_OptimizeGraph |
+			aiPostProcessSteps::aiProcess_GenBoundingBoxes
 		);
 
 		const std::string modelFilePathStr{ mModelFilePath.string() };

@@ -156,6 +156,16 @@ namespace Brawler
 		return mRenderer;
 	}
 
+	ApplicationStateStack& Application::GetApplicationStateStack()
+	{
+		return mStateStack;
+	}
+
+	const ApplicationStateStack& Application::GetApplicationStateStack() const
+	{
+		return mStateStack;
+	}
+
 	AppWindow& Application::GetMainAppWindow()
 	{
 		return mMainWindowManager.GetMainAppWindow();

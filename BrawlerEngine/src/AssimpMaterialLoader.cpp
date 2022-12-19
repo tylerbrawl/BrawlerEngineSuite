@@ -25,8 +25,6 @@ import Brawler.Application;
 import Brawler.D3D12.Renderer;
 import Brawler.GPUSceneUpdateRenderModule;
 import Brawler.SceneTextureDatabase;
-import Brawler.StandardMaterialBuilder;
-import Brawler.MaterialDefinitionGraph;
 
 namespace
 {
@@ -130,23 +128,15 @@ namespace Brawler
 {
 	void AssimpMaterialLoader::LoadMaterials(const aiScene& scene)
 	{
-		mHMaterialDefinitionArr.clear();
 		mMaterialBuilderArr.clear();
 
 		const std::span<const aiMaterial*> materialPtrSpan{ scene.mMaterials, scene.mNumMaterials };
-
 		CreateSceneTextures(materialPtrSpan);
-		CreateMaterialDefinitions();
 	}
 
-	std::span<MaterialDefinitionHandle> AssimpMaterialLoader::GetMaterialDefinitionHandleSpan()
+	std::span<const StandardMaterialBuilder> AssimpMaterialLoader::GetMaterialBuilderSpan() const
 	{
-		return std::span<MaterialDefinitionHandle>{ mHMaterialDefinitionArr };
-	}
-
-	std::span<const MaterialDefinitionHandle> AssimpMaterialLoader::GetMaterialDefinitionHandleSpan() const
-	{
-		return std::span<const MaterialDefinitionHandle>{ mHMaterialDefinitionArr };
+		return std::span<const StandardMaterialBuilder>{ mMaterialBuilderArr };
 	}
 
 	void AssimpMaterialLoader::CreateSceneTextures(const std::span<const aiMaterial*> materialPtrSpan)
@@ -223,13 +213,5 @@ namespace Brawler
 			for (auto&& textureUpdate : loadedTextureInfo.SceneTextureUpdateArr)
 				Brawler::GetRenderer().GetRenderModule<GPUSceneUpdateRenderModule>().ScheduleGPUSceneTextureUpdateForNextFrame(std::move(textureUpdate));
 		}
-	}
-
-	void AssimpMaterialLoader::CreateMaterialDefinitions()
-	{
-		mHMaterialDefinitionArr.reserve(mMaterialBuilderArr.size());
-
-		for (const auto& materialBuilder : mMaterialBuilderArr)
-			mHMaterialDefinitionArr.push_back(MaterialDefinitionGraph::GetInstance().CreateMaterialDefinition<StandardMaterialDefinition>(materialBuilder));
 	}
 }

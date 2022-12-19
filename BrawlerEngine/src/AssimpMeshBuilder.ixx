@@ -10,7 +10,7 @@ export namespace Brawler
 	class AssimpMeshBuilder
 	{
 	public:
-		explicit AssimpMeshBuilder(const aiMesh& mesh);
+		AssimpMeshBuilder() = default;
 
 		AssimpMeshBuilder(const AssimpMeshBuilder& rhs) = delete;
 		AssimpMeshBuilder& operator=(const AssimpMeshBuilder& rhs) = delete;
@@ -18,18 +18,17 @@ export namespace Brawler
 		AssimpMeshBuilder(AssimpMeshBuilder&& rhs) noexcept = delete;
 		AssimpMeshBuilder& operator=(AssimpMeshBuilder&& rhs) noexcept = delete;
 
-		void InitializeMeshData();
+		void InitializeMeshData(const aiMesh& mesh);
 		void SetMaterialDefinitionHandle(MaterialDefinitionHandle&& hMaterial);
 
 		Mesh CreateMesh();
 
 	private:
-		void InitializeVertexBufferData();
-		void InitializeIndexBufferData();
-		void InitializeAABBData();
+		void InitializeVertexBufferData(const aiMesh& mesh);
+		void InitializeIndexBufferData(const aiMesh& mesh);
+		void InitializeAABBData(const aiMesh& mesh);
 
 	private:
 		MeshBuilder mBuilder;
-		const aiMesh* mMeshPtr;
 	};
 }

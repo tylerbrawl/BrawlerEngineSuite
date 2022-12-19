@@ -876,6 +876,9 @@
     <ClCompile Include="src\AssimpMeshBuilder.cpp">
       <Filter>Source Files\Streaming Systems\Assimp Loading</Filter>
     </ClCompile>
+    <ClCompile Include="src\AssimpSceneLoadParams.ixx">
+      <Filter>Module Files\Streaming Systems\Assimp Loading</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

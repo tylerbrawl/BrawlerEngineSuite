@@ -260,6 +260,7 @@
     <ClCompile Include="src\AssimpModelLoader.ixx" />
     <ClCompile Include="src\AssimpSceneLoader.cpp" />
     <ClCompile Include="src\AssimpSceneLoader.ixx" />
+    <ClCompile Include="src\AssimpSceneLoadParams.ixx" />
     <ClCompile Include="src\BlackboardTransientResourceBuilder.cpp" />
     <ClCompile Include="src\BlackboardTransientResourceBuilder.ixx" />
     <ClCompile Include="src\BorderlessWindowedModeParams.ixx" />

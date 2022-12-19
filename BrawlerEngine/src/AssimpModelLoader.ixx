@@ -3,7 +3,9 @@ module;
 #include <assimp/scene.h>
 
 export module Brawler.AssimpSceneLoader:AssimpModelLoader;
+import :AssimpSceneLoadParams;
 import Brawler.SceneNode;
+import Brawler.ModelHandle;
 
 export namespace Brawler
 {
@@ -18,7 +20,7 @@ export namespace Brawler
 		AssimpModelLoader(AssimpModelLoader&& rhs) noexcept = default;
 		AssimpModelLoader& operator=(AssimpModelLoader&& rhs) noexcept = default;
 
-		void LoadModel(const aiScene& scene);
+		void LoadModel(const AssimpSceneLoadParams& params);
 		std::unique_ptr<SceneNode> ExtractModelInstance();
 
 	private:

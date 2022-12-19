@@ -38,6 +38,9 @@ export namespace Brawler
 		D3D12::Renderer& GetRenderer();
 		const D3D12::Renderer& GetRenderer() const;
 
+		ApplicationStateStack& GetApplicationStateStack();
+		const ApplicationStateStack& GetApplicationStateStack() const;
+
 		AppWindow& GetMainAppWindow();
 		const AppWindow& GetMainAppWindow() const;
 

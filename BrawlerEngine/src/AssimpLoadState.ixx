@@ -5,7 +5,6 @@ module;
 
 export module Brawler.AssimpLoadState;
 import Brawler.I_ApplicationState;
-import Brawler.World;
 
 export namespace Brawler
 {
@@ -27,7 +26,6 @@ export namespace Brawler
 
 	private:
 		Assimp::Importer mImporter;
-		World mLoadedWorld;
 		const aiScene* mScenePtr;
 		std::filesystem::path mModelFilePath;
 	};
