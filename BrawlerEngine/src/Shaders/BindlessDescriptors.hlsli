@@ -58,16 +58,14 @@ namespace BrawlerHLSL
 			return packedVertexBuffer[NonUniformResourceIndex(vertexID)];
 		}
 			
-		uint GetGlobalIndexBufferIndex(in const uint indexID)
+		Buffer<uint> GetGlobalUInt32Buffer(in const uint bufferID)
 		{
-			Buffer<uint> indexBuffer = IMPL::Bindless_GlobalUIntBuffer[IMPL::BINDLESS_GLOBAL_INDEX_BUFFER_INDEX];
-				
-			return indexBuffer[NonUniformResourceIndex(indexID)];
+			return IMPL::Bindless_GlobalUIntBuffer[NonUniformResourceIndex(bufferID)];
 		}
 			
 		BrawlerHLSL::ModelInstanceTransformData GetGlobalModelInstanceTransformData(in const uint modelInstanceID)
 		{
-			StructuredBuffer<BrawlerHLSL::ModelInstanceTransformData > transformDataBuffer = IMPL::Bindless_GlobalModelInstanceTransformDataBuffer[IMPL::BINDLESS_MODEL_INSTANCE_TRANSFORM_DATA_BUFFER_INDEX];
+			StructuredBuffer<BrawlerHLSL::ModelInstanceTransformData> transformDataBuffer = IMPL::Bindless_GlobalModelInstanceTransformDataBuffer[IMPL::BINDLESS_MODEL_INSTANCE_TRANSFORM_DATA_BUFFER_INDEX];
 
 			return transformDataBuffer[NonUniformResourceIndex(modelInstanceID)];
 		}

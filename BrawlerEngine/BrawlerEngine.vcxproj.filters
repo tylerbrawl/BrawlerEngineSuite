@@ -1004,5 +1004,8 @@
     <FxCompile Include="src\Shaders\DeferredGeometryRasterPS.hlsl">
       <Filter>Shader Files\Geometry</Filter>
     </FxCompile>
+    <FxCompile Include="src\Shaders\ModelInstanceFrustumCull.hlsl">
+      <Filter>Shader Files\Culling</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
