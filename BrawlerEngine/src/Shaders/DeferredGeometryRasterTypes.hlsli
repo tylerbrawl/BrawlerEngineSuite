@@ -21,7 +21,7 @@ namespace BrawlerHLSL
 	
 	struct DeferredGeometryRasterPSInput
 	{
-		float3 PositionNDCS : SV_Position;
+		float3 PositionNDC : SV_Position;
 		
 		float3 PositionWS : POSITIONWS;
 		float3 NormalWS : NORMALWS;
@@ -70,3 +70,6 @@ namespace BrawlerHLSL
 }
 
 ConstantBuffer<BrawlerHLSL::DeferredGeometryRasterConstantsInfo> DeferredGeometryRasterConstants : register(b0, space0);
+
+SamplerState AnisotropicWrapSampler : register(s0, space0);
+SamplerState BilinearWrapSampler : register(s1, space0);

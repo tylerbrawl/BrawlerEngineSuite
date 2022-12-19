@@ -27,6 +27,7 @@ namespace IMPL
 	
 	Texture2D<float> Bindless_GlobalTexture2DFloatArray[] : register(t0, space10);
 	Texture2D<uint> Bindless_GlobalTexture2DUInt[] : register(t0, space11);
+	Texture2D<float4> Bindless_GlobalTexture2DFloat4Array[] : register(t0, space12);
 }
 	
 namespace IMPL
@@ -175,6 +176,15 @@ namespace IMPL
 		static Texture2D<uint> GetBindlessTexture(in const uint textureID)
 		{
 			return Bindless_GlobalTexture2DUIntArray[NonUniformResourceIndex(textureID)];
+		}
+	};
+	
+	template <>
+	struct TextureFinder<Texture2D<float4>>
+	{
+		static Texture2D<float4> GetBindlessTexture(in const uint textureID)
+		{
+			return Bindless_GlobalTexture2DFloat4Array[NonUniformResourceIndex(textureID)];
 		}
 	};
 }

@@ -4,6 +4,10 @@ namespace BrawlerHLSL
 {
 	namespace GPUSceneLimits
 	{
+		// This is the highest number of bindless SRVs which can be active at once in the
+		// Brawler Engine.
+		static const uint MAX_BINDLESS_SRVS = 500000;
+		
 		// This is the highest number of material definitions supported by the Brawler Engine.
 		static const uint MAX_MATERIAL_DEFINITIONS = (1 << 22);
 		

@@ -47,7 +47,8 @@ BrawlerHLSL::DeferredGeometryRasterVSOutput main(in const BrawlerHLSL::DeferredG
 	
 	const float4x4 invTransposeWorldViewProjectionMatrix = mul(inverseTransposeWorldMatrix, currViewTransformData.CurrentFrameViewProjectionMatrix);
 	
-	// These might just be the crustiest vertex normals ever conceived.
+	// These might just be the crustiest vertex normals ever conceived. Thanks,
+	// id Software!
 	const uint reallyPackedTangentFrame = asuint(currVertex.PositionAndTangentFrame.w);
 
 	static const float ENCODED_NORMAL_SCALE_VALUE = 0.00392157f;  // Mapping [0, 255] to [0, 1]: y = (1/255)x
