@@ -8,8 +8,8 @@ module;
 export module Brawler.D3D12.IndirectArgumentsBufferSubAllocation;
 export import Brawler.D3D12.IndirectArgumentsCommandRange;
 import Brawler.D3D12.IndirectArgumentsViewGenerator;
-import Brawler.D3D12.GPUResourceViews;
 import Brawler.D3D12.I_BufferSubAllocation;
+import Brawler.D3D12.I_BufferSnapshot;
 import Brawler.CommandSignatures.CommandSignatureID;
 import Brawler.CommandSignatures.CommandSignatureDefinition;
 import Util.Math;
@@ -94,6 +94,45 @@ export namespace Brawler
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+export namespace Brawler
+{
+	namespace D3D12
+	{
+		template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount = DYNAMIC_EXTENT>
+		class IndirectArgumentsBufferSnapshot final : public I_BufferSnapshot, public IndirectArgumentsViewGenerator<IndirectArgumentsBufferSnapshot<CSIdentifier, CommandCount>>, private CommandCountContainer<CommandCount>
+		{
+		private:
+			static constexpr bool DOES_COMMAND_SIGNATURE_HAVE_ROOT_SIGNATURE = CommandSignatures::DoesCommandSignatureHaveAssociatedRootSignature<CSIdentifier>();
+
+		public:
+			using IndirectArgumentsType = CommandSignatures::IndirectArgumentsType<CSIdentifier>;
+
+		public:
+			explicit IndirectArgumentsBufferSnapshot(const IndirectArgumentsBufferSubAllocation<CSIdentifier, CommandCount>& iaBufferSubAllocation) requires (CommandCount != DYNAMIC_EXTENT) :
+				I_BufferSnapshot(iaBufferSubAllocation),
+				IndirectArgumentsViewGenerator<IndirectArgumentsBufferSnapshot<CSIdentifier, CommandCount>>(),
+				CommandCountContainer<CommandCount>()
+			{}
+
+			explicit IndirectArgumentsBufferSnapshot(const IndirectArgumentsBufferSubAllocation<CSIdentifier, CommandCount>& iaBufferSubAllocation) requires (CommandCount == DYNAMIC_EXTENT) :
+				I_BufferSnapshot(iaBufferSubAllocation),
+				IndirectArgumentsViewGenerator<IndirectArgumentsBufferSnapshot<CSIdentifier, CommandCount>>(),
+				CommandCountContainer<CommandCount>(iaBufferSubAllocation.GetCommandCount())
+			{}
+
+			IndirectArgumentsBufferSnapshot(const IndirectArgumentsBufferSnapshot& rhs) = default;
+			IndirectArgumentsBufferSnapshot& operator=(const IndirectArgumentsBufferSnapshot& rhs) = default;
+
+			IndirectArgumentsBufferSnapshot(IndirectArgumentsBufferSnapshot&& rhs) noexcept = default;
+			IndirectArgumentsBufferSnapshot& operator=(IndirectArgumentsBufferSnapshot&& rhs) noexcept = default;
+
+			std::size_t GetCommandCount() const;
+		};
+	}
+}
+
+// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 namespace Brawler
 {
 	namespace D3D12
@@ -107,7 +146,7 @@ namespace Brawler
 			// of the buffer sub-allocation.)
 			
 			// Try to solve for this value at compile time, if possible.
-			if constexpr (CommandCount == DYNAMIC_EXTENT)
+			if constexpr (CommandCount != DYNAMIC_EXTENT)
 			{
 				static constexpr std::size_t SUB_ALLOCATION_SIZE = Util::Math::AlignToPowerOfTwo(sizeof(IndirectArgumentsType) * CommandCountContainer<CommandCount>::GetCommandCount(), sizeof(std::uint32_t));
 				return SUB_ALLOCATION_SIZE;
@@ -154,6 +193,29 @@ namespace Brawler
 		template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount>
 		std::size_t IndirectArgumentsBufferSubAllocation<CSIdentifier, CommandCount>::GetCommandCount() const
 		{
+			return CommandCountContainer<CommandCount>::GetCommandCount();
+		}
+	}
+}
+
+// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+namespace Brawler
+{
+	namespace D3D12
+	{
+		template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount>
+		std::size_t IndirectArgumentsBufferSnapshot<CSIdentifier, CommandCount>::GetCommandCount() const
+		{
+			// Rather than inferring the command count from the sub-allocation size and the size of
+			// IndirectArgumentsType as is typically done in other snapshot types, the IndirectArgumentsBufferSnapshot
+			// also has a CommandCountContainer which may contain the correct command count. We do this because
+			// we align the size of the sub-allocation to four bytes to ensure correctness when creating raw buffer
+			// views.
+			//
+			// If we don't explicitly save the actual command count, then we won't be able to get it back
+			// in the case where sizeof(IndirectArgumentsType) < sizeof(std::uint32_t).
+
 			return CommandCountContainer<CommandCount>::GetCommandCount();
 		}
 	}
