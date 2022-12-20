@@ -6,6 +6,7 @@ module Brawler.D3D12.Renderer;
 import Brawler.JobGroup;
 import Util.Coroutine;
 import Brawler.D3D12.GPUResourceRTVDSVHeap;
+import Brawler.D3D12.CommandSignatureDatabase;
 
 namespace Brawler
 {
@@ -108,10 +109,28 @@ namespace Brawler
 
 			postDeviceCreationInitializationGroup.ExecuteJobs();
 
-			// Initialize the PSOs. This *MUST* be done after the RootSignatureDatabase, since PSO
-			// compilation relies on compiled root signatures. It also must be done after the PSO
-			// library has been loaded from the disk.
-			PSODatabase::GetInstance().LoadPSOs();
+			// After that, we can execute further jobs which require the RootSignatureDatabase
+			// to be properly initialized.
+			Brawler::JobGroup postRootSignatureDatabaseInitializationGroup{};
+			postRootSignatureDatabaseInitializationGroup.Reserve(2);
+
+			postRootSignatureDatabaseInitializationGroup.AddJob([] ()
+			{
+				// Initialize the PSOs. This *MUST* be done after the RootSignatureDatabase, since PSO
+				// compilation relies on compiled root signatures. It also must be done after the PSO
+				// library has been loaded from the disk.
+				PSODatabase::GetInstance().LoadPSOs();
+			});
+
+			postRootSignatureDatabaseInitializationGroup.AddJob([] ()
+			{
+				// Initialize the ID3D12CommandSignature instances. This *MUST* be done after the
+				// RootSignatureDatabase, since command signatures which bind root parameters are
+				// tied to specific ID3D12RootSignature instances.
+				CommandSignatureDatabase::GetInstance().InitializeDatabase();
+			});
+
+			postRootSignatureDatabaseInitializationGroup.ExecuteJobs();
 
 			// Wait for the bindless SRV, RTV, and DSV index queues to be initialized.
 			while (descriptorHeapIndexQueuesInitializedCounter.load(std::memory_order::relaxed) > 0)

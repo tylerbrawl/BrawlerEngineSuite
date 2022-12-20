@@ -177,6 +177,7 @@ export namespace Brawler
 		using TypedBufferUnorderedAccessView = UnorderedAccessView<Format, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_BUFFER>;
 
 		using StructuredBufferUnorderedAccessView = UnorderedAccessView<DXGI_FORMAT::DXGI_FORMAT_UNKNOWN, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_BUFFER>;
+		using RawBufferUnorderedAccessView = UnorderedAccessView<DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_BUFFER>;
 
 		template <DXGI_FORMAT Format>
 		using Texture1DUnorderedAccessView = UnorderedAccessView<Format, D3D12_UAV_DIMENSION::D3D12_UAV_DIMENSION_TEXTURE1D>;

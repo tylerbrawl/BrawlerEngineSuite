@@ -122,6 +122,7 @@ export namespace Brawler
 		using TypedBufferShaderResourceView = ShaderResourceView<Format, D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_BUFFER>;
 
 		using StructuredBufferShaderResourceView = ShaderResourceView<DXGI_FORMAT::DXGI_FORMAT_UNKNOWN, D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_BUFFER>;
+		using RawBufferShaderResourceView = ShaderResourceView<DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS, D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_BUFFER>;
 
 		template <DXGI_FORMAT Format>
 		using Texture1DShaderResourceView = ShaderResourceView<Format, D3D12_SRV_DIMENSION::D3D12_SRV_DIMENSION_TEXTURE1D>;

@@ -44,6 +44,7 @@ namespace Brawler
 	using D3D12RootSignature = ID3D12RootSignature;
 	using D3D12PipelineState = ID3D12PipelineState;
 	using D3D12PipelineLibrary = ID3D12PipelineLibrary1;
+	using D3D12CommandSignature = ID3D12CommandSignature;
 	
 	using D3D12Debug = ID3D12Debug3;
 

@@ -226,6 +226,9 @@
     <Filter Include="Module Files\Threading\Atomic Shared Pointer">
       <UniqueIdentifier>{72091017-f778-4868-8a4f-d480cb8b9875}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Pipeline State Management\[Temporary] Indirect Arguments">
+      <UniqueIdentifier>{77c509f2-488c-4566-9be6-8afe8da2e170}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GeneralUtil.ixx">
@@ -1250,6 +1253,33 @@
     </ClCompile>
     <ClCompile Include="src\RenderTargetBundle.ixx">
       <Filter>Module Files\GPU Resources\GPU Resource Descriptors\Non-Shader-Visible Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TempIndirectArgs\CommandSignatureID.ixx">
+      <Filter>Module Files\Pipeline State Management\[Temporary] Indirect Arguments</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TempIndirectArgs\CommandSignatureDefinition.ixx">
+      <Filter>Module Files\Pipeline State Management\[Temporary] Indirect Arguments</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TempIndirectArgs\CommandSignatureDefinitionBase.ixx">
+      <Filter>Module Files\Pipeline State Management\[Temporary] Indirect Arguments</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TempIndirectArgs\CommandSignatureDefinition_DEFERRED_GEOMETRY_RASTER.ixx">
+      <Filter>Module Files\Pipeline State Management\[Temporary] Indirect Arguments</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandSignatureDatabase.ixx">
+      <Filter>Module Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandSignatureDatabase.cpp">
+      <Filter>Source Files\Pipeline State Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IndirectArgumentsBufferSubAllocation.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types\Buffer Sub-Allocation Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IndirectArgumentsCommandRange.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IndirectArgumentsViewGenerator.ixx">
+      <Filter>Module Files\GPU Resources\Buffer Resource Types</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

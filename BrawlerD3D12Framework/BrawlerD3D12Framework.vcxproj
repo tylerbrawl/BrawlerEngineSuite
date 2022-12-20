@@ -263,6 +263,8 @@
     <ClCompile Include="src\BufferResourceDataMapping.cpp" />
     <ClCompile Include="src\BufferResourceDataMapping.ixx" />
     <ClCompile Include="src\ByteAddressBufferSubAllocation.ixx" />
+    <ClCompile Include="src\CommandSignatureDatabase.cpp" />
+    <ClCompile Include="src\CommandSignatureDatabase.ixx" />
     <ClCompile Include="src\ComputeCapableCommandGenerator.ixx" />
     <ClCompile Include="src\CustomEventHandle.ixx" />
     <ClCompile Include="src\DebugScopedCPUPIXEvent.cpp" />
@@ -312,6 +314,9 @@
     <ClCompile Include="src\GPUResourceViews.ixx" />
     <ClCompile Include="src\GPUSubResourceStateManager.cpp" />
     <ClCompile Include="src\GPUSubResourceStateManager.ixx" />
+    <ClCompile Include="src\IndirectArgumentsBufferSubAllocation.ixx" />
+    <ClCompile Include="src\IndirectArgumentsCommandRange.ixx" />
+    <ClCompile Include="src\IndirectArgumentsViewGenerator.ixx" />
     <ClCompile Include="src\I_BufferSnapshot.cpp" />
     <ClCompile Include="src\I_BufferSnapshot.ixx" />
     <ClCompile Include="src\I_BufferSubAllocation.cpp" />
@@ -432,6 +437,10 @@
     <ClCompile Include="src\StructuredBufferElementRange.ixx" />
     <ClCompile Include="src\StructuredBufferSubAllocation.ixx" />
     <ClCompile Include="src\StructuredBufferViewGenerator.ixx" />
+    <ClCompile Include="src\TempIndirectArgs\CommandSignatureDefinition.ixx" />
+    <ClCompile Include="src\TempIndirectArgs\CommandSignatureDefinitionBase.ixx" />
+    <ClCompile Include="src\TempIndirectArgs\CommandSignatureDefinition_DEFERRED_GEOMETRY_RASTER.ixx" />
+    <ClCompile Include="src\TempIndirectArgs\CommandSignatureID.ixx" />
     <ClCompile Include="src\Texture2D.cpp" />
     <ClCompile Include="src\Texture2D.ixx" />
     <ClCompile Include="src\Texture2DArray.cpp" />
