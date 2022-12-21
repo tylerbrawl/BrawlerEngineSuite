@@ -100,6 +100,7 @@
     <ClCompile Include="src\ShaderProfileID.ixx" />
     <ClCompile Include="src\ThreadingUtil.cpp" />
     <ClCompile Include="src\ThreadingUtil.ixx" />
+    <ClCompile Include="src\ThreadLocalResources.cpp" />
     <ClCompile Include="src\ThreadLocalResources.ixx" />
     <ClCompile Include="src\ThreadSafeQueue.ixx" />
     <ClCompile Include="src\VertexBufferViewIndirectArgumentResolver.cpp" />

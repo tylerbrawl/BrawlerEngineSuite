@@ -78,7 +78,7 @@ void main(in const uint2 DTid : SV_DispatchThreadID)
 #endif
 	}
 	else
-		sampledInputValue = {};
+		sampledInputValue = 0.0f;
 		
 	OutputTexture[DTid] = sampledInputValue;
 }
