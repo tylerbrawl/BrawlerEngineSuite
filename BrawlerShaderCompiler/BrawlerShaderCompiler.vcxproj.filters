@@ -70,6 +70,18 @@
     <Filter Include="Source Files\Win32">
       <UniqueIdentifier>{a3ff9619-181f-4f27-a9a9-2292767ece9f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Files\Command Signature Management">
+      <UniqueIdentifier>{7324729a-6da0-4e41-ad91-b8e3bf48e064}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Files\Command Signature Management\Indirect Arguments Resolution">
+      <UniqueIdentifier>{fecca215-a078-4696-b03d-23956526a528}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Command Signature Management">
+      <UniqueIdentifier>{c70120e2-889b-44b2-acde-4f18d732a75f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Command Signature Management\Indirect Arguments Resolution">
+      <UniqueIdentifier>{db340e9d-628c-4b44-ab5c-376b5c656538}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -278,6 +290,48 @@
     </ClCompile>
     <ClCompile Include="src\JobCounterGuard.cpp">
       <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandSignatureID.ixx">
+      <Filter>Module Files\Command Signature Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandSignatureBuilder.ixx">
+      <Filter>Module Files\Command Signature Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\I_IndirectArgumentResolver.ixx">
+      <Filter>Module Files\Command Signature Management\Indirect Arguments Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IndirectArgumentResolvers.ixx">
+      <Filter>Module Files\Command Signature Management\Indirect Arguments Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandSignatureDefinition.ixx">
+      <Filter>Module Files\Command Signature Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GeneralIndirectArgumentResolvers.ixx">
+      <Filter>Module Files\Command Signature Management\Indirect Arguments Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GeneralIndirectArgumentResolvers.cpp">
+      <Filter>Source Files\Command Signature Management\Indirect Arguments Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VertexBufferViewIndirectArgumentResolver.ixx">
+      <Filter>Module Files\Command Signature Management\Indirect Arguments Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VertexBufferViewIndirectArgumentResolver.cpp">
+      <Filter>Source Files\Command Signature Management\Indirect Arguments Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootConstantsIndirectArgumentResolver.ixx">
+      <Filter>Module Files\Command Signature Management\Indirect Arguments Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootConstantsIndirectArgumentResolver.cpp">
+      <Filter>Source Files\Command Signature Management\Indirect Arguments Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootDescriptorIndirectArgumentResolvers.ixx">
+      <Filter>Module Files\Command Signature Management\Indirect Arguments Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootDescriptorIndirectArgumentResolvers.cpp">
+      <Filter>Source Files\Command Signature Management\Indirect Arguments Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandSignatureIDsFileWriter.ixx">
+      <Filter>Module Files\File Writing\Source File Writers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

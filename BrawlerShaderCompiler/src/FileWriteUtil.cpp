@@ -15,6 +15,7 @@ import Brawler.PSODefinitionsFileWriter;
 import Brawler.RootParameterEnumsFileWriter;
 import Brawler.PSODefinitionSpecializationFileWriter;
 import Brawler.PSODefinitionsBaseFileWriter;
+import Brawler.CommandSignatureIDsFileWriter;
 import Brawler.ShaderProfileID;
 import Brawler.ShaderProfileDefinition;
 import Brawler.JobSystem;
@@ -101,7 +102,7 @@ namespace
 		{
 			constexpr auto RELEVANT_PSO_ID_LIST{ Brawler::ShaderProfiles::GetPSOIdentifiers<CurrProfileID>() };
 
-			constexpr std::size_t RESERVED_JOB_GROUP_ALLOCATION_SIZE = 6 + RELEVANT_PSO_ID_LIST.size();
+			constexpr std::size_t RESERVED_JOB_GROUP_ALLOCATION_SIZE = 7 + RELEVANT_PSO_ID_LIST.size();
 			serializationJobGroup.Reserve(RESERVED_JOB_GROUP_ALLOCATION_SIZE);
 			
 			serializationJobGroup.AddJob([] ()
@@ -138,6 +139,12 @@ namespace
 			{
 				Brawler::SourceFileWriters::PSODefinitionsBaseFileWriter basePSODefinitionWriter{};
 				basePSODefinitionWriter.WriteSourceFile();
+			});
+
+			serializationJobGroup.AddJob([] ()
+			{
+				Brawler::SourceFileWriters::CommandSignatureIDsFileWriter<CurrProfileID> cmdSignaturesIDWriter{};
+				cmdSignaturesIDWriter.WriteSourceFile();
 			});
 
 			constexpr auto ADD_PSO_DEFINITION_SPECIALIZATION_JOBS_LAMBDA = []<std::underlying_type_t<Brawler::PSOID>... PSOIdentifierNums>(Brawler::JobGroup& jobGroup, std::integer_sequence<std::underlying_type_t<Brawler::PSOID>, PSOIdentifierNums...> psoSequence)

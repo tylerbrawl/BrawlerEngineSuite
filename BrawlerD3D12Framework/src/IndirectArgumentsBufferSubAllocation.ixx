@@ -58,11 +58,9 @@ export namespace Brawler
 	namespace D3D12
 	{
 		template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount = DYNAMIC_EXTENT>
+			requires (CSIdentifier != CommandSignatures::CommandSignatureID::COUNT_OR_ERROR)
 		class IndirectArgumentsBufferSubAllocation final : public I_BufferSubAllocation, public IndirectArgumentsViewGenerator<IndirectArgumentsBufferSubAllocation<CSIdentifier, CommandCount>>, private CommandCountContainer<CommandCount>
 		{
-		private:
-			static constexpr bool DOES_COMMAND_SIGNATURE_HAVE_ROOT_SIGNATURE = CommandSignatures::DoesCommandSignatureHaveAssociatedRootSignature<CSIdentifier>();
-
 		public:
 			using IndirectArgumentsType = CommandSignatures::IndirectArgumentsType<CSIdentifier>;
 
@@ -99,11 +97,9 @@ export namespace Brawler
 	namespace D3D12
 	{
 		template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount = DYNAMIC_EXTENT>
+			requires (CSIdentifier != CommandSignatures::CommandSignatureID::COUNT_OR_ERROR)
 		class IndirectArgumentsBufferSnapshot final : public I_BufferSnapshot, public IndirectArgumentsViewGenerator<IndirectArgumentsBufferSnapshot<CSIdentifier, CommandCount>>, private CommandCountContainer<CommandCount>
 		{
-		private:
-			static constexpr bool DOES_COMMAND_SIGNATURE_HAVE_ROOT_SIGNATURE = CommandSignatures::DoesCommandSignatureHaveAssociatedRootSignature<CSIdentifier>();
-
 		public:
 			using IndirectArgumentsType = CommandSignatures::IndirectArgumentsType<CSIdentifier>;
 
@@ -138,6 +134,7 @@ namespace Brawler
 	namespace D3D12
 	{
 		template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount>
+			requires (CSIdentifier != CommandSignatures::CommandSignatureID::COUNT_OR_ERROR)
 		std::size_t IndirectArgumentsBufferSubAllocation<CSIdentifier, CommandCount>::GetSubAllocationSize() const
 		{
 			// We want to align the generated sub-allocation size to a multiple of 4 bytes. That way,
@@ -156,6 +153,7 @@ namespace Brawler
 		}
 
 		template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount>
+			requires (CSIdentifier != CommandSignatures::CommandSignatureID::COUNT_OR_ERROR)
 		std::size_t IndirectArgumentsBufferSubAllocation<CSIdentifier, CommandCount>::GetRequiredDataPlacementAlignment() const
 		{
 			// According to the MSDN, both indirect argument commands and indirect argument counts
@@ -173,6 +171,7 @@ namespace Brawler
 		}
 
 		template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount>
+			requires (CSIdentifier != CommandSignatures::CommandSignatureID::COUNT_OR_ERROR)
 		void IndirectArgumentsBufferSubAllocation<CSIdentifier, CommandCount>::WriteIndirectArgumentsData(const std::size_t startElementIndex, const std::span<const IndirectArgumentsType> srcDataSpan) const
 		{
 			assert(startElementIndex + srcDataSpan.size() <= GetCommandCount() && "ERROR: An out-of-bounds destination data range was specified in a call to IndirectArgumentsBufferSubAllocation::WriteIndirectArgumentsData()!");
@@ -182,6 +181,7 @@ namespace Brawler
 		}
 
 		template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount>
+			requires (CSIdentifier != CommandSignatures::CommandSignatureID::COUNT_OR_ERROR)
 		void IndirectArgumentsBufferSubAllocation<CSIdentifier, CommandCount>::ReadIndirectArgumentsData(const std::size_t startElementIndex, const std::span<IndirectArgumentsType> destDataSpan) const
 		{
 			assert(startElementIndex + destDataSpan.size() <= GetCommandCount() && "ERROR: An out-of-bounds source data range was specified in a call to IndirectArgumentsBufferSubAllocation::ReadIndirectArgumentsData()!");
@@ -191,6 +191,7 @@ namespace Brawler
 		}
 
 		template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount>
+			requires (CSIdentifier != CommandSignatures::CommandSignatureID::COUNT_OR_ERROR)
 		std::size_t IndirectArgumentsBufferSubAllocation<CSIdentifier, CommandCount>::GetCommandCount() const
 		{
 			return CommandCountContainer<CommandCount>::GetCommandCount();
@@ -205,6 +206,7 @@ namespace Brawler
 	namespace D3D12
 	{
 		template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount>
+			requires (CSIdentifier != CommandSignatures::CommandSignatureID::COUNT_OR_ERROR)
 		std::size_t IndirectArgumentsBufferSnapshot<CSIdentifier, CommandCount>::GetCommandCount() const
 		{
 			// Rather than inferring the command count from the sub-allocation size and the size of

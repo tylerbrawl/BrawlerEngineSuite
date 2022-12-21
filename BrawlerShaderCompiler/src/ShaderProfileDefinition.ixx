@@ -1,5 +1,6 @@
 module;
 #include <utility>
+#include <array>
 #include <string>
 
 export module Brawler.ShaderProfileDefinition;
@@ -7,6 +8,7 @@ import Brawler.ConvenienceTypes;
 import Brawler.ShaderProfileID;
 import Brawler.RootSignatureID;
 import Brawler.PSOID;
+import Brawler.CommandSignatureID;
 
 namespace Brawler
 {
@@ -16,6 +18,32 @@ namespace Brawler
 		struct ShaderProfileDefinition
 		{
 			static_assert(sizeof(ProfileID) != sizeof(ProfileID), "ERROR: An explicit template specialization of Brawler::ShaderProfileDefinition was not provided for a particular ShaderProfileID! (See ShaderProfileDefinition.ixx.)");
+		};
+
+		template <>
+		struct ShaderProfileDefinition<ShaderProfileID::BRAWLER_ENGINE>
+		{
+		private:
+			static constexpr Brawler::EnumSequence<Brawler::CommandSignatureID,
+				Brawler::CommandSignatureID::DEFERRED_GEOMETRY_RASTER
+			> RELEVANT_COMMAND_SIGNATURE_IDS_SEQUENCE{};
+
+		public:
+			static constexpr Brawler::EnumSequence<Brawler::PSOID,
+				Brawler::PSOID::TEST_PSO
+			> RELEVANT_PSO_IDS_ARR{};
+
+			static constexpr Brawler::EnumSequence<Brawler::RootSignatureID,
+				Brawler::RootSignatureID::TEST_ROOT_SIGNATURE
+			> RELEVANT_ROOT_SIGNATURE_IDS_ARR{};
+
+			static constexpr auto RELEVANT_COMMAND_SIGNATURE_IDS_ARR{ [] <std::underlying_type_t<Brawler::CommandSignatureID>... CSIdentifiers>(std::integer_sequence<std::underlying_type_t<Brawler::CommandSignatureID>, CSIdentifiers...>)
+			{
+				return std::array<Brawler::CommandSignatureID, sizeof...(CSIdentifiers)>{ static_cast<Brawler::CommandSignatureID>(CSIdentifiers)... };
+			}(RELEVANT_COMMAND_SIGNATURE_IDS_SEQUENCE) };
+
+			static constexpr std::string_view CMD_LINE_SELECTION_STR{ "engine" };
+			static constexpr std::string_view CMD_LINE_DESCRIPTION_STR{ "This shader profile is meant to be used with the Brawler Engine." };
 		};
 
 		template <>
@@ -52,6 +80,8 @@ namespace Brawler
 				Brawler::RootSignatureID::VIRTUAL_TEXTURE_PAGE_TILING,
 				Brawler::RootSignatureID::VIRTUAL_TEXTURE_PAGE_MERGING
 			> RELEVANT_ROOT_SIGNATURE_IDS_ARR{};
+
+			static constexpr std::array<Brawler::CommandSignatureID, 0> RELEVANT_COMMAND_SIGNATURE_IDS_ARR{};
 			
 			static constexpr std::string_view CMD_LINE_SELECTION_STR{ "model" };
 			static constexpr std::string_view CMD_LINE_DESCRIPTION_STR{ "This shader profile is meant to be used with the Brawler Model Exporter." };
@@ -68,6 +98,8 @@ namespace Brawler
 				Brawler::RootSignatureID::TEST_ROOT_SIGNATURE
 			> RELEVANT_ROOT_SIGNATURE_IDS_ARR{};
 
+			static constexpr std::array<Brawler::CommandSignatureID, 0> RELEVANT_COMMAND_SIGNATURE_IDS_ARR{};
+
 			static constexpr std::string_view CMD_LINE_SELECTION_STR{ "test" };
 			static constexpr std::string_view CMD_LINE_DESCRIPTION_STR{ "This shader profile is meant for debugging. It is not meant to be used to serialize PSOs and root signatures for any actual application." };
 		};
@@ -77,6 +109,7 @@ namespace Brawler
 		{
 			ShaderProfileDefinition<ProfileID>::RELEVANT_PSO_IDS_ARR;
 			ShaderProfileDefinition<ProfileID>::RELEVANT_ROOT_SIGNATURE_IDS_ARR;
+			ShaderProfileDefinition<ProfileID>::RELEVANT_COMMAND_SIGNATURE_IDS_ARR;
 			ShaderProfileDefinition<ProfileID>::CMD_LINE_SELECTION_STR;
 			ShaderProfileDefinition<ProfileID>::CMD_LINE_DESCRIPTION_STR;
 		};
@@ -99,6 +132,13 @@ export namespace Brawler
 		consteval auto GetRootSignatureIdentifiers()
 		{
 			return ShaderProfileDefinition<ProfileID>::RELEVANT_ROOT_SIGNATURE_IDS_ARR;
+		}
+
+		template <ShaderProfileID ProfileID>
+			requires IsRecognizedShaderProfile<ProfileID>
+		consteval auto GetCommandSignatureIdentifiers()
+		{
+			return ShaderProfileDefinition<ProfileID>::RELEVANT_COMMAND_SIGNATURE_IDS_ARR;
 		}
 
 		template <ShaderProfileID ProfileID>

@@ -259,10 +259,7 @@ export namespace Brawler
 			RootSignatureBuilder& operator=(RootSignatureBuilder&& rhs) noexcept = default;
 
 			template <Brawler::RootParamType<RSIdentifier> RootParam, typename RootParamInfoType>
-				requires (RootParam != Brawler::RootParamType<RSIdentifier>::COUNT_OR_ERROR) && requires (RootParamInfoType x)
-			{
-				std::unique_ptr<IMPL::I_RootParameter> rootParamPtr{ std::make_unique<typename IMPL::RootParameterInfoMap<RootParamInfoType>::RootParamType>(std::move(x)) };
-			}
+				requires (RootParam != Brawler::RootParamType<RSIdentifier>::COUNT_OR_ERROR)
 			void InitializeRootParameter(RootParamInfoType&& par);
 
 			/// <summary>
@@ -409,10 +406,7 @@ namespace Brawler
 		template <RootSignatureID RSIdentifier>
 			requires IMPL::IsRootSignatureDefined<RSIdentifier>
 		template <Brawler::RootParamType<RSIdentifier> RootParam, typename RootParamInfoType>
-			requires (RootParam != Brawler::RootParamType<RSIdentifier>::COUNT_OR_ERROR) && requires (RootParamInfoType x)
-		{
-			std::unique_ptr<IMPL::I_RootParameter> rootParamPtr{ std::make_unique<typename IMPL::RootParameterInfoMap<RootParamInfoType>::RootParamType>(std::move(x)) };
-		}
+			requires (RootParam != Brawler::RootParamType<RSIdentifier>::COUNT_OR_ERROR)
 		void RootSignatureBuilder<RSIdentifier>::InitializeRootParameter(RootParamInfoType&& paramInfo)
 		{
 			using RootParam_T = IMPL::RootParameterInfoMap<RootParamInfoType>::RootParamType;

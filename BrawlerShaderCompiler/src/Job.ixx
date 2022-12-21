@@ -1,5 +1,6 @@
 module;
 #include <functional>
+#include <memory>
 
 export module Brawler.Job;
 import Brawler.JobCounter;

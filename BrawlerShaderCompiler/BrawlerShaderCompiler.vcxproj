@@ -30,6 +30,10 @@
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Application.ixx" />
     <ClCompile Include="src\AppParams.ixx" />
+    <ClCompile Include="src\CommandSignatureBuilder.ixx" />
+    <ClCompile Include="src\CommandSignatureDefinition.ixx" />
+    <ClCompile Include="src\CommandSignatureID.ixx" />
+    <ClCompile Include="src\CommandSignatureIDsFileWriter.ixx" />
     <ClCompile Include="src\CondensedByteArrayInfo.ixx" />
     <ClCompile Include="src\ConvenienceTypes.ixx" />
     <ClCompile Include="src\CoroutineUtil.cpp" />
@@ -42,10 +46,14 @@
     <ClCompile Include="src\FileWriteUtil.cpp" />
     <ClCompile Include="src\FileWriteUtil.ixx" />
     <ClCompile Include="src\Functional.ixx" />
+    <ClCompile Include="src\GeneralIndirectArgumentResolvers.cpp" />
+    <ClCompile Include="src\GeneralIndirectArgumentResolvers.ixx" />
     <ClCompile Include="src\GeneralUtil.cpp" />
     <ClCompile Include="src\GeneralUtil.ixx" />
+    <ClCompile Include="src\IndirectArgumentResolvers.ixx" />
     <ClCompile Include="src\InputLayoutFieldResolver.cpp" />
     <ClCompile Include="src\InputLayoutFieldResolver.ixx" />
+    <ClCompile Include="src\I_IndirectArgumentResolver.ixx" />
     <ClCompile Include="src\I_PSOFieldResolver.ixx" />
     <ClCompile Include="src\I_SourceFileWriter.cpp" />
     <ClCompile Include="src\I_SourceFileWriter.ixx" />
@@ -74,6 +82,10 @@
     <ClCompile Include="src\PSOIDsFileWriter.ixx" />
     <ClCompile Include="src\PSOShaderFieldResolver.ixx" />
     <ClCompile Include="src\ReflectionUtil.ixx" />
+    <ClCompile Include="src\RootConstantsIndirectArgumentResolver.cpp" />
+    <ClCompile Include="src\RootConstantsIndirectArgumentResolver.ixx" />
+    <ClCompile Include="src\RootDescriptorIndirectArgumentResolvers.cpp" />
+    <ClCompile Include="src\RootDescriptorIndirectArgumentResolvers.ixx" />
     <ClCompile Include="src\RootParameterDefinition.ixx" />
     <ClCompile Include="src\RootParameterEnumsFileWriter.ixx" />
     <ClCompile Include="src\RootParameters.ixx" />
@@ -90,6 +102,8 @@
     <ClCompile Include="src\ThreadingUtil.ixx" />
     <ClCompile Include="src\ThreadLocalResources.ixx" />
     <ClCompile Include="src\ThreadSafeQueue.ixx" />
+    <ClCompile Include="src\VertexBufferViewIndirectArgumentResolver.cpp" />
+    <ClCompile Include="src\VertexBufferViewIndirectArgumentResolver.ixx" />
     <ClCompile Include="src\Win32Util.cpp" />
     <ClCompile Include="src\Win32Util.ixx" />
     <ClCompile Include="src\WorkerThread.cpp" />
@@ -260,9 +274,9 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\repos\BrawlerShaderCompiler\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\repos\BrawlerEngineSuite\BrawlerShaderCompiler\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>D3D12.lib;dxcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <DelayLoadDLLs>dxcompiler.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>dxcompiler.dll%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -286,9 +300,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\repos\BrawlerShaderCompiler\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\repos\BrawlerEngineSuite\BrawlerShaderCompiler\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>D3D12.lib;dxcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <DelayLoadDLLs>dxcompiler.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>dxcompiler.dll%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release with Debugging|x64'">
@@ -312,9 +326,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\repos\BrawlerShaderCompiler\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\repos\BrawlerEngineSuite\BrawlerShaderCompiler\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>D3D12.lib;dxcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <DelayLoadDLLs>dxcompiler.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>dxcompiler.dll%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

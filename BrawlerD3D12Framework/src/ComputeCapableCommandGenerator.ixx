@@ -14,6 +14,9 @@ import Brawler.D3D12.GPUResourceDescriptorHeap;
 import Brawler.D3D12.DescriptorHandleInfo;
 import Brawler.OptionalRef;
 import Brawler.D3D12.I_GPUResource;
+import Brawler.D3D12.IndirectArgumentsBufferSubAllocation;
+import Brawler.CommandSignatures.CommandSignatureID;
+import Brawler.D3D12.CommandSignatureDatabase;
 
 export namespace Brawler
 {
@@ -85,7 +88,12 @@ export namespace Brawler
 			template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
 			void ClearUnorderedAccessView(const UnorderedAccessView<Format, ViewDimension>& uavToClear) const;
 
+			template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount>
+			void ExecuteIndirect(const IndirectArgumentsBufferSnapshot<CSIdentifier, CommandCount>& indirectArgsSnapshot) const;
+
 		private:
+			bool IsResourceAccessValid(const I_GPUResource& resource, const D3D12_RESOURCE_STATES requiredState) const;
+
 			Brawler::D3D12GraphicsCommandList& GetDerivedClassCommandList() const;
 		};
 	}
@@ -228,6 +236,42 @@ namespace Brawler
 					);
 				}
 			}
+		}
+
+		template <typename DerivedClass>
+		template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount>
+		void ComputeCapableCommandGenerator<DerivedClass>::ExecuteIndirect(const IndirectArgumentsBufferSnapshot<CSIdentifier, CommandCount>& indirectArgsSnapshot) const
+		{
+			assert(IsResourceAccessValid(indirectArgsSnapshot.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT) && "ERROR: An attempt was made to call GPUCommandContext::ExecuteIndirect(), but the BufferResource instance associated with the specified IndirectArgumentsBufferSnapshot instance was never given an explicit D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT resource dependency!");
+			assert(indirectArgsSnapshot.GetCommandCount() > 0 && "ERROR: An attempt was made to call GPUCommandContext::ExecuteIndirect() with an IndirectArgumentsBufferSnapshot instance which had no commands!");
+
+			assert(indirectArgsSnapshot.GetCommandCount() <= std::numeric_limits<std::uint32_t>::max());
+			
+			Brawler::D3D12CommandSignature& cmdSignature{ CommandSignatureDatabase::GetInstance().GetCommandSignature<CSIdentifier>() };
+
+			GetDerivedClassCommandList().ExecuteIndirect(
+				&cmdSignature,
+				static_cast<std::uint32_t>(indirectArgsSnapshot.GetCommandCount()),
+				&(indirectArgsSnapshot.GetD3D12Resource()),
+				indirectArgsSnapshot.GetOffsetFromBufferStart(),
+				nullptr,
+				0
+			);
+		}
+
+		template <typename DerivedClass>
+		bool ComputeCapableCommandGenerator<DerivedClass>::IsResourceAccessValid(const I_GPUResource& resource, const D3D12_RESOURCE_STATES requiredState) const
+		{
+			if constexpr (Util::General::IsDebugModeEnabled())
+			{
+				if constexpr (std::derived_from<DerivedClass, GPUCommandContext<GPUCommandQueueType::DIRECT>>)
+					return static_cast<const GPUCommandContext<GPUCommandQueueType::DIRECT>*>(this)->IsResourceAccessValid(resource, requiredState);
+
+				else if constexpr (std::derived_from<DerivedClass, GPUCommandContext<GPUCommandQueueType::COMPUTE>>)
+					return static_cast<const GPUCommandContext<GPUCommandQueueType::COMPUTE>*>(this)->IsResourceAccessValid(resource, requiredState);
+			}
+			else
+				return true;
 		}
 
 		template <typename DerivedClass>

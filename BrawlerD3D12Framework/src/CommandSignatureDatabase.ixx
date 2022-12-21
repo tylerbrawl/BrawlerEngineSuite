@@ -10,7 +10,7 @@ export namespace Brawler
 {
 	namespace D3D12
 	{
-		class CommandSignatureDatabase
+		class CommandSignatureDatabase final
 		{
 		private:
 			using CommandSignatureID = CommandSignatures::CommandSignatureID;

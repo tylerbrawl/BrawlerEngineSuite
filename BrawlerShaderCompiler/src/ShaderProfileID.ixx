@@ -8,6 +8,7 @@ export namespace Brawler
 	{
 		enum class ShaderProfileID
 		{
+			BRAWLER_ENGINE,
 			MODEL_EXPORTER,
 			TEST_SHADER_PROFILE,
 
