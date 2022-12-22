@@ -31,7 +31,13 @@
     <ClCompile Include="src\Application.ixx" />
     <ClCompile Include="src\AppParams.ixx" />
     <ClCompile Include="src\CommandSignatureBuilder.ixx" />
+    <ClCompile Include="src\CommandSignatureBuilderCreators.cpp" />
+    <ClCompile Include="src\CommandSignatureBuilderCreators.ixx" />
     <ClCompile Include="src\CommandSignatureDefinition.ixx" />
+    <ClCompile Include="src\CommandSignatureDefinitionBaseFileWriter.cpp" />
+    <ClCompile Include="src\CommandSignatureDefinitionBaseFileWriter.ixx" />
+    <ClCompile Include="src\CommandSignatureDefinitionsFileWriter.ixx" />
+    <ClCompile Include="src\CommandSignatureDefinitionSpecializationFileWriter.ixx" />
     <ClCompile Include="src\CommandSignatureID.ixx" />
     <ClCompile Include="src\CommandSignatureIDsFileWriter.ixx" />
     <ClCompile Include="src\CondensedByteArrayInfo.ixx" />
@@ -75,7 +81,7 @@
     <ClCompile Include="src\PSODefinition.ixx" />
     <ClCompile Include="src\PSODefinitionBaseFileWriter.cpp" />
     <ClCompile Include="src\PSODefinitionSpecializationFileWriter.ixx" />
-    <ClCompile Include="src\PSODefinitionsBaseFileWriter.ixx" />
+    <ClCompile Include="src\PSODefinitionBaseFileWriter.ixx" />
     <ClCompile Include="src\PSODefinitionsFileWriter.ixx" />
     <ClCompile Include="src\PSOField.ixx" />
     <ClCompile Include="src\PSOID.ixx" />

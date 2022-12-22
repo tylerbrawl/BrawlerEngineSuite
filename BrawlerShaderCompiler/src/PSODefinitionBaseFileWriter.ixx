@@ -1,6 +1,6 @@
 module;
 
-export module Brawler.PSODefinitionsBaseFileWriter;
+export module Brawler.PSODefinitionBaseFileWriter;
 import Brawler.I_SourceFileWriter;
 import Brawler.FileWriterNode;
 

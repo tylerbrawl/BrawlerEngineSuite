@@ -188,17 +188,18 @@ R"(			struct IndirectArgumentsLayout
 			{
 				static constexpr std::string_view DEFINITION_END_FORMAT_STR{
 R"(		public:
-			using IndirectArgumentsType = IndirectArgumentsLayout;
+			using CommandSignatureType = IndirectArgumentsLayout;
 
 		public:
 			static constexpr D3D12_COMMAND_SIGNATURE_DESC COMMAND_SIGNATURE_DESCRIPTION{{
-				.ByteStride = sizeof(IndirectArgumentsType),
+				.ByteStride = sizeof(CommandSignatureType),
 				.NumArgumentDescs = static_cast<std::uint32_t>(INDIRECT_ARGUMENT_DESCRIPTION_ARR.size()),
 				.pArgumentDescs = INDIRECT_ARGUMENT_DESCRIPTION_ARR.data()
 			}};
 
 {}
-		}};)"
+		}};
+)"
 				};
 
 				static constexpr std::optional<RootSignatureID> ASSOCIATED_ROOT_SIGNATURE_ID{ Brawler::GetRootSignatureForCommandSignature<CSIdentifier>() };
@@ -206,7 +207,10 @@ R"(		public:
 				if constexpr (ASSOCIATED_ROOT_SIGNATURE_ID.has_value())
 				{
 					static constexpr std::string_view ROOT_SIGNATURE_ID_FORMAT_STR{
-R"(			static constexpr std::optional<RootSignatures::RootSignatureID> ASSOCIATED_ROOT_SIGNATURE_ID{{ RootSignatures::RootSignatureID::{} }};)"
+R"(			// The MSVC really doesn't like it when static constexpr std::optional instances are used in C++20
+			// modules. Instead, we use RootSignatures::RootSignatureID::COUNT_OR_ERROR to represent a command
+			// signature which does not have an associated root signature.
+			static constexpr RootSignatures::RootSignatureID ASSOCIATED_ROOT_SIGNATURE_ID = RootSignatures::RootSignatureID::{};)"
 					};
 
 					std::string rootSignatureIDStr{ std::format(ROOT_SIGNATURE_ID_FORMAT_STR, Brawler::GetRootSignatureIDString<*ASSOCIATED_ROOT_SIGNATURE_ID>()) };
@@ -218,8 +222,15 @@ R"(			static constexpr std::optional<RootSignatures::RootSignatureID> ASSOCIATED
 				}
 				else
 				{
+					static constexpr std::string_view EMPTY_ROOT_SIGNATURE_ID_STR{
+R"(			// The MSVC really doesn't like it when static constexpr std::optional instances are used in C++20
+			// modules. Instead, we use RootSignatures::RootSignatureID::COUNT_OR_ERROR to represent a command
+			// signature which does not have an associated root signature.
+			static constexpr RootSignatures::RootSignatureID ASSOCIATED_ROOT_SIGNATURE_ID = RootSignatures::RootSignatureID::COUNT_OR_ERROR;)"
+					};
+
 					FileWriterNode definitionEndNode{};
-					definitionEndNode.SetOutputText(std::format(DEFINITION_END_FORMAT_STR, "\t\t\tstatic constexpr std::optional<RootSignatures::RootSignatureID> ASSOCIATED_ROOT_SIGNATURE_ID{};"));
+					definitionEndNode.SetOutputText(std::format(DEFINITION_END_FORMAT_STR, EMPTY_ROOT_SIGNATURE_ID_STR));
 
 					rootNode.AddChildNode(std::move(definitionEndNode));
 				}

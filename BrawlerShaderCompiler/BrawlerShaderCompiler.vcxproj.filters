@@ -273,7 +273,7 @@
     <ClCompile Include="src\RootParameterEnumsFileWriter.ixx">
       <Filter>Module Files\File Writing\Source File Writers</Filter>
     </ClCompile>
-    <ClCompile Include="src\PSODefinitionsBaseFileWriter.ixx">
+    <ClCompile Include="src\PSODefinitionBaseFileWriter.ixx">
       <Filter>Module Files\File Writing\Source File Writers</Filter>
     </ClCompile>
     <ClCompile Include="src\PSODefinitionBaseFileWriter.cpp">
@@ -335,6 +335,24 @@
     </ClCompile>
     <ClCompile Include="src\ThreadLocalResources.cpp">
       <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandSignatureDefinitionBaseFileWriter.ixx">
+      <Filter>Module Files\File Writing\Source File Writers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandSignatureDefinitionBaseFileWriter.cpp">
+      <Filter>Source Files\File Writing\Source File Writers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandSignatureDefinitionSpecializationFileWriter.ixx">
+      <Filter>Module Files\File Writing\Source File Writers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandSignatureBuilderCreators.ixx">
+      <Filter>Module Files\Command Signature Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandSignatureBuilderCreators.cpp">
+      <Filter>Source Files\Command Signature Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandSignatureDefinitionsFileWriter.ixx">
+      <Filter>Module Files\File Writing\Source File Writers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

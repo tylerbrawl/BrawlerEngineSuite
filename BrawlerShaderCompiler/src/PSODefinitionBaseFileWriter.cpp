@@ -1,7 +1,7 @@
 module;
 #include <string>
 
-module Brawler.PSODefinitionsBaseFileWriter;
+module Brawler.PSODefinitionBaseFileWriter;
 import Brawler.FileStrings;
 
 /*

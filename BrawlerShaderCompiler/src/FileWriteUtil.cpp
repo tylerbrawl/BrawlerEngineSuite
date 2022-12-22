@@ -14,12 +14,16 @@ import Brawler.PSOIDsFileWriter;
 import Brawler.PSODefinitionsFileWriter;
 import Brawler.RootParameterEnumsFileWriter;
 import Brawler.PSODefinitionSpecializationFileWriter;
-import Brawler.PSODefinitionsBaseFileWriter;
+import Brawler.PSODefinitionBaseFileWriter;
 import Brawler.CommandSignatureIDsFileWriter;
+import Brawler.CommandSignatureDefinitionSpecializationFileWriter;
+import Brawler.CommandSignatureDefinitionBaseFileWriter;
+import Brawler.CommandSignatureDefinitionsFileWriter;
 import Brawler.ShaderProfileID;
 import Brawler.ShaderProfileDefinition;
 import Brawler.JobSystem;
 import Brawler.PSOID;
+import Brawler.CommandSignatureID;
 
 namespace
 {
@@ -101,8 +105,9 @@ namespace
 		if (CurrProfileID == Util::General::GetLaunchParameters().ShaderProfile)
 		{
 			constexpr auto RELEVANT_PSO_ID_LIST{ Brawler::ShaderProfiles::GetPSOIdentifiers<CurrProfileID>() };
+			constexpr auto RELEVANT_COMMAND_SIGNATURE_ID_ARR{ Brawler::ShaderProfiles::GetCommandSignatureIdentifiers<CurrProfileID>() };
 
-			constexpr std::size_t RESERVED_JOB_GROUP_ALLOCATION_SIZE = 7 + RELEVANT_PSO_ID_LIST.size();
+			constexpr std::size_t RESERVED_JOB_GROUP_ALLOCATION_SIZE = 9 + RELEVANT_PSO_ID_LIST.size() + RELEVANT_COMMAND_SIGNATURE_ID_ARR.size();
 			serializationJobGroup.Reserve(RESERVED_JOB_GROUP_ALLOCATION_SIZE);
 			
 			serializationJobGroup.AddJob([] ()
@@ -147,6 +152,18 @@ namespace
 				cmdSignaturesIDWriter.WriteSourceFile();
 			});
 
+			serializationJobGroup.AddJob([] ()
+			{
+				Brawler::SourceFileWriters::CommandSignatureDefinitionBaseFileWriter baseCMDSignatureWriter{};
+				baseCMDSignatureWriter.WriteSourceFile();
+			});
+
+			serializationJobGroup.AddJob([] ()
+			{
+				Brawler::SourceFileWriters::CommandSignatureDefinitionsFileWriter<CurrProfileID> cmdSignatureDefinitionsWriter{};
+				cmdSignatureDefinitionsWriter.WriteSourceFile();
+			});
+
 			constexpr auto ADD_PSO_DEFINITION_SPECIALIZATION_JOBS_LAMBDA = []<std::underlying_type_t<Brawler::PSOID>... PSOIdentifierNums>(Brawler::JobGroup& jobGroup, std::integer_sequence<std::underlying_type_t<Brawler::PSOID>, PSOIdentifierNums...> psoSequence)
 			{
 				constexpr auto ADD_SINGLE_JOB_LAMBDA = []<Brawler::PSOID PSOIdentifier>(Brawler::JobGroup& jobGroup)
@@ -161,6 +178,24 @@ namespace
 				((ADD_SINGLE_JOB_LAMBDA.operator()<static_cast<Brawler::PSOID>(PSOIdentifierNums)>(jobGroup)), ...);
 			};
 			ADD_PSO_DEFINITION_SPECIALIZATION_JOBS_LAMBDA(serializationJobGroup, RELEVANT_PSO_ID_LIST);
+
+			constexpr auto ADD_COMMAND_SIGNATURE_DEFINITION_SPECIALIZATION_JOBS_LAMBDA = []<std::size_t CurrIndex>(this const auto& self, Brawler::JobGroup& jobGroup)
+			{
+				if constexpr (CurrIndex != RELEVANT_COMMAND_SIGNATURE_ID_ARR.size())
+				{
+					constexpr Brawler::CommandSignatureID CURR_IDENTIFIER = RELEVANT_COMMAND_SIGNATURE_ID_ARR[CurrIndex];
+
+					jobGroup.AddJob([] ()
+					{
+						Brawler::SourceFileWriters::CommandSignatureDefinitionSpecializationFileWriter<CURR_IDENTIFIER> cmdSignatureDefinitionWriter{};
+						cmdSignatureDefinitionWriter.WriteSourceFile();
+					});
+
+					constexpr std::size_t NEXT_INDEX = (CurrIndex + 1);
+					self.template operator()<NEXT_INDEX>(jobGroup);
+				}
+			};
+			ADD_COMMAND_SIGNATURE_DEFINITION_SPECIALIZATION_JOBS_LAMBDA.template operator()<0>(serializationJobGroup);
 
 			return;
 		}

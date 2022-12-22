@@ -2,11 +2,13 @@ module;
 #include <string>
 #include <fstream>
 #include <filesystem>
+#include <format>
 
 module Brawler.I_SourceFileWriter;
 import Brawler.AppParams;
 import Util.General;
 import Brawler.ShaderProfileID;
+import Util.Win32;
 
 namespace Brawler
 {
@@ -32,6 +34,9 @@ namespace Brawler
 
 			std::ofstream fileStream{ outputDirectory };
 			rootNode.WriteOutputText(fileStream);
+
+			// Report that we wrote out this file successfully.
+			Util::Win32::WriteFormattedConsoleMessage(std::format(L">{}", mSrcFileName));
 		}
 	}
 }

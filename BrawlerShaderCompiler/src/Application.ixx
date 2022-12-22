@@ -30,6 +30,9 @@ export namespace Brawler
 		const AppParams& GetLaunchParameters() const;
 
 	private:
+		void PrintCompletionDiagnostics() const;
+
+	private:
 		AppParams mAppParams;
 		WorkerThreadPool mThreadPool;
 	};

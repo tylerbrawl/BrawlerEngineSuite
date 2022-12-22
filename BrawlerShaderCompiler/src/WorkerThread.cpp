@@ -9,6 +9,7 @@ import Brawler.Application;
 import Brawler.WorkerThreadPool;
 import Util.General;
 import Util.Coroutine;
+import Util.Win32;
 
 namespace Brawler
 {
@@ -62,14 +63,24 @@ namespace Brawler
 	{
 		while (mKeepGoing.load())
 		{
+			// If we get an uncaught exception which gets propagated up to the beginning
+			// of the call stack for a WorkerThread instance, then we probably won't be able
+			// to continue gracefully. Trust me: It's not worth it to try and recover from
+			// it. Doing so is prone to race conditions and incredibly difficult - if not impossible
+			// - to get right.
 			try
 			{
 				Util::Coroutine::TryExecuteJob();
 			}
+			catch (const std::exception& e)
+			{
+				Util::Win32::WriteFormattedConsoleMessage(e.what(), Util::Win32::ConsoleFormat::CRITICAL_FAILURE);
+				std::terminate();
+			}
 			catch (...)
 			{
-				Brawler::GetApplication().GetWorkerThreadPool().ReThrowException(std::current_exception());
-				KillThread();
+				Util::Win32::WriteFormattedConsoleMessage(L"ERROR: An unrecoverable error was detected. The program has been terminated.", Util::Win32::ConsoleFormat::CRITICAL_FAILURE);
+				std::terminate();
 			}
 		}
 	}
