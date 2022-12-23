@@ -30,6 +30,10 @@
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Application.ixx" />
     <ClCompile Include="src\AppParams.ixx" />
+    <ClCompile Include="src\BrawlerEnginePSOBuilderCreators.cpp" />
+    <ClCompile Include="src\BrawlerEngineRootSignatureBuilderCreators.cpp" />
+    <ClCompile Include="src\BrawlerModelExporterPSOBuilderCreators.cpp" />
+    <ClCompile Include="src\BrawlerModelExporterRootSignatureBuilderCreators.cpp" />
     <ClCompile Include="src\CommandSignatureBuilder.ixx" />
     <ClCompile Include="src\CommandSignatureBuilderCreators.cpp" />
     <ClCompile Include="src\CommandSignatureBuilderCreators.ixx" />
@@ -57,6 +61,10 @@
     <ClCompile Include="src\GeneralUtil.cpp" />
     <ClCompile Include="src\GeneralUtil.ixx" />
     <ClCompile Include="src\IndirectArgumentResolvers.ixx" />
+    <ClCompile Include="src\PerInstanceIASlotDescription.cpp" />
+    <ClCompile Include="src\PerInstanceIASlotDescription.ixx" />
+    <ClCompile Include="src\PerVertexIASlotDescription.cpp" />
+    <ClCompile Include="src\PerVertexIASlotDescription.ixx" />
     <ClCompile Include="src\InputLayoutFieldResolver.cpp" />
     <ClCompile Include="src\InputLayoutFieldResolver.ixx" />
     <ClCompile Include="src\I_IndirectArgumentResolver.ixx" />
@@ -77,6 +85,7 @@
     <ClCompile Include="src\JobSystem.ixx" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\PSOBuilder.ixx" />
+    <ClCompile Include="src\PSOBuilderCreators.cpp" />
     <ClCompile Include="src\PSOBuilderCreators.ixx" />
     <ClCompile Include="src\PSODefinition.ixx" />
     <ClCompile Include="src\PSODefinitionBaseFileWriter.cpp" />
@@ -97,6 +106,7 @@
     <ClCompile Include="src\RootParameters.ixx" />
     <ClCompile Include="src\RootSignatureBuilder.ixx" />
     <ClCompile Include="src\RootSignatureBuilderCreators.ixx" />
+    <ClCompile Include="src\RootSignatureBuilderCreators.cpp" />
     <ClCompile Include="src\RootSignatureDefinition.ixx" />
     <ClCompile Include="src\RootSignatureDefinitionsFileWriter.ixx" />
     <ClCompile Include="src\RootSignatureID.ixx" />
@@ -104,6 +114,8 @@
     <ClCompile Include="src\ShaderCompilationParams.ixx" />
     <ClCompile Include="src\ShaderProfileDefinition.ixx" />
     <ClCompile Include="src\ShaderProfileID.ixx" />
+    <ClCompile Include="src\TestShaderProfilePSOBuilderCreators.cpp" />
+    <ClCompile Include="src\TestShaderProfileRootSignatureBuilderCreators.cpp" />
     <ClCompile Include="src\ThreadingUtil.cpp" />
     <ClCompile Include="src\ThreadingUtil.ixx" />
     <ClCompile Include="src\ThreadLocalResources.cpp" />

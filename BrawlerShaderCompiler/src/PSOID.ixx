@@ -6,6 +6,9 @@ export namespace Brawler
 {
 	enum class PSOID
 	{
+		// Brawler Engine
+		DEFERRED_GEOMETRY_RASTER,
+
 		// Brawler Model Exporter
 		BC7_TRY_MODE_456,
 		BC7_TRY_MODE_137,

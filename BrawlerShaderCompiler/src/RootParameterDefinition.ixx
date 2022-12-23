@@ -22,6 +22,17 @@ namespace Brawler
 		};
 
 		template <>
+		struct RootParameterDefinition<Brawler::RootParameters::DeferredGeometryRaster>
+		{
+			static constexpr std::string_view ROOT_PARAMETER_ENUM_CLASS_NAME{ "DeferredGeometryRaster" };
+
+			static constexpr std::array<std::string_view, std::to_underlying(DeferredGeometryRaster::COUNT_OR_ERROR)> ROOT_PARAMETER_ENUM_VALUE_STRINGS_ARR{
+				"RASTER_CONSTANTS",
+				"BINDLESS_SRVS"
+			};
+		};
+
+		template <>
 		struct RootParameterDefinition<Brawler::RootParameters::BC6HBC7Compression>
 		{
 			static constexpr std::string_view ROOT_PARAMETER_ENUM_CLASS_NAME{ "BC6HBC7Compression" };

@@ -52,6 +52,14 @@ namespace Brawler
 	};
 
 	template <>
+	struct PSODefinition<PSOID::DEFERRED_GEOMETRY_RASTER>
+	{
+		static constexpr std::string_view PSO_ID_STRING{ "DEFERRED_GEOMETRY_RASTER" };
+		static constexpr RootSignatureID ROOT_SIGNATURE_ID = RootSignatureID::DEFERRED_GEOMETRY_RASTER;
+		using PSOStreamType = IMPL::StandardGraphicsPSOStream;
+	};
+
+	template <>
 	struct PSODefinition<PSOID::BC7_TRY_MODE_456>
 	{
 		static constexpr std::string_view PSO_ID_STRING{ "BC7_TRY_MODE_456" };

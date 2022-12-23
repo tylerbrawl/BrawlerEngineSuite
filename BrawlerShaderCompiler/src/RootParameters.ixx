@@ -16,6 +16,25 @@ export namespace Brawler
 			DESCRIPTOR_TABLE
 		};
 
+		// Brawler Engine
+		enum class DeferredGeometryRaster
+		{
+			/// <summary>
+			/// Root Parameter 0: RootConstants<1> RasterConstants -> Space0[b0];
+			/// </summary>
+			RASTER_CONSTANTS,
+
+			/// <summary>
+			/// Root Parameter 1: DescriptorTable
+			/// {
+			///		SRV BindlessResources -> Space1-Space?[t0-t499999];
+			/// };
+			/// </summary>
+			BINDLESS_SRVS,
+
+			COUNT_OR_ERROR
+		};
+
 		// Brawler Model Exporter
 		enum class BC6HBC7Compression
 		{

@@ -15,6 +15,28 @@ namespace Brawler
 	};
 
 	template <>
+	struct RootSignatureDefinition<RootSignatureID::DEFERRED_GEOMETRY_RASTER>
+	{
+		static constexpr std::string_view ROOT_SIGNATURE_ID_STRING{ "DEFERRED_GEOMETRY_RASTER" };
+		static constexpr D3D12_ROOT_SIGNATURE_FLAGS ROOT_SIGNATURE_FLAGS = (
+			D3D12_ROOT_SIGNATURE_FLAGS::D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
+
+			// NOTE: As of writing this, the pixel shaders using the DEFERRED_GEOMETRY_RASTER root
+			// signature do not access the root parameters, and instead only use the static samplers.
+			// The D3D12 specifications are unclear as to whether 
+			// D3D12_ROOT_SIGNATURE_FLAG_DENY_*_SHADER_ROOT_ACCESS affect visibility of static samplers,
+			// so we err on the side of caution and allow pixel shaders to access the root signature.
+
+			D3D12_ROOT_SIGNATURE_FLAGS::D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAGS::D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAGS::D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAGS::D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAGS::D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS
+		);
+		using RootParamType = Brawler::RootParameters::DeferredGeometryRaster;
+	};
+
+	template <>
 	struct RootSignatureDefinition<RootSignatureID::BC6H_BC7_COMPRESSION>
 	{
 		static constexpr std::string_view ROOT_SIGNATURE_ID_STRING{ "BC6H_BC7_COMPRESSION" };

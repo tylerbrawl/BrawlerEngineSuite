@@ -33,11 +33,11 @@ namespace Brawler
 
 		public:
 			static constexpr Brawler::EnumSequence<Brawler::PSOID,
-				Brawler::PSOID::TEST_PSO
+				Brawler::PSOID::DEFERRED_GEOMETRY_RASTER
 			> RELEVANT_PSO_IDS_ARR{};
 
 			static constexpr Brawler::EnumSequence<Brawler::RootSignatureID,
-				Brawler::RootSignatureID::TEST_ROOT_SIGNATURE
+				Brawler::RootSignatureID::DEFERRED_GEOMETRY_RASTER
 			> RELEVANT_ROOT_SIGNATURE_IDS_ARR{};
 
 			static constexpr auto RELEVANT_COMMAND_SIGNATURE_IDS_ARR{ [] <std::underlying_type_t<Brawler::CommandSignatureID>... CSIdentifiers>(std::integer_sequence<std::underlying_type_t<Brawler::CommandSignatureID>, CSIdentifiers...>)

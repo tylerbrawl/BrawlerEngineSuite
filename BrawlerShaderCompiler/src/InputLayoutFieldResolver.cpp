@@ -2,6 +2,8 @@ module;
 #include <string>
 #include <vector>
 #include <ranges>
+#include <optional>
+#include <array>
 #include "DxDef.h"
 
 module Brawler.InputLayoutFieldResolver;
@@ -51,53 +53,21 @@ namespace
 
 namespace Brawler
 {
-	void InputLayoutFieldResolver::AddPerVertexInputElement(const std::string_view semanticName, const DXGI_FORMAT format)
-	{
-		// First, make sure that we do not have any naming conflicts.
-		if (IsSemanticNameClaimed(semanticName)) [[unlikely]]
-			throw std::runtime_error{ "ERROR: A semantic name conflict was detected between the input elements of an InputLayoutFieldResolver!" };
-
-		mElementDescArr.push_back(D3D12_INPUT_ELEMENT_DESC{
-			.SemanticName = semanticName.data(),
-			.SemanticIndex = 0,
-			.Format = format,
-			.InputSlot = 0,
-			.AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT,
-			.InputSlotClass = D3D12_INPUT_CLASSIFICATION::D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
-			.InstanceDataStepRate = 0
-		});
-	}
-
-	void InputLayoutFieldResolver::AddPerInstanceInputElement(const std::string_view semanticName, const DXGI_FORMAT format, const std::uint32_t instanceDataStepRate)
-	{
-		// First, make sure that we do not have any naming conflicts.
-		if (IsSemanticNameClaimed(semanticName)) [[unlikely]]
-			throw std::runtime_error{ "ERROR: A semantic name conflict was detected between the input elements of an InputLayoutFieldResolver!" };
-
-		mElementDescArr.push_back(D3D12_INPUT_ELEMENT_DESC{
-			.SemanticName = semanticName.data(),
-			.SemanticIndex = 0,
-			.Format = format,
-			.InputSlot = 0,
-			.AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT,
-			.InputSlotClass = D3D12_INPUT_CLASSIFICATION::D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA,
-			.InstanceDataStepRate = instanceDataStepRate
-		});
-	}
-
 	FileWriterNode InputLayoutFieldResolver::CreatePSODefinitionFileWriterNode() const
 	{
-		if (mElementDescArr.empty()) [[unlikely]]
+		const std::vector<D3D12_INPUT_ELEMENT_DESC> elementDescArr{ GetD3D12InputElementDescriptionArray() };
+
+		if (elementDescArr.empty()) [[unlikely]]
 			return FileWriterNode{};
 
 		std::string inputElementArrStr{ "\t\t\tstatic constexpr std::array<D3D12_INPUT_ELEMENT_DESC, " };
-		inputElementArrStr += std::to_string(mElementDescArr.size());
+		inputElementArrStr += std::to_string(elementDescArr.size());
 		inputElementArrStr += "> INPUT_ELEMENT_DESC_ARR{\n";
 
 		inputElementArrStr += "\t\t\t\t";
-		inputElementArrStr += CreateInputElementInitializerListString(mElementDescArr[0]);
+		inputElementArrStr += CreateInputElementInitializerListString(elementDescArr[0]);
 
-		for (const auto& elementDesc : mElementDescArr | std::views::drop(1))
+		for (const auto& elementDesc : elementDescArr | std::views::drop(1))
 		{
 			inputElementArrStr += ",\n\t\t\t\t";
 			inputElementArrStr += CreateInputElementInitializerListString(elementDesc);
@@ -123,12 +93,42 @@ namespace Brawler
 		return resolveNode;
 	}
 
+	std::vector<D3D12_INPUT_ELEMENT_DESC> InputLayoutFieldResolver::GetD3D12InputElementDescriptionArray() const
+	{
+		std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementDescArr{};
+
+		for (const auto inputSlotIndex : std::views::iota(0ull, mInputSlotDescArr.size()))
+		{
+			const std::optional<InputSlotDescription>& currInputSlotDesc{ mInputSlotDescArr[inputSlotIndex] };
+
+			if (!currInputSlotDesc.has_value()) [[likely]]
+				continue;
+			
+			for (const auto& inputElementDesc : currInputSlotDesc->InputElementDescArr)
+			{
+				inputElementDescArr.push_back(D3D12_INPUT_ELEMENT_DESC{
+					.SemanticName = inputElementDesc.SemanticName.data(),
+					.Format = inputElementDesc.Format,
+					.InputSlot = static_cast<std::uint32_t>(inputSlotIndex),
+					.AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT,
+					.InputSlotClass = currInputSlotDesc->InputSlotClass,
+					.InstanceDataStepRate = currInputSlotDesc->InstanceDataStepRate
+				});
+			}
+		}
+
+		return inputElementDescArr;
+	}
+
 	bool InputLayoutFieldResolver::IsSemanticNameClaimed(const std::string_view semanticName) const
 	{
-		for (const auto& inputElement : mElementDescArr)
+		for (const auto& inputSlotDesc : mInputSlotDescArr | std::views::filter([] (const std::optional<InputSlotDescription>& inputSlotDesc) { return inputSlotDesc.has_value(); }))
 		{
-			if (inputElement.SemanticName == semanticName) [[unlikely]]
-				return true;
+			for (const auto& inputElementDesc : inputSlotDesc->InputElementDescArr)
+			{
+				if (inputElementDesc.SemanticName == semanticName)
+					return true;
+			}
 		}
 
 		return false;

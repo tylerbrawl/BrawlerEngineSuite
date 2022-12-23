@@ -6,6 +6,9 @@ export namespace Brawler
 {
 	enum class RootSignatureID
 	{
+		// Brawler Engine
+		DEFERRED_GEOMETRY_RASTER,
+		
 		// Brawler Model Exporter
 		BC6H_BC7_COMPRESSION,
 		GENERIC_DOWNSAMPLE,

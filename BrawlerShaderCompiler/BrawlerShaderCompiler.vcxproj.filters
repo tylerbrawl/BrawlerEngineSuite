@@ -82,6 +82,9 @@
     <Filter Include="Source Files\Command Signature Management\Indirect Arguments Resolution">
       <UniqueIdentifier>{db340e9d-628c-4b44-ab5c-376b5c656538}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Root Signature Management">
+      <UniqueIdentifier>{85bea759-df04-4886-854c-a29e88d2d213}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -353,6 +356,42 @@
     </ClCompile>
     <ClCompile Include="src\CommandSignatureDefinitionsFileWriter.ixx">
       <Filter>Module Files\File Writing\Source File Writers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PSOBuilderCreators.cpp">
+      <Filter>Source Files\Pipeline State Object Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BrawlerModelExporterPSOBuilderCreators.cpp">
+      <Filter>Source Files\Pipeline State Object Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TestShaderProfilePSOBuilderCreators.cpp">
+      <Filter>Source Files\Pipeline State Object Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BrawlerEnginePSOBuilderCreators.cpp">
+      <Filter>Source Files\Pipeline State Object Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PerVertexIASlotDescription.ixx">
+      <Filter>Module Files\Pipeline State Object Management\PSO Field Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PerVertexIASlotDescription.cpp">
+      <Filter>Source Files\Pipeline State Object Management\PSO Field Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PerInstanceIASlotDescription.ixx">
+      <Filter>Module Files\Pipeline State Object Management\PSO Field Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PerInstanceIASlotDescription.cpp">
+      <Filter>Source Files\Pipeline State Object Management\PSO Field Resolution</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RootSignatureBuilderCreators.cpp">
+      <Filter>Source Files\Root Signature Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BrawlerModelExporterRootSignatureBuilderCreators.cpp">
+      <Filter>Source Files\Root Signature Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TestShaderProfileRootSignatureBuilderCreators.cpp">
+      <Filter>Source Files\Root Signature Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BrawlerEngineRootSignatureBuilderCreators.cpp">
+      <Filter>Source Files\Root Signature Management</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
