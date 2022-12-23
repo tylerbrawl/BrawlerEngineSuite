@@ -1,3 +1,4 @@
+#pragma once
 #include "MeshTypes.hlsli"
 #include "ViewTypes.hlsli"
 #include "GPUSceneLimits.hlsli"
@@ -25,9 +26,9 @@ namespace IMPL
 	StructuredBuffer<BrawlerHLSL::MeshDescriptor> Bindless_GlobalMeshDescriptorBuffer[] : register(t0, space8);
 	StructuredBuffer<BrawlerHLSL::MaterialDescriptor> Bindless_GlobalMaterialDescriptorBuffer[] : register(t0, space9);
 	
-	Texture2D<float> Bindless_GlobalTexture2DFloatArray[] : register(t0, space10);
+	Texture2D<float> Bindless_GlobalTexture2DFloat[] : register(t0, space10);
 	Texture2D<uint> Bindless_GlobalTexture2DUInt[] : register(t0, space11);
-	Texture2D<float4> Bindless_GlobalTexture2DFloat4Array[] : register(t0, space12);
+	Texture2D<float4> Bindless_GlobalTexture2DFloat4[] : register(t0, space12);
 }
 	
 namespace IMPL
@@ -92,7 +93,7 @@ namespace BrawlerHLSL
 			
 			BrawlerHLSL::LightDescriptor lightDescriptor;
 			lightDescriptor.LightBufferIndex = (packedLightDescriptorValue >> 8);
-			lightDescriptor.TypeID = BrawlerHLSL::LightType((packedLightDescriptorValue >> 1) & 0x7F);
+			lightDescriptor.TypeID = (BrawlerHLSL::LightType) ((packedLightDescriptorValue >> 1) & 0x7F);
 			lightDescriptor.IsValid = ((packedLightDescriptorValue & 0x1) != 0);
 			
 			return lightDescriptor;
@@ -160,29 +161,29 @@ namespace IMPL
 	{};
 	
 	template <>
-	struct TextureFinder<Texture2D<float>>
+	struct TextureFinder<Texture2D<float> >
 	{
 		static Texture2D<float> GetBindlessTexture(in const uint textureID)
 		{
-			return Bindless_GlobalTexture2DFloatArray[NonUniformResourceIndex(textureID)];
+			return Bindless_GlobalTexture2DFloat[NonUniformResourceIndex(textureID)];
 		}
 	};
 	
 	template <>
-	struct TextureFinder<Texture2D<uint>>
+	struct TextureFinder<Texture2D<uint> >
 	{
 		static Texture2D<uint> GetBindlessTexture(in const uint textureID)
 		{
-			return Bindless_GlobalTexture2DUIntArray[NonUniformResourceIndex(textureID)];
+			return Bindless_GlobalTexture2DUInt[NonUniformResourceIndex(textureID)];
 		}
 	};
 	
 	template <>
-	struct TextureFinder<Texture2D<float4>>
+	struct TextureFinder<Texture2D<float4> >
 	{
 		static Texture2D<float4> GetBindlessTexture(in const uint textureID)
 		{
-			return Bindless_GlobalTexture2DFloat4Array[NonUniformResourceIndex(textureID)];
+			return Bindless_GlobalTexture2DFloat4[NonUniformResourceIndex(textureID)];
 		}
 	};
 }
@@ -192,9 +193,9 @@ namespace BrawlerHLSL
 	namespace Bindless
 	{
 		template <typename T>
-		T GetBindlessTexture(in const uint textureID)
+		Texture2D<T> GetBindlessTexture2D(in const uint textureID)
 		{
-			return IMPL::TextureFinder<T>::GetBindlessTexture(textureID);
+			return IMPL::TextureFinder<Texture2D<T> >::GetBindlessTexture(textureID);
 		}
 	}
 }

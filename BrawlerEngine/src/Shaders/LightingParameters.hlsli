@@ -1,3 +1,5 @@
+#pragma once
+
 namespace BrawlerHLSL
 {
 	struct SurfaceParameters
@@ -102,5 +104,15 @@ namespace BrawlerHLSL
 		/// instead of calculating dot(L, H) manually.
 		/// </summary>
 		float LDotH;
+		
+		void InitializeFromSurfaceParameters(in const SurfaceParameters surfaceParams)
+		{
+			SurfacePosWS = surfaceParams.SurfacePosWS;
+			N = surfaceParams.N;
+			V = surfaceParams.V;
+			SubsurfaceAlbedo = surfaceParams.SubsurfaceAlbedo;
+			F_0 = surfaceParams.F_0;
+			GGXRoughnessSquared = surfaceParams.GGXRoughnessSquared;
+		}
 	};
 }

@@ -1,3 +1,4 @@
+#pragma once
 #include "LightingParameters.hlsli"
 #include "MathConstants.hlsli"
 #include "Fresnel.hlsli"

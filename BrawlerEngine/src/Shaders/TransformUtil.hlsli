@@ -1,3 +1,4 @@
+#pragma once
 #include "TextureCubeFace.hlsli"
 
 namespace Util
@@ -84,7 +85,7 @@ namespace Util
 				)
 			};
 
-			const uint transformMatrixArrIndex = uint(faceID);
+			const uint transformMatrixArrIndex = (uint) (faceID);
 			return mul(float3(scaledUVCoords, 1.0f), UV_TRANSFORM_MATRIX_ARR[transformMatrixArrIndex]);
 		}
 	}

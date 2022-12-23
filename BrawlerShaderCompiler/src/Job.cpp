@@ -1,12 +1,14 @@
 module;
 #include <memory>
 #include <optional>
+#include <exception>
 
 module Brawler.Job;
 import Brawler.JobCounter;
 import Brawler.JobPriority;
 import Util.Coroutine;
 import Brawler.JobCounterGuard;
+import Util.Win32;
 
 namespace Brawler
 {
@@ -33,17 +35,15 @@ namespace Brawler
 			if (mCounterPtr != nullptr)
 				mCounterPtr->DecrementCounter();
 		}
+		catch (const std::exception& e)
+		{
+			Util::Win32::WriteFormattedConsoleMessage(e.what(), Util::Win32::ConsoleFormat::CRITICAL_FAILURE);
+			std::terminate();
+		}
 		catch (...)
 		{
-			if (mCounterPtr != nullptr)
-			{
-				mCounterPtr->DecrementCounter();
-				
-				while (!mCounterPtr->IsFinished())
-					Util::Coroutine::TryExecuteJob();
-			}
-			
-			std::rethrow_exception(std::current_exception());
+			Util::Win32::WriteFormattedConsoleMessage(L"ERROR: An unrecoverable error was detected. The program has been terminated.", Util::Win32::ConsoleFormat::CRITICAL_FAILURE);
+			std::terminate();
 		}
 	}
 

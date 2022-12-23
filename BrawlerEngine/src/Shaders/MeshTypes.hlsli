@@ -1,3 +1,5 @@
+#pragma once
+
 namespace BrawlerHLSL
 {
 	// We might also be able to use this exact same struct for skinned data, too! The difference there

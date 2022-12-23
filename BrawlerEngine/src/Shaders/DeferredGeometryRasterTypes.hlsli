@@ -1,3 +1,5 @@
+#pragma once
+
 namespace BrawlerHLSL
 {
 	struct DeferredGeometryRasterVSInput
@@ -8,7 +10,7 @@ namespace BrawlerHLSL
 	
 	struct DeferredGeometryRasterVSOutput
 	{
-		float3 PositionCS : SV_Position;
+		float4 PositionCS : SV_Position;
 		
 		float3 PositionWS : POSITIONWS;
 		float3 NormalWS : NORMALWS;
@@ -21,7 +23,7 @@ namespace BrawlerHLSL
 	
 	struct DeferredGeometryRasterPSInput
 	{
-		float3 PositionNDC : SV_Position;
+		float4 PositionNDC : SV_Position;
 		
 		float3 PositionWS : POSITIONWS;
 		float3 NormalWS : NORMALWS;

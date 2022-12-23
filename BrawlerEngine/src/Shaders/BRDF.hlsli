@@ -1,3 +1,4 @@
+#pragma once
 #include "LightingParameters.hlsli"
 #include "DiffuseBRDF.hlsli"
 #include "SpecularBRDF.hlsli"

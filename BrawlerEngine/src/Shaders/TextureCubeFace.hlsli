@@ -1,3 +1,5 @@
+#pragma once
+
 namespace BrawlerHLSL
 {
 	enum class TextureCubeFace

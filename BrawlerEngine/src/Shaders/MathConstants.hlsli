@@ -1,3 +1,5 @@
+#pragma once
+
 namespace BrawlerHLSL
 {
 	// We don't have constexpr in HLSL, and since floats are not integral types,

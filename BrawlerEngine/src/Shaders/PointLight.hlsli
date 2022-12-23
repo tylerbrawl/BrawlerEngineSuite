@@ -1,3 +1,4 @@
+#pragma once
 #include "LightingParameters.hlsli"
 #include "PunctualLight.hlsli"
 
@@ -6,7 +7,7 @@
 
 namespace BrawlerHLSL
 {
-	class PointLight : PunctualLight
+	struct PointLight : PunctualLight
 	{
 		float3 PositionWS;
 		

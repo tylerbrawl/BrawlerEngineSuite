@@ -5,6 +5,7 @@
 #include "NormalPacking.hlsli"
 #include "TransformUtil.hlsli"
 #include "MathConstants.hlsli"
+#include "TangentFramePacking.hlsli"
 
 BrawlerHLSL::DeferredGeometryRasterVSOutput main(in const BrawlerHLSL::DeferredGeometryRasterVSInput inputVertex)
 {
@@ -14,16 +15,16 @@ BrawlerHLSL::DeferredGeometryRasterVSOutput main(in const BrawlerHLSL::DeferredG
 	const uint meshDescriptorBufferIndex = (inputVertex.PackedModelInstanceDescriptorBufferIndexAndMeshDescriptorBufferIndex & 0xFFFF);
 	const uint modelInstanceDescriptorBufferIndex = (inputVertex.PackedModelInstanceDescriptorBufferIndexAndMeshDescriptorBufferIndex >> 16);
 	
-	const BrawlerHLSL::PackedStaticVertex currVertex = BrawlerHLSL::GetGlobalVertexBufferVertex(inputVertex.GlobalVertexBufferIndex);
-	const BrawlerHLSL::ModelInstanceDescriptor currModelInstanceDescriptor = BrawlerHLSL::GetGlobalModelInstanceDescriptor(modelInstanceDescriptorBufferIndex);
+	const BrawlerHLSL::PackedStaticVertex currVertex = BrawlerHLSL::Bindless::GetGlobalVertexBufferVertex(inputVertex.GlobalVertexBufferIndex);
+	const BrawlerHLSL::ModelInstanceDescriptor currModelInstanceDescriptor = BrawlerHLSL::Bindless::GetGlobalModelInstanceDescriptor(modelInstanceDescriptorBufferIndex);
 			
-	StructuredBuffer<BrawlerHLSL::MeshDescriptor> currModelMeshDescriptorBuffer = BrawlerHLSL::GetGlobalMeshDescriptorBuffer(currModelInstanceDescriptor.MeshDescriptorBufferID);
+	StructuredBuffer<BrawlerHLSL::MeshDescriptor> currModelMeshDescriptorBuffer = BrawlerHLSL::Bindless::GetGlobalMeshDescriptorBuffer(currModelInstanceDescriptor.MeshDescriptorBufferID);
 	const BrawlerHLSL::MeshDescriptor currMeshDescriptor = currModelMeshDescriptorBuffer[NonUniformResourceIndex(meshDescriptorBufferIndex)];
 	
-	const BrawlerHLSL::ModelInstanceTransformData currTransformData = BrawlerHLSL::GetGlobalModelInstanceTransformData(currModelInstanceDescriptor.TransformDataBufferIndex);
+	const BrawlerHLSL::ModelInstanceTransformData currTransformData = BrawlerHLSL::Bindless::GetGlobalModelInstanceTransformData(currModelInstanceDescriptor.TransformDataBufferIndex);
 	
-	const BrawlerHLSL::ViewDescriptor currViewDescriptor = WaveReadLaneFirst(BrawlerHLSL::GetGlobalViewDescriptor(DeferredGeometryRasterConstants.ViewID));
-	const BrawlerHLSL::ViewTransformData currViewTransformData = WaveReadLaneFirst(BrawlerHLSL::GetGlobalViewTransformData(currViewDescriptor.ViewTransformBufferIndex));
+	const BrawlerHLSL::ViewDescriptor currViewDescriptor = BrawlerHLSL::Bindless::GetGlobalViewDescriptor(DeferredGeometryRasterConstants.ViewID);
+	const BrawlerHLSL::ViewTransformData currViewTransformData = BrawlerHLSL::Bindless::GetGlobalViewTransformData(currViewDescriptor.ViewTransformBufferIndex);
 	
 	const float4x4 worldMatrix = Util::Transform::ExpandWorldMatrix(currTransformData.CurrentFrameWorldMatrix);
 	
@@ -41,11 +42,9 @@ BrawlerHLSL::DeferredGeometryRasterVSOutput main(in const BrawlerHLSL::DeferredG
 	// Since we already have access to the inverse world matrix from currTransformData, we
 	// might as well do this correctly. Keep in mind, however, that we should explicitly
 	// zero any elements which might have come from a translation.
-	float4x4 inverseTransposeWorldMatrix = Util::Math::ExpandWorldMatrix(currTransformData.CurrentFrameInverseWorldMatrix);
+	float4x4 inverseTransposeWorldMatrix = Util::Transform::ExpandWorldMatrix(currTransformData.CurrentFrameInverseWorldMatrix);
 	inverseTransposeWorldMatrix[3] = float4(0.0f, 0.0f, 0.0f, 1.0f);
 	inverseTransposeWorldMatrix = transpose(inverseTransposeWorldMatrix);
-	
-	const float4x4 invTransposeWorldViewProjectionMatrix = mul(inverseTransposeWorldMatrix, currViewTransformData.CurrentFrameViewProjectionMatrix);
 	
 	// These might just be the crustiest vertex normals ever conceived. Thanks,
 	// id Software!
@@ -67,11 +66,11 @@ BrawlerHLSL::DeferredGeometryRasterVSOutput main(in const BrawlerHLSL::DeferredG
 	const float4x4 tangentFrameWS = mul(tangentFrameOS, inverseTransposeWorldMatrix);
 	
 	BrawlerHLSL::DeferredGeometryRasterVSOutput output;
-	output.PositionCS = currPositionCS.xyz;
+	output.PositionCS = currPositionCS;
 	output.PositionWS = currPositionWS.xyz;
-	output.NormalWS = normalize(tangentFrameWS[2]);
-	output.TangentWS = normalize(tangentFrameWS[0]);
-	output.BitangentWS = normalize(tangentFrameWS[1]);
+	output.NormalWS = normalize(tangentFrameWS[2].xyz);
+	output.TangentWS = normalize(tangentFrameWS[0].xyz);
+	output.BitangentWS = normalize(tangentFrameWS[1].xyz);
 	output.UVCoords = currVertex.UVCoords;
 	output.MaterialDescriptorBufferIndex = currMeshDescriptor.MaterialDescriptorIndex;
 			

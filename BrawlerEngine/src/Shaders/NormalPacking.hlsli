@@ -1,3 +1,5 @@
+#pragma once
+
 // NOTE: The octahedron normal encoding/decoding algorithm was shamelessly
 // copied from https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/.
 // It explicitly states that the code can be copied into our own engines.
@@ -30,7 +32,7 @@ float3 UnpackNormal(in float2 packedNormal)
     float3 normal = float3(packedNormal.x, packedNormal.y, (1.0f - abs(packedNormal.x) - abs(packedNormal.y)));
 
     float t = saturate(-normal.z);
-    normal.xy += (normal.xy >= 0.0f ? -t : t);
+	normal.xy += select(normal.xy >= 0.0f, -t, t);
 
     return normalize(normal);
 }

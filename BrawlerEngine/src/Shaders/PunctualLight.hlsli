@@ -1,3 +1,4 @@
+#pragma once
 #include "LightingParameters.hlsli"
 
 namespace BrawlerHLSL
@@ -9,7 +10,9 @@ namespace BrawlerHLSL
 		
 		static BrawlerHLSL::LightingParameters CreateLightingParametersIMPL(in const BrawlerHLSL::SurfaceParameters surfaceParams, in const float3 lightPosWS)
 		{
-			BrawlerHLSL::LightingParameters lightingParams = surfaceParams;
+			BrawlerHLSL::LightingParameters lightingParams;
+			lightingParams.InitializeFromSurfaceParameters(surfaceParams);
+			
 			lightingParams.NDotV = (abs(dot(lightingParams.N, lightingParams.V)) + 0.00001f);
 			
 			lightingParams.L = (lightPosWS - lightingParams.SurfacePosWS);

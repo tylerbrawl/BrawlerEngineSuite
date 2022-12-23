@@ -1,3 +1,4 @@
+#pragma once
 #include "NormalPacking.hlsli"
 #include "MathConstants.hlsli"
 

@@ -20,22 +20,9 @@ struct SurfaceData
 	bool IsMetallic;
 };
 
-MaterialData GetMaterialData(in const BrawlerHLSL::MaterialDescriptor materialDescriptor)
-{
-	MaterialData materialData;
-	materialData.BaseColorTexture = BrawlerHLSL::Bindless::GetBindlessTexture<Texture2D<float4>>(materialDescriptor.BaseColorTextureSRVIndex);
-	materialData.NormalMap = BrawlerHLSL::Bindless::GetBindlessTexture<Texture2D<float4>>(materialDescriptor.NormalMapSRVIndex);
-	materialData.RoughnessMap = BrawlerHLSL::Bindless::GetBindlessTexture<Texture2D<float4>>(materialDescriptor.RoughnessTextureSRVIndex);
-	materialData.MetallicMap = BrawlerHLSL::Bindless::GetBindlessTexture<Texture2D<float4>>(materialDescriptor.MetallicTextureSRVIndex);
-	
-	return materialData;
-}
-
 SurfaceData GetSurfaceData(in const BrawlerHLSL::DeferredGeometryRasterPSInput input)
 {
 	const BrawlerHLSL::MaterialDescriptor materialDescriptor = BrawlerHLSL::Bindless::GetGlobalMaterialDescriptor(input.MaterialDescriptorBufferIndex);
-	const MaterialData materialData = GetMaterialData(materialDescriptor);
-	
 	SurfaceData surfaceData;
 	
 	// According to the MSDN, out-of-bounds descriptor table indexing results
@@ -48,8 +35,14 @@ SurfaceData GetSurfaceData(in const BrawlerHLSL::DeferredGeometryRasterPSInput i
 	//
 	// To avoid the undefined behavior, then, we need to use the [branch] attribute
 	// to force the evaluation of one or the other side of the if-statement for each.
-	// (Whether or not we will get a lot of divergence completely depends on how the
-	// GPU schedules pixel shader invocations within waves.)
+	//
+	// Whether or not we will get a lot of divergence in the current implementation
+	// completely depends on how the GPU schedules pixel shader invocations within waves.
+	// One way to avoid this divergence and reduce branching would be to have materials
+	// which don't use a given texture type instead reference a dummy texture 1x1 containing
+	// a default value for what it is supposed to represent. (Normal maps would still need
+	// the dynamic branching, though, since we want to fall back to the vertex normal if
+	// necessary, rather than use some dummy value.)
 	//
 	// This does imply that we'll be entering a potentially divergent control flow,
 	// which prevents the implicit calculation of UV gradients. We'll need to get those
@@ -73,7 +66,7 @@ SurfaceData GetSurfaceData(in const BrawlerHLSL::DeferredGeometryRasterPSInput i
 	[branch]
 	if (materialDescriptor.HasBaseColorTexture())
 	{
-		Texture2D<float4> baseColorTexture = BrawlerHLSL::Bindless::GetBindlessTexture<Texture2D<float4>>(materialDescriptor.BaseColorTextureSRVIndex);
+		Texture2D<float4> baseColorTexture = BrawlerHLSL::Bindless::GetBindlessTexture2D<float4>(materialDescriptor.BaseColorTextureSRVIndex);
 		surfaceData.BaseColor = baseColorTexture.SampleGrad(
 			AnisotropicWrapSampler,
 			input.UVCoords,
@@ -89,7 +82,7 @@ SurfaceData GetSurfaceData(in const BrawlerHLSL::DeferredGeometryRasterPSInput i
 	[branch]
 	if (materialDescriptor.HasNormalMap())
 	{
-		Texture2D<float4> normalMap = BrawlerHLSL::Bindless::GetBindlessTexture<Texture2D<float4>>(materialDescriptor.NormalMapSRVIndex);
+		Texture2D<float4> normalMap = BrawlerHLSL::Bindless::GetBindlessTexture2D<float4>(materialDescriptor.NormalMapSRVIndex);
 		float2 sampledWorldNormal = normalMap.SampleGrad(
 			BilinearWrapSampler,
 			input.UVCoords,
@@ -113,7 +106,7 @@ SurfaceData GetSurfaceData(in const BrawlerHLSL::DeferredGeometryRasterPSInput i
 		// maps are meant to store normal values contained within the hemisphere above the xy-plane
 		// in texture space, we can safely disregard the negative value, since that would be in the
 		// hemisphere below this plane.
-		const float sampledWorldNormalZ = sqrt(1.0f - dot(sampledWorldNormal));
+		const float sampledWorldNormalZ = sqrt(1.0f - dot(sampledWorldNormal, sampledWorldNormal));
 		
 		const float3 worldNormalTS = float3(sampledWorldNormal, sampledWorldNormalZ);
 		normalWS = normalize(mul(worldNormalTS, float3x3(input.TangentWS, input.BitangentWS, input.NormalWS)));
@@ -133,7 +126,7 @@ SurfaceData GetSurfaceData(in const BrawlerHLSL::DeferredGeometryRasterPSInput i
 		//
 		// where a_g is the GGX roughness value (pretend that the a is an alpha character,
 		// please).
-		Texture2D<float4> roughnessMap = BrawlerHLSL::Bindless::GetBindlessTexture<Texture2D<float4>>(materialDescriptor.RoughnessTextureSRVIndex);
+		Texture2D<float4> roughnessMap = BrawlerHLSL::Bindless::GetBindlessTexture2D<float4>(materialDescriptor.RoughnessTextureSRVIndex);
 		const float userRoughness = roughnessMap.SampleGrad(
 			BilinearWrapSampler,
 			input.UVCoords,
@@ -150,7 +143,7 @@ SurfaceData GetSurfaceData(in const BrawlerHLSL::DeferredGeometryRasterPSInput i
 	[branch]
 	if (materialDescriptor.HasMetallicMap())
 	{
-		Texture2D<float4> metallicMap = BrawlerHLSL::Bindless::GetBindlessTexture<Texture2D<float4>>(materialDescriptor.MetallicTextureSRVIndex);
+		Texture2D<float4> metallicMap = BrawlerHLSL::Bindless::GetBindlessTexture2D<float4>(materialDescriptor.MetallicTextureSRVIndex);
 		const float metallicValue = metallicMap.SampleGrad(
 			BilinearWrapSampler,
 			input.UVCoords,

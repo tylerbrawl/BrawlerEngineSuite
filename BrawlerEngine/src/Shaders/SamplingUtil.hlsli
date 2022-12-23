@@ -1,3 +1,4 @@
+#pragma once
 #include "MathConstants.hlsli"
 
 namespace Util

@@ -1,9 +1,10 @@
+#pragma once
 #include "LightingParameters.hlsli"
 #include "PunctualLight.hlsli"
 
 namespace BrawlerHLSL
 {
-	class SpotLight : PunctualLight
+	struct SpotLight : PunctualLight
 	{
 		/// <summary>
 		/// This is the position, in world space, at which the spotlight is located
