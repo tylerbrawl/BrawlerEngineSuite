@@ -31,7 +31,7 @@ export namespace Brawler
 {
 	namespace D3D12
 	{
-		class DirectContext final : public GPUCommandContext<GPUCommandQueueType::DIRECT>, public ComputeCapableCommandGenerator<DirectContext>
+		class DirectContext final : public GPUCommandContext<DirectContext, GPUCommandQueueType::DIRECT>, public ComputeCapableCommandGenerator<DirectContext>
 		{
 		private:
 			template <GPUCommandQueueType QueueType>
@@ -46,8 +46,10 @@ export namespace Brawler
 			DirectContext(DirectContext&& rhs) noexcept = default;
 			DirectContext& operator=(DirectContext&& rhs) noexcept = default;
 
-			void RecordCommandListIMPL(const std::function<void(DirectContext&)>& recordJob) override;
+		protected:
+			void RecordCommandListIMPL(const std::function<void(DirectContext&)>& recordJob);
 
+		public:
 			/// <summary>
 			/// Guarantees that once all of the commands for this frame have been submitted, all of the
 			/// presentation callbacks registered with the PresentationManager will be executed. This will
@@ -108,7 +110,7 @@ export namespace Brawler
 			void OMSetRenderTargets(RenderTargetBundle<RTVCount, DSVCount>& renderTargetBundle) const;
 
 		protected:
-			void PrepareCommandListIMPL() override;
+			void PrepareCommandListIMPL();
 
 		public:
 			template <Brawler::PSOs::PSOID PSOIdentifier>

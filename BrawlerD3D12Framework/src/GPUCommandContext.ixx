@@ -9,24 +9,25 @@ export module Brawler.D3D12.GPUCommandContext;
 import Brawler.D3D12.GPUCommandQueueType;
 import Util.Engine;
 import Util.General;
-import Util.D3D12;
-import Brawler.D3D12.GPUResourceAccessManager;
-import Brawler.D3D12.GPUFence;
+//import Util.D3D12;
+//import Brawler.D3D12.GPUResourceAccessManager;
 import Brawler.D3D12.FrameGraphResourceDependency;
 import Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.D3D12.TextureSubResource;
 import Brawler.D3D12.I_BufferSnapshot;
 import Brawler.D3D12.BufferCopyRegion;
 import Brawler.D3D12.TextureCopyRegion;
-export import Brawler.D3D12.GPUResourceDescriptorHeap;
+import Brawler.D3D12.GPUResourceDescriptorHeap;
 
-export namespace Brawler
+struct GPUResourceAccessManager
+{};
+
+namespace Util
 {
 	namespace D3D12
 	{
-		class DirectContext;
-		class ComputeContext;
-		class CopyContext;
+		bool IsDebugLayerEnabled();
+		bool IsResourceStateValid(const D3D12_RESOURCE_STATES resourceState);
 	}
 }
 
@@ -38,24 +39,22 @@ namespace
 		static_assert(sizeof(CmdListType) != sizeof(CmdListType), "ERROR: An explicit template specialization was not provided for GPUCommandContextInfo with a given Brawler::GPUCommandQueueType! (See GPUCommandContext.ixx.)");
 	};
 
-	template <D3D12_COMMAND_LIST_TYPE D3DCmdListType, typename ContextType_>
+	template <D3D12_COMMAND_LIST_TYPE D3DCmdListType>
 	struct GPUCommandContextInfoInstantiation
 	{
 		static constexpr D3D12_COMMAND_LIST_TYPE D3D_CMD_LIST_TYPE = D3DCmdListType;
-		
-		using ContextType = ContextType_;
 	};
 
 	template <>
-	struct GPUCommandContextInfo<Brawler::D3D12::GPUCommandQueueType::DIRECT> : public GPUCommandContextInfoInstantiation<D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT, Brawler::D3D12::DirectContext>
+	struct GPUCommandContextInfo<Brawler::D3D12::GPUCommandQueueType::DIRECT> : public GPUCommandContextInfoInstantiation<D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT>
 	{};
 
 	template <>
-	struct GPUCommandContextInfo<Brawler::D3D12::GPUCommandQueueType::COMPUTE> : public GPUCommandContextInfoInstantiation<D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_COMPUTE, Brawler::D3D12::ComputeContext>
+	struct GPUCommandContextInfo<Brawler::D3D12::GPUCommandQueueType::COMPUTE> : public GPUCommandContextInfoInstantiation<D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_COMPUTE>
 	{};
 
 	template <>
-	struct GPUCommandContextInfo<Brawler::D3D12::GPUCommandQueueType::COPY> : public GPUCommandContextInfoInstantiation<D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_COPY, Brawler::D3D12::CopyContext>
+	struct GPUCommandContextInfo<Brawler::D3D12::GPUCommandQueueType::COPY> : public GPUCommandContextInfoInstantiation<D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_COPY>
 	{};
 }
 
@@ -83,7 +82,7 @@ export namespace Brawler
 {
 	namespace D3D12
 	{
-		template <GPUCommandQueueType CmdListType>
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
 		class GPUCommandContext
 		{
 		private:
@@ -99,9 +98,6 @@ export namespace Brawler
 
 			template <typename T>
 			friend class ComputeCapableCommandGenerator;
-
-		private:
-			using DerivedContextType = GPUCommandContextInfo<CmdListType>::ContextType;
 
 		protected:
 			GPUCommandContext();
@@ -151,8 +147,7 @@ export namespace Brawler
 			/// </param>
 			void SetValidGPUResources(const std::span<const FrameGraphResourceDependency> dependencySpan);
 
-			void RecordCommandList(const std::function<void(DerivedContextType&)>& recordJob);
-			virtual void RecordCommandListIMPL(const std::function<void(DerivedContextType&)>& recordJob) = 0;
+			void RecordCommandList(const std::function<void(DerivedType&)>& recordJob);
 
 			/// <summary>
 			/// Resets both the command list *AND* its underlying allocator. The latter action
@@ -167,9 +162,6 @@ export namespace Brawler
 			/// GPUCommandContext::ResetCommandList().
 			/// </summary>
 			void PrepareCommandList();
-
-		protected:
-			virtual void PrepareCommandListIMPL();
 
 		private:
 			void CloseCommandList();
@@ -212,21 +204,22 @@ export namespace Brawler
 			void DebugResourceBarrier(const CD3DX12_RESOURCE_BARRIER& barrier) const;
 
 		private:
-			Microsoft::WRL::ComPtr<Brawler::D3D12GraphicsCommandList> mCmdList;
-			GPUResourceAccessManager mResourceAccessManager;
-			bool mHasCommands;
+			//Microsoft::WRL::ComPtr<Brawler::D3D12GraphicsCommandList> mCmdList;
+			//GPUResourceAccessManager mResourceAccessManager;
+			//bool mHasCommands;
 		};
 	}
 }
 
 // ---------------------------------------------------------------------------------
 
+/*
 namespace Brawler
 {
 	namespace D3D12
 	{
-		template <GPUCommandQueueType CmdListType>
-		GPUCommandContext<CmdListType>::GPUCommandContext() :
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		GPUCommandContext<DerivedType, CmdListType>::GPUCommandContext() :
 			mCmdList(nullptr),
 			mResourceAccessManager(),
 			mHasCommands(false)
@@ -247,20 +240,20 @@ namespace Brawler
 			}
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		Brawler::D3D12GraphicsCommandList& GPUCommandContext<CmdListType>::GetCommandList() const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		Brawler::D3D12GraphicsCommandList& GPUCommandContext<DerivedType, CmdListType>::GetCommandList() const
 		{
 			return *(mCmdList.Get());
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		bool GPUCommandContext<CmdListType>::HasCommands() const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		bool GPUCommandContext<DerivedType, CmdListType>::HasCommands() const
 		{
 			return mHasCommands;
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		bool GPUCommandContext<CmdListType>::IsResourceAccessValid(const I_GPUResource& resource, const D3D12_RESOURCE_STATES requiredState) const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		bool GPUCommandContext<DerivedType, CmdListType>::IsResourceAccessValid(const I_GPUResource& resource, const D3D12_RESOURCE_STATES requiredState) const
 		{
 			if constexpr (Util::General::IsDebugModeEnabled())
 				return mResourceAccessManager.IsResourceAccessValid(resource, requiredState);
@@ -268,21 +261,21 @@ namespace Brawler
 				return true;
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::SetValidGPUResources(const std::span<const FrameGraphResourceDependency> dependencySpan)
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::SetValidGPUResources(const std::span<const FrameGraphResourceDependency> dependencySpan)
 		{
 			mResourceAccessManager.SetCurrentResourceDependencies(dependencySpan);
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::RecordCommandList(const std::function<void(DerivedContextType&)>& recordJob)
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::RecordCommandList(const std::function<void(DerivedType&)>& recordJob)
 		{
 			// Record the commands into the command list.
-			RecordCommandListIMPL(recordJob);
+			static_cast<DerivedType*>(this)->RecordCommandListIMPL(recordJob);
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::ResetCommandList()
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::ResetCommandList()
 		{
 			// Reset the command list so that we can record commands into it.
 			Util::General::CheckHRESULT(mCmdList->Reset(&(Util::Engine::GetD3D12CommandAllocator(CmdListType)), nullptr));
@@ -293,8 +286,8 @@ namespace Brawler
 			mHasCommands = false;
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::PrepareCommandList()
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::PrepareCommandList()
 		{
 			// For command lists which will be sent to either the direct or the compute
 			// queue, we should set the descriptor heaps before recording any commands.
@@ -307,29 +300,25 @@ namespace Brawler
 				mCmdList->SetDescriptorHeaps(static_cast<std::uint32_t>(shaderVisibleDescriptorHeapArr.size()), shaderVisibleDescriptorHeapArr.data());
 			}
 
-			PrepareCommandListIMPL();
+			static_cast<DerivedType*>(this)->PrepareCommandListIMPL();
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::PrepareCommandListIMPL()
-		{}
-
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::CloseCommandList()
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::CloseCommandList()
 		{
 			// Close the command list. This lets D3D12 know that we are finished recording commands
 			// into it.
 			Util::General::CheckHRESULT(mCmdList->Close());
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::MarkAsUseful()
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::MarkAsUseful()
 		{
 			mHasCommands = true;
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::ResourceBarrier(const std::span<const CD3DX12_RESOURCE_BARRIER> barrierSpan) const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::ResourceBarrier(const std::span<const CD3DX12_RESOURCE_BARRIER> barrierSpan) const
 		{
 			if (!barrierSpan.empty())
 				mCmdList->ResourceBarrier(static_cast<std::uint32_t>(barrierSpan.size()), barrierSpan.data());
@@ -339,8 +328,8 @@ namespace Brawler
 		// ^ Implementation Details and General Functions | Shared Commands v
 		// ==================================================================
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::AssertResourceState(const I_BufferSnapshot& bufferSnapshot, const D3D12_RESOURCE_STATES expectedState) const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::AssertResourceState(const I_BufferSnapshot& bufferSnapshot, const D3D12_RESOURCE_STATES expectedState) const
 		{
 			if (Util::D3D12::IsDebugLayerEnabled())
 			{
@@ -353,8 +342,8 @@ namespace Brawler
 			}
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::AssertResourceState(const TextureSubResource& textureSubResource, const D3D12_RESOURCE_STATES expectedState) const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::AssertResourceState(const TextureSubResource& textureSubResource, const D3D12_RESOURCE_STATES expectedState) const
 		{
 			if (Util::D3D12::IsDebugLayerEnabled())
 			{
@@ -367,8 +356,8 @@ namespace Brawler
 			}
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::CopyBufferToTexture(const TextureSubResource& destTexture, const TextureCopyBufferSnapshot& srcSnapshot) const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::CopyBufferToTexture(const TextureSubResource& destTexture, const TextureCopyBufferSnapshot& srcSnapshot) const
 		{
 			assert(IsResourceAccessValid(destTexture.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination texture resource in a call to GPUCommandContext::CopyBufferToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
 			assert(IsResourceAccessValid(srcSnapshot.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source buffer resource in a call to GPUCommandContext::CopyBufferToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
@@ -386,8 +375,8 @@ namespace Brawler
 			);
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::CopyTextureToBuffer(const TextureCopyBufferSnapshot& destSnapshot, const TextureSubResource& srcTexture) const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::CopyTextureToBuffer(const TextureCopyBufferSnapshot& destSnapshot, const TextureSubResource& srcTexture) const
 		{
 			assert(IsResourceAccessValid(destSnapshot.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination buffer resource in a call to GPUCommandContext::CopyTextureToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
 			assert(IsResourceAccessValid(srcTexture.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source texture resource in a call to GPUCommandContext::CopyTextureToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
@@ -405,8 +394,8 @@ namespace Brawler
 			);
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::CopyBufferToTexture(const TextureCopyRegion& destTexture, const TextureCopyBufferSnapshot& srcSnapshot) const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::CopyBufferToTexture(const TextureCopyRegion& destTexture, const TextureCopyBufferSnapshot& srcSnapshot) const
 		{
 			assert(IsResourceAccessValid(destTexture.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination texture resource in a call to GPUCommandContext::CopyBufferToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
 			assert(IsResourceAccessValid(srcSnapshot.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source buffer resource in a call to GPUCommandContext::CopyBufferToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
@@ -426,8 +415,8 @@ namespace Brawler
 			);
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::CopyTextureToBuffer(const TextureCopyBufferSnapshot& destSnapshot, const TextureCopyRegion& srcTexture) const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::CopyTextureToBuffer(const TextureCopyBufferSnapshot& destSnapshot, const TextureCopyRegion& srcTexture) const
 		{
 			assert(IsResourceAccessValid(destSnapshot.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination buffer resource in a call to GPUCommandContext::CopyTextureToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
 			assert(IsResourceAccessValid(srcTexture.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source texture resource in a call to GPUCommandContext::CopyTextureToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
@@ -447,8 +436,8 @@ namespace Brawler
 			);
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::CopyBufferToBuffer(const I_BufferSnapshot& destSnapshot, const I_BufferSnapshot& srcSnapshot) const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::CopyBufferToBuffer(const I_BufferSnapshot& destSnapshot, const I_BufferSnapshot& srcSnapshot) const
 		{
 			assert(IsResourceAccessValid(destSnapshot.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination buffer resource in a call to GPUCommandContext::CopyBufferToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
 			assert(IsResourceAccessValid(srcSnapshot.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source buffer resource in a call to GPUCommandContext::CopyBufferToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
@@ -464,8 +453,8 @@ namespace Brawler
 			);
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::CopyBufferToBuffer(const BufferCopyRegion& destRegion, const BufferCopyRegion& srcRegion) const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::CopyBufferToBuffer(const BufferCopyRegion& destRegion, const BufferCopyRegion& srcRegion) const
 		{
 			assert(IsResourceAccessValid(destRegion.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination buffer resource in a call to GPUCommandContext::CopyBufferToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
 			assert(IsResourceAccessValid(srcRegion.GetBufferResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source buffer resource in a call to GPUCommandContext::CopyBufferToBuffer() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
@@ -481,8 +470,8 @@ namespace Brawler
 			);
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::CopyTextureToTexture(const TextureSubResource& destTexture, const TextureSubResource& srcTexture) const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::CopyTextureToTexture(const TextureSubResource& destTexture, const TextureSubResource& srcTexture) const
 		{
 			assert(IsResourceAccessValid(destTexture.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
 			assert(IsResourceAccessValid(srcTexture.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
@@ -510,8 +499,8 @@ namespace Brawler
 			}
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::CopyTextureToTexture(const TextureSubResource& destTexture, const TextureCopyRegion& srcRegion) const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::CopyTextureToTexture(const TextureSubResource& destTexture, const TextureCopyRegion& srcRegion) const
 		{
 			assert(IsResourceAccessValid(destTexture.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
 			assert(IsResourceAccessValid(srcRegion.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
@@ -533,8 +522,8 @@ namespace Brawler
 			);
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::CopyTextureToTexture(const TextureCopyRegion& destRegion, const TextureSubResource& srcTexture) const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::CopyTextureToTexture(const TextureCopyRegion& destRegion, const TextureSubResource& srcTexture) const
 		{
 			assert(IsResourceAccessValid(destRegion.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
 			assert(IsResourceAccessValid(srcTexture.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
@@ -556,8 +545,8 @@ namespace Brawler
 			);
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::CopyTextureToTexture(const TextureCopyRegion& destRegion, const TextureCopyRegion& srcRegion) const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::CopyTextureToTexture(const TextureCopyRegion& destRegion, const TextureCopyRegion& srcRegion) const
 		{
 			assert(IsResourceAccessValid(destRegion.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_DEST) && "ERROR: The destination texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_DEST state!");
 			assert(IsResourceAccessValid(srcRegion.GetGPUResource(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COPY_SOURCE) && "ERROR: The source texture resource in a call to GPUCommandContext::CopyTextureToTexture() was not specified as a resource dependency with the D3D12_RESOURCE_STATE_COPY_SOURCE state!");
@@ -580,11 +569,12 @@ namespace Brawler
 			);
 		}
 
-		template <GPUCommandQueueType CmdListType>
-		void GPUCommandContext<CmdListType>::DebugResourceBarrier(const CD3DX12_RESOURCE_BARRIER& barrier) const
+		template <typename DerivedType, GPUCommandQueueType CmdListType>
+		void GPUCommandContext<DerivedType, CmdListType>::DebugResourceBarrier(const CD3DX12_RESOURCE_BARRIER& barrier) const
 		{
 			if constexpr (Util::General::IsDebugModeEnabled())
 				mCmdList->ResourceBarrier(1, &barrier);
 		}
 	}
 }
+*/

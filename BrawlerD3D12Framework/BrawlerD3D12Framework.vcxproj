@@ -347,9 +347,7 @@
     <ClCompile Include="src\GPUCommandContextGroup.ixx" />
     <ClCompile Include="src\GPUCommandContexts.ixx" />
     <ClCompile Include="src\GPUCommandContextSink.cpp" />
-    <ClCompile Include="src\GPUCommandContextSink.ixx" />
     <ClCompile Include="src\GPUCommandContextSubmissionPoint.cpp" />
-    <ClCompile Include="src\GPUCommandContextSubmissionPoint.ixx" />
     <ClCompile Include="src\GPUCommandListRecorder.ixx" />
     <ClCompile Include="src\GPUCommandQueue.ixx" />
     <ClCompile Include="src\GPUCommandQueueContextType.ixx" />
@@ -477,7 +475,6 @@
     <ClCompile Include="src\Functional.ixx" />
     <ClCompile Include="src\GPUCapabilities.ixx" />
     <ClCompile Include="src\GPUCommandContext.ixx" />
-    <ClCompile Include="src\GPUCommandContextVault.ixx" />
     <ClCompile Include="src\GPUCommandManager.cpp" />
     <ClCompile Include="src\GPUCommandManager.ixx" />
     <ClCompile Include="src\GPUCommandQueueType.ixx" />

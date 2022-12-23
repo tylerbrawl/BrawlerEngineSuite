@@ -4,9 +4,8 @@ module;
 #include <ranges>
 #include <span>
 
-module Brawler.D3D12.GPUCommandContextSink;
+module Brawler.D3D12.GPUCommandManager;
 import Util.Engine;
-import Brawler.D3D12.GPUCommandManager;
 
 namespace Brawler
 {

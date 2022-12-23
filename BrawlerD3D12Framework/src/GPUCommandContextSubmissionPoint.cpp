@@ -4,7 +4,7 @@ module;
 #include <mutex>
 #include <cassert>
 
-module Brawler.D3D12.GPUCommandContextSubmissionPoint;
+module Brawler.D3D12.GPUCommandManager;
 
 namespace Brawler
 {

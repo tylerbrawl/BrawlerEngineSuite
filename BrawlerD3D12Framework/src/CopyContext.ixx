@@ -5,11 +5,15 @@ export module Brawler.D3D12.CopyContext;
 import Brawler.D3D12.GPUCommandContext;
 import Brawler.D3D12.GPUCommandQueueType;
 
+//template <typename T, Brawler::D3D12::GPUCommandQueueType QueueType>
+//struct GPUCommandContext
+//{};
+
 export namespace Brawler
 {
 	namespace D3D12
 	{
-		class CopyContext final : public GPUCommandContext<GPUCommandQueueType::COPY>
+		class CopyContext final : public GPUCommandContext<CopyContext, GPUCommandQueueType::COPY>
 		{
 		public:
 			CopyContext() = default;
@@ -20,7 +24,9 @@ export namespace Brawler
 			CopyContext(CopyContext&& rhs) noexcept = default;
 			CopyContext& operator=(CopyContext&& rhs) noexcept = default;
 
-			void RecordCommandListIMPL(const std::function<void(CopyContext&)>& recordJob) override;
+		protected:
+			void RecordCommandListIMPL(const std::function<void(CopyContext&)>& recordJob);
+			void PrepareCommandListIMPL();
 		};
 	}
 }

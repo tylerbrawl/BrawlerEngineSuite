@@ -5,37 +5,13 @@ module;
 #include <cassert>
 #include <memory>
 #include <array>
+#include <atomic>
 #include "DxDef.h"
 
 export module Brawler.D3D12.GPUResourceDescriptorHeap;
-import Brawler.D3D12.PerFrameDescriptorTable;
 import Brawler.D3D12.DescriptorHandleInfo;
 import Brawler.D3D12.BindlessSRVSentinel;
 import Util.Engine;
-
-export namespace Brawler
-{
-	namespace D3D12
-	{
-		class DescriptorTableBuilder;
-	}
-}
-
-namespace Brawler
-{
-	namespace D3D12
-	{
-		constexpr std::size_t RESOURCE_DESCRIPTOR_HEAP_SIZE = 1000000;
-		constexpr std::size_t BINDLESS_SRVS_PARTITION_SIZE = 500000;
-
-		/// <summary>
-		/// This is the size of the partition of the GPUResourceDescriptorHeap which is
-		/// dedicated to storing per-frame descriptor tables. Each frame "owns" half of
-		/// this partition for storing descriptor tables.
-		/// </summary>
-		constexpr std::size_t PER_FRAME_DESCRIPTORS_PARTITION_SIZE = (RESOURCE_DESCRIPTOR_HEAP_SIZE - BINDLESS_SRVS_PARTITION_SIZE);
-	}
-}
 
 export namespace Brawler
 {
@@ -84,7 +60,12 @@ export namespace Brawler
 		private:
 			Microsoft::WRL::ComPtr<Brawler::D3D12DescriptorHeap> mHeap;
 			BindlessIndexInfo mBindlessIndexQueue;
-			std::array<std::atomic<std::uint32_t>, Util::Engine::MAX_FRAMES_IN_FLIGHT> mPerFrameIndexArr;
+
+			// Another weird bug was found! Using std::atomic<std::uint32_t> instead
+			// of std::atomic<std::uint64_t> now triggers an internal compiler error
+			// (ICE) in the MSVC due to a regression on their end.
+			std::array<std::atomic<std::uint64_t>, Util::Engine::MAX_FRAMES_IN_FLIGHT> mPerFrameIndexArr;
+
 			std::uint32_t mDescriptorHandleIncrementSize;
 		};
 	}

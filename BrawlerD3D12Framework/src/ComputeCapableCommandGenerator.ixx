@@ -264,11 +264,11 @@ namespace Brawler
 		{
 			if constexpr (Util::General::IsDebugModeEnabled())
 			{
-				if constexpr (std::derived_from<DerivedClass, GPUCommandContext<GPUCommandQueueType::DIRECT>>)
-					return static_cast<const GPUCommandContext<GPUCommandQueueType::DIRECT>*>(this)->IsResourceAccessValid(resource, requiredState);
+				if constexpr (std::derived_from<DerivedClass, GPUCommandContext<DerivedClass, GPUCommandQueueType::DIRECT>>)
+					return static_cast<const GPUCommandContext<DerivedClass, GPUCommandQueueType::DIRECT>*>(this)->IsResourceAccessValid(resource, requiredState);
 
-				else if constexpr (std::derived_from<DerivedClass, GPUCommandContext<GPUCommandQueueType::COMPUTE>>)
-					return static_cast<const GPUCommandContext<GPUCommandQueueType::COMPUTE>*>(this)->IsResourceAccessValid(resource, requiredState);
+				else if constexpr (std::derived_from<DerivedClass, GPUCommandContext<DerivedClass, GPUCommandQueueType::COMPUTE>>)
+					return static_cast<const GPUCommandContext<DerivedClass, GPUCommandQueueType::COMPUTE>*>(this)->IsResourceAccessValid(resource, requiredState);
 			}
 			else
 				return true;
@@ -279,11 +279,11 @@ namespace Brawler
 		{
 			const DerivedClass* const derivedClassPtr = static_cast<const DerivedClass*>(this);
 			
-			if constexpr (std::derived_from<DerivedClass, GPUCommandContext<GPUCommandQueueType::DIRECT>>)
-				return static_cast<const GPUCommandContext<GPUCommandQueueType::DIRECT>*>(derivedClassPtr)->GetCommandList();
+			if constexpr (std::derived_from<DerivedClass, GPUCommandContext<DerivedClass, GPUCommandQueueType::DIRECT>>)
+				return static_cast<const GPUCommandContext<DerivedClass, GPUCommandQueueType::DIRECT>*>(derivedClassPtr)->GetCommandList();
 
-			else if constexpr (std::derived_from<DerivedClass, GPUCommandContext<GPUCommandQueueType::COMPUTE>>)
-				return static_cast<const GPUCommandContext<GPUCommandQueueType::COMPUTE>*>(derivedClassPtr)->GetCommandList();
+			else if constexpr (std::derived_from<DerivedClass, GPUCommandContext<DerivedClass, GPUCommandQueueType::COMPUTE>>)
+				return static_cast<const GPUCommandContext<DerivedClass, GPUCommandQueueType::COMPUTE>*>(derivedClassPtr)->GetCommandList();
 		}
 	}
 }

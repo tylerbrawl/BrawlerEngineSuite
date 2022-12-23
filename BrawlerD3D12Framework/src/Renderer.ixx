@@ -4,13 +4,34 @@ module;
 export module Brawler.D3D12.Renderer;
 import Brawler.D3D12.GPUCommandManager;
 import Brawler.D3D12.GPUDevice;
-import Brawler.D3D12.PersistentGPUResourceManager;
-import Brawler.D3D12.RootSignatureDatabase;
-import Brawler.D3D12.PSODatabase;
-import Brawler.D3D12.FrameGraphManager;
-import Brawler.D3D12.PresentationManager;
-import Brawler.D3D12.I_RenderModule;
-import Brawler.Functional;
+//import Brawler.D3D12.PersistentGPUResourceManager;
+//import Brawler.D3D12.RootSignatureDatabase;  // <- Safe?
+//import Brawler.D3D12.PSODatabase;  // <- Safe?
+//import Brawler.D3D12.FrameGraphManager;
+//import Brawler.D3D12.PresentationManager;  // <- Safe?
+//import Brawler.D3D12.I_RenderModule;  // <- Safe?
+import Brawler.Functional;  // <- Safe?
+
+//struct GPUCommandManager
+//{};
+
+struct PersistentGPUResourceManager
+{};
+
+struct RootSignatureDatabase
+{};
+
+struct PSODatabase
+{};
+
+struct FrameGraphManager
+{};
+
+struct PresentationManager
+{};
+
+struct I_RenderModule
+{};
 
 export namespace Brawler
 {
@@ -155,6 +176,7 @@ export namespace Brawler
 
 // -------------------------------------------------------------------------------------------------------------
 
+/*
 namespace Brawler
 {
 	namespace D3D12
@@ -193,3 +215,4 @@ namespace Brawler
 		}
 	}
 }
+*/

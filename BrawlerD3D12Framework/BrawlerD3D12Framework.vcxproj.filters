@@ -249,9 +249,6 @@
     <ClCompile Include="src\GPUCommandManager.cpp">
       <Filter>Source Files\D3D12</Filter>
     </ClCompile>
-    <ClCompile Include="src\GPUCommandContextVault.ixx">
-      <Filter>Module Files\GPU Work Submission</Filter>
-    </ClCompile>
     <ClCompile Include="src\DirectContext.ixx">
       <Filter>Module Files\GPU Work Submission\Command Contexts</Filter>
     </ClCompile>
@@ -558,17 +555,11 @@
     <ClCompile Include="src\GPUResourceAccessManager.cpp">
       <Filter>Source Files\GPU Resources</Filter>
     </ClCompile>
-    <ClCompile Include="src\GPUCommandContextSink.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\Execution</Filter>
-    </ClCompile>
     <ClCompile Include="src\GPUCommandContextGroup.ixx">
       <Filter>Module Files\GPU Work Submission\Frame Graph\Execution</Filter>
     </ClCompile>
     <ClCompile Include="src\GPUCommandContextGroup.cpp">
       <Filter>Source Files\GPU Work Submission\Frame Graph\Execution</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GPUCommandContextSubmissionPoint.ixx">
-      <Filter>Module Files\GPU Work Submission\Frame Graph\Execution</Filter>
     </ClCompile>
     <ClCompile Include="src\GPUCommandContextSubmissionPoint.cpp">
       <Filter>Source Files\GPU Work Submission\Frame Graph\Execution</Filter>

@@ -11,5 +11,8 @@ namespace Brawler
 		{
 			recordJob(*this);
 		}
+
+		void CopyContext::PrepareCommandListIMPL()
+		{}
 	}
 }

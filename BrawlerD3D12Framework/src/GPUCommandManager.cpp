@@ -18,6 +18,60 @@ namespace Brawler
 	namespace D3D12
 	{
 		template <GPUCommandQueueType QueueType>
+		std::unique_ptr<GPUCommandQueueContextType<QueueType>> GPUCommandContextVault::AcquireCommandContext()
+		{
+			// Try to acquire a command context from the ContextQueue.
+			std::optional<std::unique_ptr<GPUCommandQueueContextType<QueueType>>> contextPtr{ GetContextQueue<QueueType>().TryPop() };
+
+			// If we do not have a free command context, then we need to create one.
+			return (contextPtr.has_value() ? std::move(*contextPtr) : std::make_unique<GPUCommandQueueContextType<QueueType>>());
+		}
+
+		template <GPUCommandQueueType QueueType>
+		void GPUCommandContextVault::ReturnCommandContext(std::unique_ptr<GPUCommandQueueContextType<QueueType>>&& cmdContext)
+		{
+			// We can just ignore the return result of ThreadSafeQueue::TryPop(). A GPUCommandContext
+			// instance only contains a closed command list at this point.
+			// 
+			// TODO: Is it okay to just destroy an ID3D12GraphicsCommandList object immediately after
+			// closing it? It's the ID3D12CommandAllocator which stores the commands, so it should be
+			// fine.
+			std::ignore = GetContextQueue<QueueType>().PushBack(std::move(cmdContext));
+		}
+
+		template <GPUCommandQueueType QueueType>
+		auto& GPUCommandContextVault::GetContextQueue()
+		{
+			if constexpr (QueueType == GPUCommandQueueType::DIRECT)
+				return mDirectContextQueue;
+
+			if constexpr (QueueType == GPUCommandQueueType::COMPUTE)
+				return mComputeContextQueue;
+
+			if constexpr (QueueType == GPUCommandQueueType::COPY)
+				return mCopyContextQueue;
+		}
+
+		template <GPUCommandQueueType QueueType>
+		const auto& GPUCommandContextVault::GetContextQueue() const
+		{
+			if constexpr (QueueType == GPUCommandQueueType::DIRECT)
+				return mDirectContextQueue;
+
+			if constexpr (QueueType == GPUCommandQueueType::COMPUTE)
+				return mComputeContextQueue;
+
+			if constexpr (QueueType == GPUCommandQueueType::COPY)
+				return mCopyContextQueue;
+		}
+	}
+}
+
+namespace Brawler
+{
+	namespace D3D12
+	{
+		template <GPUCommandQueueType QueueType>
 		void GPUCommandManager::HaltGPUCommandQueueForPreviousSubmission() const
 		{
 			if (QueueType != GPUCommandQueueType::DIRECT && (mLastSubmissionQueues & GPUCommandQueueType::DIRECT).CountOneBits() != 0)

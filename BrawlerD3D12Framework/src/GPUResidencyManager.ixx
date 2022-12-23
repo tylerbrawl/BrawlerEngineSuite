@@ -6,15 +6,8 @@ module;
 export module Brawler.D3D12.GPUResidencyManager;
 import Brawler.ThreadSafeVector;
 import Brawler.D3D12.GPUFence;
-
-export namespace Brawler
-{
-	namespace D3D12
-	{
-		class I_PageableGPUObject;
-		struct GPUMemoryBudgetInfo;
-	}
-}
+import Brawler.D3D12.I_PageableGPUObject;
+import Brawler.D3D12.GPUMemoryBudgetInfo;
 
 export namespace Brawler
 {

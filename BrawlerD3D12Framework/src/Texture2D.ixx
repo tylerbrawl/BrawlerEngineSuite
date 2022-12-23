@@ -62,59 +62,6 @@ export namespace Brawler
 
 // --------------------------------------------------------------------------------------------------------------
 
-namespace Brawler
-{
-	namespace D3D12
-	{
-		template <DXGI_FORMAT Format>
-		Texture2DShaderResourceView<Format> Texture2DSubResource::CreateShaderResourceView() const
-		{
-			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
-
-			return Texture2DShaderResourceView<Format>{ GetTexture2D(), D3D12_TEX2D_SRV{
-				.MostDetailedMip = GetSubResourceIndex(),
-				.MipLevels = 1,
-				.PlaneSlice = 0,
-				.ResourceMinLODClamp = 0.0f
-			} };
-		}
-
-		template <DXGI_FORMAT Format>
-		Texture2DUnorderedAccessView<Format> Texture2DSubResource::CreateUnorderedAccessView() const
-		{
-			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
-
-			return Texture2DUnorderedAccessView<Format>{ GetTexture2D(), D3D12_TEX2D_UAV{
-				.MipSlice = GetSubResourceIndex(),
-				.PlaneSlice = 0
-			} };
-		}
-
-		template <DXGI_FORMAT Format>
-		Texture2DRenderTargetView<Format> Texture2DSubResource::CreateRenderTargetView() const
-		{
-			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
-			assert((GetTexture2D().GetResourceDescription().Flags & D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_ALLOW_RENDER_TARGET) != 0 && "ERROR: An attempt was made to create a RenderTargetView from a Texture2DSubResource instance, but the resource description of the associated Texture2D instance indicates that RTVs are disallowed!");
-
-			return Texture2DRenderTargetView<Format>{ *this, D3D12_TEX2D_RTV{
-				.MipSlice = GetSubResourceIndex(),
-				.PlaneSlice = 0
-			} };
-		}
-
-		template <DXGI_FORMAT Format>
-		BindlessSRVAllocation Texture2DSubResource::CreateBindlessSRV()
-		{
-			const Texture2DShaderResourceView<Format> tex2DSrv{ CreateShaderResourceView<Format>() };
-			I_GPUResource& texture2DResource = static_cast<I_GPUResource&>(GetTexture2D());
-
-			return texture2DResource.CreateBindlessSRV(tex2DSrv.CreateSRVDescription());
-		}
-	}
-}
-
-// --------------------------------------------------------------------------------------------------------------
-
 export namespace Brawler
 {
 	namespace D3D12
@@ -166,6 +113,59 @@ export namespace Brawler
 			std::optional<D3D12_CLEAR_VALUE> mOptimizedClearValue;
 			GPUResourceSpecialInitializationMethod mInitMethod;
 		};
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------
+
+namespace Brawler
+{
+	namespace D3D12
+	{
+		template <DXGI_FORMAT Format>
+		Texture2DShaderResourceView<Format> Texture2DSubResource::CreateShaderResourceView() const
+		{
+			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
+
+			return Texture2DShaderResourceView<Format>{ GetTexture2D(), D3D12_TEX2D_SRV{
+				.MostDetailedMip = GetSubResourceIndex(),
+				.MipLevels = 1,
+				.PlaneSlice = 0,
+				.ResourceMinLODClamp = 0.0f
+			} };
+		}
+
+		template <DXGI_FORMAT Format>
+		Texture2DUnorderedAccessView<Format> Texture2DSubResource::CreateUnorderedAccessView() const
+		{
+			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
+
+			return Texture2DUnorderedAccessView<Format>{ GetTexture2D(), D3D12_TEX2D_UAV{
+				.MipSlice = GetSubResourceIndex(),
+				.PlaneSlice = 0
+			} };
+		}
+
+		template <DXGI_FORMAT Format>
+		Texture2DRenderTargetView<Format> Texture2DSubResource::CreateRenderTargetView() const
+		{
+			assert(D3D12GetFormatPlaneCount(&(Util::Engine::GetD3D12Device()), GetResourceDescription().Format) == 1 && "Congratulations! You found a multi-planar texture format which isn't meant for depth/stencil textures. Have fun figuring out how to create descriptors for it~");
+			assert((GetTexture2D().GetResourceDescription().Flags & D3D12_RESOURCE_FLAGS::D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) != 0 && "ERROR: An attempt was made to create a RenderTargetView from a Texture2DSubResource instance, but the resource description of the associated Texture2D instance indicates that RTVs are disallowed!");
+
+			return Texture2DRenderTargetView<Format>{ *this, D3D12_TEX2D_RTV{
+				.MipSlice = GetSubResourceIndex(),
+				.PlaneSlice = 0
+			} };
+		}
+
+		template <DXGI_FORMAT Format>
+		BindlessSRVAllocation Texture2DSubResource::CreateBindlessSRV()
+		{
+			const Texture2DShaderResourceView<Format> tex2DSrv{ CreateShaderResourceView<Format>() };
+			I_GPUResource& texture2DResource = static_cast<I_GPUResource&>(GetTexture2D());
+
+			return texture2DResource.CreateBindlessSRV(tex2DSrv.CreateSRVDescription());
+		}
 	}
 }
 

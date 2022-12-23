@@ -19,7 +19,7 @@ export namespace Brawler
 {
 	namespace D3D12
 	{
-		class ComputeContext final : public GPUCommandContext<GPUCommandQueueType::COMPUTE>, public ComputeCapableCommandGenerator<ComputeContext>
+		class ComputeContext final : public GPUCommandContext<ComputeContext, GPUCommandQueueType::COMPUTE>, public ComputeCapableCommandGenerator<ComputeContext>
 		{
 		public:
 			ComputeContext() = default;
@@ -30,10 +30,10 @@ export namespace Brawler
 			ComputeContext(ComputeContext&& rhs) noexcept = default;
 			ComputeContext& operator=(ComputeContext&& rhs) noexcept = default;
 
-			void RecordCommandListIMPL(const std::function<void(ComputeContext&)>& recordJob) override;
+			void RecordCommandListIMPL(const std::function<void(ComputeContext&)>& recordJob);
 
 		protected:
-			void PrepareCommandListIMPL() override;
+			void PrepareCommandListIMPL();
 
 		public:
 			template <Brawler::PSOs::PSOID PSOIdentifier>
