@@ -13,7 +13,7 @@ export namespace Brawler
 		const Math::Float4x4& ViewProjectionMatrix;
 		const Math::Float4x4& InverseViewProjectionMatrix;
 		const Math::Quaternion& ViewSpaceQuaternion;
-		const Math::Float3 WorldSpaceOriginVS;
+		const Math::Float3 ViewSpaceOriginWS;
 	};
 
 	class ViewTransformUpdater
@@ -39,7 +39,7 @@ export namespace Brawler
 		Math::Float4x4 mPrevFrameViewProjectionMatrix;
 		Math::Float4x4 mPrevFrameInverseViewProjectionMatrix;
 		Math::Quaternion mPrevFrameViewSpaceQuaternion;
-		Math::Float3 mPrevFrameWorldSpaceOriginVS;
+		Math::Float3 mPrevFrameViewSpaceOriginWS;
 		std::uint32_t mNumUpdatesRemaining;
 	};
 }

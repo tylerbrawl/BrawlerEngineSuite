@@ -19,7 +19,7 @@ namespace IMPL
 		{};
 		
 		template <>
-		struct DiffuseBRDFModelInfo<uint(DiffuseBRDFModel::LAMBERTIAN_DIFFUSE)>
+		struct DiffuseBRDFModelInfo<(uint) (DiffuseBRDFModel::LAMBERTIAN_DIFFUSE)>
 		{
 			static float3 CalculateDiffuseBRDFTerm(in const BrawlerHLSL::LightingParameters lightingParams)
 			{
@@ -28,7 +28,7 @@ namespace IMPL
 		};
 
 		template <>
-		struct DiffuseBRDFModelInfo<uint(DiffuseBRDFModel::DISNEY_BURLEY)>
+		struct DiffuseBRDFModelInfo<(uint) (DiffuseBRDFModel::DISNEY_BURLEY)>
 		{
 			static float3 CalculateDiffuseBRDFTerm(in const BrawlerHLSL::LightingParameters lightingParams)
 			{
@@ -59,8 +59,8 @@ namespace IMPL
 				const float f_d90 = 0.5f + (2.0f * linearRoughness * (lightingParams.LDotH * lightingParams.LDotH));
 				const float3 F_D90 = float3(f_d90, f_d90, f_d90);
 				
-				const float lightScattering = BrawlerHLSL::BRDF::CalculateSchlickFresnel(F_D90, DIFFUSE_F0, lightingParams.NDotL);
-				const float viewScattering = BrawlerHLSL::BRDF::CalculateSchlickFresnel(F_D90, DIFFUSE_F0, lightingParams.NDotV);
+				const float3 lightScattering = BrawlerHLSL::BRDF::CalculateSchlickFresnel(F_D90, DIFFUSE_F0, lightingParams.NDotL);
+				const float3 viewScattering = BrawlerHLSL::BRDF::CalculateSchlickFresnel(F_D90, DIFFUSE_F0, lightingParams.NDotV);
 				
 				const float3 lambertianDiffuse = (lightingParams.SubsurfaceAlbedo * BrawlerHLSL::INVERSE_PI);
 				
@@ -69,7 +69,7 @@ namespace IMPL
 		};
 
 		template <>
-		struct DiffuseBRDFModelInfo<uint(DiffuseBRDFModel::DISNEY_RENORMALIZED)>
+		struct DiffuseBRDFModelInfo<(uint) (DiffuseBRDFModel::DISNEY_RENORMALIZED)>
 		{
 			static float3 CalculateDiffuseBRDFTerm(in const BrawlerHLSL::LightingParameters lightingParams)
 			{
@@ -85,8 +85,8 @@ namespace IMPL
 				const float f_d90 = energyBias + (2.0f * linearRoughness * (lightingParams.LDotH * lightingParams.LDotH));
 				const float3 F_D90 = float3(f_d90, f_d90, f_d90);
 				
-				const float lightScattering = BrawlerHLSL::BRDF::CalculateSchlickFresnel(F_D90, DIFFUSE_F0, lightingParams.NDotL);
-				const float viewScattering = BrawlerHLSL::BRDF::CalculateSchlickFresnel(F_D90, DIFFUSE_F0, lightingParams.NDotV);
+				const float3 lightScattering = BrawlerHLSL::BRDF::CalculateSchlickFresnel(F_D90, DIFFUSE_F0, lightingParams.NDotL);
+				const float3 viewScattering = BrawlerHLSL::BRDF::CalculateSchlickFresnel(F_D90, DIFFUSE_F0, lightingParams.NDotV);
 				
 				const float3 lambertianDiffuse = (lightingParams.SubsurfaceAlbedo * BrawlerHLSL::INVERSE_PI);
 				
@@ -114,7 +114,7 @@ namespace BrawlerHLSL
 	{
 		float3 CalculateDiffuseBRDFTerm(in const BrawlerHLSL::LightingParameters lightingParams)
 		{
-			return DiffuseBRDFModelInfo<uint(IMPL::BRDF::CURRENT_DIFFUSE_BRDF_MODEL)>::CalculateDiffuseBRDFTerm(lightingParams);
+			return IMPL::BRDF::DiffuseBRDFModelInfo<(uint) (IMPL::BRDF::CURRENT_DIFFUSE_BRDF_MODEL)>::CalculateDiffuseBRDFTerm(lightingParams);
 		}
 	}
 }

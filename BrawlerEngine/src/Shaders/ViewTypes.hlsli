@@ -13,26 +13,28 @@ namespace BrawlerHLSL
 		float4 CurrentFrameViewSpaceQuaternion;
 		
 		/// <summary>
-		/// This is the origin of the world space coordinate system with respect
-		/// to the view space coordinate system for the current frame. 
+		/// This is the origin of the view space coordinate system with respect
+		/// to the world space coordinate system for the current frame. 
 		/// 
-		/// It is done like this so that the values can directly be used in the 
-		/// construction of a view space matrix.
+		/// This value can be used to get the view's position in world space.
+		/// To use it in the construction of a view matrix, however, this value
+		/// must be negated.
 		/// </summary>
-		float3 CurrentFrameWorldSpaceOriginVS;
+		float3 CurrentFrameViewOriginWS;
 		
 		uint __Pad0;
 		
 		float4 PreviousFrameViewSpaceQuaternion;
 		
 		/// <summary>
-		/// This is the origin of the world space coordinate system with respect
-		/// to the view space coordinate system for the previous frame. 
+		/// This is the origin of the view space coordinate system with respect
+		/// to the world space coordinate system for the previous frame. 
 		/// 
-		/// It is done like this so that the values can directly be used in the 
-		/// construction of a view space matrix.
+		/// This value can be used to get the view's position in world space.
+		/// To use it in the construction of a view matrix, however, this value
+		/// must be negated.
 		/// </summary>
-		float3 PreviousFrameWorldSpaceOriginVS;
+		float3 PreviousFrameViewOriginWS;
 		
 		uint __Pad1;
 		

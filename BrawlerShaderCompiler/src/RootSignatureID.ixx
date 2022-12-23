@@ -8,6 +8,8 @@ export namespace Brawler
 	{
 		// Brawler Engine
 		DEFERRED_GEOMETRY_RASTER,
+		MODEL_INSTANCE_FRUSTUM_CULL,
+		DEFERRED_OPAQUE_SHADE,
 		
 		// Brawler Model Exporter
 		BC6H_BC7_COMPRESSION,

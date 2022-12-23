@@ -12,6 +12,8 @@ export namespace Brawler
 		enum class RootSignatureID
 		{
 			DEFERRED_GEOMETRY_RASTER,
+			MODEL_INSTANCE_FRUSTUM_CULL,
+			DEFERRED_OPAQUE_SHADE,
 
 			COUNT_OR_ERROR
 		};

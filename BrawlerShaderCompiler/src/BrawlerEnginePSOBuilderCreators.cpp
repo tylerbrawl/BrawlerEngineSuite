@@ -5,6 +5,7 @@ module;
 module Brawler.PSOBuilderCreators;
 import Brawler.InputLayoutFieldResolver;
 import Brawler.PerVertexIASlotDescription;
+import Brawler.ShaderCompilationFlags;
 
 namespace Brawler
 {
@@ -13,6 +14,8 @@ namespace Brawler
 		template <>
 		PSOBuilder<PSOID::DEFERRED_GEOMETRY_RASTER> CreatePSOBuilder<PSOID::DEFERRED_GEOMETRY_RASTER>()
 		{
+			// TODO: There has to be an easier way to do this...
+
 			PSOBuilder<PSOID::DEFERRED_GEOMETRY_RASTER> psoBuilder{};
 			PSOStreamType<PSOID::DEFERRED_GEOMETRY_RASTER> psoStream{};
 
@@ -20,7 +23,9 @@ namespace Brawler
 				PSOShaderFieldResolver<CD3DX12_PIPELINE_STATE_STREAM_VS> vertexShaderResolver{ ShaderCompilationParams{
 					.FilePath{ L"Shaders\\DeferredGeometryRasterVS.hlsl" },
 					.EntryPoint{ L"main" },
-					.MacroDefinitionArr{}
+
+					// We'll be using bindless SRVs.
+					.CompilationFlags = ShaderCompilationFlags::RESOURCES_MAY_ALIAS
 				} };
 
 				psoBuilder.AddPSOFieldResolver(std::move(vertexShaderResolver));
@@ -30,7 +35,9 @@ namespace Brawler
 				PSOShaderFieldResolver<CD3DX12_PIPELINE_STATE_STREAM_PS> pixelShaderResolver{ ShaderCompilationParams{
 					.FilePath{ L"Shaders\\DeferredGeometryRasterPS.hlsl" },
 					.EntryPoint{ L"main" },
-					.MacroDefinitionArr{}
+
+					// We'll be using bindless SRVs.
+					.CompilationFlags = ShaderCompilationFlags::RESOURCES_MAY_ALIAS
 				} };
 
 				psoBuilder.AddPSOFieldResolver(std::move(pixelShaderResolver));
@@ -151,6 +158,30 @@ namespace Brawler
 
 			psoBuilder.SetPSODefaultValue(std::move(psoStream));
 			return psoBuilder;
+		}
+
+		template <>
+		PSOBuilder<PSOID::MODEL_INSTANCE_FRUSTUM_CULL> CreatePSOBuilder<PSOID::MODEL_INSTANCE_FRUSTUM_CULL>()
+		{
+			return CreateGeneralComputePSOBuilder<PSOID::MODEL_INSTANCE_FRUSTUM_CULL>(ShaderCompilationParams{
+				.FilePath{ L"Shaders\\ModelInstanceFrustumCull.hlsl" },
+				.EntryPoint{ L"main" },
+
+				// We'll be using bindless SRVs.
+				.CompilationFlags = ShaderCompilationFlags::RESOURCES_MAY_ALIAS
+			});
+		}
+
+		template <>
+		PSOBuilder<PSOID::DEFERRED_OPAQUE_SHADE> CreatePSOBuilder<PSOID::DEFERRED_OPAQUE_SHADE>()
+		{
+			return CreateGeneralComputePSOBuilder<PSOID::DEFERRED_OPAQUE_SHADE>(ShaderCompilationParams{
+				.FilePath{ L"Shaders\\DeferredOpaqueShade.hlsl" },
+				.EntryPoint{ L"main" },
+
+				// We'll be using bindless SRVs.
+				.CompilationFlags = ShaderCompilationFlags::RESOURCES_MAY_ALIAS
+			});
 		}
 	}
 }

@@ -137,8 +137,8 @@ namespace BrawlerHLSL
 			// h = (l + v) / ||(l + v)||
 			
 			const float3 fresnelReflectance = CalculateSchlickFresnel(lightingParams.F_0, lightingParams.LDotH);
-			const float ndfFactor = NDFInfo<(uint) (IMPL::BRDF::CURRENT_SPECULAR_BRDF_NDF)>::NormalDistributionFunction(lightingParams, lightingParams.H);
-			const float maskingShadowingFactor = NDFInfo<(uint) (IMPL::BRDF::CURRENT_SPECULAR_BRDF_NDF)>::HeightCorrelatedSmithMaskingShadowing(lightingParams, lightingParams.H);
+			const float ndfFactor = IMPL::BRDF::NDFInfo<(uint) (IMPL::BRDF::CURRENT_SPECULAR_BRDF_NDF)>::NormalDistributionFunction(lightingParams, lightingParams.H);
+			const float maskingShadowingFactor = IMPL::BRDF::NDFInfo<(uint) (IMPL::BRDF::CURRENT_SPECULAR_BRDF_NDF)>::HeightCorrelatedSmithMaskingShadowing(lightingParams, lightingParams.H);
 			
 			return (fresnelReflectance * ndfFactor * maskingShadowingFactor);
 		}

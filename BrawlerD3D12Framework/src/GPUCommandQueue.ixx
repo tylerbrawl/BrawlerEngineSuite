@@ -11,6 +11,7 @@ import Brawler.D3D12.GPUCommandContextGroup;
 import Brawler.D3D12.GPUCommandContexts;
 import Util.Engine;
 import Util.General;
+import Brawler.D3D12.GPUCommandQueueContextType;
 
 export namespace Brawler
 {

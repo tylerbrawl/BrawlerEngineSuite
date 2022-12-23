@@ -10,13 +10,13 @@ import Brawler.SortedVector;
 import Brawler.D3D12.FrameGraphResourceDependency;
 import Brawler.D3D12.GPUCommandQueueType;
 import Brawler.CompositeEnum;
+import Brawler.D3D12.I_GPUResource;
 
 export namespace Brawler
 {
 	namespace D3D12
 	{
 		class TransientGPUResourceAliasTracker;
-		class I_GPUResource;
 	}
 }
 

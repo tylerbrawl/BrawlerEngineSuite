@@ -4,6 +4,7 @@ module;
 #include <filesystem>
 
 export module Brawler.ShaderCompilationParams;
+import Brawler.ShaderCompilationFlags;
 
 export namespace Brawler
 {
@@ -31,5 +32,14 @@ export namespace Brawler
 		/// be added during shader compilation.
 		/// </summary>
 		std::vector<HLSLPreprocessorMacro> MacroDefinitionArr;
+
+		/// <summary>
+		/// This is a bitwise-OR combination of ShaderCompilationFlags instances which
+		/// control the shader compilation process. For most shaders, this can be left to
+		/// the default value. There are, however, some notable exceptions:
+		/// 
+		///   - When using bindless SRVs, be sure to add the RESOURCES_MAY_ALIAS flag.
+		/// </summary>
+		ShaderCompilationFlags CompilationFlags;
 	};
 }

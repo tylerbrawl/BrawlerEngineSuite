@@ -3,6 +3,7 @@ module;
 #include <string_view>
 #include <vector>
 #include <optional>
+#include <cassert>
 #include "DxDef.h"
 
 export module Brawler.InputLayoutFieldResolver;

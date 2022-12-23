@@ -15,6 +15,7 @@ namespace Brawler
 		class ShaderResourceView;
 
 		template <DXGI_FORMAT ToFormat, DXGI_FORMAT FromFormat, D3D12_SRV_DIMENSION ViewDimension>
+			requires (Util::D3D12::IsSRVRTVDSVResourceCastLegal(FromFormat, ToFormat))
 		ShaderResourceView<ToFormat, ViewDimension> ReinterpretResourceCast(const ShaderResourceView<FromFormat, ViewDimension>& srcSRV);
 
 		template <DXGI_FORMAT Format, D3D12_SRV_DIMENSION ViewDimension>
@@ -39,6 +40,7 @@ export namespace Brawler
 		{
 		private:
 			template <DXGI_FORMAT ToFormat, DXGI_FORMAT FromFormat>
+				requires (Util::D3D12::IsSRVRTVDSVResourceCastLegal(FromFormat, ToFormat))
 			friend ShaderResourceView<ToFormat, ViewDimension> ReinterpretResourceCast(const ShaderResourceView<FromFormat, ViewDimension>& srcSrv);
 
 		private:
@@ -153,16 +155,27 @@ export namespace Brawler
 {
 	namespace D3D12
 	{
+		// An internal compiler error (ICE) in the MSVC is preventing us from doing a static_assert on the value
+		// of Util::D3D12::IsSRVRTVDSVResourceCastLegal(). To get the original behavior, we now define the function
+		// twice, but with different constraints. If the resource cast is legal, then the original function is
+		// used; otherwise, a dummy function is used which does a static_assert that always fires when triggered.
+		
 		template <DXGI_FORMAT ToFormat, DXGI_FORMAT FromFormat, D3D12_SRV_DIMENSION ViewDimension>
+			requires (Util::D3D12::IsSRVRTVDSVResourceCastLegal(FromFormat, ToFormat))
 		ShaderResourceView<ToFormat, ViewDimension> ReinterpretResourceCast(const ShaderResourceView<FromFormat, ViewDimension>& srcSRV)
 		{
-			static_assert(Util::D3D12::IsSRVRTVDSVResourceCastLegal(FromFormat, ToFormat), "ERROR: An attempt was made to cast a resource to a different DXGI_FORMAT, but this cast is considered illegal! (Don't bother looking online for the casting rules. Just check the comments in D3D12UtilFormats.ixx.)");
-
 			ShaderResourceView<ToFormat, ViewDimension> castResultSRV{};
 			castResultSRV.mResourcePtr = srcSRV.mResourcePtr;
 			castResultSRV.mViewDesc = srcSRV.mViewDesc;
 
 			return castResultSRV;
+		}
+
+		template <DXGI_FORMAT ToFormat, DXGI_FORMAT FromFormat, D3D12_SRV_DIMENSION ViewDimension>
+			requires (!Util::D3D12::IsSRVRTVDSVResourceCastLegal(FromFormat, ToFormat))
+		ShaderResourceView<ToFormat, ViewDimension> ReinterpretResourceCast(const ShaderResourceView<FromFormat, ViewDimension>&)
+		{
+			static_assert(sizeof(ToFormat) != sizeof(ToFormat), "ERROR: An attempt was made to cast a resource to a different DXGI_FORMAT, but this cast is considered illegal! (Don't bother looking online for the casting rules. Just check the comments in D3D12UtilFormats.ixx.)");
 		}
 	}
 }

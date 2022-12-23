@@ -46,25 +46,28 @@ export namespace Brawler
 			DirectX::XMFLOAT4 CurrentFrameViewSpaceQuaternion;
 
 			/// <summary>
-			/// This is the origin of the world space coordinate system with respect
-			/// to the view space coordinate system for the current frame. 
+			/// This is the origin of the view space coordinate system with respect
+			/// to the world space coordinate system for the current frame. 
 			/// 
-			/// It is done like this so that the values can directly be used in the 
-			/// construction of a view space matrix.
+			/// This value can be used to get the view's position in world space.
+			/// To use it in the construction of a view matrix, however, this value
+			/// must be negated.
 			/// </summary>
-			DirectX::XMFLOAT3 CurrentFrameWorldSpaceOriginVS;
+			DirectX::XMFLOAT3 CurrentFrameViewOriginWS;
+
 			std::uint32_t __Pad0;
 
 			DirectX::XMFLOAT4 PreviousFrameViewSpaceQuaternion;
 
 			/// <summary>
-			/// This is the origin of the world space coordinate system with respect
-			/// to the view space coordinate system for the previous frame. 
+			/// This is the origin of the view space coordinate system with respect
+			/// to the world space coordinate system for the previous frame. 
 			/// 
-			/// It is done like this so that the values can directly be used in the 
-			/// construction of a view space matrix.
+			/// This value can be used to get the view's position in world space.
+			/// To use it in the construction of a view matrix, however, this value
+			/// must be negated.
 			/// </summary>
-			DirectX::XMFLOAT3 PreviousFrameWorldSpaceOriginVS;
+			DirectX::XMFLOAT3 PreviousFrameViewOriginWS;
 
 			std::uint32_t __Pad1;
 		};

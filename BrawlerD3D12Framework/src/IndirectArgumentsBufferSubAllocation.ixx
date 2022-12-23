@@ -62,7 +62,7 @@ export namespace Brawler
 		class IndirectArgumentsBufferSubAllocation final : public I_BufferSubAllocation, public IndirectArgumentsViewGenerator<IndirectArgumentsBufferSubAllocation<CSIdentifier, CommandCount>>, private CommandCountContainer<CommandCount>
 		{
 		public:
-			using IndirectArgumentsType = CommandSignatures::IndirectArgumentsType<CSIdentifier>;
+			using CommandSignatureType = CommandSignatures::CommandSignatureType<CSIdentifier>;
 
 		public:
 			IndirectArgumentsBufferSubAllocation() requires (CommandCount != DYNAMIC_EXTENT) = default;
@@ -82,8 +82,8 @@ export namespace Brawler
 			std::size_t GetSubAllocationSize() const override;
 			std::size_t GetRequiredDataPlacementAlignment() const override;
 
-			void WriteIndirectArgumentsData(const std::size_t startElementIndex, const std::span<const IndirectArgumentsType> srcDataSpan) const;
-			void ReadIndirectArgumentsData(const std::size_t startElementIndex, const std::span<IndirectArgumentsType> destDataSpan) const;
+			void WriteIndirectArgumentsData(const std::size_t startElementIndex, const std::span<const CommandSignatureType> srcDataSpan) const;
+			void ReadIndirectArgumentsData(const std::size_t startElementIndex, const std::span<CommandSignatureType> destDataSpan) const;
 
 			std::size_t GetCommandCount() const;
 		};
@@ -101,7 +101,7 @@ export namespace Brawler
 		class IndirectArgumentsBufferSnapshot final : public I_BufferSnapshot, public IndirectArgumentsViewGenerator<IndirectArgumentsBufferSnapshot<CSIdentifier, CommandCount>>, private CommandCountContainer<CommandCount>
 		{
 		public:
-			using IndirectArgumentsType = CommandSignatures::IndirectArgumentsType<CSIdentifier>;
+			using CommandSignatureType = CommandSignatures::CommandSignatureType<CSIdentifier>;
 
 		public:
 			explicit IndirectArgumentsBufferSnapshot(const IndirectArgumentsBufferSubAllocation<CSIdentifier, CommandCount>& iaBufferSubAllocation) requires (CommandCount != DYNAMIC_EXTENT) :
@@ -145,11 +145,11 @@ namespace Brawler
 			// Try to solve for this value at compile time, if possible.
 			if constexpr (CommandCount != DYNAMIC_EXTENT)
 			{
-				static constexpr std::size_t SUB_ALLOCATION_SIZE = Util::Math::AlignToPowerOfTwo(sizeof(IndirectArgumentsType) * CommandCountContainer<CommandCount>::GetCommandCount(), sizeof(std::uint32_t));
+				static constexpr std::size_t SUB_ALLOCATION_SIZE = Util::Math::AlignToPowerOfTwo(sizeof(CommandSignatureType) * CommandCountContainer<CommandCount>::GetCommandCount(), sizeof(std::uint32_t));
 				return SUB_ALLOCATION_SIZE;
 			}
 			else
-				return Util::Math::AlignToPowerOfTwo(sizeof(IndirectArgumentsType) * GetCommandCount(), sizeof(std::uint32_t));
+				return Util::Math::AlignToPowerOfTwo(sizeof(CommandSignatureType) * GetCommandCount(), sizeof(std::uint32_t));
 		}
 
 		template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount>
@@ -166,27 +166,27 @@ namespace Brawler
 			//
 			// We thus choose the lowest possible placement alignment which satisfies both constraints
 			// at compile time.
-			static constexpr std::size_t DATA_PLACEMENT_ALIGNMENT = std::lcm(sizeof(IndirectArgumentsType), 16);
+			static constexpr std::size_t DATA_PLACEMENT_ALIGNMENT = std::lcm(sizeof(CommandSignatureType), 16);
 			return DATA_PLACEMENT_ALIGNMENT;
 		}
 
 		template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount>
 			requires (CSIdentifier != CommandSignatures::CommandSignatureID::COUNT_OR_ERROR)
-		void IndirectArgumentsBufferSubAllocation<CSIdentifier, CommandCount>::WriteIndirectArgumentsData(const std::size_t startElementIndex, const std::span<const IndirectArgumentsType> srcDataSpan) const
+		void IndirectArgumentsBufferSubAllocation<CSIdentifier, CommandCount>::WriteIndirectArgumentsData(const std::size_t startElementIndex, const std::span<const CommandSignatureType> srcDataSpan) const
 		{
 			assert(startElementIndex + srcDataSpan.size() <= GetCommandCount() && "ERROR: An out-of-bounds destination data range was specified in a call to IndirectArgumentsBufferSubAllocation::WriteIndirectArgumentsData()!");
 
-			const std::size_t offsetFromSubAllocationStart = (sizeof(IndirectArgumentsType) * startElementIndex);
+			const std::size_t offsetFromSubAllocationStart = (sizeof(CommandSignatureType) * startElementIndex);
 			WriteToBuffer(srcDataSpan, offsetFromSubAllocationStart);
 		}
 
 		template <CommandSignatures::CommandSignatureID CSIdentifier, std::size_t CommandCount>
 			requires (CSIdentifier != CommandSignatures::CommandSignatureID::COUNT_OR_ERROR)
-		void IndirectArgumentsBufferSubAllocation<CSIdentifier, CommandCount>::ReadIndirectArgumentsData(const std::size_t startElementIndex, const std::span<IndirectArgumentsType> destDataSpan) const
+		void IndirectArgumentsBufferSubAllocation<CSIdentifier, CommandCount>::ReadIndirectArgumentsData(const std::size_t startElementIndex, const std::span<CommandSignatureType> destDataSpan) const
 		{
 			assert(startElementIndex + destDataSpan.size() <= GetCommandCount() && "ERROR: An out-of-bounds source data range was specified in a call to IndirectArgumentsBufferSubAllocation::ReadIndirectArgumentsData()!");
 
-			const std::size_t offsetFromSubAllocationStart = (sizeof(IndirectArgumentsType) * startElementIndex);
+			const std::size_t offsetFromSubAllocationStart = (sizeof(CommandSignatureType) * startElementIndex);
 			ReadFromBuffer(destDataSpan, offsetFromSubAllocationStart);
 		}
 
@@ -210,13 +210,13 @@ namespace Brawler
 		std::size_t IndirectArgumentsBufferSnapshot<CSIdentifier, CommandCount>::GetCommandCount() const
 		{
 			// Rather than inferring the command count from the sub-allocation size and the size of
-			// IndirectArgumentsType as is typically done in other snapshot types, the IndirectArgumentsBufferSnapshot
+			// CommandSignatureType as is typically done in other snapshot types, the IndirectArgumentsBufferSnapshot
 			// also has a CommandCountContainer which may contain the correct command count. We do this because
 			// we align the size of the sub-allocation to four bytes to ensure correctness when creating raw buffer
 			// views.
 			//
 			// If we don't explicitly save the actual command count, then we won't be able to get it back
-			// in the case where sizeof(IndirectArgumentsType) < sizeof(std::uint32_t).
+			// in the case where sizeof(CommandSignatureType) < sizeof(std::uint32_t).
 
 			return CommandCountContainer<CommandCount>::GetCommandCount();
 		}

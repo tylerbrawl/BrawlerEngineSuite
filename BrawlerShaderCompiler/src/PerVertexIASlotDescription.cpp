@@ -3,6 +3,7 @@ module;
 #include <span>
 #include <string_view>
 #include <algorithm>
+#include <cassert>
 #include "DxDef.h"
 
 module Brawler.PerVertexIASlotDescription;

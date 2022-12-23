@@ -44,7 +44,7 @@ namespace Brawler
 		mPrevFrameViewProjectionMatrix(transformInfo.ViewProjectionMatrix),
 		mPrevFrameInverseViewProjectionMatrix(transformInfo.InverseViewProjectionMatrix),
 		mPrevFrameViewSpaceQuaternion(transformInfo.ViewSpaceQuaternion),
-		mPrevFrameWorldSpaceOriginVS(transformInfo.WorldSpaceOriginVS),
+		mPrevFrameViewSpaceOriginWS(transformInfo.ViewSpaceOriginWS),
 		mNumUpdatesRemaining(1)
 	{
 		[[maybe_unused]] const bool wasReservationSuccessful = GPUSceneManager::GetInstance().GetGPUSceneBufferResource<GPUSceneBufferID::VIEW_TRANSFORM_DATA_BUFFER>().AssignReservation(mViewTransformBufferSubAllocation);
@@ -56,7 +56,7 @@ namespace Brawler
 		mPrevFrameViewProjectionMatrix = prevFrameTransformInfo.ViewProjectionMatrix;
 		mPrevFrameInverseViewProjectionMatrix = prevFrameTransformInfo.InverseViewProjectionMatrix;
 		mPrevFrameViewSpaceQuaternion = prevFrameTransformInfo.ViewSpaceQuaternion;
-		mPrevFrameWorldSpaceOriginVS = prevFrameTransformInfo.WorldSpaceOriginVS;
+		mPrevFrameViewSpaceOriginWS = prevFrameTransformInfo.ViewSpaceOriginWS;
 	}
 
 	void ViewTransformUpdater::CheckForGPUSceneBufferUpdate(const ViewTransformInfo& currFrameTransformInfo)
@@ -70,9 +70,9 @@ namespace Brawler
 				.PreviousFrameViewProjectionMatrix{ ConvertMatrix4x4(mPrevFrameViewProjectionMatrix) },
 				.PreviousFrameInverseViewProjectionMatrix{ ConvertMatrix4x4(mPrevFrameInverseViewProjectionMatrix) },
 				.CurrentFrameViewSpaceQuaternion{ ConvertQuaternion(currFrameTransformInfo.ViewSpaceQuaternion) },
-				.CurrentFrameWorldSpaceOriginVS{ ConvertFloat3(currFrameTransformInfo.WorldSpaceOriginVS) },
+				.CurrentFrameViewOriginWS{ ConvertFloat3(currFrameTransformInfo.ViewSpaceOriginWS) },
 				.PreviousFrameViewSpaceQuaternion{ ConvertQuaternion(mPrevFrameViewSpaceQuaternion) },
-				.PreviousFrameWorldSpaceOriginVS{ mPrevFrameWorldSpaceOriginVS }
+				.PreviousFrameViewOriginWS{ mPrevFrameViewSpaceOriginWS }
 			};
 
 			GPUSceneBufferUpdateOperation<GPUSceneBufferID::VIEW_TRANSFORM_DATA_BUFFER> viewTransformUpdateOperation{ mViewTransformBufferSubAllocation.GetBufferCopyRegion() };

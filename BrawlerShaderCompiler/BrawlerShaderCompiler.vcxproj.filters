@@ -393,6 +393,9 @@
     <ClCompile Include="src\BrawlerEngineRootSignatureBuilderCreators.cpp">
       <Filter>Source Files\Root Signature Management</Filter>
     </ClCompile>
+    <ClCompile Include="src\ShaderCompilationFlags.ixx">
+      <Filter>Module Files\Shader Management</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DxDef.h">

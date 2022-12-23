@@ -31,12 +31,12 @@ export namespace Brawler
 
 			void InitializeDatabase();
 
-			template <CommandSignatureID CSIdentifier>
-				requires (CSIdentifier != CommandSignatureID::COUNT_OR_ERROR)
+			template <CommandSignatures::CommandSignatureID CSIdentifier>
+				requires (CSIdentifier != CommandSignatures::CommandSignatureID::COUNT_OR_ERROR)
 			Brawler::D3D12CommandSignature& GetCommandSignature();
 
-			template <CommandSignatureID CSIdentifier>
-				requires (CSIdentifier != CommandSignatureID::COUNT_OR_ERROR)
+			template <CommandSignatures::CommandSignatureID CSIdentifier>
+				requires (CSIdentifier != CommandSignatures::CommandSignatureID::COUNT_OR_ERROR)
 			const Brawler::D3D12CommandSignature& GetCommandSignature() const;
 
 		private:
@@ -51,16 +51,16 @@ namespace Brawler
 {
 	namespace D3D12
 	{
-		template <CommandSignatureDatabase::CommandSignatureID CSIdentifier>
-			requires (CSIdentifier != CommandSignatureDatabase::CommandSignatureID::COUNT_OR_ERROR)
+		template <CommandSignatures::CommandSignatureID CSIdentifier>
+			requires (CSIdentifier != CommandSignatures::CommandSignatureID::COUNT_OR_ERROR)
 		Brawler::D3D12CommandSignature& CommandSignatureDatabase::GetCommandSignature()
 		{
 			assert(mCSPtrArr[std::to_underlying(CSIdentifier)] != nullptr);
 			return *((mCSPtrArr[std::to_underlying(CSIdentifier)]).Get());
 		}
 
-		template <CommandSignatureDatabase::CommandSignatureID CSIdentifier>
-			requires (CSIdentifier != CommandSignatureDatabase::CommandSignatureID::COUNT_OR_ERROR)
+		template <CommandSignatures::CommandSignatureID CSIdentifier>
+			requires (CSIdentifier != CommandSignatures::CommandSignatureID::COUNT_OR_ERROR)
 		const Brawler::D3D12CommandSignature& CommandSignatureDatabase::GetCommandSignature() const
 		{
 			assert(mCSPtrArr[std::to_underlying(CSIdentifier)] != nullptr);

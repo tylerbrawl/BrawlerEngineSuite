@@ -3,20 +3,11 @@ module;
 
 export module Brawler.RootParameters;
 
+// Brawler Engine
 export namespace Brawler
 {
 	namespace RootParameters
 	{
-		enum class RootParameterType
-		{
-			CBV,
-			SRV,
-			UAV,
-			ROOT_CONSTANT,
-			DESCRIPTOR_TABLE
-		};
-
-		// Brawler Engine
 		enum class DeferredGeometryRaster
 		{
 			/// <summary>
@@ -27,7 +18,7 @@ export namespace Brawler
 			/// <summary>
 			/// Root Parameter 1: DescriptorTable
 			/// {
-			///		SRV BindlessResources -> Space1-Space?[t0-t499999];
+			///		VOLATILE SRV BindlessResources -> Space1-Space?[t0-t499999];
 			/// };
 			/// </summary>
 			BINDLESS_SRVS,
@@ -35,7 +26,72 @@ export namespace Brawler
 			COUNT_OR_ERROR
 		};
 
-		// Brawler Model Exporter
+		enum class ModelInstanceFrustumCull
+		{
+			/// <summary>
+			/// Root Parameter 0: RootConstants<1> FrustumCullConstants -> Space0[b0];
+			/// </summary>
+			FRUSTUM_CULL_CONSTANTS,
+
+			/// <summary>
+			/// Root Parameter 1: DescriptorTable
+			/// {
+			///		VOLATILE SRV BindlessResource -> Space1-Space?[t0-t499999];
+			/// };
+			/// </summary>
+			BINDLESS_SRVS,
+
+			/// <summary>
+			/// Root Parameter 2: DescriptorTable
+			/// {
+			///		VOLATILE UAV OutputGlobalVBIndexBuffer -> Space0[u0];
+			///		VOLATILE UAV OutputDescriptorBufferIndicesBuffer -> Space0[u1];
+			///		VOLATILE UAV OutputIndirectArgumentsBuffer -> Space0[u2];
+			/// };
+			/// </summary>
+			OUTPUT_BUFFERS_TABLE,
+
+			COUNT_OR_ERROR
+		};
+
+		enum class DeferredOpaqueShade
+		{
+			/// <summary>
+			/// Root Parameter 0: RootConstants<1> ShadingConstants -> Space0[b0];
+			/// </summary>
+			SHADING_CONSTANTS,
+
+			/// <summary>
+			/// Root Parameter 1: DescriptorTable
+			/// {
+			///		VOLATILE SRV BindlessResources -> Space1-Space?[t0-t499999];
+			/// };
+			/// </summary>
+			BINDLESS_SRVS,
+
+			/// <summary>
+			/// Root Parameter 2: DescriptorTable
+			/// {
+			///		STATIC_AT_EXECUTE SRV BaseColorRoughnessGBuffer -> Space0[t0];
+			///		STATIC_AT_EXECUTE SRV EncodedNormalGBuffer -> Space0[t1];
+			///		STATIC_AT_EXECUTE SRV MetallicGBuffer -> Space0[t2];
+			///		STATIC_AT_EXECUTE SRV DepthBuffer -> Space0[t3];
+			/// 
+			///		VOLATILE UAV OutputTexture -> Space0[u0];
+			/// };
+			/// </summary>
+			TEXTURES_TABLE,
+
+			COUNT_OR_ERROR
+		};
+	}
+}
+
+// Brawler Model Exporter
+export namespace Brawler
+{
+	namespace RootParameters
+	{
 		enum class BC6HBC7Compression
 		{
 			/// <summary>
@@ -75,7 +131,6 @@ export namespace Brawler
 			COUNT_OR_ERROR
 		};
 
-		// Brawler Model Exporter
 		enum class GenericDownsample
 		{
 			/// <summary>
@@ -96,7 +151,6 @@ export namespace Brawler
 			COUNT_OR_ERROR
 		};
 
-		// Brawler Model Exporter
 		enum class VirtualTexturePageTiling
 		{
 			/// <summary>
@@ -131,7 +185,6 @@ export namespace Brawler
 			COUNT_OR_ERROR
 		};
 
-		// Brawler Model Exporter
 		enum class VirtualTexturePageMerging
 		{
 			/// <summary>
@@ -157,8 +210,14 @@ export namespace Brawler
 
 			COUNT_OR_ERROR
 		};
+	}
+}
 
-		// Test Shader Profile
+// Test Shader Profile
+export namespace Brawler
+{
+	namespace RootParameters
+	{
 		enum class TestRootSignature
 		{
 			PARAM_0,
@@ -170,6 +229,21 @@ export namespace Brawler
 			PARAM_6,
 
 			COUNT_OR_ERROR
+		};
+	}
+}
+
+export namespace Brawler
+{
+	namespace RootParameters
+	{
+		enum class RootParameterType
+		{
+			CBV,
+			SRV,
+			UAV,
+			ROOT_CONSTANT,
+			DESCRIPTOR_TABLE
 		};
 	}
 }

@@ -33,6 +33,30 @@ namespace Brawler
 		};
 
 		template <>
+		struct RootParameterDefinition<Brawler::RootParameters::ModelInstanceFrustumCull>
+		{
+			static constexpr std::string_view ROOT_PARAMETER_ENUM_CLASS_NAME{ "ModelInstanceFrustumCull" };
+
+			static constexpr std::array<std::string_view, std::to_underlying(ModelInstanceFrustumCull::COUNT_OR_ERROR)> ROOT_PARAMETER_ENUM_VALUE_STRINGS_ARR{
+				"FRUSTUM_CULL_CONSTANTS",
+				"BINDLESS_SRVS",
+				"OUTPUT_BUFFERS_TABLE"
+			};
+		};
+
+		template <>
+		struct RootParameterDefinition<Brawler::RootParameters::DeferredOpaqueShade>
+		{
+			static constexpr std::string_view ROOT_PARAMETER_ENUM_CLASS_NAME{ "DeferredOpaqueShade" };
+
+			static constexpr std::array<std::string_view, std::to_underlying(DeferredOpaqueShade::COUNT_OR_ERROR)> ROOT_PARAMETER_ENUM_VALUE_STRINGS_ARR{
+				"SHADING_CONSTANTS",
+				"BINDLESS_SRVS",
+				"TEXTURES_TABLE"
+			};
+		};
+
+		template <>
 		struct RootParameterDefinition<Brawler::RootParameters::BC6HBC7Compression>
 		{
 			static constexpr std::string_view ROOT_PARAMETER_ENUM_CLASS_NAME{ "BC6HBC7Compression" };

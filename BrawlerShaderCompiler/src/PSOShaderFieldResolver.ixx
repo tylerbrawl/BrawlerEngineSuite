@@ -20,6 +20,7 @@ import Brawler.ThreadLocalResources;
 import Util.FileWrite;
 import Brawler.CondensedByteArrayInfo;
 import Brawler.FileStrings;
+import Brawler.ShaderCompilationFlags;
 
 namespace Brawler
 {
@@ -201,6 +202,7 @@ export namespace Brawler
 
 	private:
 		void CompileShader(const ShaderCompilationParams& params);
+		static std::vector<std::wstring_view> GetAdditionalCompilerFlags(const ShaderCompilationParams& params);
 
 	private:
 		Microsoft::WRL::ComPtr<IDxcBlob> mDebugShaderBlob;
@@ -403,6 +405,14 @@ namespace Brawler
 				}
 			}
 
+			// Check for any additional flags which need to be added.
+			{
+				const std::vector<std::wstring_view> additionalFlagsArr{ GetAdditionalCompilerFlags(params) };
+
+				for (const auto flagStr : additionalFlagsArr)
+					compileParamsCStrArr.push_back(flagStr.data());
+			}
+
 			// Compile the shader.
 			Microsoft::WRL::ComPtr<IDxcResult> compileResults{};
 			CheckHRESULT(Util::Threading::GetThreadLocalResources().DXCShaderCompiler->Compile(
@@ -445,5 +455,22 @@ namespace Brawler
 
 		mDebugShaderBlob = compilationLambda.operator()<ShaderCompilationMode::DEBUG>(params, sourceBuffer, *(hlslIncludeHandler.Get()));
 		mReleaseShaderBlob = compilationLambda.operator()<ShaderCompilationMode::RELEASE>(params, sourceBuffer, *(hlslIncludeHandler.Get()));
+	}
+
+	template <typename PSOSubObjectType>
+		requires IMPL::IsRecognizedShaderType<PSOSubObjectType>
+	std::vector<std::wstring_view> PSOShaderFieldResolver<PSOSubObjectType>::GetAdditionalCompilerFlags(const ShaderCompilationParams& params)
+	{
+		std::vector<std::wstring_view> additionalFlagsArr{};
+
+		// Add the "-res-may-alias" flag if specified. This is needed in some instances for
+		// correctness, but since it can impact performance, we don't include it by default.
+		if ((params.CompilationFlags & ShaderCompilationFlags::RESOURCES_MAY_ALIAS) == ShaderCompilationFlags::RESOURCES_MAY_ALIAS)
+		{
+			static constexpr std::wstring_view RESOURCES_MAY_ALIAS_FLAG_STR{ L"-res-may-alias" };
+			additionalFlagsArr.push_back(RESOURCES_MAY_ALIAS_FLAG_STR);
+		}
+
+		return additionalFlagsArr;
 	}
 }

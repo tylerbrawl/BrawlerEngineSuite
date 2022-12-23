@@ -17,6 +17,7 @@ namespace Brawler
 		class UnorderedAccessView;
 
 		template <DXGI_FORMAT ToFormat, DXGI_FORMAT FromFormat, D3D12_UAV_DIMENSION ViewDimension>
+			requires (Util::D3D12::IsUAVResourceCastLegal(FromFormat, ToFormat))
 		UnorderedAccessView<ToFormat, ViewDimension> ReinterpretResourceCast(const UnorderedAccessView<FromFormat, ViewDimension>& srcUav);
 
 		template <DXGI_FORMAT Format, D3D12_UAV_DIMENSION ViewDimension>
@@ -82,6 +83,7 @@ export namespace Brawler
 
 		private:
 			template <DXGI_FORMAT ToFormat, DXGI_FORMAT FromFormat>
+				requires (Util::D3D12::IsUAVResourceCastLegal(FromFormat, ToFormat))
 			friend UnorderedAccessView<ToFormat, ViewDimension> ReinterpretResourceCast(const UnorderedAccessView<FromFormat, ViewDimension>& srcUav);
 
 		public:
@@ -200,16 +202,27 @@ export namespace Brawler
 {
 	namespace D3D12
 	{
+		// An internal compiler error (ICE) in the MSVC is preventing us from doing a static_assert on the value
+		// of Util::D3D12::IsUAVResourceCastLegal(). To get the original behavior, we now define the function
+		// twice, but with different constraints. If the resource cast is legal, then the original function is
+		// used; otherwise, a dummy function is used which does a static_assert that always fires when triggered.
+
 		template <DXGI_FORMAT ToFormat, DXGI_FORMAT FromFormat, D3D12_UAV_DIMENSION ViewDimension>
+			requires (Util::D3D12::IsUAVResourceCastLegal(FromFormat, ToFormat))
 		UnorderedAccessView<ToFormat, ViewDimension> ReinterpretResourceCast(const UnorderedAccessView<FromFormat, ViewDimension>& srcUav)
 		{
-			static_assert(Util::D3D12::IsUAVResourceCastLegal(FromFormat, ToFormat), "ERROR: An attempt was made to cast a resource to a different DXGI_FORMAT, but this cast is considered illegal! (Don't bother looking online for the casting rules. Just check the comments in D3D12UtilFormats.ixx.)");
-
 			UnorderedAccessView<ToFormat, ViewDimension> destUav{};
 			destUav.mOwningResourcePtr = srcUav.mOwningResourcePtr;
 			destUav.mViewDesc = srcUav.mViewDesc;
 
 			return destUav;
+		}
+
+		template <DXGI_FORMAT ToFormat, DXGI_FORMAT FromFormat, D3D12_UAV_DIMENSION ViewDimension>
+			requires (!Util::D3D12::IsUAVResourceCastLegal(FromFormat, ToFormat))
+		UnorderedAccessView<ToFormat, ViewDimension> ReinterpretResourceCast(const UnorderedAccessView<FromFormat, ViewDimension>& srcUav)
+		{
+			static_assert(sizeof(ToFormat) != sizeof(ToFormat), "ERROR: An attempt was made to cast a resource to a different DXGI_FORMAT, but this cast is considered illegal! (Don't bother looking online for the casting rules. Just check the comments in D3D12UtilFormats.ixx.)");
 		}
 	}
 }

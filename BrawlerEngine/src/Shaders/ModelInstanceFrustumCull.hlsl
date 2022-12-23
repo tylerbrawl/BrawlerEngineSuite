@@ -74,7 +74,7 @@ bool IsPointWithinViewFrustum(in const float4 positionCS)
 
 struct IndexBufferWriteInfo
 {
-	Buffer<uint> IndexBuffer;
+	uint IndexBufferID;
 	uint MeshIndexCount;
 	uint ModelInstanceID;
 	uint MeshDescriptorBufferID;
@@ -83,6 +83,7 @@ struct IndexBufferWriteInfo
 
 void OutputIndexBufferContents(in const IndexBufferWriteInfo writeInfo)
 {
+	Buffer<uint> srcIndexBuffer = BrawlerHLSL::Bindless::GetGlobalUInt32Buffer(writeInfo.IndexBufferID);
 	const uint packedDescriptorBufferIndices = WaveReadLaneFirst((writeInfo.ModelInstanceID << 16) | writeInfo.MeshDescriptorBufferID);
 	
 	const uint activeLaneIndex = WavePrefixCountBits(true);
@@ -92,7 +93,7 @@ void OutputIndexBufferContents(in const IndexBufferWriteInfo writeInfo)
 	for (uint i = activeLaneIndex; i < writeInfo.MeshIndexCount; i += numActiveLanes)
 	{
 		const uint currLaneOutputIndex = (writeInfo.StartingOutputIndex + i);
-		const uint globalVertexBufferIndex = writeInfo.IndexBuffer[NonUniformResourceIndex(i)];
+		const uint globalVertexBufferIndex = srcIndexBuffer[NonUniformResourceIndex(i)];
 		
 		OutputGlobalVBIndexBuffer[NonUniformResourceIndex(currLaneOutputIndex)] = globalVertexBufferIndex;
 		OutputDescriptorBufferIndicesBuffer[NonUniformResourceIndex(currLaneOutputIndex)] = packedDescriptorBufferIndices;
@@ -106,6 +107,18 @@ struct TriangleWriteInfo
 	uint MeshDescriptorBufferID;
 	bool ShouldMeshBeDrawn;
 };
+
+IndexBufferWriteInfo CreateUniformIndexBufferWriteInfo(in const uint relevantLaneID, in const IndexBufferWriteInfo currLaneWriteInfo)
+{
+	IndexBufferWriteInfo uniformWriteInfo;
+	uniformWriteInfo.IndexBufferID = WaveReadLaneAt(currLaneWriteInfo.IndexBufferID, relevantLaneID);
+	uniformWriteInfo.MeshIndexCount = WaveReadLaneAt(currLaneWriteInfo.MeshIndexCount, relevantLaneID);
+	uniformWriteInfo.ModelInstanceID = WaveReadLaneAt(currLaneWriteInfo.ModelInstanceID, relevantLaneID);
+	uniformWriteInfo.MeshDescriptorBufferID = WaveReadLaneAt(currLaneWriteInfo.MeshDescriptorBufferID, relevantLaneID);
+	uniformWriteInfo.StartingOutputIndex = WaveReadLaneAt(currLaneWriteInfo.StartingOutputIndex, relevantLaneID);
+	
+	return uniformWriteInfo;
+}
 
 void WriteMeshTriangles(in const TriangleWriteInfo writeInfo)
 {
@@ -128,7 +141,7 @@ void WriteMeshTriangles(in const TriangleWriteInfo writeInfo)
 		OutputIndirectArgumentsBuffer.InterlockedAdd(0, currWaveIndexCount, startIndexForWave);
 	
 	IndexBufferWriteInfo indexBufferWriteInfo;
-	indexBufferWriteInfo.IndexBuffer = meshIndexBuffer;
+	indexBufferWriteInfo.IndexBufferID = indexBufferID;
 	indexBufferWriteInfo.MeshIndexCount = currLaneIndexCount;
 	indexBufferWriteInfo.ModelInstanceID = writeInfo.ModelInstanceID;
 	indexBufferWriteInfo.MeshDescriptorBufferID = writeInfo.MeshDescriptorBufferID;
@@ -142,11 +155,11 @@ void WriteMeshTriangles(in const TriangleWriteInfo writeInfo)
 	{
 		const uint relevantLaneID = WaveReadLaneFirst(firstbitlow(lanesWithDrawnMeshesBallot.w));
 		
-		const IndexBufferWriteInfo relevantIBWriteInfo = WaveReadLaneAt(indexBufferWriteInfo, relevantLaneID);
+		const IndexBufferWriteInfo relevantIBWriteInfo = CreateUniformIndexBufferWriteInfo(relevantLaneID, indexBufferWriteInfo);
 		OutputIndexBufferContents(relevantIBWriteInfo);
 		
 		indexBufferWriteInfo.StartingOutputIndex += relevantIBWriteInfo.MeshIndexCount;
-		lanesWithDrawnMeshesBallot.w &= ~(1 << relevantLaneID);
+		lanesWithDrawnMeshesBallot.w &= ~(1u << relevantLaneID);
 	}
 	
 	while (lanesWithDrawnMeshesBallot.z != 0)
@@ -154,11 +167,11 @@ void WriteMeshTriangles(in const TriangleWriteInfo writeInfo)
 		const uint relevantSubsetID = WaveReadLaneFirst(firstbitlow(lanesWithDrawnMeshesBallot.z));
 		const uint relevantLaneID = (relevantSubsetID + 32);
 		
-		const IndexBufferWriteInfo relevantIBWriteInfo = WaveReadLaneAt(indexBufferWriteInfo, relevantLaneID);
+		const IndexBufferWriteInfo relevantIBWriteInfo = CreateUniformIndexBufferWriteInfo(relevantLaneID, indexBufferWriteInfo);
 		OutputIndexBufferContents(relevantIBWriteInfo);
 		
 		indexBufferWriteInfo.StartingOutputIndex += relevantIBWriteInfo.MeshIndexCount;
-		lanesWithDrawnMeshesBallot.z &= ~(1 << relevantSubsetID);
+		lanesWithDrawnMeshesBallot.z &= ~(1u << relevantSubsetID);
 	}
 	
 	while (lanesWithDrawnMeshesBallot.y != 0)
@@ -166,11 +179,11 @@ void WriteMeshTriangles(in const TriangleWriteInfo writeInfo)
 		const uint relevantSubsetID = WaveReadLaneFirst(firstbitlow(lanesWithDrawnMeshesBallot.y));
 		const uint relevantLaneID = (relevantSubsetID + 64);
 		
-		const IndexBufferWriteInfo relevantIBWriteInfo = WaveReadLaneAt(indexBufferWriteInfo, relevantLaneID);
+		const IndexBufferWriteInfo relevantIBWriteInfo = CreateUniformIndexBufferWriteInfo(relevantLaneID, indexBufferWriteInfo);
 		OutputIndexBufferContents(relevantIBWriteInfo);
 		
 		indexBufferWriteInfo.StartingOutputIndex += relevantIBWriteInfo.MeshIndexCount;
-		lanesWithDrawnMeshesBallot.y &= ~(1 << relevantSubsetID);
+		lanesWithDrawnMeshesBallot.y &= ~(1u << relevantSubsetID);
 	}
 	
 	while (lanesWithDrawnMeshesBallot.x != 0)
@@ -178,11 +191,11 @@ void WriteMeshTriangles(in const TriangleWriteInfo writeInfo)
 		const uint relevantSubsetID = WaveReadLaneFirst(firstbitlow(lanesWithDrawnMeshesBallot.x));
 		const uint relevantLaneID = (relevantSubsetID + 96);
 		
-		const IndexBufferWriteInfo relevantIBWriteInfo = WaveReadLaneAt(indexBufferWriteInfo, relevantLaneID);
+		const IndexBufferWriteInfo relevantIBWriteInfo = CreateUniformIndexBufferWriteInfo(relevantLaneID, indexBufferWriteInfo);
 		OutputIndexBufferContents(relevantIBWriteInfo);
 		
 		indexBufferWriteInfo.StartingOutputIndex += relevantIBWriteInfo.MeshIndexCount;
-		lanesWithDrawnMeshesBallot.x &= ~(1 << relevantSubsetID);
+		lanesWithDrawnMeshesBallot.x &= ~(1u << relevantSubsetID);
 	}
 }
 
@@ -213,7 +226,7 @@ void main(in const ThreadInfo threadInfo)
 	
 	const float4x4 worldMatrix = Util::Transform::ExpandWorldMatrix(modelInstanceTransformData.CurrentFrameWorldMatrix);
 	
-	const BrawlerHLSL::ViewDescriptor viewDescriptor = WaveReadLaneFirst(BrawlerHLSL::Bindless::GetGlobalViewDescriptor(ModelInstanceFrustumCullConstants.ViewID));
+	const BrawlerHLSL::ViewDescriptor viewDescriptor = BrawlerHLSL::Bindless::GetGlobalViewDescriptor(ModelInstanceFrustumCullConstants.ViewID);
 	const float4x4 viewProjectionMatrix = WaveReadLaneFirst(BrawlerHLSL::Bindless::GetGlobalViewTransformData(viewDescriptor.ViewTransformBufferIndex).CurrentFrameViewProjectionMatrix);
 	
 	const float4x4 worldViewProjectionMatrix = mul(worldMatrix, viewProjectionMatrix);

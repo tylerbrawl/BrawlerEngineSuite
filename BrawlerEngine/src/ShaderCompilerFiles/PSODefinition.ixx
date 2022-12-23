@@ -8,6 +8,8 @@ export module Brawler.PSOs.PSODefinition;
 
 import :PSODefinitionBase;
 export import :DEFERRED_GEOMETRY_RASTER;
+export import :MODEL_INSTANCE_FRUSTUM_CULL;
+export import :DEFERRED_OPAQUE_SHADE;
 
 import Brawler.PSOs.PSOID;
 import Brawler.RootSignatures.RootSignatureID;

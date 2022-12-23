@@ -60,6 +60,22 @@ namespace Brawler
 	};
 
 	template <>
+	struct PSODefinition<PSOID::MODEL_INSTANCE_FRUSTUM_CULL>
+	{
+		static constexpr std::string_view PSO_ID_STRING{ "MODEL_INSTANCE_FRUSTUM_CULL" };
+		static constexpr RootSignatureID ROOT_SIGNATURE_ID = RootSignatureID::MODEL_INSTANCE_FRUSTUM_CULL;
+		using PSOStreamType = IMPL::StandardComputePSOStream;
+	};
+
+	template <>
+	struct PSODefinition<PSOID::DEFERRED_OPAQUE_SHADE>
+	{
+		static constexpr std::string_view PSO_ID_STRING{ "DEFERRED_OPAQUE_SHADE" };
+		static constexpr RootSignatureID ROOT_SIGNATURE_ID = RootSignatureID::DEFERRED_OPAQUE_SHADE;
+		using PSOStreamType = IMPL::StandardComputePSOStream;
+	};
+
+	template <>
 	struct PSODefinition<PSOID::BC7_TRY_MODE_456>
 	{
 		static constexpr std::string_view PSO_ID_STRING{ "BC7_TRY_MODE_456" };

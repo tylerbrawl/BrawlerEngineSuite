@@ -476,11 +476,14 @@ namespace Brawler
 
 	ViewTransformInfo ViewComponent::GetViewTransformInfo() const
 	{
+		const Math::Float3 worldSpaceOriginVS{ mViewMatrix.GetElement(3, 0), mViewMatrix.GetElement(3, 1), mViewMatrix.GetElement(3, 2) };
+		const Math::Float3 viewSpaceOriginWS{ worldSpaceOriginVS * -1.0f };
+		
 		return ViewTransformInfo{
 			.ViewProjectionMatrix{ mViewProjectionMatrix },
 			.InverseViewProjectionMatrix{ mInverseViewProjectionMatrix },
 			.ViewSpaceQuaternion{ mViewSpaceQuaternion },
-			.WorldSpaceOriginVS{ mViewMatrix.GetElement(3, 0), mViewMatrix.GetElement(3, 1), mViewMatrix.GetElement(3, 2) }
+			.ViewSpaceOriginWS{ viewSpaceOriginWS }
 		};
 	}
 }

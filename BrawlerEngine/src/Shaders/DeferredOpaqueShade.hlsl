@@ -29,20 +29,20 @@ static const uint NUM_THREADS_Y = 8;
 struct WorldSpacePositionParams
 {
 	uint2 DispatchThreadID;
-	BrawlerHLSL::ViewTransformData ViewTransform;
-	BrawlerHLSL::ViewDimensionsData ViewDimensions;
+	float4x4 InverseViewProjectionMatrix;
+	float2 InverseViewDimensions;
 };
 
 float3 GetWorldSpacePosition(in const WorldSpacePositionParams params)
 {
 	// Get the current lane's coordinates in NDC space.
-	float4 currLanePosNDC = float4((float2(params.DispatchThreadID) + 0.5f) * params.ViewDimensions.InverseViewDimensions, DepthBuffer[NonUniformResourceIndex(params.DispatchThreadID)], 1.0f);
+	float4 currLanePosNDC = float4((float2(params.DispatchThreadID) + 0.5f) * params.InverseViewDimensions, DepthBuffer[NonUniformResourceIndex(params.DispatchThreadID)], 1.0f);
 	currLanePosNDC.xy = mad(currLanePosNDC.xy, 2.0f, -1.0f);
 	currLanePosNDC.y *= -1.0f;
 	
 	// Transform this position back into world space using the inverse view-projection
 	// matrix of the view.
-	float4 currLanePosWS = mul(currLanePosNDC, params.ViewTransform.CurrentFrameInverseViewProjectionMatrix);
+	float4 currLanePosWS = mul(currLanePosNDC, params.InverseViewProjectionMatrix);
 	
 	// Perform the perspective divide.
 	currLanePosWS.xyz /= currLanePosWS.w;
@@ -54,18 +54,20 @@ BrawlerHLSL::SurfaceParameters GetSurfaceParameters(in const uint2 dispatchThrea
 {
 	BrawlerHLSL::SurfaceParameters surfaceParams;
 	
+	const BrawlerHLSL::ViewDescriptor viewDescriptor = BrawlerHLSL::Bindless::GetGlobalViewDescriptor(ShadingConstants.ViewID);
+	const BrawlerHLSL::ViewTransformData viewTransform = BrawlerHLSL::Bindless::GetGlobalViewTransformData(viewDescriptor.ViewTransformBufferIndex);
+	const BrawlerHLSL::ViewDimensionsData viewDimensions = BrawlerHLSL::Bindless::GetGlobalViewDimensionsData(viewDescriptor.ViewDimensionsBufferIndex);
+	
 	{
-		const BrawlerHLSL::ViewDescriptor viewDescriptor = WaveReadLaneFirst(BrawlerHLSL::GetGlobalViewDescriptor(ShadingConstants.ViewID));
-		
 		WorldSpacePositionParams worldSpacePosParams;
 		worldSpacePosParams.DispatchThreadID = dispatchThreadID;
-		worldSpacePosParams.ViewTransform = WaveReadLaneFirst(BrawlerHLSL::GetGlobalViewTransformData(viewDescriptor.ViewTransformBufferIndex));
-		worldSpacePosParams.ViewDimensions = WaveReadLaneFirst(BrawlerHLSL::GetGlobalViewDimensionsData(viewDescriptor.ViewDimensionsBufferIndex));
+		worldSpacePosParams.InverseViewProjectionMatrix = WaveReadLaneFirst(viewTransform.CurrentFrameInverseViewProjectionMatrix);
+		worldSpacePosParams.InverseViewDimensions = WaveReadLaneFirst(viewDimensions.InverseViewDimensions);
 		
 		surfaceParams.SurfacePosWS = GetWorldSpacePosition(worldSpacePosParams);
 	}
 	
-	surfaceParams.V = normalize(viewTransform.CurrentFrameViewOrigin - surfaceParams.SurfacePosWS);
+	surfaceParams.V = normalize(viewTransform.CurrentFrameViewOriginWS - surfaceParams.SurfacePosWS);
 	
 	const float4 baseColorRoughnessValue = BaseColorRoughnessGBuffer[NonUniformResourceIndex(dispatchThreadID)];
 	surfaceParams.GGXRoughnessSquared = baseColorRoughnessValue.a;
@@ -90,7 +92,7 @@ BrawlerHLSL::SurfaceParameters GetSurfaceParameters(in const uint2 dispatchThrea
 
 float3 CalculatePointLightLuminance(in const BrawlerHLSL::SurfaceParameters surfaceParams, in const uint pointLightID)
 {
-	const BrawlerHLSL::PointLight currPointLight = BrawlerHLSL::GetGlobalPointLight(pointLightID);
+	const BrawlerHLSL::PointLight currPointLight = BrawlerHLSL::Bindless::GetGlobalPointLight(pointLightID);
 	const BrawlerHLSL::LightingParameters lightingParams = currPointLight.CreateLightingParameters(surfaceParams);
 	
 	const float3 brdfReflectance = BrawlerHLSL::BRDF::EvaluateBRDF(lightingParams);
@@ -102,7 +104,7 @@ float3 CalculatePointLightLuminance(in const BrawlerHLSL::SurfaceParameters surf
 
 float3 CalculateSpotLightLuminance(in const BrawlerHLSL::SurfaceParameters surfaceParams, in const uint spotLightID)
 {
-	const BrawlerHLSL::SpotLight currSpotLight = BrawlerHLSL::GetGlobalSpotLight(spotLightID);
+	const BrawlerHLSL::SpotLight currSpotLight = BrawlerHLSL::Bindless::GetGlobalSpotLight(spotLightID);
 	const BrawlerHLSL::LightingParameters lightingParams = currSpotLight.CreateLightingParameters(surfaceParams);
 	
 	const float3 brdfReflectance = BrawlerHLSL::BRDF::EvaluateBRDF(lightingParams);
@@ -121,7 +123,11 @@ float3 CalculateLighting(in const BrawlerHLSL::SurfaceParameters surfaceParams)
 	[loop]
 	for (uint i = 0; i < BrawlerHLSL::GPUSceneLimits::MAX_LIGHTS; ++i)
 	{
-		const BrawlerHLSL::LightDescriptor currLightDescriptor = WaveReadLaneFirst(BrawlerHLSL::GetGlobalLightDescriptor(i));
+		const BrawlerHLSL::LightDescriptor currLightDescriptor = BrawlerHLSL::Bindless::GetGlobalLightDescriptor(i);
+		
+		// Explicitly scalarize the data.
+		const bool isCurrLightDescriptorValid = WaveReadLaneFirst(currLightDescriptor.IsValid);
+		const uint currLightTypeID = WaveReadLaneFirst((uint) currLightDescriptor.TypeID);
 		
 		[branch]  // Coherent
 		if (!currLightDescriptor.IsValid)
@@ -130,7 +136,7 @@ float3 CalculateLighting(in const BrawlerHLSL::SurfaceParameters surfaceParams)
 		BrawlerHLSL::LightingParameters lightingParams;
 		
 		[branch]  // Coherent
-		switch (currLightDescriptor.TypeID)
+		switch ((BrawlerHLSL::LightType) currLightDescriptor.TypeID)
 		{
 			case BrawlerHLSL::LightType::POINT_LIGHT:
 			{

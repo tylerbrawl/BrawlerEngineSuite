@@ -41,6 +41,6 @@ export namespace Brawler
 	namespace D3D12
 	{
 		template <GPUCommandQueueType QueueType>
-		using GPUCommandQueueContextType = QueueTypeInfo<QueueType>::ContextType;
+		using GPUCommandQueueContextType = typename QueueTypeInfo<QueueType>::ContextType;
 	}
 }

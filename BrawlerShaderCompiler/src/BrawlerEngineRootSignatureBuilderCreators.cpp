@@ -109,7 +109,7 @@ namespace Brawler
 			/*
 			Root Parameter 1: DescriptorTable
 			{
-				SRV BindlessResources -> Space1-Space?[t0-t499999];
+				VOLATILE SRV BindlessResources -> Space1-Space?[t0-t499999];
 			};
 			*/
 			{
@@ -133,6 +133,110 @@ namespace Brawler
 				bilinearWrapSampler.ShaderVisibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_PIXEL;
 
 				rootSigBuilder.AddStaticSampler(std::move(bilinearWrapSampler));
+			}
+
+			return rootSigBuilder;
+		}
+
+		template <>
+		RootSignatureBuilder<Brawler::RootSignatureID::MODEL_INSTANCE_FRUSTUM_CULL> CreateRootSignatureBuilder<Brawler::RootSignatureID::MODEL_INSTANCE_FRUSTUM_CULL>()
+		{
+			RootSignatureBuilder<Brawler::RootSignatureID::MODEL_INSTANCE_FRUSTUM_CULL> rootSigBuilder{};
+
+			/*
+			Root Parameter 0: RootConstants<1> FrustumCullConstants -> Space0[b0];
+			*/
+			{
+				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::ModelInstanceFrustumCull::FRUSTUM_CULL_CONSTANTS>(RootConstantsInfo{
+					.Num32BitValues = 1,
+					.ShaderRegister = 0,
+					.RegisterSpace = 0,
+					.Visibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL
+				});
+			}
+
+			/*
+			Root Parameter 1: DescriptorTable
+			{
+				VOLATILE SRV BindlessResources -> Space1-Space?[t0-t499999];
+			};
+			*/
+			{
+				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::ModelInstanceFrustumCull::BINDLESS_SRVS>(CreateBindlessSRVDescriptorTableInfo(D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL));
+			}
+
+			/*
+			Root Parameter 2: DescriptorTable
+			{
+				VOLATILE UAV OutputGlobalVBIndexBuffer -> Space0[u0];
+				VOLATILE UAV OutputDescriptorBufferIndicesBuffer -> Space0[u1];
+				VOLATILE UAV OutputIndirectArgumentsBuffer -> Space0[u2];
+			};
+			*/
+			{
+				std::vector<CD3DX12_DESCRIPTOR_RANGE1> param2TableRanges{};
+				param2TableRanges.resize(1);
+
+				param2TableRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 3, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAGS::D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE);
+
+				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::ModelInstanceFrustumCull::OUTPUT_BUFFERS_TABLE>(DescriptorTableInfo{
+					.DescriptorRangeArr{ std::move(param2TableRanges) },
+					.Visibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL
+				});
+			}
+
+			return rootSigBuilder;
+		}
+
+		template <>
+		RootSignatureBuilder<Brawler::RootSignatureID::DEFERRED_OPAQUE_SHADE> CreateRootSignatureBuilder<Brawler::RootSignatureID::DEFERRED_OPAQUE_SHADE>()
+		{
+			RootSignatureBuilder<Brawler::RootSignatureID::DEFERRED_OPAQUE_SHADE> rootSigBuilder{};
+
+			/*
+			Root Parameter 0: RootConstants<1> ShadingConstants -> Space0[b0];
+			*/
+			{
+				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::DeferredOpaqueShade::SHADING_CONSTANTS>(RootConstantsInfo{
+					.Num32BitValues = 1,
+					.ShaderRegister = 0,
+					.RegisterSpace = 0,
+					.Visibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL
+				});
+			}
+
+			/*
+			Root Parameter 1: DescriptorTable
+			{
+				VOLATILE SRV BindlessResources -> Space1-Space?[t0-t499999];
+			};
+			*/
+			{
+				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::DeferredOpaqueShade::BINDLESS_SRVS>(CreateBindlessSRVDescriptorTableInfo(D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL));
+			}
+
+			/*
+			Root Parameter 2: DescriptorTable
+			{
+				STATIC_AT_EXECUTE SRV BaseColorRoughnessGBuffer -> Space0[t0];
+				STATIC_AT_EXECUTE SRV EncodedNormalGBuffer -> Space0[t1];
+				STATIC_AT_EXECUTE SRV MetallicGBuffer -> Space0[t2];
+				STATIC_AT_EXECUTE SRV DepthBuffer -> Space0[t3];
+
+				VOLATILE UAV OutputTexture -> Space0[u0];
+			};
+			*/
+			{
+				std::vector<CD3DX12_DESCRIPTOR_RANGE1> param2TableRanges{};
+				param2TableRanges.resize(2);
+
+				param2TableRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAGS::D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC_WHILE_SET_AT_EXECUTE);
+				param2TableRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAGS::D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE);
+
+				rootSigBuilder.InitializeRootParameter<Brawler::RootParameters::DeferredOpaqueShade::TEXTURES_TABLE>(DescriptorTableInfo{
+					.DescriptorRangeArr{ std::move(param2TableRanges) },
+					.Visibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL
+				});
 			}
 
 			return rootSigBuilder;

@@ -111,6 +111,7 @@
     <ClCompile Include="src\RootSignatureDefinitionsFileWriter.ixx" />
     <ClCompile Include="src\RootSignatureID.ixx" />
     <ClCompile Include="src\RootSignatureIDsFileWriter.ixx" />
+    <ClCompile Include="src\ShaderCompilationFlags.ixx" />
     <ClCompile Include="src\ShaderCompilationParams.ixx" />
     <ClCompile Include="src\ShaderProfileDefinition.ixx" />
     <ClCompile Include="src\ShaderProfileID.ixx" />

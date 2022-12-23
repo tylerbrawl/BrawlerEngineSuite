@@ -17,5 +17,23 @@ export namespace Brawler
 
 			COUNT_OR_ERROR
 		};
+
+		enum class ModelInstanceFrustumCull
+		{
+			FRUSTUM_CULL_CONSTANTS,
+			BINDLESS_SRVS,
+			OUTPUT_BUFFERS_TABLE,
+
+			COUNT_OR_ERROR
+		};
+
+		enum class DeferredOpaqueShade
+		{
+			SHADING_CONSTANTS,
+			BINDLESS_SRVS,
+			TEXTURES_TABLE,
+
+			COUNT_OR_ERROR
+		};
 	}
 }

@@ -37,6 +37,22 @@ namespace Brawler
 	};
 
 	template <>
+	struct RootSignatureDefinition<RootSignatureID::MODEL_INSTANCE_FRUSTUM_CULL>
+	{
+		static constexpr std::string_view ROOT_SIGNATURE_ID_STRING{ "MODEL_INSTANCE_FRUSTUM_CULL" };
+		static constexpr D3D12_ROOT_SIGNATURE_FLAGS ROOT_SIGNATURE_FLAGS = D3D12_ROOT_SIGNATURE_FLAGS::D3D12_ROOT_SIGNATURE_FLAG_NONE;
+		using RootParamType = Brawler::RootParameters::ModelInstanceFrustumCull;
+	};
+
+	template <>
+	struct RootSignatureDefinition<RootSignatureID::DEFERRED_OPAQUE_SHADE>
+	{
+		static constexpr std::string_view ROOT_SIGNATURE_ID_STRING{ "DEFERRED_OPAQUE_SHADE" };
+		static constexpr D3D12_ROOT_SIGNATURE_FLAGS ROOT_SIGNATURE_FLAGS = D3D12_ROOT_SIGNATURE_FLAGS::D3D12_ROOT_SIGNATURE_FLAG_NONE;
+		using RootParamType = Brawler::RootParameters::DeferredOpaqueShade;
+	};
+
+	template <>
 	struct RootSignatureDefinition<RootSignatureID::BC6H_BC7_COMPRESSION>
 	{
 		static constexpr std::string_view ROOT_SIGNATURE_ID_STRING{ "BC6H_BC7_COMPRESSION" };

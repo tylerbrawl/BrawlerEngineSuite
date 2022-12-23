@@ -2,6 +2,7 @@ module;
 #include <vector>
 #include <span>
 #include <string_view>
+#include <cassert>
 #include "DxDef.h"
 
 module Brawler.PerInstanceIASlotDescription;
