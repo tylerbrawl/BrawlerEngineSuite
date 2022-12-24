@@ -101,10 +101,10 @@ namespace Brawler
 		DescriptorHandleInfo GPUResourceDescriptorHeap::CreatePerFrameDescriptorHeapReservation(const std::uint32_t numDescriptors)
 		{
 			// Reserve numDescriptors descriptors in the per-frame segment of the descriptor heap.
-			const std::uint32_t frameSegmentIndexModifier = mPerFrameIndexArr[Util::Engine::GetCurrentFrameNumber() % Util::Engine::MAX_FRAMES_IN_FLIGHT].fetch_add(numDescriptors, std::memory_order::relaxed);
+			const std::uint64_t frameSegmentIndexModifier = mPerFrameIndexArr[Util::Engine::GetCurrentFrameNumber() % Util::Engine::MAX_FRAMES_IN_FLIGHT].fetch_add(numDescriptors, std::memory_order::relaxed);
 			assert(frameSegmentIndexModifier < PER_FRAME_DESCRIPTORS_PARTITION_SIZE && "ERROR: The limit of 250,000 per-frame descriptors has been exceeded!");
 
-			const std::uint32_t descriptorHeapIndex = GetBasePerFrameDescriptorHeapIndex() + frameSegmentIndexModifier;
+			const std::uint32_t descriptorHeapIndex = GetBasePerFrameDescriptorHeapIndex() + static_cast<std::uint32_t>(frameSegmentIndexModifier);
 
 			return DescriptorHandleInfo{
 				.HCPUDescriptor{ mHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<std::int32_t>(descriptorHeapIndex), mDescriptorHandleIncrementSize },

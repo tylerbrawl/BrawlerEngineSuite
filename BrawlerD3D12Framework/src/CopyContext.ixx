@@ -11,6 +11,9 @@ export namespace Brawler
 	{
 		class CopyContext final : public GPUCommandContext<CopyContext, GPUCommandQueueType::COPY>
 		{
+		private:
+			friend GPUCommandContext<CopyContext, GPUCommandQueueType::COPY>;
+
 		public:
 			CopyContext() = default;
 
@@ -20,7 +23,7 @@ export namespace Brawler
 			CopyContext(CopyContext&& rhs) noexcept = default;
 			CopyContext& operator=(CopyContext&& rhs) noexcept = default;
 
-		protected:
+		private:
 			void RecordCommandListIMPL(const std::function<void(CopyContext&)>& recordJob);
 			void PrepareCommandListIMPL();
 		};

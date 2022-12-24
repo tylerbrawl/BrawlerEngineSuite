@@ -261,7 +261,11 @@ namespace Brawler
 				if (renderPass.RecordRenderPassCommands(*mContext)) [[likely]]
 					mContext->MarkAsUseful();
 			};
-			
+
+			/*
+			The PIXScopedEventObject<T> type is defined only when pix3.h is included, and that
+			header is not included in Release builds. The MSVC used to allow code like the following:
+
 			if constexpr (Util::D3D12::IsPIXRuntimeSupportEnabled())
 			{
 				const std::string_view renderPassName{ renderPass.GetRenderPassName() };
@@ -274,6 +278,25 @@ namespace Brawler
 			}
 			else
 				recordRenderPassLambda();
+
+			As of writing this, however, that now triggers compilation error C3861 for the PIXScopedEventObject
+			identifier not being defined in Release builds. (To be clear, this is not an internal compiler error.)
+			I am unsure if this is a regression in the MSVC or if this is the behavior defined by the
+			C++ standard. (I wouldn't count the latter case as a regression, although adding this later on certainly
+			did break code.)
+			*/
+
+#ifdef PIX_EVENTS_ARE_TURNED_ON
+			const std::string_view renderPassName{ renderPass.GetRenderPassName() };
+			std::optional<PIXEvent<Brawler::D3D12GraphicsCommandList>> scopedPixEvent{};
+
+			if (!renderPassName.empty())
+				scopedPixEvent.emplace(&(mContext->GetCommandList()), Util::D3D12::PIX_EVENT_COLOR_CPU_GPU, renderPassName.data());
+
+			recordRenderPassLambda();
+#else
+			recordRenderPassLambda();
+#endif
 		}
 
 		template <GPUCommandQueueType QueueType>

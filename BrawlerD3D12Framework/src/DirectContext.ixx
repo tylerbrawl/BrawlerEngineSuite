@@ -34,6 +34,8 @@ export namespace Brawler
 		class DirectContext final : public GPUCommandContext<DirectContext, GPUCommandQueueType::DIRECT>, public ComputeCapableCommandGenerator<DirectContext>
 		{
 		private:
+			friend GPUCommandContext<DirectContext, GPUCommandQueueType::DIRECT>;
+
 			template <GPUCommandQueueType QueueType>
 			friend class GPUCommandListRecorder;
 
@@ -46,8 +48,9 @@ export namespace Brawler
 			DirectContext(DirectContext&& rhs) noexcept = default;
 			DirectContext& operator=(DirectContext&& rhs) noexcept = default;
 
-		protected:
+		private:
 			void RecordCommandListIMPL(const std::function<void(DirectContext&)>& recordJob);
+			void PrepareCommandListIMPL();
 
 		public:
 			/// <summary>
@@ -108,9 +111,6 @@ export namespace Brawler
 
 			template <std::size_t RTVCount, std::size_t DSVCount>
 			void OMSetRenderTargets(RenderTargetBundle<RTVCount, DSVCount>& renderTargetBundle) const;
-
-		protected:
-			void PrepareCommandListIMPL();
 
 		public:
 			template <Brawler::PSOs::PSOID PSOIdentifier>

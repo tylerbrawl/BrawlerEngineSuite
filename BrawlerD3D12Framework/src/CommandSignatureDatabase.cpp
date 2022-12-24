@@ -1,6 +1,7 @@
 module;
 #include <array>
 #include <cassert>
+#include <optional>
 #include "DxDef.h"
 
 module Brawler.D3D12.CommandSignatureDatabase;
@@ -20,7 +21,7 @@ namespace
 	{
 		static_assert(CSIdentifier != CommandSignatureID::COUNT_OR_ERROR, "ERROR: An invalid CommandSignatureID was specified in a call to <anonymous namespace>::CreateCommandSignature()! (See CommandSignatureDatabase.cpp.)");
 
-		static constexpr bool DOES_COMMAND_SIGNATURE_HAVE_ROOT_SIGNATURE = Brawler::CommandSignatures::DoesCommandSignatureHaveAssociatedRootSignature<CSIdentifier>();
+		static constexpr std::optional<Brawler::RootSignatures::RootSignatureID> ROOT_SIGNATURE_ID{ Brawler::CommandSignatures::GetRootSignatureForCommandSignature<CSIdentifier>() };
 		static constexpr D3D12_COMMAND_SIGNATURE_DESC COMMAND_SIGNATURE_DESC{ Brawler::CommandSignatures::CreateCommandSignatureDescription<CSIdentifier>() };
 
 		// Only associate a root signature with a command signature if we need to. That way, we
@@ -30,11 +31,9 @@ namespace
 		// We determine whether or not we can do this at compile time. If we need to associate
 		// the command signature with a root signature, then the corresponding RootSignatureID
 		// is also found at compile time.
-		if constexpr (DOES_COMMAND_SIGNATURE_HAVE_ROOT_SIGNATURE)
+		if constexpr (ROOT_SIGNATURE_ID.has_value())
 		{
-			static constexpr Brawler::RootSignatures::RootSignatureID ROOT_SIGNATURE_ID = Brawler::CommandSignatures::GetRootSignatureForCommandSignature<CSIdentifier>();
-
-			Brawler::D3D12RootSignature& relevantRootSignature{ Brawler::D3D12::RootSignatureDatabase::GetInstance().GetRootSignature<ROOT_SIGNATURE_ID>() };
+			Brawler::D3D12RootSignature& relevantRootSignature{ Brawler::D3D12::RootSignatureDatabase::GetInstance().GetRootSignature<*ROOT_SIGNATURE_ID>() };
 			return Util::Engine::GetD3D12Device().CreateCommandSignature(&COMMAND_SIGNATURE_DESC, &relevantRootSignature, IID_PPV_ARGS(&cmdSignaturePtr));
 		}
 		else

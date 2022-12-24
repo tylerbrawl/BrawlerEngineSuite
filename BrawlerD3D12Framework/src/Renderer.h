@@ -192,3 +192,12 @@ namespace Brawler
 		}
 	}
 }
+
+// <specstrings_undef.h> is a header which, when included, undefines all of the Microsoft 
+// SAL annotation macros. We add this here to prevent the "macro redefinition" warning from 
+// appearing when this header is imported as a header unit (i.e., 
+// (export) import "Renderer.h";).
+//
+// I'm not sure if this is even safe to do or not, since this appears to be an implementation
+// header, but it seems to work fine...
+#include <specstrings_undef.h>

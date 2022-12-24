@@ -21,6 +21,9 @@ export namespace Brawler
 	{
 		class ComputeContext final : public GPUCommandContext<ComputeContext, GPUCommandQueueType::COMPUTE>, public ComputeCapableCommandGenerator<ComputeContext>
 		{
+		private:
+			friend GPUCommandContext<ComputeContext, GPUCommandQueueType::COMPUTE>;
+
 		public:
 			ComputeContext() = default;
 
@@ -30,9 +33,8 @@ export namespace Brawler
 			ComputeContext(ComputeContext&& rhs) noexcept = default;
 			ComputeContext& operator=(ComputeContext&& rhs) noexcept = default;
 
+		private:
 			void RecordCommandListIMPL(const std::function<void(ComputeContext&)>& recordJob);
-
-		protected:
 			void PrepareCommandListIMPL();
 
 		public:

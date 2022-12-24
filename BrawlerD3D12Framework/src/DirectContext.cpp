@@ -21,15 +21,15 @@ namespace Brawler
 			recordJob(*this);
 		}
 
+		void DirectContext::PrepareCommandListIMPL()
+		{
+			mCurrPSOID.reset();
+		}
+
 		void DirectContext::Present() const
 		{
 			// Report that presentation must occur at the end of the current frame to the PresentationManager.
 			Util::Engine::GetPresentationManager().EnablePresentationForCurrentFrame();
-		}
-
-		void DirectContext::PrepareCommandListIMPL()
-		{
-			mCurrPSOID.reset();
 		}
 
 		void DirectContext::ClearRenderTargetViewIMPL(const I_GPUResource& resource, const D3D12_RENDER_TARGET_VIEW_DESC& rtvDesc) const

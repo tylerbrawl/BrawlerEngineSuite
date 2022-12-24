@@ -1,4 +1,5 @@
 module;
+#include <cassert>
 #include <optional>
 #include "DxDef.h"
 

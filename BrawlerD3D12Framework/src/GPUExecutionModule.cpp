@@ -13,9 +13,7 @@ import Brawler.D3D12.AliasedGPUMemoryManager;
 import Brawler.JobSystem;
 import Brawler.D3D12.RenderPass;
 import Brawler.D3D12.GPUCommandContextGroup;
-import Brawler.D3D12.GPUCommandContextSubmissionPoint;
 import Brawler.D3D12.GPUCommandManager;
-import Brawler.D3D12.GPUCommandContextVault;
 
 namespace
 {
