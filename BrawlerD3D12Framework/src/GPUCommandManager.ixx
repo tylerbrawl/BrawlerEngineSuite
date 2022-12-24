@@ -7,34 +7,15 @@ module;
 #include "DxDef.h"
 
 export module Brawler.D3D12.GPUCommandManager;
-import Brawler.D3D12.GPUCommandQueue;  // BAD!
+import Brawler.D3D12.GPUCommandQueue;
+import Brawler.D3D12.GPUCommandContextGroup;
 import Brawler.CompositeEnum;
 import Brawler.D3D12.GPUCommandQueueType;
 import Util.Engine;
-//import Brawler.D3D12.GPUCommandContextGroup;  // BAD!
 import Brawler.D3D12.FrameGraphFenceCollection;
 import Brawler.ThreadSafeQueue;
 import Brawler.D3D12.GPUCommandQueueContextType;
 import Brawler.D3D12.GPUCommandContexts;
-
-//class GPUCommandContextVault
-//{};
-
-//struct GPUCommandContextSink
-//{};
-
-//struct GPUCommandContextSubmissionPoint
-//{};
-
-template <Brawler::D3D12::GPUCommandQueueType QueueType>
-struct GPUCommandQueue
-{};
-
-//struct FrameGraphFenceCollection
-//{};
-
-struct GPUCommandContextGroup
-{};
 
 export namespace Brawler
 {

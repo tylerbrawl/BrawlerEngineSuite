@@ -13,6 +13,22 @@ import Brawler.D3D12.DescriptorHandleInfo;
 import Brawler.D3D12.BindlessSRVSentinel;
 import Util.Engine;
 
+namespace Brawler
+{
+	namespace D3D12
+	{
+		constexpr std::size_t RESOURCE_DESCRIPTOR_HEAP_SIZE = 1000000;
+		constexpr std::size_t BINDLESS_SRVS_PARTITION_SIZE = 500000;
+
+		/// <summary>
+		/// This is the size of the partition of the GPUResourceDescriptorHeap which is
+		/// dedicated to storing per-frame descriptor tables. Each frame "owns" half of
+		/// this partition for storing descriptor tables.
+		/// </summary>
+		constexpr std::size_t PER_FRAME_DESCRIPTORS_PARTITION_SIZE = (RESOURCE_DESCRIPTOR_HEAP_SIZE - BINDLESS_SRVS_PARTITION_SIZE);
+	}
+}
+
 export namespace Brawler
 {
 	namespace D3D12

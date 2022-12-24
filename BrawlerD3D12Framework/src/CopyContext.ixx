@@ -5,10 +5,6 @@ export module Brawler.D3D12.CopyContext;
 import Brawler.D3D12.GPUCommandContext;
 import Brawler.D3D12.GPUCommandQueueType;
 
-//template <typename T, Brawler::D3D12::GPUCommandQueueType QueueType>
-//struct GPUCommandContext
-//{};
-
 export namespace Brawler
 {
 	namespace D3D12

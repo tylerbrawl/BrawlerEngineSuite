@@ -28,7 +28,7 @@ export namespace Brawler
 
 			GPUCommandQueue(GPUCommandQueue&& rhs) noexcept = default;
 			GPUCommandQueue& operator=(GPUCommandQueue&& rhs) noexcept = default;
-
+			
 			void Initialize();
 
 			void SubmitGPUCommandContextGroup(GPUCommandContextGroup& cmdContextGroup);

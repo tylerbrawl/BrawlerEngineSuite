@@ -9,8 +9,8 @@ export module Brawler.D3D12.GPUCommandContext;
 import Brawler.D3D12.GPUCommandQueueType;
 import Util.Engine;
 import Util.General;
-//import Util.D3D12;
-//import Brawler.D3D12.GPUResourceAccessManager;
+import Util.D3D12;
+import Brawler.D3D12.GPUResourceAccessManager;
 import Brawler.D3D12.FrameGraphResourceDependency;
 import Brawler.D3D12.TextureCopyBufferSubAllocation;
 import Brawler.D3D12.TextureSubResource;
@@ -18,18 +18,6 @@ import Brawler.D3D12.I_BufferSnapshot;
 import Brawler.D3D12.BufferCopyRegion;
 import Brawler.D3D12.TextureCopyRegion;
 import Brawler.D3D12.GPUResourceDescriptorHeap;
-
-struct GPUResourceAccessManager
-{};
-
-namespace Util
-{
-	namespace D3D12
-	{
-		bool IsDebugLayerEnabled();
-		bool IsResourceStateValid(const D3D12_RESOURCE_STATES resourceState);
-	}
-}
 
 namespace
 {
@@ -86,9 +74,9 @@ export namespace Brawler
 		class GPUCommandContext
 		{
 		private:
-			friend class GPUCommandQueue<CmdListType>;
+			friend GPUCommandQueue<CmdListType>;
 
-			friend class GPUCommandContextVault;
+			friend GPUCommandContextVault;
 
 			template <GPUCommandQueueType QueueType>
 			friend class GPUCommandListRecorder;
@@ -204,16 +192,15 @@ export namespace Brawler
 			void DebugResourceBarrier(const CD3DX12_RESOURCE_BARRIER& barrier) const;
 
 		private:
-			//Microsoft::WRL::ComPtr<Brawler::D3D12GraphicsCommandList> mCmdList;
-			//GPUResourceAccessManager mResourceAccessManager;
-			//bool mHasCommands;
+			Microsoft::WRL::ComPtr<Brawler::D3D12GraphicsCommandList> mCmdList;
+			GPUResourceAccessManager mResourceAccessManager;
+			bool mHasCommands;
 		};
 	}
 }
 
 // ---------------------------------------------------------------------------------
 
-/*
 namespace Brawler
 {
 	namespace D3D12
@@ -577,4 +564,3 @@ namespace Brawler
 		}
 	}
 }
-*/

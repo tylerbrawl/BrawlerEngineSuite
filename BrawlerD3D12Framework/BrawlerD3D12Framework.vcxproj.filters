@@ -226,6 +226,9 @@
     <Filter Include="Module Files\Threading\Atomic Shared Pointer">
       <UniqueIdentifier>{72091017-f778-4868-8a4f-d480cb8b9875}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\MSVC Regression Workarounds">
+      <UniqueIdentifier>{358190c5-13d7-4f03-814a-3a90a125865c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GeneralUtil.ixx">
@@ -1219,6 +1222,9 @@
     </ClInclude>
     <ClInclude Include="src\EngineConstantsDef.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer.h">
+      <Filter>Header Files\MSVC Regression Workarounds</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
