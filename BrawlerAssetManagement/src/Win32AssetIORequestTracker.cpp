@@ -22,7 +22,7 @@ namespace Brawler
 
 		void Win32AssetIORequestTracker::NotifyForAssetIORequestCompletion()
 		{
-			const std::uint32_t numRequestsRemaining = (mActiveRequestCounter.fetch_sub(1, std::memory_order::relaxed) - 1);
+			const std::uint64_t numRequestsRemaining = (mActiveRequestCounter.fetch_sub(1, std::memory_order::relaxed) - 1);
 
 			if (numRequestsRemaining == 0)
 				AssetRequestEventNotifier::MarkAssetRequestAsCompleted(mHAssetRequestEvent);

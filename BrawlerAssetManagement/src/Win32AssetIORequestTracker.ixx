@@ -27,7 +27,7 @@ export namespace Brawler
 
 		private:
 			AssetRequestEventHandle mHAssetRequestEvent;
-			std::atomic<std::uint32_t> mActiveRequestCounter;
+			std::atomic<std::uint64_t> mActiveRequestCounter;
 		};
 	}
 }
